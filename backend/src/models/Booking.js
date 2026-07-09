@@ -55,6 +55,7 @@ const bookingSchema = new mongoose.Schema({
         default: 'Pending'
     },
     paymentDetails: {
+        provider: String,
         orderId: String,
         paymentId: String,
         signature: String,

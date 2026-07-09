@@ -1,6 +1,7 @@
 const Booking = require('../models/Booking');
 const Service = require('../models/Service');
 const razorpayInstance = require('../config/razorpay');
+const stripe = require('../config/stripe');
 const { generateTextInvoice } = require('../utils/invoiceService');
 const { sendBookingConfirmed, sendBookingCancelled } = require('../utils/emailService');
 
@@ -35,17 +36,66 @@ exports.createBookingOrder = async (req, res, next) => {
             });
         }
 
-        // 2) Create Razorpay Order
-        const amountInPaise = Math.round(calculatedTotal * 100);
-        let order;
-        try {
-            order = await razorpayInstance.orders.create({
-                amount: amountInPaise,
-                currency: 'INR',
-                receipt: `receipt_${Date.now()}`
-            });
-        } catch (paymentError) {
-            console.error('Razorpay Order Creation Failed:', paymentError.message);
+        const amountInSmallestUnit = Math.round(calculatedTotal * 100);
+        let paymentOrder;
+
+        if (stripe) {
+            const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY || '';
+            if (!publishableKey.startsWith('pk_')) {
+                return res.status(500).json({
+                    success: false,
+                    message: 'Stripe publishable key is not configured on the server'
+                });
+            }
+
+            try {
+                const paymentIntent = await stripe.paymentIntents.create({
+                    amount: amountInSmallestUnit,
+                    currency: process.env.STRIPE_CURRENCY || 'inr',
+                    payment_method_types: ['card'],
+                    metadata: {
+                        userId: req.user.id,
+                        receipt: `receipt_${Date.now()}`
+                    }
+                });
+
+                paymentOrder = {
+                    provider: 'stripe',
+                    id: paymentIntent.id,
+                    clientSecret: paymentIntent.client_secret,
+                    amount: paymentIntent.amount,
+                    currency: paymentIntent.currency,
+                    publishableKey
+                };
+            } catch (paymentError) {
+                console.error('Stripe PaymentIntent Creation Failed:', paymentError.message);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Failed to create Stripe payment. Try again.'
+                });
+            }
+        } else {
+            try {
+                const order = await razorpayInstance.orders.create({
+                    amount: amountInSmallestUnit,
+                    currency: 'INR',
+                    receipt: `receipt_${Date.now()}`
+                });
+
+                paymentOrder = {
+                    provider: 'razorpay',
+                    ...order
+                };
+            } catch (paymentError) {
+                console.error('Razorpay Order Creation Failed:', paymentError.message);
+                return res.status(500).json({
+                    success: false,
+                    message: 'Failed to create payment order. Try again.'
+                });
+            }
+        }
+
+        if (!paymentOrder) {
             return res.status(500).json({
                 success: false,
                 message: 'Failed to create payment order. Try again.'
@@ -65,15 +115,25 @@ exports.createBookingOrder = async (req, res, next) => {
             paymentStatus: 'Pending',
             status: 'Pending',
             paymentDetails: {
-                orderId: order.id
+                provider: paymentOrder.provider,
+                orderId: paymentOrder.id
             }
         });
+
+        if (stripe && paymentOrder.provider === 'stripe') {
+            await stripe.paymentIntents.update(paymentOrder.id, {
+                metadata: {
+                    bookingId: booking._id.toString(),
+                    userId: req.user.id
+                }
+            });
+        }
 
         res.status(201).json({
             success: true,
             data: {
                 booking,
-                paymentOrder: order
+                paymentOrder
             }
         });
     } catch (err) {
@@ -87,7 +147,7 @@ exports.createBookingOrder = async (req, res, next) => {
  */
 exports.verifyPayment = async (req, res, next) => {
     try {
-        const { bookingId, razorpayOrderId, razorpayPaymentId, razorpaySignature, status } = req.body;
+        const { bookingId, razorpayOrderId, razorpayPaymentId, razorpaySignature, stripePaymentIntentId, status } = req.body;
 
         // Find the booking
         const booking = await Booking.findById(bookingId).populate('user').populate('services.service');
@@ -98,18 +158,47 @@ exports.verifyPayment = async (req, res, next) => {
             });
         }
 
-        // Standard signature verification (optional, mock support)
-        // If razorpaySignature is mock or in test mode, we mark it paid
-        const isMock = razorpayOrderId.startsWith('order_mock_') || razorpayPaymentId.startsWith('pay_mock_');
+        let isPaymentSuccessful = false;
+        let paymentProvider = 'razorpay';
+        let orderId = razorpayOrderId;
+        let paymentId = razorpayPaymentId;
+        let signature = razorpaySignature;
 
-        if (isMock || status === 'success') {
+        if (stripePaymentIntentId) {
+            if (!stripe) {
+                return res.status(500).json({
+                    success: false,
+                    message: 'Stripe is not configured on the server'
+                });
+            }
+
+            const paymentIntent = await stripe.paymentIntents.retrieve(stripePaymentIntentId);
+            if (paymentIntent.metadata?.bookingId && paymentIntent.metadata.bookingId !== booking._id.toString()) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Payment does not match this booking'
+                });
+            }
+
+            isPaymentSuccessful = paymentIntent.status === 'succeeded';
+            paymentProvider = 'stripe';
+            orderId = paymentIntent.id;
+            paymentId = paymentIntent.latest_charge || paymentIntent.id;
+            signature = undefined;
+        } else {
+            const isMock = razorpayOrderId?.startsWith('order_mock_') || razorpayPaymentId?.startsWith('pay_mock_');
+            isPaymentSuccessful = isMock || status === 'success';
+        }
+
+        if (isPaymentSuccessful) {
             booking.paymentStatus = 'Paid';
             booking.status = 'Confirmed';
             booking.paymentDetails = {
-                orderId: razorpayOrderId,
-                paymentId: razorpayPaymentId,
-                signature: razorpaySignature,
-                transactionId: razorpayPaymentId
+                provider: paymentProvider,
+                orderId,
+                paymentId,
+                signature,
+                transactionId: paymentId
             };
 
             await booking.save();

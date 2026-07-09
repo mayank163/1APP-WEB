@@ -14,6 +14,7 @@ const BookingManagement = () => {
     const [selectedBooking, setSelectedBooking] = useState(null);
     const [newStatus, setNewStatus] = useState('');
     const [newPaymentStatus, setNewPaymentStatus] = useState('');
+    const [newPaymentDetails, setNewPaymentDetails] = useState('');
     const [techName, setTechName] = useState('');
     const [techPhone, setTechPhone] = useState('');
     const [updating, setUpdating] = useState(false);
@@ -48,6 +49,7 @@ const BookingManagement = () => {
         setSelectedBooking(booking);
         setNewStatus(booking.status);
         setNewPaymentStatus(booking.paymentStatus);
+        setNewPaymentDetails(booking.paymentDetails);
         setTechName(booking.assignedTechnician?.name || '');
         setTechPhone(booking.assignedTechnician?.phone || '');
     };
@@ -59,6 +61,7 @@ const BookingManagement = () => {
             const payload = {
                 status: newStatus,
                 paymentStatus: newPaymentStatus,
+                paymentDetails: newPaymentDetails,
                 technicianName: techName,
                 technicianPhone: techPhone
             };
@@ -79,7 +82,7 @@ const BookingManagement = () => {
 
     const getStatusBadge = (status) => {
         switch (status) {
-            case 'Pending': return 'bg-dark text-dark';
+            case 'Pending': return 'bg-dark text-light';
             case 'Confirmed': return 'bg-info text-dark';
             case 'In Progress': return 'bg-primary text-light';
             case 'Completed': return 'bg-success text-light';
@@ -235,6 +238,68 @@ const BookingManagement = () => {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Payment Information */}
+<div className="card border-0 bg-light mb-4">
+    <div className="card-body">
+        <h6 className="fw-bold mb-3">
+            <FaRupeeSign className="me-2 text-success" />
+            Payment Details
+        </h6>
+
+        <div className="row g-3">
+            <div className="col-md-6">
+                <small className="text-muted d-block">Amount</small>
+                <div className="fw-bold fs-5 text-success">
+                    ₹{selectedBooking.totalAmount}
+                </div>
+            </div>
+
+            <div className="col-md-6">
+                <small className="text-muted d-block">Payment Status</small>
+                <span
+                    className={`badge ${
+                        selectedBooking.paymentStatus === "Paid"
+                            ? "bg-success"
+                            : selectedBooking.paymentStatus === "Pending"
+                            ? "bg-warning text-dark"
+                            : "bg-danger"
+                    }`}
+                >
+                    {selectedBooking.paymentStatus}
+                </span>
+            </div>
+
+            <div className="col-12">
+                <small className="text-muted">Provider</small>
+                <div className="fw-semibold text-capitalize">
+                    {selectedBooking.paymentDetails?.provider || "-"}
+                </div>
+            </div>
+
+            <div className="col-12">
+                <small className="text-muted">Order ID</small>
+                <div className="font-monospace small text-break">
+                    {selectedBooking.paymentDetails?.orderId || "-"}
+                </div>
+            </div>
+
+            <div className="col-12">
+                <small className="text-muted">Payment ID</small>
+                <div className="font-monospace small text-break">
+                    {selectedBooking.paymentDetails?.paymentId || "-"}
+                </div>
+            </div>
+
+            <div className="col-12">
+                <small className="text-muted">Transaction ID</small>
+                <div className="font-monospace small text-break">
+                    {selectedBooking.paymentDetails?.transactionId || "-"}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
                             {/* Status updates Form */}
                             <form onSubmit={handleUpdateBooking}>
