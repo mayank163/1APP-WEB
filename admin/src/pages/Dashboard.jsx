@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import adminApi from '../services/adminApi';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { FaRupeeSign, FaUsers, FaTasks, FaCheckCircle, FaHourglassHalf, FaSpinner } from 'react-icons/fa';
+import { FaDollarSign, FaUsers, FaTasks, FaCheckCircle, FaHourglassHalf, FaSpinner } from 'react-icons/fa';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 
 const Dashboard = () => {
@@ -50,9 +50,9 @@ const Dashboard = () => {
                     <div className="card border-0 shadow-sm rounded-3 p-4 bg-white">
                         <div className="d-flex align-items-center justify-content-between mb-3">
                             <span className="text-muted small fw-bold text-uppercase">Total Revenue</span>
-                            <div className="bg-success-subtle text-success rounded p-2"><FaRupeeSign /></div>
+                            <div className="bg-success-subtle text-success rounded p-2"><FaDollarSign /></div>
                         </div>
-                        <h3 className="fw-bold text-dark font-monospace mb-1">₹{totalRevenue.toFixed(2)}</h3>
+                        <h3 className="fw-bold text-dark font-monospace mb-1">${totalRevenue.toFixed(2)}</h3>
                         <span className="text-muted small">Cleared paid receipts</span>
                     </div>
                 </div>
@@ -96,10 +96,10 @@ const Dashboard = () => {
                 {/* Recharts Area Chart */}
                 <div className="col-lg-8">
                     <div className="card border-0 shadow-sm rounded-3 p-4 bg-white h-100">
-                        <h5 className="fw-bold text-dark mb-4">Weekly Revenue Trend (INR)</h5>
+                        <h5 className="fw-bold text-dark mb-4">Weekly Revenue Trend (USD)</h5>
                         <div style={{ width: '100%', height: '300px' }}>
                             <ResponsiveContainer>
-                                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                <AreaChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                                     <defs>
                                         <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="5%" stopColor="#ffc107" stopOpacity={0.4}/>
@@ -107,10 +107,10 @@ const Dashboard = () => {
                                         </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                    <XAxis dataKey="date" tickLine={false} />
+                                    <XAxis dataKey="date" tickMargin={12} />
                                     <YAxis tickLine={false} />
                                     <Tooltip />
-                                    <Area type="monotone" dataKey="revenue" stroke="#ffc107" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" name="Revenue (₹)" />
+                                    <Area type="monotone" dataKey="revenue" stroke="#ffc107" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" name="Revenue ($)" />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>

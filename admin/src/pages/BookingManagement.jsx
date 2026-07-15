@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import adminApi from '../services/adminApi';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { FaSearch, FaEye, FaUser, FaPhone, FaMapMarkerAlt, FaRupeeSign, FaCalendarAlt, FaClock } from 'react-icons/fa';
+import { FaSearch, FaEye, FaUser, FaPhone, FaMapMarkerAlt, FaDollarSign, FaCalendarAlt, FaClock } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 const BookingManagement = () => {
@@ -166,7 +166,7 @@ const BookingManagement = () => {
                                                     <small className="d-block text-dark fw-semibold">{new Date(booking.serviceDate).toLocaleDateString()}</small>
                                                     <span className="badge bg-light text-muted border text-uppercase" style={{ fontSize: '0.7rem' }}>{booking.timeSlot}</span>
                                                 </td>
-                                                <td className="font-monospace fw-bold text-primary">₹{booking.totalAmount}</td>
+                                                <td className="font-monospace fw-bold text-primary">${booking.totalAmount}</td>
                                                 <td>
                                                     <span className={`badge ${getStatusBadge(booking.status)} px-2.5 py-1 text-uppercase`} style={{ fontSize: '0.7rem' }}>
                                                         {booking.status}
@@ -243,7 +243,7 @@ const BookingManagement = () => {
 <div className="card border-0 bg-light mb-4">
     <div className="card-body">
         <h6 className="fw-bold mb-3">
-            <FaRupeeSign className="me-2 text-success" />
+            <FaDollarSign className="me-2 text-success" />
             Payment Details
         </h6>
 
@@ -251,7 +251,7 @@ const BookingManagement = () => {
             <div className="col-md-6">
                 <small className="text-muted d-block">Amount</small>
                 <div className="fw-bold fs-5 text-success">
-                    ₹{selectedBooking.totalAmount}
+                    ${selectedBooking.totalAmount}
                 </div>
             </div>
 

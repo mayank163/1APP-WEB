@@ -307,7 +307,7 @@ const Home = () => {
                         <div className="col-md-4">
                             <div className="rounded-4 overflow-hidden d-flex" style={{ background: '#0d5c4a', minHeight: '180px' }}>
                                 <div className="p-4 d-flex flex-column justify-content-between" style={{ flex: 1 }}>
-                                    <h5 className="fw-bold text-white">Kitchen cleaning starting at ₹399 only</h5>
+                                    <h5 className="fw-bold text-white">Kitchen cleaning starting at $399 only</h5>
                                     <button className="btn btn-outline-light btn-sm rounded-pill px-3" style={{ width: 'fit-content' }}>Book now</button>
                                 </div>
                                 <div style={{ width: '80px', flexShrink: 0, background: 'linear-gradient(180deg, #0a9e7a 0%, #07856a 100%)', borderRadius: '0 16px 16px 0' }} />
@@ -385,9 +385,9 @@ const Home = () => {
                                     <span className="text-muted small">· Instant</span>
                                 </div>
                                 <div className="d-flex align-items-center gap-2">
-                                    <span className="fw-bold">₹{service.price}</span>
+                                    <span className="fw-bold">${service.price}</span>
                                     {service.originalPrice && (
-                                        <span className="text-muted small text-decoration-line-through">₹{service.originalPrice}</span>
+                                        <span className="text-muted small text-decoration-line-through">${service.originalPrice}</span>
                                     )}
                                 </div>
                             </div>
@@ -439,7 +439,7 @@ const Home = () => {
                                 className="fw-semibold text-white px-3 py-1 rounded-pill mb-4"
                                 style={{ background: '#2e7d32', fontSize: '11px', width: 'fit-content', letterSpacing: '0.5px' }}
                             >
-                                UP TO ₹1,700 OFF
+                                UP TO $1,700 OFF
                             </span>
                             <p className="text-white mb-1" style={{ fontSize: '13px', opacity: 0.8 }}>ONE-APP</p>
                             <h2 className="fw-bold text-white mb-3" style={{ fontSize: '2.5rem' }}>Smart locks</h2>
@@ -477,7 +477,7 @@ const Home = () => {
                                         </div>
                                         <div className="fw-semibold text-dark mb-1" style={{ fontSize: '15px' }}>{sub.name}</div>
                                         <div className="d-flex align-items-center gap-2">
-                                            <span className="fw-bold">₹{sub.startingFromPrice}</span>
+                                            <span className="fw-bold">${sub.startingFromPrice}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -511,7 +511,7 @@ const Home = () => {
                                         </div>
                                         <div className="fw-semibold text-dark mb-1" style={{ fontSize: '15px' }}>{sub.name}</div>
                                         <div className="d-flex align-items-center gap-2">
-                                            <span className="fw-bold">₹{sub.startingFromPrice}</span>
+                                            <span className="fw-bold">${sub.startingFromPrice}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -570,7 +570,7 @@ const Home = () => {
                                         </div>
                                         <div className="fw-semibold text-dark mb-1" style={{ fontSize: '15px' }}>{sub.name}</div>
                                         <div className="d-flex align-items-center gap-2">
-                                            <span className="fw-bold">₹{sub.startingFromPrice}</span>
+                                            <span className="fw-bold">${sub.startingFromPrice}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -604,7 +604,7 @@ const Home = () => {
                                         </div>
                                         <div className="fw-semibold text-dark mb-1" style={{ fontSize: '15px' }}>{sub.name}</div>
                                         <div className="d-flex align-items-center gap-2">
-                                            <span className="fw-bold">₹{sub.startingFromPrice}</span>
+                                            <span className="fw-bold">${sub.startingFromPrice}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -638,7 +638,7 @@ const Home = () => {
                                         </div>
                                         <div className="fw-semibold text-dark mb-1" style={{ fontSize: '15px' }}>{sub.name}</div>
                                         <div className="d-flex align-items-center gap-2">
-                                            <span className="fw-bold">₹{sub.startingFromPrice}</span>
+                                            <span className="fw-bold">${sub.startingFromPrice}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -653,7 +653,7 @@ const Home = () => {
                 <div className="container">
                     <div className="rounded-4 overflow-hidden d-flex" style={{ background: '#d6d9e0', minHeight: '220px' }}>
                         <div className="p-5 d-flex flex-column justify-content-center" style={{ flex: '0 0 45%' }}>
-                            <span className="fw-semibold text-white px-3 py-1 rounded-2 mb-3" style={{ background: '#2e7d32', fontSize: '11px', width: 'fit-content' }}>UP TO ₹3,100 OFF</span>
+                            <span className="fw-semibold text-white px-3 py-1 rounded-2 mb-3" style={{ background: '#2e7d32', fontSize: '11px', width: 'fit-content' }}>UP TO $3,100 OFF</span>
                             <p className="mb-1" style={{ fontSize: '12px', color: '#444', letterSpacing: '0.5px' }}>ONE-APP</p>
                             <h2 className="fw-bold mb-2" style={{ color: '#1a1a1a', fontSize: '2rem', lineHeight: 1.2 }}>RO water purifier</h2>
                             <p className="text-muted mb-4">Needs no service for 2 years</p>
@@ -699,7 +699,7 @@ const Home = () => {
                                         </div>
                                         <div className="fw-semibold text-dark mb-1" style={{ fontSize: '15px' }}>{sub.name}</div>
                                         <div className="d-flex align-items-center gap-2">
-                                            <span className="fw-bold">₹{sub.startingFromPrice}</span>
+                                            <span className="fw-bold">${sub.startingFromPrice}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -733,7 +733,7 @@ const Home = () => {
                                         </div>
                                         <div className="fw-semibold text-dark mb-1" style={{ fontSize: '15px' }}>{sub.name}</div>
                                         <div className="d-flex align-items-center gap-2">
-                                            <span className="fw-bold">₹{sub.startingFromPrice}</span>
+                                            <span className="fw-bold">${sub.startingFromPrice}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -813,10 +813,10 @@ const Home = () => {
                             style={{ overflowX: 'auto', scrollbarWidth: 'none', scrollBehavior: 'smooth' }}
                         >
                             {[
-                                { badge: 'UP TO ₹500 OFF', title: 'Home Cleaning', desc: 'Deep Cleaning. Sofa Cleaning. Spotless Spaces.', img: 'cleaning_image.png', category: 'Cleaning' },
+                                { badge: 'UP TO $500 OFF', title: 'Home Cleaning', desc: 'Deep Cleaning. Sofa Cleaning. Spotless Spaces.', img: 'cleaning_image.png', category: 'Cleaning' },
                                 { badge: 'SAME DAY SERVICE', title: 'Plumbing', desc: 'Leak Repairs. Pipe Installation. Water Solutions.', img: 'plumbing_image.png', category: 'Plumbing' },
                                 { badge: 'CERTIFIED EXPERTS', title: 'Electrical', desc: 'Switches. Wiring. Safe Installations.', img: 'electrician.png', category: 'Electrical' },
-                                { badge: 'UP TO ₹300 OFF', title: 'Handyman', desc: 'Repairs. Installations. Fix Anything.', img: 'handy_man.png', category: 'Handyman' },
+                                { badge: 'UP TO $300 OFF', title: 'Handyman', desc: 'Repairs. Installations. Fix Anything.', img: 'handy_man.png', category: 'Handyman' },
                                 { badge: 'SAME DAY SERVICE', title: 'AC & Appliance', desc: 'AC Service. Appliance Repair. Quick Fix.', img: 'ac_repair.png', category: 'AC & Appliance' },
                             ].map((item, idx) => (
                                 <div
@@ -954,7 +954,7 @@ const Home = () => {
                                             <div className="d-flex align-items-center justify-content-between mt-3 pt-3 border-top">
                                                 <div>
                                                     <div className="text-muted" style={{ fontSize: '11px' }}>Standard Package</div>
-                                                    <div style={{ fontSize: '13px' }}>Starts From <span className="fw-bold">₹{sub.startingFromPrice}</span></div>
+                                                    <div style={{ fontSize: '13px' }}>Starts From <span className="fw-bold">${sub.startingFromPrice}</span></div>
                                                 </div>
                                                 <button className="btn p-2 rounded-2" style={{ background: '#f5f5f5', border: 'none' }}>
                                                     <FaPhone size={14} className="text-dark" />
@@ -1030,7 +1030,7 @@ const Home = () => {
                                             )}
                                         </div>
                                         <div className="fw-bold mb-1" style={{ fontSize: '15px' }}>{sub.name}</div>
-                                        <div className="text-muted small">Starts at ₹{sub.startingFromPrice}</div>
+                                        <div className="text-muted small">Starts at ${sub.startingFromPrice}</div>
                                     </div>
                                 ))}
                             </div>
@@ -1053,7 +1053,7 @@ const Home = () => {
                         {/* left-to-right dark fade */}
                         <div className="position-absolute w-100 h-100" style={{ top: 0, left: 0, background: 'linear-gradient(to right, rgba(15,15,15,0.95) 40%, transparent 100%)' }} />
                         <div className="position-relative p-5 d-flex flex-column justify-content-center" style={{ minHeight: '300px', maxWidth: '420px' }}>
-                            <span className="fw-bold text-white px-2 py-1 rounded-2 mb-3 d-inline-block" style={{ background: '#2e7d32', fontSize: '10px', width: 'fit-content', letterSpacing: '0.5px' }}>UP TO ₹1,700 OFF</span>
+                            <span className="fw-bold text-white px-2 py-1 rounded-2 mb-3 d-inline-block" style={{ background: '#2e7d32', fontSize: '10px', width: 'fit-content', letterSpacing: '0.5px' }}>UP TO $1,700 OFF</span>
                             <p className="text-white mb-1" style={{ fontSize: '11px', opacity: 0.7, letterSpacing: '1.5px' }}>ONE-APP</p>
                             <h2 className="fw-bold text-white mb-3" style={{ fontSize: '2.2rem', lineHeight: 1.2 }}>Accounting<br />&amp; Finance</h2>
                             <p className="text-white mb-4" style={{ opacity: 0.8, lineHeight: 2, fontSize: '14px' }}>
@@ -1088,7 +1088,7 @@ const Home = () => {
                                             )}
                                         </div>
                                         <div className="fw-bold mb-1" style={{ fontSize: '15px' }}>{sub.name}</div>
-                                        <div className="text-muted small">Starts at ₹{sub.startingFromPrice}</div>
+                                        <div className="text-muted small">Starts at ${sub.startingFromPrice}</div>
                                     </div>
                                 ))}
                             </div>
@@ -1129,7 +1129,7 @@ const Home = () => {
                     {/* 2x2 Dark Cards Grid */}
                     <div className="row g-3 mb-3">
                         {[
-                            { badge: 'UP TO ₹400 OFF', badgeBg: '#2e7d32', title: 'Tutoring', desc: 'Academic Excellence.\nExpert.\nYour Sound.', img: 'tutoring.png' },
+                            { badge: 'UP TO $400 OFF', badgeBg: '#2e7d32', title: 'Tutoring', desc: 'Academic Excellence.\nExpert.\nYour Sound.', img: 'tutoring.png' },
                             { badge: 'FREE DEMO', badgeBg: '#2e7d32', title: 'Language Training', desc: 'Master New Languages.\nFluency Guaranteed.', img: 'language.png' },
                             { badge: 'EXPERT COACHES', badgeBg: '#7c3aed', title: 'Music Lessons', desc: 'Learn Instruments.\nDiscover.\nYour Sound.', img: 'music.png' },
                             { badge: 'BEST SELLER', badgeBg: '#2e7d32', title: 'Skill Development', desc: 'Master New Crafts.\nCareer Ready.', img: 'skill.png' },
@@ -1182,7 +1182,7 @@ const Home = () => {
                         <img src={tryHeroImg('events.png')} alt="Events & Media" className="position-absolute w-100 h-100" style={{ objectFit: 'cover', top: 0, left: 0, opacity: 0.55 }} onError={(e) => { e.target.style.display = 'none'; }} />
                         <div className="position-absolute w-100 h-100" style={{ top: 0, left: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.85) 45%, transparent 100%)' }} />
                         <div className="position-relative p-5 d-flex flex-column justify-content-center" style={{ minHeight: '280px', maxWidth: '420px' }}>
-                            <span className="fw-bold text-white px-2 py-1 rounded-2 mb-3 d-inline-block" style={{ background: '#7c3aed', fontSize: '10px', width: 'fit-content' }}>UP TO ₹3,100 OFF</span>
+                            <span className="fw-bold text-white px-2 py-1 rounded-2 mb-3 d-inline-block" style={{ background: '#7c3aed', fontSize: '10px', width: 'fit-content' }}>UP TO $3,100 OFF</span>
                             <p className="text-white mb-1" style={{ fontSize: '10px', opacity: 0.7, letterSpacing: '1px' }}>ONE-APP</p>
                             <h3 className="fw-bold text-white mb-2">Events &amp; Media</h3>
                             <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '13px', lineHeight: 1.7 }}>Professional solutions for every occasion. From intimate gatherings to grand celebrations, we bring your vision to life.</p>
@@ -1223,7 +1223,7 @@ const Home = () => {
                                             )}
                                         </div>
                                         <div className="fw-bold mb-1" style={{ fontSize: '15px' }}>{sub.name}</div>
-                                        <div className="text-muted small">Starts at ₹{sub.startingFromPrice}</div>
+                                        <div className="text-muted small">Starts at ${sub.startingFromPrice}</div>
                                     </div>
                                 ))}
                             </div>

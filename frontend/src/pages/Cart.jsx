@@ -162,7 +162,7 @@ const Cart = () => {
                                 <FaTag size={13} color="#2e7d32" />
                             </div>
                             <span style={{ fontSize: 14, color: '#333' }}>
-                                Saving <strong>₹0</strong> on this order
+                                Saving <strong>$0</strong> on this order
                             </span>
                         </div>
 
@@ -234,7 +234,7 @@ const Cart = () => {
                                                         onInc={() => updateQuantity(item.service._id, item.quantity + 1)}
                                                     />
                                                     <span style={{ fontWeight: 700, fontSize: 14, minWidth: 64, textAlign: 'right', color: '#111' }}>
-                                                        ₹{(item.service.price * item.quantity).toLocaleString('en-IN')}
+                                                        ${(item.service.price * item.quantity).toLocaleString('en-US')}
                                                     </span>
                                                 </div>
                                             </div>
@@ -272,22 +272,22 @@ const Cart = () => {
 
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: 14, color: '#555' }}>
                                 <span>Item total</span>
-                                <span>₹{total.toLocaleString('en-IN')}</span>
+                                <span>${total.toLocaleString('en-US')}</span>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: 14 }}>
                                 <span style={{ color: '#2e7d32', fontWeight: 600 }}>Free service offer</span>
-                                <span style={{ color: '#2e7d32', fontWeight: 600 }}>-₹0</span>
+                                <span style={{ color: '#2e7d32', fontWeight: 600 }}>-$0</span>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, fontSize: 14, color: '#555' }}>
                                 <span>Total amount</span>
-                                <span>₹{total.toLocaleString('en-IN')}</span>
+                                <span>${total.toLocaleString('en-US')}</span>
                             </div>
 
                             <hr style={{ border: 'none', borderTop: '1px solid #f0f0f0', margin: '0 0 14px' }} />
 
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                                 <span style={{ fontWeight: 700, fontSize: 15, color: '#111' }}>Amount to pay</span>
-                                <span style={{ fontWeight: 800, fontSize: '1.3rem', color: '#111' }}>₹{total.toLocaleString('en-IN')}</span>
+                                <span style={{ fontWeight: 800, fontSize: '1.3rem', color: '#111' }}>${total.toLocaleString('en-US')}</span>
                             </div>
                             <div style={{ textAlign: 'right', marginBottom: 20 }}>
                                 <span style={{ fontSize: 13, fontWeight: 600, textDecoration: 'underline', cursor: 'pointer', color: '#333' }}>View breakup</span>

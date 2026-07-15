@@ -203,7 +203,7 @@ export default function Services() {
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
                                                 <div style={{ fontWeight: 700, fontSize: '1rem' }}>{svc.name}</div>
                                                 <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
-                                                    <div style={{ fontWeight: 700, fontSize: 14 }}>Starts at ₹{svc.price}</div>
+                                                    <div style={{ fontWeight: 700, fontSize: 14 }}>Starts at ${svc.price}</div>
                                                     {svc.duration && <div style={{ fontSize: 12, color: '#888' }}>• {svc.duration}</div>}
                                                 </div>
                                             </div>
@@ -290,14 +290,14 @@ export default function Services() {
                                                 <button onClick={() => updateQuantity(svc._id, quantity + 1)} style={{ border: 'none', background: 'none', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>+</button>
                                             </div>
                                         </div>
-                                        <div style={{ textAlign: 'right', fontWeight: 700, fontSize: 14 }}>₹{svc.price * quantity}</div>
+                                        <div style={{ textAlign: 'right', fontWeight: 700, fontSize: 14 }}>${svc.price * quantity}</div>
                                     </div>
                                 ))}
                                 <button
                                     onClick={() => navigate('/cart')}
                                     style={{ width: '100%', background: '#2e7d32', color: '#fff', border: 'none', borderRadius: 12, padding: '14px 0', fontWeight: 700, fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 20, paddingRight: 20, marginTop: 8 }}
                                 >
-                                    <span>₹{cartTotal.toLocaleString()}</span>
+                                    <span>${cartTotal.toLocaleString('en-US')}</span>
                                     <span>View Cart</span>
                                 </button>
                             </>

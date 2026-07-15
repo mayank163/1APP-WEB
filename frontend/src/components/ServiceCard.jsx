@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
-import { FaClock, FaRupeeSign, FaShoppingCart } from 'react-icons/fa';
+import { FaClock, FaDollarSign, FaShoppingCart } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { resolveImageUrl } from '../services/api';
 
@@ -38,7 +38,7 @@ const ServiceCard = ({ service }) => {
 
                 <div className="d-flex justify-content-between align-items-center mb-4 mt-auto">
                     <div className="d-flex align-items-center gap-1 text-primary fw-bold fs-5">
-                        <FaRupeeSign className="fs-6" />
+                        <FaDollarSign className="fs-6" />
                         <span>{service.price}</span>
                     </div>
                     <div className="d-flex align-items-center gap-1 text-muted small fw-medium">

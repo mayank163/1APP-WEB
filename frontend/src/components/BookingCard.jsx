@@ -59,7 +59,7 @@ const BookingCard = ({ booking, onCancelled }) => {
                         </div>
 
                     </div>
-                    <div style={styles.price}>₹{booking.totalAmount?.toLocaleString('en-IN')}</div>
+                    <div style={styles.price}>${booking.totalAmount?.toLocaleString('en-US')}</div>
                 </div>
 
                 <div style={styles.infoBox}>
@@ -170,7 +170,7 @@ const BookingCard = ({ booking, onCancelled }) => {
                                     </div>
                                     <div>
                                         <div style={styles.sectionLabel}>Amount</div>
-                                        <div style={styles.sectionValue}>₹{booking.totalAmount?.toLocaleString('en-IN')}</div>
+                                        <div style={styles.sectionValue}>${booking.totalAmount?.toLocaleString('en-US')}</div>
                                     </div>
                                 </div>
                                 <div style={styles.mutedText}>{booking.services?.[0]?.service?.description || booking.services?.[0]?.service?.longDescription || 'No description provided.'}</div>

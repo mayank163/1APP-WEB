@@ -41,11 +41,11 @@ SERVICES ORDERED:
     booking.services.forEach((item, index) => {
         const name = item.service && item.service.name ? item.service.name : 'Electrical Service';
         const itemTotal = item.price * item.quantity;
-        invoice += `${index + 1}. ${name.padEnd(25)} x${item.quantity}   ₹${itemTotal.toFixed(2)}\n`;
+        invoice += `${index + 1}. ${name.padEnd(25)} x${item.quantity}   $${itemTotal.toFixed(2)}\n`;
     });
 
     invoice += `-----------------------------------------
-TOTAL AMOUNT:                   ₹${booking.totalAmount.toFixed(2)}
+TOTAL AMOUNT:                   $${booking.totalAmount.toFixed(2)}
 =========================================
       Thank you for choosing 1APP!
       For support, call +1800-1APP

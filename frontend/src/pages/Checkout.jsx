@@ -78,7 +78,7 @@ const StripePaymentForm = ({ bookingDetails, paymentOrder, amount, onSuccess, on
 
             <div style={{ background: '#f5f5f5', borderRadius: 12, padding: '16px 20px', marginBottom: 20, textAlign: 'center' }}>
                 <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Amount to Pay</div>
-                <div style={{ fontWeight: 800, fontSize: '2rem', color: '#2e7d32', fontFamily: 'monospace' }}>₹{amount.toFixed(2)}</div>
+                <div style={{ fontWeight: 800, fontSize: '2rem', color: '#2e7d32', fontFamily: 'monospace' }}>${amount.toFixed(2)}</div>
             </div>
 
             <div style={{ marginBottom: 18 }}>
@@ -94,7 +94,7 @@ const StripePaymentForm = ({ bookingDetails, paymentOrder, amount, onSuccess, on
                         disabled={!stripe || !elements}
                         style={{ width: '100%', background: '#2e7d32', color: '#fff', border: 'none', borderRadius: 12, padding: '14px 0', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
                     >
-                        Pay ₹{amount.toFixed(2)}
+                        Pay ${amount.toFixed(2)}
                     </button>
                     <button
                         type="button"
@@ -313,20 +313,20 @@ const Checkout = () => {
                                 {cartItems.map((item, idx) => (
                                     <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: 14, color: '#555' }}>
                                         <span>{item.service.name} x{item.quantity}</span>
-                                        <span>₹{(item.service.price * item.quantity).toLocaleString('en-IN')}</span>
+                                        <span>${(item.service.price * item.quantity).toLocaleString('en-US')}</span>
                                     </div>
                                 ))}
 
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: 14 }}>
                                     <span style={{ color: '#2e7d32', fontWeight: 600 }}>Free service offer</span>
-                                    <span style={{ color: '#2e7d32', fontWeight: 600 }}>-₹0</span>
+                                    <span style={{ color: '#2e7d32', fontWeight: 600 }}>-$0</span>
                                 </div>
 
                                 <hr style={{ border: 'none', borderTop: '1px solid #f0f0f0', margin: '10px 0 14px' }} />
 
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <span style={{ fontWeight: 700, fontSize: 15, color: '#111' }}>Amount to pay</span>
-                                    <span style={{ fontWeight: 800, fontSize: '1.3rem', color: '#111' }}>₹{total.toLocaleString('en-IN')}</span>
+                                    <span style={{ fontWeight: 800, fontSize: '1.3rem', color: '#111' }}>${total.toLocaleString('en-US')}</span>
                                 </div>
                             </div>
                         </div>

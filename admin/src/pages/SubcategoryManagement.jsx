@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import adminApi from '../services/adminApi';
 import LoadingSpinner from '../components/LoadingSpinner';
 import {
-    FaPlus, FaEdit, FaTrash, FaLayerGroup, FaRupeeSign,
+    FaPlus, FaEdit, FaTrash, FaLayerGroup, FaDollarSign,
     FaClock, FaCheckCircle, FaTimesCircle, FaCopy,
     FaList, FaQuestion, FaImage, FaTools, FaStar,
     FaPercentage, FaTag, FaFileImage, FaVideo
@@ -640,9 +640,9 @@ const SubcategoryManagement = () => {
             const prices = svc.variants.map(v => v.offerPrice || v.actualPrice);
             const min = Math.min(...prices);
             const max = Math.max(...prices);
-            return min === max ? `₹${min}` : `₹${min} - ₹${max}`;
+            return min === max ? `$${min}` : `$${min} - $${max}`;
         }
-        return `₹${svc.offerPrice || svc.actualPrice || 0}`;
+        return `$${svc.offerPrice || svc.actualPrice || 0}`;
     };
 
     const getDisplayDuration = (svc) => {
@@ -867,7 +867,7 @@ const SubcategoryManagement = () => {
                             <div className="row g-3 mb-4">
                                 <div className="col-md-4">
                                     <label className="form-label text-muted small fw-bold">
-                                        <FaRupeeSign className="me-1" /> Actual Price *
+                                        <FaDollarSign className="me-1" /> Actual Price *
                                     </label>
                                     <input
                                         type="number"
@@ -1010,9 +1010,9 @@ const SubcategoryManagement = () => {
                                                         <td>{v.name}</td>
                                                         <td>{v.sizeCapacity || '—'}</td>
                                                         <td>{v.unit || '—'}</td>
-                                                        <td>₹{v.actualPrice}</td>
+                                                        <td>${v.actualPrice}</td>
                                                         <td>{v.discountPercentage || 0}%</td>
-                                                        <td className="text-success fw-bold">₹{v.offerPrice || v.actualPrice}</td>
+                                                        <td className="text-success fw-bold">${v.offerPrice || v.actualPrice}</td>
                                                         <td>{v.duration ? `${v.duration}m` : '—'}</td>
                                                         <td>
                                                             <button type="button" onClick={() => handleEditVariant(i)} className="btn btn-sm btn-light me-1"><FaEdit /></button>
@@ -1074,7 +1074,7 @@ const SubcategoryManagement = () => {
                                 <div className="d-flex flex-wrap gap-2">
                                     {addons.map((a, i) => (
                                         <span key={i} className="badge bg-light text-dark border p-2">
-                                            {a.name} (₹{a.price})
+                                            {a.name} (${a.price})
                                             <button type="button" onClick={() => handleEditAddon(i)} className="btn btn-sm btn-link p-0 ms-2"><FaEdit size={12} /></button>
                                             <button type="button" onClick={() => handleRemoveAddon(i)} className="btn btn-sm btn-link p-0 ms-1"><FaTrash size={12} /></button>
                                         </span>

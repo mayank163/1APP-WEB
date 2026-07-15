@@ -135,9 +135,9 @@ const ServiceDetail = () => {
                     <a href="#reviews" style={{ color: '#888', fontSize: '13px', textDecoration: 'underline' }}>({service.ratingsQuantity > 0 ? `${service.ratingsQuantity}` : '6.1M'} reviews)</a>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: discountPct > 0 ? '4px' : 0 }}>
-                    <span style={{ fontSize: '16px', fontWeight: '700', color: '#1a1a2e' }}>₹{Math.round(service.offerPrice || service.price).toLocaleString('en-IN')}</span>
+                    <span style={{ fontSize: '16px', fontWeight: '700', color: '#1a1a2e' }}>${Math.round(service.offerPrice || service.price).toLocaleString('en-US')}</span>
                     {discountPct > 0 && (
-                        <span style={{ fontSize: '14px', color: '#999', textDecoration: 'line-through' }}>₹{Math.round(service.actualPrice).toLocaleString('en-IN')}</span>
+                        <span style={{ fontSize: '14px', color: '#999', textDecoration: 'line-through' }}>${Math.round(service.actualPrice).toLocaleString('en-US')}</span>
                     )}
                     <span style={{ color: '#555', fontSize: '14px' }}>• {service.duration} hrs</span>
                 </div>
@@ -145,7 +145,7 @@ const ServiceDetail = () => {
                     const cheapest = service.variants.reduce((min, v) => (v.offerPrice || v.price) < (min.offerPrice || min.price) ? v : min, service.variants[0]);
                     const perUnit = cheapest.quantity > 1 ? Math.round((cheapest.offerPrice || cheapest.price) / cheapest.quantity) : null;
                     return perUnit ? (
-                        <div style={{ color: '#2e7d32', fontSize: '14px', fontWeight: '600' }}>♦ ₹{perUnit} per bathroom</div>
+                        <div style={{ color: '#2e7d32', fontSize: '14px', fontWeight: '600' }}>♦ ${perUnit} per bathroom</div>
                     ) : null;
                 })()}
             </div>
@@ -176,11 +176,11 @@ const ServiceDetail = () => {
                                         </div>
                                     )}
                                     <div style={{ fontWeight: '700', fontSize: '15px', marginBottom: '6px', paddingRight: vDiscount > 0 ? '40px' : 0 }}>{v.name}</div>
-                                    <div style={{ fontWeight: '800', fontSize: '18px', color: '#1a1a2e' }}>₹{Math.round(vOffer).toLocaleString('en-IN')}</div>
+                                    <div style={{ fontWeight: '800', fontSize: '18px', color: '#1a1a2e' }}>${Math.round(vOffer).toLocaleString('en-US')}</div>
                                     {vDiscount > 0 && (
-                                        <div style={{ color: '#999', fontSize: '12px', textDecoration: 'line-through', marginTop: '2px' }}>₹{Math.round(vActual).toLocaleString('en-IN')}</div>
+                                        <div style={{ color: '#999', fontSize: '12px', textDecoration: 'line-through', marginTop: '2px' }}>${Math.round(vActual).toLocaleString('en-US')}</div>
                                     )}
-                                    {perUnit && <div style={{ color: '#666', fontSize: '12px', marginTop: '2px' }}>(₹{perUnit}/bathroom)</div>}
+                                    {perUnit && <div style={{ color: '#666', fontSize: '12px', marginTop: '2px' }}>(${perUnit}/bathroom)</div>}
                                 </div>
                             );
                         })}
@@ -202,7 +202,7 @@ const ServiceDetail = () => {
                                 return (
                                     <div key={addon._id} style={{ minWidth: '180px', border: '1.5px solid #ddd', borderRadius: '12px', padding: '14px', flexShrink: 0 }}>
                                         <div style={{ fontWeight: '600', fontSize: '14px', marginBottom: '6px' }}>{addon.name} (additional)</div>
-                                        <div style={{ color: '#2e7d32', fontWeight: '600', fontSize: '14px', marginBottom: '12px' }}>+ ₹{addon.price}</div>
+                                        <div style={{ color: '#2e7d32', fontWeight: '600', fontSize: '14px', marginBottom: '12px' }}>+ ${addon.price}</div>
                                         <button onClick={() => toggleAddon(addon)}
                                             style={{ width: '100%', padding: '8px', border: '1.5px solid #ddd', borderRadius: '8px', background: '#fff', color: added ? '#2e7d32' : '#2e7d32', fontWeight: '600', cursor: 'pointer', fontSize: '14px' }}>
                                             {added ? 'Added ✓' : 'Add'}
@@ -358,7 +358,7 @@ const ServiceDetail = () => {
             <Section style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                     <h2 style={{ ...sectionTitle, marginBottom: '4px' }}>Damage protection</h2>
-                    <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>Up to ₹5,000 cover if any damage happens<br />during the job</p>
+                    <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>Up to $5,000 cover if any damage happens<br />during the job</p>
                 </div>
                 <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: '#2e7d32', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <span style={{ color: '#fff', fontSize: '22px' }}>✓</span>
@@ -433,13 +433,13 @@ const ServiceDetail = () => {
             <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#fff', borderTop: '1px solid #eee', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 100 }}>
                 <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '20px', fontWeight: '800', color: '#1a1a2e' }}>₹{Math.round(getTotalPrice()).toLocaleString('en-IN')}</span>
+                        <span style={{ fontSize: '20px', fontWeight: '800', color: '#1a1a2e' }}>${Math.round(getTotalPrice()).toLocaleString('en-US')}</span>
                         {discountPct > 0 && !selectedVariant && (
                             <span style={{ background: '#e8f5e9', color: '#2e7d32', fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '20px' }}>{discountPct}% OFF</span>
                         )}
                     </div>
                     {discountPct > 0 && !selectedVariant && (
-                        <div style={{ fontSize: '12px', color: '#999', textDecoration: 'line-through' }}>₹{Math.round(service.actualPrice || service.price).toLocaleString('en-IN')}</div>
+                        <div style={{ fontSize: '12px', color: '#999', textDecoration: 'line-through' }}>${Math.round(service.actualPrice || service.price).toLocaleString('en-US')}</div>
                     )}
                 </div>
                 <button onClick={handleAddToCart}

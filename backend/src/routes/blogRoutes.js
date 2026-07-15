@@ -6,7 +6,8 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-const uploadDir = process.env.UPLOAD_PATH || path.join(__dirname, '..', '..', 'uploads');
+// Keep blog media in the same backend/uploads directory served by server.js.
+const uploadDir = path.resolve(__dirname, '..', '..', process.env.UPLOAD_PATH || 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 const storage = multer.diskStorage({

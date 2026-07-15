@@ -51,7 +51,7 @@ exports.createBookingOrder = async (req, res, next) => {
             try {
                 const paymentIntent = await stripe.paymentIntents.create({
                     amount: amountInSmallestUnit,
-                    currency: process.env.STRIPE_CURRENCY || 'inr',
+                    currency: process.env.STRIPE_CURRENCY || 'usd',
                     payment_method_types: ['card'],
                     metadata: {
                         userId: req.user.id,
@@ -78,7 +78,7 @@ exports.createBookingOrder = async (req, res, next) => {
             try {
                 const order = await razorpayInstance.orders.create({
                     amount: amountInSmallestUnit,
-                    currency: 'INR',
+                    currency: 'USD',
                     receipt: `receipt_${Date.now()}`
                 });
 

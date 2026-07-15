@@ -6,7 +6,7 @@ const OfferManagement = () => {
     const [offers, setOffers] = useState([
         { code: '1APP10', discount: '10% OFF', description: 'Applicable on wiring and cabling services', isActive: true },
         { code: 'ELECTRO20', discount: '20% OFF', description: 'Discount on Smart DB distributions upgrades', isActive: true },
-        { code: 'SAFETYFIRST', discount: 'Flat ₹200 OFF', description: 'Applicable on home inspections', isActive: true }
+        { code: 'SAFETYFIRST', discount: 'Flat $200 OFF', description: 'Applicable on home inspections', isActive: true }
     ]);
     const [showForm, setShowForm] = useState(false);
     const [code, setCode] = useState('');
@@ -77,7 +77,7 @@ const OfferManagement = () => {
                                     type="text" 
                                     required 
                                     className="form-control bg-light border-0" 
-                                    placeholder="30% OFF / Flat ₹300 OFF"
+                                    placeholder="30% OFF / Flat $300 OFF"
                                     value={discount}
                                     onChange={(e) => setDiscount(e.target.value)}
                                 />
@@ -88,7 +88,7 @@ const OfferManagement = () => {
                                     type="text" 
                                     required 
                                     className="form-control bg-light border-0" 
-                                    placeholder="On all orders above ₹999"
+                                    placeholder="On all orders above $999"
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
                                 />

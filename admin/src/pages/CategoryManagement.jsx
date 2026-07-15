@@ -198,7 +198,7 @@ const CategoryManagement = () => {
                                 />
                             </div>
                             <div className="col-md-6">
-                                <label className="form-label text-muted small fw-bold">Starting From Price (₹)</label>
+                                <label className="form-label text-muted small fw-bold">Starting From Price ($)</label>
                                 <input
                                     type="number"
                                     min="0"
@@ -334,7 +334,7 @@ const CategoryManagement = () => {
                                         </td>
                                         <td className="fw-semibold">{sub.name}</td>
                                         <td className="fw-bold text-primary">
-                                            {sub.startingFromPrice ? `₹${sub.startingFromPrice}` : '—'}
+                                            {sub.startingFromPrice ? `$${sub.startingFromPrice}` : '—'}
                                         </td>
                                         <td>
                                             <select

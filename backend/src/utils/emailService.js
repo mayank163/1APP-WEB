@@ -113,8 +113,8 @@ const bookingDetailBlock = (booking) => {
         <tr>
           <td>${i + 1}. ${name}</td>
           <td style="text-align:center;">${item.quantity}</td>
-          <td style="text-align:right;">₹${item.price.toFixed(2)}</td>
-          <td style="text-align:right;">₹${itemTotal}</td>
+          <td style="text-align:right;">$${item.price.toFixed(2)}</td>
+          <td style="text-align:right;">$${itemTotal}</td>
         </tr>`;
     }).join('');
 
@@ -167,7 +167,7 @@ const bookingDetailBlock = (booking) => {
           ${serviceRows}
           <tr class="total-row">
             <td colspan="3">Total Amount</td>
-            <td style="text-align:right;">₹${booking.totalAmount.toFixed(2)}</td>
+            <td style="text-align:right;">$${booking.totalAmount.toFixed(2)}</td>
           </tr>
         </tbody>
       </table>
