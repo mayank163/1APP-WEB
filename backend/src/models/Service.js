@@ -42,6 +42,13 @@ const toolSchema = new mongoose.Schema({
     description: { type: String, trim: true }
 }, { _id: true });
 
+const processStepSchema = new mongoose.Schema({
+    stepNumber: { type: Number, required: true },
+    title: { type: String, required: true, trim: true },
+    description: { type: String, trim: true, default: '' },
+    image: { type: String, default: '' }
+}, { _id: true });
+
 const serviceSchema = new mongoose.Schema({
     name: { type: String, required: [true, 'Service name is required'], trim: true },
     shortDescription: [{ type: String, required: [true, 'Short description is required'], trim: true }],
@@ -65,6 +72,7 @@ const serviceSchema = new mongoose.Schema({
     gallery: [galleryItemSchema],
     requirements: [{ title: { type: String, required: true, trim: true }, image: { type: String, default: '' } }],
     tools: [toolSchema],
+    processSteps: [processStepSchema],
     isActive: { type: Boolean, default: true },
     ratingsAverage: { type: Number, default: 4.5, min: 1, max: 5 },
     ratingsQuantity: { type: Number, default: 0 }

@@ -48,6 +48,7 @@ const buildServiceData = (body, files = {}) => {
         gallery: parseJSON(body.gallery, []),
         requirements: parseJSON(body.requirements, []),
         tools: parseJSON(body.tools, []),
+        processSteps: parseJSON(body.processSteps, []),
         isActive: true
     };
 
@@ -94,6 +95,19 @@ const buildServiceData = (body, files = {}) => {
             return { ...req, image: '' };
         }
         return req;
+    });
+
+    // Process Steps: attach uploaded images by index.
+    // The frontend marks steps with a pending new upload as image: '__new__'.
+    // Only those slots consume the next file from processStepImages, so a step
+    // without an image never accidentally steals a file meant for a later step.
+    let stepUploadIdx = 0;
+    data.processSteps = data.processSteps.map((step) => {
+        if (step.image === '__new__') {
+            const file = files.processStepImages?.[stepUploadIdx++];
+            return { ...step, image: file ? file.filename : '' };
+        }
+        return step; // keep existing filename (or empty string)
     });
 
     return data;

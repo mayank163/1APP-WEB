@@ -1,10 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import bookingService from '../services/bookingService';
+import API from '../services/api';
 
 const BookingCard = ({ booking, onCancelled }) => {
-    const [cancelling, setCancelling] = useState(false);
-    const [showDetails, setShowDetails] = useState(false);
+    const [cancelling, setCancelling]       = useState(false);
+    const [showDetails, setShowDetails]     = useState(false);
+
+    // ── Review state ────────────────────────────────────────────────────────
+    const [reviewableServices, setReviewableServices] = useState([]);  // [{ service, existingReview }]
+    const [showReviewModal, setShowReviewModal]       = useState(false);
+    const [activeService, setActiveService]           = useState(null); // service object
+    const [existingReview, setExistingReview]         = useState(null);
+    const [hoverStar, setHoverStar]                   = useState(0);
+    const [selectedStar, setSelectedStar]             = useState(0);
+    const [reviewText, setReviewText]                 = useState('');
+    const [submittingReview, setSubmittingReview]     = useState(false);
 
     const serviceDateFormatted = new Date(booking.serviceDate).toLocaleDateString('en-US', {
         weekday: 'short',
@@ -24,6 +35,44 @@ const BookingCard = ({ booking, onCancelled }) => {
         if (status === 'pending' || status === 'in progress') return styles.pendingBadge;
         if (status === 'rescheduled') return styles.rescheduledBadge;
         return styles.defaultBadge;
+    };
+
+    // Fetch reviewable services only for completed bookings
+    useEffect(() => {
+        if (booking.status !== 'Completed') return;
+        API.get(`/bookings/${booking._id}/reviewable-services`)
+            .then(res => setReviewableServices(res.data.data.services || []))
+            .catch(() => {});
+    }, [booking._id, booking.status]);
+
+    const openReviewModal = (svcEntry) => {
+        setActiveService(svcEntry.service);
+        setExistingReview(svcEntry.existingReview);
+        setSelectedStar(svcEntry.existingReview?.rating || 0);
+        setReviewText(svcEntry.existingReview?.review || '');
+        setHoverStar(0);
+        setShowReviewModal(true);
+    };
+
+    const handleSubmitReview = async () => {
+        if (!selectedStar) { toast.error('Please select a star rating'); return; }
+        setSubmittingReview(true);
+        try {
+            await API.post(`/services/${activeService._id}/reviews`, {
+                rating:    selectedStar,
+                review:    reviewText.trim(),
+                bookingId: booking._id,
+            });
+            toast.success(existingReview ? 'Review updated!' : 'Review submitted!');
+            setShowReviewModal(false);
+            // Refresh reviewable services to reflect the new/updated review
+            const res = await API.get(`/bookings/${booking._id}/reviewable-services`);
+            setReviewableServices(res.data.data.services || []);
+        } catch (err) {
+            toast.error(err?.response?.data?.message || 'Failed to submit review');
+        } finally {
+            setSubmittingReview(false);
+        }
     };
 
     const handleCancel = async () => {
@@ -114,7 +163,144 @@ const BookingCard = ({ booking, onCancelled }) => {
                         {cancelling ? "Cancelling..." : "Cancel Booking"}
                     </button>
                 )}
+
+                {/* Rate Service — shown only for completed bookings */}
+                {booking.status === 'Completed' && reviewableServices.length > 0 && (
+                    <div style={{ marginTop: 12 }}>
+                        {reviewableServices.map(entry => {
+                            const reviewed = !!entry.existingReview;
+                            return (
+                                <button
+                                    key={entry.service?._id}
+                                    onClick={() => openReviewModal(entry)}
+                                    style={{
+                                        ...styles.btnRate,
+                                        background: reviewed ? '#f0fdf4' : '#fff',
+                                        color:      reviewed ? '#2e7d32' : '#1a1a2e',
+                                        border:     reviewed ? '1.5px solid #86efac' : '1.5px solid #1a1a2e',
+                                    }}
+                                >
+                                    {reviewed
+                                        ? `★ Rated ${entry.existingReview.rating}/5 · Edit`
+                                        : `★ Rate · ${entry.service?.name || 'Service'}`}
+                                </button>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
+
+            {/* ── Review Modal ─────────────────────────────────────────── */}
+            {showReviewModal && activeService && (
+                <div style={styles.modalOverlay} onClick={() => setShowReviewModal(false)}>
+                    <div style={{ ...styles.modalCard, maxWidth: 480 }} onClick={e => e.stopPropagation()}>
+                        <button style={styles.closeButton} onClick={() => setShowReviewModal(false)}>✕</button>
+
+                        {/* Header */}
+                        <div style={{ marginBottom: 20 }}>
+                            <div style={styles.modalEyebrow}>
+                                {existingReview ? 'Edit your review' : 'Write a review'}
+                            </div>
+                            <div style={{ fontSize: 18, fontWeight: 800, color: '#111', marginTop: 4 }}>
+                                {activeService.name}
+                            </div>
+                        </div>
+
+                        {/* Star picker */}
+                        <div style={{ marginBottom: 16 }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: '#6b7280', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+                                Your Rating *
+                            </div>
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                {[1, 2, 3, 4, 5].map(s => (
+                                    <span
+                                        key={s}
+                                        onMouseEnter={() => setHoverStar(s)}
+                                        onMouseLeave={() => setHoverStar(0)}
+                                        onClick={() => setSelectedStar(s)}
+                                        style={{
+                                            fontSize: 38,
+                                            cursor: 'pointer',
+                                            color: s <= (hoverStar || selectedStar) ? '#f59e0b' : '#d1d5db',
+                                            transition: 'color 0.1s',
+                                            lineHeight: 1,
+                                            userSelect: 'none',
+                                        }}
+                                    >★</span>
+                                ))}
+                            </div>
+                            {selectedStar > 0 && (
+                                <div style={{ fontSize: 13, color: '#6b7280', marginTop: 6 }}>
+                                    {['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][selectedStar]}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Review text */}
+                        <div style={{ marginBottom: 20 }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: '#6b7280', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+                                Your Review (Optional)
+                            </div>
+                            <textarea
+                                rows={4}
+                                placeholder="Share your experience with this service…"
+                                value={reviewText}
+                                onChange={e => setReviewText(e.target.value)}
+                                maxLength={1000}
+                                style={{
+                                    width: '100%',
+                                    padding: '12px 14px',
+                                    borderRadius: 8,
+                                    border: '1.5px solid #e5e7eb',
+                                    fontSize: 14,
+                                    resize: 'vertical',
+                                    fontFamily: 'inherit',
+                                    outline: 'none',
+                                    boxSizing: 'border-box',
+                                    lineHeight: 1.6,
+                                }}
+                            />
+                            <div style={{ textAlign: 'right', fontSize: 12, color: '#9ca3af', marginTop: 4 }}>
+                                {reviewText.length}/1000
+                            </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div style={{ display: 'flex', gap: 10 }}>
+                            <button
+                                onClick={handleSubmitReview}
+                                disabled={submittingReview || !selectedStar}
+                                style={{
+                                    flex: 1,
+                                    padding: '13px',
+                                    background: selectedStar ? '#1a1a2e' : '#d1d5db',
+                                    color: '#fff',
+                                    border: 'none',
+                                    borderRadius: 8,
+                                    fontWeight: 700,
+                                    fontSize: 15,
+                                    cursor: selectedStar ? 'pointer' : 'not-allowed',
+                                }}
+                            >
+                                {submittingReview ? 'Submitting…' : existingReview ? 'Update Review' : 'Submit Review'}
+                            </button>
+                            <button
+                                onClick={() => setShowReviewModal(false)}
+                                style={{
+                                    padding: '13px 20px',
+                                    background: '#fff',
+                                    border: '1.5px solid #e5e7eb',
+                                    borderRadius: 8,
+                                    fontWeight: 600,
+                                    fontSize: 15,
+                                    cursor: 'pointer',
+                                    color: '#374151',
+                                }}
+                            >Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {showDetails && (
                 <div style={styles.modalOverlay} onClick={() => setShowDetails(false)}>
@@ -308,6 +494,17 @@ const styles = {
         letterSpacing: 0.5,
         cursor: 'pointer',
         opacity: 1,
+    },
+    btnRate: {
+        width: '100%',
+        borderRadius: 8,
+        padding: '11px',
+        fontWeight: 600,
+        fontSize: 14,
+        letterSpacing: 0.3,
+        cursor: 'pointer',
+        marginBottom: 6,
+        textAlign: 'center',
     },
     modalOverlay: {
         position: 'fixed',

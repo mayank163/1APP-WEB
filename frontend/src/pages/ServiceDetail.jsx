@@ -3,8 +3,10 @@ import { useParams, Link } from 'react-router-dom';
 import serviceService from '../services/serviceService';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { CartContext } from '../context/CartContext';
+import { AuthContext } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import { resolveImageUrl } from '../services/api';
+import API from '../services/api';
 import technicianImage from '../assets/hero/technician_image.png';
 
 const ServiceDetail = () => {
@@ -19,6 +21,21 @@ const ServiceDetail = () => {
     const [addonsOpen, setAddonsOpen] = useState(true);
 
     const { addToCart } = useContext(CartContext);
+    const { user } = useContext(AuthContext);
+
+    // ── Reviews state ──────────────────────────────────────────────────────────
+    const [reviewData, setReviewData]           = useState(null);   // { totalReviews, starCounts, reviews, totalPages }
+    const [reviewsLoading, setReviewsLoading]   = useState(false);
+    const [reviewsPage, setReviewsPage]         = useState(1);
+    const [canReview, setCanReview]             = useState(false);
+    const [existingReview, setExistingReview]   = useState(null);
+    const [eligibleBookingId, setEligibleBookingId] = useState(null);
+    // Submit form
+    const [showReviewForm, setShowReviewForm]   = useState(false);
+    const [hoverStar, setHoverStar]             = useState(0);
+    const [selectedStar, setSelectedStar]       = useState(0);
+    const [reviewText, setReviewText]           = useState('');
+    const [submittingReview, setSubmittingReview] = useState(false);
 
     useEffect(() => {
         const fetchService = async () => {
@@ -39,6 +56,44 @@ const ServiceDetail = () => {
         };
         fetchService();
     }, [id]);
+
+    // Fetch reviews whenever id or page changes
+    useEffect(() => {
+        if (!id) return;
+        const fetchReviews = async () => {
+            setReviewsLoading(true);
+            try {
+                const res = await API.get(`/services/${id}/reviews?page=${reviewsPage}&limit=5`);
+                setReviewData(res.data.data);
+            } catch (err) {
+                console.error('Failed to load reviews', err);
+            } finally {
+                setReviewsLoading(false);
+            }
+        };
+        fetchReviews();
+    }, [id, reviewsPage]);
+
+    // Check if logged-in user can review this service
+    useEffect(() => {
+        if (!id || !user) return;
+        const checkEligibility = async () => {
+            try {
+                const res = await API.get(`/services/${id}/reviews/can-review`);
+                const { canReview: can, existingReview: ex, bookingId } = res.data.data;
+                setCanReview(can);
+                setExistingReview(ex);
+                setEligibleBookingId(bookingId);
+                if (ex) {
+                    setSelectedStar(ex.rating);
+                    setReviewText(ex.review || '');
+                }
+            } catch (err) {
+                // not logged in or network error — silently ignore
+            }
+        };
+        checkEligibility();
+    }, [id, user]);
 
     const galleryImages = service?.gallery?.length > 0
         ? service.gallery.map(g => resolveImageUrl(g.url))
@@ -65,6 +120,33 @@ const ServiceDetail = () => {
     const getTotalPrice = () => {
         const addonTotal = selectedAddons.reduce((sum, a) => sum + (a.price || 0), 0);
         return getPrice() + addonTotal;
+    };
+
+    const handleSubmitReview = async () => {
+        if (!selectedStar) { toast.error('Please select a star rating'); return; }
+        setSubmittingReview(true);
+        try {
+            await API.post(`/services/${id}/reviews`, {
+                rating:    selectedStar,
+                review:    reviewText.trim(),
+                bookingId: eligibleBookingId,
+            });
+            toast.success(existingReview ? 'Review updated!' : 'Review submitted!');
+            setShowReviewForm(false);
+            // Refresh reviews and re-check eligibility
+            const [rev, eli] = await Promise.all([
+                API.get(`/services/${id}/reviews?page=1&limit=5`),
+                API.get(`/services/${id}/reviews/can-review`),
+            ]);
+            setReviewData(rev.data.data);
+            setReviewsPage(1);
+            const { existingReview: ex } = eli.data.data;
+            setExistingReview(ex);
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to submit review');
+        } finally {
+            setSubmittingReview(false);
+        }
     };
 
     const handleAddToCart = () => {
@@ -384,48 +466,153 @@ const ServiceDetail = () => {
                 </Section>
             )}
 
-            {/* Ratings */}
-            <Section>
+            {/* Ratings & Reviews */}
+            <Section id="reviews">
+                {/* Summary */}
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '32px', fontWeight: '700' }}>★ {service.ratingsAverage?.toFixed(2) || '4.50'}</span>
+                    <span style={{ fontSize: '32px', fontWeight: '700' }}>
+                        ★ {reviewData?.totalReviews > 0
+                            ? (Object.entries(reviewData.starCounts).reduce((sum, [star, cnt]) => sum + Number(star) * cnt, 0) / reviewData.totalReviews).toFixed(2)
+                            : service.ratingsAverage?.toFixed(2) || '0.00'}
+                    </span>
                 </div>
-                <p style={{ color: '#888', fontSize: '14px', marginBottom: '20px' }}>{service.ratingsQuantity || '7.2M'} reviews</p>
-                {[
-                    { star: 5, pct: 91 }, { star: 4, pct: 12 }, { star: 3, pct: 6 }, { star: 2, pct: 3 }, { star: 1, pct: 5 }
-                ].map(r => (
-                    <div key={r.star} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                        <span style={{ fontSize: '13px', width: '24px' }}>★{r.star}</span>
-                        <div style={{ flex: 1, height: '4px', background: '#e0e0e0', borderRadius: '2px' }}>
-                            <div style={{ width: `${r.pct}%`, height: '100%', background: '#1a1a2e', borderRadius: '2px' }} />
-                        </div>
-                        <span style={{ fontSize: '13px', color: '#888', width: '40px', textAlign: 'right' }}>{r.star === 5 ? '6.6 M' : r.star === 4 ? '251 K' : r.star === 3 ? '114 K' : r.star === 2 ? '61 K' : '122 K'}</span>
-                    </div>
-                ))}
+                <p style={{ color: '#888', fontSize: '14px', marginBottom: '20px' }}>
+                    {reviewData?.totalReviews ?? service.ratingsQuantity ?? 0} reviews
+                </p>
 
-                <div style={{ borderTop: '1px solid #eee', marginTop: '20px', paddingTop: '16px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                        <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '700' }}>All reviews</h3>
-                        <button style={{ background: 'none', border: 'none', color: '#2e7d32', fontWeight: '700', fontSize: '13px', cursor: 'pointer', letterSpacing: '0.5px' }}>FILTER</button>
-                    </div>
-                    <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-                        {['Most detailed', 'In my area', 'Frequent users'].map(f => (
-                            <button key={f} style={{ padding: '8px 16px', border: '1.5px solid #ddd', borderRadius: '20px', background: '#fff', fontSize: '14px', cursor: 'pointer' }}>{f}</button>
-                        ))}
-                    </div>
-                    <div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px' }}>
-                            <div>
-                                <div style={{ fontWeight: '700', fontSize: '15px' }}>M P Nair</div>
-                                <div style={{ color: '#888', fontSize: '13px' }}>Jun 28, 2026 • For intense bathroom cleaning, ceiling fan new</div>
+                {/* Star breakdown bars */}
+                {[5, 4, 3, 2, 1].map(star => {
+                    const cnt   = reviewData?.starCounts?.[star] ?? 0;
+                    const total = reviewData?.totalReviews ?? 0;
+                    const pct   = total > 0 ? Math.round((cnt / total) * 100) : 0;
+                    return (
+                        <div key={star} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                            <span style={{ fontSize: '13px', width: '24px' }}>★{star}</span>
+                            <div style={{ flex: 1, height: '4px', background: '#e0e0e0', borderRadius: '2px' }}>
+                                <div style={{ width: `${pct}%`, height: '100%', background: '#1a1a2e', borderRadius: '2px', transition: 'width 0.4s' }} />
                             </div>
-                            <div style={{ background: '#2e7d32', color: '#fff', borderRadius: '6px', padding: '4px 10px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                ★ 5
-                            </div>
+                            <span style={{ fontSize: '13px', color: '#888', width: '30px', textAlign: 'right' }}>{cnt}</span>
                         </div>
-                        <p style={{ color: '#333', fontSize: '14px', lineHeight: '1.6', marginTop: '10px' }}>
-                            Vacant Kumar is a soft spoken sincere professional. He has thorough professional knowledge in cleaning assignments. Reported before appointed time and finished job in given time.
-                        </p>
+                    );
+                })}
+
+                {/* Write a Review CTA */}
+                {canReview && (
+                    <div style={{ margin: '20px 0 0', padding: '16px', background: '#f7f8fa', borderRadius: '12px' }}>
+                        {!showReviewForm ? (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                                <div>
+                                    <p style={{ margin: 0, fontWeight: '600', fontSize: '14px' }}>
+                                        {existingReview ? 'You reviewed this service' : 'How was your experience?'}
+                                    </p>
+                                    {existingReview && (
+                                        <p style={{ margin: '2px 0 0', fontSize: '13px', color: '#888' }}>
+                                            Your rating: {'★'.repeat(existingReview.rating)}{'☆'.repeat(5 - existingReview.rating)}
+                                        </p>
+                                    )}
+                                </div>
+                                <button
+                                    onClick={() => setShowReviewForm(true)}
+                                    style={{ padding: '9px 20px', background: '#1a1a2e', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '600', fontSize: '14px', cursor: 'pointer' }}
+                                >
+                                    {existingReview ? 'Edit Review' : 'Write a Review'}
+                                </button>
+                            </div>
+                        ) : (
+                            <div>
+                                <p style={{ fontWeight: '700', fontSize: '15px', marginBottom: '12px' }}>
+                                    {existingReview ? 'Update your review' : 'Write a review'}
+                                </p>
+                                {/* Star selector */}
+                                <div style={{ display: 'flex', gap: '6px', marginBottom: '14px' }}>
+                                    {[1, 2, 3, 4, 5].map(s => (
+                                        <span
+                                            key={s}
+                                            onMouseEnter={() => setHoverStar(s)}
+                                            onMouseLeave={() => setHoverStar(0)}
+                                            onClick={() => setSelectedStar(s)}
+                                            style={{ fontSize: '32px', cursor: 'pointer', color: s <= (hoverStar || selectedStar) ? '#f59e0b' : '#d1d5db', transition: 'color 0.1s', lineHeight: 1 }}
+                                        >★</span>
+                                    ))}
+                                </div>
+                                <textarea
+                                    rows={4}
+                                    placeholder="Share your experience (optional)..."
+                                    value={reviewText}
+                                    onChange={e => setReviewText(e.target.value)}
+                                    maxLength={1000}
+                                    style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1.5px solid #ddd', fontSize: '14px', resize: 'vertical', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }}
+                                />
+                                <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
+                                    <button
+                                        onClick={handleSubmitReview}
+                                        disabled={submittingReview || !selectedStar}
+                                        style={{ flex: 1, padding: '11px', background: selectedStar ? '#1a1a2e' : '#9ca3af', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '700', fontSize: '14px', cursor: selectedStar ? 'pointer' : 'not-allowed' }}
+                                    >
+                                        {submittingReview ? 'Submitting…' : existingReview ? 'Update Review' : 'Submit Review'}
+                                    </button>
+                                    <button
+                                        onClick={() => { setShowReviewForm(false); setHoverStar(0); }}
+                                        style={{ padding: '11px 20px', background: '#fff', border: '1.5px solid #ddd', borderRadius: '8px', fontWeight: '600', fontSize: '14px', cursor: 'pointer' }}
+                                    >Cancel</button>
+                                </div>
+                            </div>
+                        )}
                     </div>
+                )}
+
+                {/* All Reviews list */}
+                <div style={{ borderTop: '1px solid #eee', marginTop: '24px', paddingTop: '16px' }}>
+                    <h3 style={{ margin: '0 0 16px', fontSize: '18px', fontWeight: '700' }}>All reviews</h3>
+
+                    {reviewsLoading && (
+                        <div style={{ textAlign: 'center', padding: '20px', color: '#888' }}>Loading reviews…</div>
+                    )}
+
+                    {!reviewsLoading && reviewData?.reviews?.length === 0 && (
+                        <p style={{ color: '#aaa', fontSize: '14px', textAlign: 'center', padding: '20px 0' }}>
+                            No reviews yet. Be the first to share your experience!
+                        </p>
+                    )}
+
+                    {!reviewsLoading && reviewData?.reviews?.map((r, i) => (
+                        <div key={r._id} style={{ paddingBottom: '20px', marginBottom: '20px', borderBottom: i < reviewData.reviews.length - 1 ? '1px solid #f0f0f0' : 'none' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <div>
+                                    <div style={{ fontWeight: '700', fontSize: '15px' }}>{r.user?.name || 'User'}</div>
+                                    <div style={{ color: '#888', fontSize: '13px', marginTop: '2px' }}>
+                                        {new Date(r.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                        {' • For '}{service.name}
+                                    </div>
+                                </div>
+                                <div style={{ background: '#1a1a2e', color: '#fff', borderRadius: '6px', padding: '4px 10px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                                    ★ {r.rating}
+                                </div>
+                            </div>
+                            {r.review && (
+                                <p style={{ color: '#333', fontSize: '14px', lineHeight: '1.65', marginTop: '10px', marginBottom: 0 }}>
+                                    {r.review}
+                                </p>
+                            )}
+                        </div>
+                    ))}
+
+                    {/* Pagination */}
+                    {reviewData?.totalPages > 1 && (
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '16px' }}>
+                            <button
+                                onClick={() => setReviewsPage(p => Math.max(1, p - 1))}
+                                disabled={reviewsPage === 1}
+                                style={{ padding: '7px 16px', border: '1.5px solid #ddd', borderRadius: '8px', background: '#fff', cursor: reviewsPage === 1 ? 'not-allowed' : 'pointer', color: reviewsPage === 1 ? '#ccc' : '#333', fontWeight: '600' }}
+                            >← Prev</button>
+                            <span style={{ padding: '7px 12px', fontSize: '14px', color: '#555' }}>{reviewsPage} / {reviewData.totalPages}</span>
+                            <button
+                                onClick={() => setReviewsPage(p => Math.min(reviewData.totalPages, p + 1))}
+                                disabled={reviewsPage === reviewData?.totalPages}
+                                style={{ padding: '7px 16px', border: '1.5px solid #ddd', borderRadius: '8px', background: '#fff', cursor: reviewsPage === reviewData?.totalPages ? 'not-allowed' : 'pointer', color: reviewsPage === reviewData?.totalPages ? '#ccc' : '#333', fontWeight: '600' }}
+                            >Next →</button>
+                        </div>
+                    )}
                 </div>
             </Section>
 

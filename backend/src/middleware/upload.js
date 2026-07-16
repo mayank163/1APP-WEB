@@ -41,7 +41,8 @@ const uploadServiceMedia = multer({ storage, fileFilter: imageOrVideo, limits })
     { name: 'featuredImage', maxCount: 1 },
     { name: 'galleryImages', maxCount: 20 },
     { name: 'requirementImages', maxCount: 20 },
-    { name: 'toolImages', maxCount: 20 }
+    { name: 'toolImages', maxCount: 20 },
+    { name: 'processStepImages', maxCount: 20 }
 ]);
 
 module.exports = upload;

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const serviceController = require('../controllers/serviceController');
 const categoryController = require('../controllers/categoryController');
+const reviewController = require('../controllers/reviewController');
 const { protect, restrictTo } = require('../middleware/auth');
 const upload = require('../middleware/upload');
 const { uploadServiceMedia, uploadCategoryMedia } = require('../middleware/upload');
@@ -31,5 +32,10 @@ router.get('/:id', serviceController.getServiceById);
 router.post('/', protect, restrictTo('admin'), uploadServiceMedia, serviceController.createService);
 router.put('/:id', protect, restrictTo('admin'), uploadServiceMedia, serviceController.updateService);
 router.delete('/:id', protect, restrictTo('admin'), serviceController.deleteService);
+
+// ─── REVIEWS (nested under service) ──────────────────────────────────────────
+router.get('/:serviceId/reviews', reviewController.getServiceReviews);
+router.get('/:serviceId/reviews/can-review', protect, reviewController.checkCanReview);
+router.post('/:serviceId/reviews', protect, reviewController.createReview);
 
 module.exports = router;

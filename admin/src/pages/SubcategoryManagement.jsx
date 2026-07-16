@@ -95,14 +95,15 @@ const SubcategoryManagement = () => {
     const [newRequirementFile, setNewRequirementFile] = useState(null);
     const [newRequirementPreview, setNewRequirementPreview] = useState('');
     const [tools, setTools] = useState([]);
-    const [toolImageFiles, setToolImageFiles] = useState([]); // File objects parallel to tools array
-    const [toolForm, setToolForm] = useState({
-        name: '',
-        description: '',
-        image: '',
-        _file: null
-    });
+    const [toolImageFiles, setToolImageFiles] = useState([]);
+    const [toolForm, setToolForm] = useState({ name: '', description: '', image: '', _file: null });
     const [editingToolIndex, setEditingToolIndex] = useState(null);
+
+    // Process Steps
+    const [processSteps, setProcessSteps] = useState([]);
+    const [processStepImageFiles, setProcessStepImageFiles] = useState([]);
+    const [processStepForm, setProcessStepForm] = useState({ title: '', description: '', image: '', _file: null, _preview: '' });
+    const [editingStepIndex, setEditingStepIndex] = useState(null);
     
     const [submitting, setSubmitting] = useState(false);
 
@@ -190,7 +191,11 @@ const SubcategoryManagement = () => {
         setGallery([]);
         setRequirements([]);
         setTools([]);
-        
+        setProcessSteps([]);
+        setProcessStepImageFiles([]);
+        setProcessStepForm({ title: '', description: '', image: '', _file: null, _preview: '' });
+        setEditingStepIndex(null);
+
         // Reset nested forms
         setVariantForm({ name: '', sizeCapacity: '', unit: '', actualPrice: '', discountPercentage: '', offerPrice: '', duration: '' });
         setAddonForm({ name: '', description: '', price: '' });
@@ -247,6 +252,8 @@ const SubcategoryManagement = () => {
     setRequirementImageFiles((svc.requirements || []).map(() => null));
     setTools(svc.tools || []);
     setToolImageFiles((svc.tools || []).map(() => null));
+    setProcessSteps(svc.processSteps || []);
+    setProcessStepImageFiles((svc.processSteps || []).map(() => null));
     setShowForm(true);
 };
 
@@ -469,6 +476,67 @@ const SubcategoryManagement = () => {
         setExcludedItems(excludedItems.filter((_, i) => i !== index));
     };
 
+    // Process Step handlers
+    const handleProcessStepImageSelect = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setProcessStepForm(prev => ({
+            ...prev,
+            _file: file,
+            _preview: URL.createObjectURL(file),
+            image: URL.createObjectURL(file),
+        }));
+    };
+
+    const handleAddProcessStep = () => {
+        if (!processStepForm.title.trim()) {
+            toast.error('Step title is required');
+            return;
+        }
+        const step = {
+            stepNumber: editingStepIndex !== null ? processSteps[editingStepIndex].stepNumber : processSteps.length + 1,
+            title: processStepForm.title.trim(),
+            description: processStepForm.description.trim(),
+            image: processStepForm.image,
+        };
+        if (editingStepIndex !== null) {
+            const updatedSteps = [...processSteps];
+            updatedSteps[editingStepIndex] = step;
+            setProcessSteps(updatedSteps);
+            const updatedFiles = [...processStepImageFiles];
+            updatedFiles[editingStepIndex] = processStepForm._file || processStepImageFiles[editingStepIndex];
+            setProcessStepImageFiles(updatedFiles);
+            setEditingStepIndex(null);
+        } else {
+            setProcessSteps(prev => [...prev, step]);
+            setProcessStepImageFiles(prev => [...prev, processStepForm._file || null]);
+        }
+        setProcessStepForm({ title: '', description: '', image: '', _file: null, _preview: '' });
+    };
+
+    const handleEditProcessStep = (index) => {
+        const step = processSteps[index];
+        setProcessStepForm({
+            title: step.title,
+            description: step.description || '',
+            image: step.image || '',
+            _file: processStepImageFiles[index] || null,
+            _preview: step.image ? (step.image.startsWith('blob:') ? step.image : `http://localhost:5000/uploads/${step.image}`) : '',
+        });
+        setEditingStepIndex(index);
+    };
+
+    const handleRemoveProcessStep = (index) => {
+        const updated = processSteps.filter((_, i) => i !== index)
+            .map((s, i) => ({ ...s, stepNumber: i + 1 }));
+        setProcessSteps(updated);
+        setProcessStepImageFiles(processStepImageFiles.filter((_, i) => i !== index));
+        if (editingStepIndex === index) {
+            setEditingStepIndex(null);
+            setProcessStepForm({ title: '', description: '', image: '', _file: null, _preview: '' });
+        }
+    };
+
     const handleAddRequirement = () => {
         if (!newRequirement.trim()) return;
         setRequirements([...requirements, { title: newRequirement.trim(), image: newRequirementPreview }]);
@@ -608,6 +676,23 @@ const SubcategoryManagement = () => {
         // Append tool image files
         toolImageFiles.forEach(file => {
             if (file) formData.append('toolImages', file);
+        });
+
+        // Append process steps as JSON
+        // Mark steps that have a NEW file to upload with __new__ so the
+        // controller only assigns an uploaded file to those slots, preserving
+        // the correct index even when some steps have no image.
+        formData.append('processSteps', JSON.stringify(processSteps.map((s, i) => ({
+            stepNumber: s.stepNumber,
+            title: s.title,
+            description: s.description || '',
+            image: processStepImageFiles[i]
+                ? '__new__'                                          // new file coming
+                : (s.image && !s.image.startsWith('blob:') ? s.image : ''), // keep existing or empty
+        }))));
+        // Append ONLY the new process step image files (parallel to __new__ slots)
+        processStepImageFiles.forEach(file => {
+            if (file) formData.append('processStepImages', file);
         });
         
         if (featuredImageFile) {
@@ -1403,6 +1488,167 @@ const SubcategoryManagement = () => {
                                     </div>
                                 )}
                             </div>
+                        </div>
+
+                        {/* Process Steps */}
+                        <div className="mb-4">
+                            <h6 className="fw-bold border-bottom pb-2">
+                                <FaList className="me-2 text-primary" />Our Process Steps
+                            </h6>
+                            <p className="text-muted small mb-3">
+                                Add step-by-step process cards shown to customers explaining how the service works.
+                            </p>
+
+                            {/* Step Entry Form */}
+                            <div className="card border-0 bg-light rounded-3 p-3 mb-3">
+                                <div className="row g-2 align-items-start">
+                                    {/* Image Upload */}
+                                    <div className="col-md-3">
+                                        <label className="form-label text-muted small fw-bold mb-1">Step Image (Optional)</label>
+                                        <div
+                                            className="border border-2 border-dashed rounded-3 d-flex align-items-center justify-content-center bg-white"
+                                            style={{ height: 110, cursor: 'pointer', position: 'relative', overflow: 'hidden' }}
+                                            onClick={() => document.getElementById('processStepImageUpload').click()}
+                                        >
+                                            {processStepForm._preview ? (
+                                                <>
+                                                    <img
+                                                        src={processStepForm._preview}
+                                                        alt="step preview"
+                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className="btn btn-sm btn-danger position-absolute top-0 end-0 m-1"
+                                                        style={{ zIndex: 2, padding: '2px 6px', fontSize: 11 }}
+                                                        onClick={e => {
+                                                            e.stopPropagation();
+                                                            setProcessStepForm(prev => ({ ...prev, _file: null, _preview: '', image: '' }));
+                                                        }}
+                                                    >×</button>
+                                                </>
+                                            ) : (
+                                                <div className="text-center text-muted small">
+                                                    <FaImage size={22} className="mb-1 d-block mx-auto opacity-50" />
+                                                    Click to upload
+                                                </div>
+                                            )}
+                                        </div>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            id="processStepImageUpload"
+                                            className="d-none"
+                                            onChange={handleProcessStepImageSelect}
+                                        />
+                                    </div>
+
+                                    {/* Title + Description */}
+                                    <div className="col-md-7">
+                                        <label className="form-label text-muted small fw-bold mb-1">Step Title *</label>
+                                        <input
+                                            type="text"
+                                            className="form-control bg-white border-0 mb-2"
+                                            placeholder="e.g., Inspection & Assessment"
+                                            value={processStepForm.title}
+                                            onChange={e => setProcessStepForm(prev => ({ ...prev, title: e.target.value }))}
+                                        />
+                                        <label className="form-label text-muted small fw-bold mb-1">Step Description</label>
+                                        <textarea
+                                            rows="3"
+                                            className="form-control bg-white border-0"
+                                            placeholder="Briefly explain what happens in this step..."
+                                            value={processStepForm.description}
+                                            onChange={e => setProcessStepForm(prev => ({ ...prev, description: e.target.value }))}
+                                        />
+                                    </div>
+
+                                    {/* Actions */}
+                                    <div className="col-md-2 d-flex flex-column gap-2 justify-content-end" style={{ paddingTop: 22 }}>
+                                        <button
+                                            type="button"
+                                            onClick={handleAddProcessStep}
+                                            className="btn btn-sm btn-dark w-100"
+                                        >
+                                            {editingStepIndex !== null ? 'Update' : <><FaPlus className="me-1" />Add Step</>}
+                                        </button>
+                                        {editingStepIndex !== null && (
+                                            <button
+                                                type="button"
+                                                className="btn btn-sm btn-outline-secondary w-100"
+                                                onClick={() => {
+                                                    setEditingStepIndex(null);
+                                                    setProcessStepForm({ title: '', description: '', image: '', _file: null, _preview: '' });
+                                                }}
+                                            >Cancel</button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Steps List */}
+                            {processSteps.length > 0 && (
+                                <div className="row g-3">
+                                    {processSteps.map((step, i) => {
+                                        const previewSrc = processStepImageFiles[i]
+                                            ? URL.createObjectURL(processStepImageFiles[i])
+                                            : step.image && !step.image.startsWith('blob:')
+                                                ? `http://localhost:5000/uploads/${step.image}`
+                                                : null;
+                                        return (
+                                            <div key={i} className="col-md-4">
+                                                <div className="card border-0 shadow-sm rounded-3 h-100" style={{ borderTop: '3px solid #1a1a1a' }}>
+                                                    {previewSrc && (
+                                                        <img
+                                                            src={previewSrc}
+                                                            alt={step.title}
+                                                            className="card-img-top rounded-top-3"
+                                                            style={{ height: 120, objectFit: 'cover' }}
+                                                        />
+                                                    )}
+                                                    <div className="card-body p-3">
+                                                        <div className="d-flex align-items-start justify-content-between mb-1">
+                                                            <span
+                                                                className="badge rounded-pill text-white me-2 flex-shrink-0"
+                                                                style={{ background: '#1a1a1a', fontSize: 11, padding: '4px 9px' }}
+                                                            >
+                                                                Step {step.stepNumber}
+                                                            </span>
+                                                            <div className="d-flex gap-1 ms-auto">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleEditProcessStep(i)}
+                                                                    className="btn btn-sm btn-light border"
+                                                                    title="Edit step"
+                                                                ><FaEdit size={11} /></button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleRemoveProcessStep(i)}
+                                                                    className="btn btn-sm btn-light border text-danger"
+                                                                    title="Remove step"
+                                                                ><FaTrash size={11} /></button>
+                                                            </div>
+                                                        </div>
+                                                        <p className="fw-bold mb-1 small">{step.title}</p>
+                                                        {step.description && (
+                                                            <p className="text-muted mb-0" style={{ fontSize: 12, lineHeight: 1.5 }}>
+                                                                {step.description}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+
+                            {processSteps.length === 0 && (
+                                <div className="text-center py-4 text-muted border border-dashed rounded-3">
+                                    <FaList size={24} className="mb-2 opacity-25" />
+                                    <p className="small mb-0">No process steps added yet. Use the form above to add your first step.</p>
+                                </div>
+                            )}
                         </div>
 
                         <div className="d-flex gap-2 justify-content-end">
