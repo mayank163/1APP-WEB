@@ -3,6 +3,7 @@ import adminApi from '../services/adminApi';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { FaPlus, FaEdit, FaTrash, FaFolder, FaImage } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { getImageUrl } from '../utils/helpers';
 
 const CategoryManagement = () => {
     const [subcategories, setSubcategories] = useState([]);
@@ -58,9 +59,9 @@ const CategoryManagement = () => {
         setSelectedCategoryId(sub.category?._id || '');
         setSubcategoryName(sub.name);
         setImageFile(null);
-        setImagePreview(sub.image ? `${process.env.REACT_APP_API_URL?.replace('/api','') || 'http://localhost:5000'}/uploads/${sub.image}` : null);
+        setImagePreview(sub.image ? getImageUrl(sub.image) : null);
         setIconFile(null);
-        setIconPreview(sub.icon ? `${process.env.REACT_APP_API_URL?.replace('/api','') || 'http://localhost:5000'}/uploads/${sub.icon}` : null);
+        setIconPreview(sub.icon ? getImageUrl(sub.icon) : null);
         setStartingFromPrice(sub.startingFromPrice?.toString() || '');
         setShowForm(true);
         setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
@@ -302,7 +303,7 @@ const CategoryManagement = () => {
                                         <td>
                                             {sub.image ? (
                                                 <img 
-                                                    src={`${process.env.REACT_APP_API_URL?.replace('/api','') || 'http://localhost:5000'}/uploads/${sub.image}`} 
+                                                    src={getImageUrl(sub.image)} 
                                                     alt={sub.name} 
                                                     className="img-thumbnail" 
                                                     style={{ maxWidth: '50px' }}
@@ -317,7 +318,7 @@ const CategoryManagement = () => {
                                         <td>
                                             {sub.icon ? (
                                                 <img
-                                                    src={`${process.env.REACT_APP_API_URL?.replace('/api','') || 'http://localhost:5000'}/uploads/${sub.icon}`}
+                                                    src={getImageUrl(sub.icon)}
                                                     alt={`${sub.name} icon`}
                                                     className="img-thumbnail"
                                                     style={{ maxWidth: '35px' }}

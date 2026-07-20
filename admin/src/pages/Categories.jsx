@@ -3,6 +3,7 @@ import adminApi from '../services/adminApi';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { FaPlus, FaEdit, FaTrash, FaImage, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { getImageUrl } from '../utils/helpers';
 
 const Categories = () => {
     const [categories, setCategories] = useState([]);
@@ -43,7 +44,7 @@ const Categories = () => {
         setEditingId(cat._id);
         setCategoryName(cat.name);
         setImageFile(null);
-        setImagePreview(cat.image ? `${process.env.REACT_IMAGE_URL || 'http://localhost:5000'}/uploads/${cat.image}` : null);
+        setImagePreview(cat.image ? getImageUrl(cat.image) : null);
         setShowForm(true);
     };
 
@@ -218,9 +219,10 @@ const Categories = () => {
                                 
                                     <tr key={cat._id}>
                                         <td>
+                                            
                                             {cat.image ? (
                                                 <img 
-                                                    src={`${process.env.REACT_IMAGE_URL || 'http://localhost:5000'}/uploads/${cat.image}`} 
+                                                    src={getImageUrl(cat.image)}
                                                     alt={cat.name} 
                                                     className="img-thumbnail" 
                                                     style={{ maxWidth: '60px' }}

@@ -10,7 +10,9 @@ export const API_BASE_URL = process.env.REACT_APP_IMAGE_URL;
 export const resolveImageUrl = (imageUrl) => {
     if (!imageUrl) return null;
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl;
-    return `${API_BASE_URL}${imageUrl}`;
+    const base = (API_BASE_URL || '').replace(/\/$/, '');
+    const key = imageUrl.replace(/^\//, '');
+    return `${base}/${key}`;
 };
 
 const API = axios.create({

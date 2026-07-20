@@ -34,8 +34,9 @@ const reviewSchema = new mongoose.Schema({
     },
 }, { timestamps: true });
 
-// One review per user per service (prevents duplicate reviews for same service)
-reviewSchema.index({ service: 1, user: 1 }, { unique: true });
+// One review per user per service PER BOOKING
+// This allows a user to review the same service again if they book it a second time
+reviewSchema.index({ service: 1, user: 1, booking: 1 }, { unique: true });
 
 // ─── Statics: recalculate ratingsAverage & ratingsQuantity on Service ─────────
 reviewSchema.statics.calcAverageRatings = async function (serviceId) {

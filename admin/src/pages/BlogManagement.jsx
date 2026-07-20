@@ -4,8 +4,7 @@ import { toast } from 'react-toastify';
 import { FaPlus, FaEdit, FaTrash, FaImage, FaArrowUp, FaArrowDown, FaEye, FaSave, FaTimes } from 'react-icons/fa';
 import LoadingSpinner from '../components/LoadingSpinner';
 import '../styles/BlogManagement.css';
-
-const BASE_URL = 'http://localhost:5000/uploads/';
+import { getImageUrl } from '../utils/helpers';
 
 const emptyBlock = () => ({ title: '', text: '', imageFile: null, imagePreview: '', image: null });
 
@@ -99,14 +98,14 @@ const BlogManagement = () => {
         
         setIsPublished(blog.isPublished);
         setFeaturedImageFile(null);
-        setFeaturedImagePreview(blog.featuredImage ? BASE_URL + blog.featuredImage : '');
+        setFeaturedImagePreview(blog.featuredImage ? getImageUrl(blog.featuredImage) : '');
         setBlocks(
             blog.contentBlocks?.length
                 ? blog.contentBlocks.map(b => ({
                     title: b.title || '',
                     text: b.text || '',
                     imageFile: null,
-                    imagePreview: b.image ? BASE_URL + b.image : '',
+                    imagePreview: b.image ? getImageUrl(b.image) : '',
                     image: b.image || null
                 }))
                 : [emptyBlock()]
@@ -731,7 +730,7 @@ const BlogManagement = () => {
                                             <td>
                                                 {blog.featuredImage ? (
                                                     <img 
-                                                        src={BASE_URL + blog.featuredImage} 
+                                                        src={getImageUrl(blog.featuredImage)} 
                                                         alt="featured" 
                                                         className="rounded"
                                                         style={{ 

@@ -3,13 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { FaTimes, FaTag } from 'react-icons/fa';
 import serviceService from '../services/serviceService';
 
-const UPLOAD_IMAGE_URL = `${process.env.REACT_APP_IMAGE_URL}`;
-
 const resolveSubcategoryImage = (image) => {
     if (!image) return null;
     if (image.startsWith('http://') || image.startsWith('https://')) return image;
-    const filename = image.replace(/^\/uploads\//, '').replace(/^\//, '');
-    return `${UPLOAD_IMAGE_URL}${filename}`;
+    const base = (process.env.REACT_APP_IMAGE_URL || '').replace(/\/$/, '');
+    const key = image.replace(/^\/uploads\//, '').replace(/^\//, '');
+    return `${base}/${key}`;
 };
 
 const tileBgColors = [

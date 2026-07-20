@@ -1,4 +1,34 @@
 const Service = require('../models/Service');
+const { uploadFile, deleteFile } = require("../utils/s3Upload");
+
+const getS3Key = (keyOrUrl) => {
+    if (!keyOrUrl) return null;
+    // Support both legacy full URLs and new plain keys
+    const idx = keyOrUrl.indexOf(".amazonaws.com/");
+    if (idx !== -1) return keyOrUrl.substring(idx + ".amazonaws.com/".length);
+    return keyOrUrl;
+};
+
+const removeS3File = async (url) => {
+
+    const key = getS3Key(url);
+
+    if (key) {
+
+        try {
+
+            await deleteFile(key);
+
+        } catch (err) {
+
+            console.log(err);
+
+        }
+
+    }
+
+};
+
 
 const POPULATE = [
     { path: 'category', select: 'name image' },
@@ -11,7 +41,10 @@ const parseJSON = (val, fallback) => {
     try { return JSON.parse(val); } catch { return fallback; }
 };
 
-const buildServiceData = (body, files = {}) => {
+const buildServiceData = async (
+    body,
+    files = {}
+) => {
     // Parse shortDescription - handle both array and string
     let shortDescription = [];
     if (body.shortDescription) {
@@ -54,8 +87,15 @@ const buildServiceData = (body, files = {}) => {
 
     // Featured image
     if (files.featuredImage?.[0]) {
-        data.featuredImage = files.featuredImage[0].filename;
-    } else if (body.featuredImageUrl && !body.featuredImageUrl.startsWith('blob:')) {
+
+    const uploaded = await uploadFile(
+        files.featuredImage[0],
+        "services/featured"
+    );
+
+    data.featuredImage = uploaded.key;
+
+} else if (body.featuredImageUrl && !body.featuredImageUrl.startsWith('blob:')) {
         data.featuredImage = body.featuredImageUrl;
     }
 
@@ -66,49 +106,134 @@ const buildServiceData = (body, files = {}) => {
 
     // Gallery: merge uploaded files into gallery array by index
     let uploadIdx = 0;
-    data.gallery = data.gallery.map(item => {
-        if (item.type === 'image' && (!item.url || item.url.startsWith('blob:'))) {
+
+data.gallery = await Promise.all(
+
+    data.gallery.map(async item => {
+
+        if (
+            item.type === "image" &&
+            (!item.url || item.url.startsWith("blob:"))
+        ) {
+
             const file = files.galleryImages?.[uploadIdx++];
-            if (file) return { ...item, url: file.filename };
-            return null; // no file uploaded for this slot, drop it
+
+            if (!file)
+                return null;
+
+            const uploaded = await uploadFile(
+                file,
+                "services/gallery"
+            );
+
+            return {
+                ...item,
+                url: uploaded.key
+            };
+
         }
+
         return item;
-    }).filter(Boolean);
+
+    })
+
+);
+
+data.gallery = data.gallery.filter(Boolean);
 
     // Tools: attach uploaded images by index
-    let toolUploadIdx = 0;
-    data.tools = data.tools.map(tool => {
-        if (!tool.image || tool.image.startsWith('blob:')) {
+   let toolUploadIdx = 0;
+
+data.tools = await Promise.all(
+
+    data.tools.map(async tool => {
+
+        if (!tool.image || tool.image.startsWith("blob:")) {
+
             const file = files.toolImages?.[toolUploadIdx++];
-            if (file) return { ...tool, image: file.filename };
-            return { ...tool, image: '' };
+
+            if (!file)
+                return {
+                    ...tool,
+                    image: ""
+                };
+
+            const uploaded = await uploadFile(
+                file,
+                "services/tools"
+            );
+
+            return {
+
+                ...tool,
+
+                image: uploaded.key
+
+            };
+
         }
+
         return tool;
-    });
+
+    })
+
+);
 
     // Requirements: attach uploaded images by index
     let reqUploadIdx = 0;
-    data.requirements = data.requirements.map(req => {
-        if (!req.image || req.image.startsWith('blob:')) {
+
+data.requirements = await Promise.all(
+
+    data.requirements.map(async req => {
+
+        if (!req.image || req.image.startsWith("blob:")) {
+
             const file = files.requirementImages?.[reqUploadIdx++];
-            if (file) return { ...req, image: file.filename };
-            return { ...req, image: '' };
+
+            if (!file)
+                return {
+                    ...req,
+                    image: ""
+                };
+
+            const uploaded = await uploadFile(
+                file,
+                "services/requirements"
+            );
+
+            return {
+
+                ...req,
+
+                image: uploaded.key
+
+            };
+
         }
+
         return req;
-    });
+
+    })
+
+);
 
     // Process Steps: attach uploaded images by index.
     // The frontend marks steps with a pending new upload as image: '__new__'.
     // Only those slots consume the next file from processStepImages, so a step
     // without an image never accidentally steals a file meant for a later step.
     let stepUploadIdx = 0;
-    data.processSteps = data.processSteps.map((step) => {
-        if (step.image === '__new__') {
-            const file = files.processStepImages?.[stepUploadIdx++];
-            return { ...step, image: file ? file.filename : '' };
-        }
-        return step; // keep existing filename (or empty string)
-    });
+
+    data.processSteps = await Promise.all(
+        data.processSteps.map(async step => {
+            if (step.image === "__new__") {
+                const file = files.processStepImages?.[stepUploadIdx++];
+                if (!file) return { ...step, image: "" };
+                const uploaded = await uploadFile(file, "services/process");
+                return { ...step, image: uploaded.key };
+            }
+            return step;
+        })
+    );
 
     return data;
 };
@@ -218,7 +343,7 @@ exports.getServicesBySubcategory = async (req, res, next) => {
 // ─── CREATE ───────────────────────────────────────────────────────────────────
 exports.createService = async (req, res, next) => {
     try {
-        const data = buildServiceData(req.body, req.files || {});
+        const data = await buildServiceData(req.body, req.files || {});
         const service = await Service.create(data);
         await service.populate(POPULATE);
         res.status(201).json({ success: true, data: { service } });
@@ -234,7 +359,12 @@ exports.updateService = async (req, res, next) => {
         const existing = await Service.findById(req.params.id);
         if (!existing) return res.status(404).json({ success: false, message: 'Service not found' });
 
-        const data = buildServiceData(req.body, req.files || {});
+        // Delete old featured image from S3 if a new one is being uploaded
+        if (req.files?.featuredImage?.length && existing.featuredImage) {
+            await removeS3File(existing.featuredImage);
+        }
+
+        const data = await buildServiceData(req.body, req.files || {});
 
         // Keep existing featured image if no new one provided and not clearing
         if (!data.featuredImage && !req.body.clearFeaturedImage) {
@@ -261,6 +391,7 @@ exports.deleteService = async (req, res, next) => {
         if (!service) return res.status(404).json({ success: false, message: 'Service not found' });
         service.status = 'inactive';
         service.isActive = false;
+        
         await service.save();
         res.json({ success: true, message: 'Service deactivated' });
     } catch (err) { next(err); }

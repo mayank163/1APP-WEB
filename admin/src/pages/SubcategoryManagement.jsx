@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import adminApi from '../services/adminApi';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { getImageUrl } from '../utils/helpers';
 import {
     FaPlus, FaEdit, FaTrash, FaLayerGroup, FaDollarSign,
     FaClock, FaCheckCircle, FaTimesCircle, FaCopy,
@@ -521,7 +522,7 @@ const SubcategoryManagement = () => {
             description: step.description || '',
             image: step.image || '',
             _file: processStepImageFiles[index] || null,
-            _preview: step.image ? (step.image.startsWith('blob:') ? step.image : `http://localhost:5000/uploads/${step.image}`) : '',
+            _preview: step.image ? (step.image.startsWith('blob:') ? step.image : getImageUrl(step.image)) : '',
         });
         setEditingStepIndex(index);
     };
@@ -1289,7 +1290,7 @@ const SubcategoryManagement = () => {
                                     {featuredImage && (
                                         <div className="mt-2">
                                             <img 
-                                                src={featuredImage.startsWith('blob:') ? featuredImage : `http://localhost:5000/uploads/${featuredImage}`} 
+                                                src={featuredImage.startsWith('blob:') ? featuredImage : getImageUrl(featuredImage)} 
                                                 alt="Featured" 
                                                 style={{ maxHeight: '100px', maxWidth: '100px' }} 
                                             />
@@ -1593,7 +1594,7 @@ const SubcategoryManagement = () => {
                                         const previewSrc = processStepImageFiles[i]
                                             ? URL.createObjectURL(processStepImageFiles[i])
                                             : step.image && !step.image.startsWith('blob:')
-                                                ? `http://localhost:5000/uploads/${step.image}`
+                                                ? getImageUrl(step.image)
                                                 : null;
                                         return (
                                             <div key={i} className="col-md-4">

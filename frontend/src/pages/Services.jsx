@@ -5,13 +5,12 @@ import serviceService from '../services/serviceService';
 import { resolveImageUrl } from '../services/api';
 import { CartContext } from '../context/CartContext';
 
-const UPLOAD_IMAGE_URL = process.env.REACT_APP_IMAGE_URL || '';
-
 const resolveSubImg = (image) => {
     if (!image) return null;
     if (image.startsWith('http://') || image.startsWith('https://')) return image;
-    const filename = image.replace(/^\/uploads\//, '').replace(/^\//, '');
-    return `${UPLOAD_IMAGE_URL}${filename}`;
+    const base = (process.env.REACT_APP_IMAGE_URL || '').replace(/\/$/, '');
+    const key = image.replace(/^\/uploads\//, '').replace(/^\//, '');
+    return `${base}/${key}`;
 };
 
 const SLIDES = [

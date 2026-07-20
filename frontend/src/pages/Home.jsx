@@ -29,13 +29,12 @@ const Home = () => {
     const [popupCategory, setPopupCategory] = useState(null);
     const [hierarchy, setHierarchy] = useState({});
 
-    const UPLOAD_IMAGE_URL = `${process.env.REACT_APP_IMAGE_URL}`;
-
     const resolveCategoryImage = (imageUrl) => {
         if (!imageUrl) return null;
         if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl;
-        const filename = imageUrl.replace(/^\/uploads\//, '').replace(/^\//, '');
-        return `${UPLOAD_IMAGE_URL}${filename}`;
+        const base = (process.env.REACT_APP_IMAGE_URL || '').replace(/\/$/, '');
+        const key = imageUrl.replace(/^\/uploads\//, '').replace(/^\//, '');
+        return `${base}/${key}`;
     };
 
 

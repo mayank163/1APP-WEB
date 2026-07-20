@@ -1,19 +1,6 @@
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 
-// UPLOAD_PATH in backend/.env is relative to the backend directory, not the
-// shell's current directory. This must match server.js: backend/uploads.
-const uploadDir = path.resolve(__dirname, '..', '..', process.env.UPLOAD_PATH || 'uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, uploadDir),
-    filename: (req, file, cb) => {
-        const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        cb(null, file.fieldname + '-' + unique + path.extname(file.originalname));
-    }
-});
+const storage = multer.memoryStorage();
 
 const imageOnly = (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) return cb(null, true);

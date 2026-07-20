@@ -1,5 +1,5 @@
 const Blog = require('../models/Blog');
-const path = require('path');
+const { uploadFile, deleteFile } = require("../utils/s3Upload");
 
 exports.getAllBlogs = async (req, res, next) => {
     try {
@@ -22,18 +22,25 @@ exports.getBlogById = async (req, res, next) => {
 exports.createBlog = async (req, res, next) => {
     try {
         const { title, subtitle, description, subcategory, contentBlocks: blocksJson, isPublished, metaTitle, metaDescription } = req.body;
-        const featuredImage = req.files?.featuredImage?.[0]?.filename || null;
+
+        // Upload featured image to S3
+        let featuredImage = null;
+        if (req.files?.featuredImage?.[0]) {
+            const uploaded = await uploadFile(req.files.featuredImage[0], "blogs/featured");
+            featuredImage = uploaded.key;
+        }
 
         let contentBlocks = [];
         if (blocksJson) {
             const parsed = JSON.parse(blocksJson);
-            const blockImages = req.files?.blockImages || [];
-            
+            const blockImageFiles = req.files?.blockImages || [];
+
             let imageIndex = 0;
-            contentBlocks = parsed.map((block, i) => {
+            contentBlocks = await Promise.all(parsed.map(async (block, i) => {
                 let blockImage = block.image;
-                if (block.image === null && imageIndex < blockImages.length) {
-                    blockImage = blockImages[imageIndex].filename;
+                if (block.image === null && imageIndex < blockImageFiles.length) {
+                    const uploaded = await uploadFile(blockImageFiles[imageIndex], "blogs/blocks");
+                    blockImage = uploaded.key;
                     imageIndex++;
                 }
                 return {
@@ -42,7 +49,7 @@ exports.createBlog = async (req, res, next) => {
                     order: block.order ?? i,
                     image: blockImage
                 };
-            });
+            }));
         }
 
         const blog = await Blog.create({
@@ -73,18 +80,24 @@ exports.updateBlog = async (req, res, next) => {
         if (metaDescription !== undefined) blog.metaDescription = metaDescription;
 
         if (req.files?.featuredImage?.[0]) {
-            blog.featuredImage = req.files.featuredImage[0].filename;
+            // Delete old featured image from S3 if one exists
+            if (blog.featuredImage) {
+                await deleteFile(blog.featuredImage);
+            }
+            const uploaded = await uploadFile(req.files.featuredImage[0], "blogs/featured");
+            blog.featuredImage = uploaded.key;
         }
 
         if (blocksJson) {
             const parsed = JSON.parse(blocksJson);
-            const blockImages = req.files?.blockImages || [];
-            
+            const blockImageFiles = req.files?.blockImages || [];
+
             let imageIndex = 0;
-            blog.contentBlocks = parsed.map((block, i) => {
+            blog.contentBlocks = await Promise.all(parsed.map(async (block, i) => {
                 let blockImage = block.image;
-                if (block.image === null && imageIndex < blockImages.length) {
-                    blockImage = blockImages[imageIndex].filename;
+                if (block.image === null && imageIndex < blockImageFiles.length) {
+                    const uploaded = await uploadFile(blockImageFiles[imageIndex], "blogs/blocks");
+                    blockImage = uploaded.key;
                     imageIndex++;
                 }
                 return {
@@ -93,7 +106,7 @@ exports.updateBlog = async (req, res, next) => {
                     order: block.order ?? i,
                     image: blockImage
                 };
-            });
+            }));
         }
 
         await blog.save();

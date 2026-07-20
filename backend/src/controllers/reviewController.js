@@ -6,12 +6,9 @@ const Service = require('../models/Service');
 
 // ─── POST /api/services/:serviceId/reviews ────────────────────────────────────
 /**
- * Create a review for a service.
- * Rules:
- *  - User must have a Completed booking that contains this serviceId.
- *  - If the booking contains multiple services, the same rating/review is
- *    stored once per unique serviceId in that booking (upsert pattern).
- *  - A user can only hold one review per service (unique index on service+user).
+ * Create or update a review.
+ * Unique constraint is (service + user + booking) so the same user can
+ * leave independent reviews for the same service across different bookings.
  */
 exports.createReview = async (req, res, next) => {
     try {
@@ -23,44 +20,51 @@ exports.createReview = async (req, res, next) => {
             return res.status(400).json({ success: false, message: 'Please provide a rating between 1 and 5' });
         }
 
-        // Verify the service exists
+        if (!bookingId) {
+            return res.status(400).json({ success: false, message: 'bookingId is required' });
+        }
+
+        // Verify service exists
         const service = await Service.findById(serviceId);
         if (!service) {
             return res.status(404).json({ success: false, message: 'Service not found' });
         }
 
-        // Find a completed booking owned by this user that includes this service
-        const bookingQuery = {
-            user: userId,
-            status: 'Completed',
+        // Verify this specific booking is Completed, belongs to this user,
+        // and actually contains this service
+        const booking = await Booking.findOne({
+            _id:                bookingId,
+            user:               userId,
+            status:             'Completed',
             'services.service': serviceId,
-        };
-        if (bookingId) bookingQuery._id = bookingId;
+        });
 
-        const booking = await Booking.findOne(bookingQuery);
         if (!booking) {
             return res.status(403).json({
                 success: false,
-                message: 'You can only review a service after your booking is completed',
+                message: 'You can only review a service from a completed booking that belongs to you',
             });
         }
 
-        // Upsert: update existing review or create new one
-        const existing = await Review.findOne({ service: serviceId, user: userId });
-        let savedReview;
+        // Upsert scoped to this specific booking
+        const existing = await Review.findOne({
+            service: serviceId,
+            user:    userId,
+            booking: bookingId,
+        });
 
+        let savedReview;
         if (existing) {
-            existing.rating   = rating;
-            existing.review   = review?.trim() || '';
-            existing.booking  = booking._id;
+            existing.rating = rating;
+            existing.review = review?.trim() || '';
             savedReview = await existing.save();
         } else {
             savedReview = await Review.create({
                 service: serviceId,
                 user:    userId,
-                booking: booking._id,
+                booking: bookingId,
                 rating,
-                review: review?.trim() || '',
+                review:  review?.trim() || '',
             });
         }
 
@@ -72,21 +76,14 @@ exports.createReview = async (req, res, next) => {
             data: { review: savedReview },
         });
     } catch (err) {
-        // Duplicate key error (race condition fallback)
         if (err.code === 11000) {
-            return res.status(400).json({ success: false, message: 'You have already reviewed this service' });
+            return res.status(400).json({ success: false, message: 'You have already reviewed this service for this booking' });
         }
         next(err);
     }
 };
 
 // ─── GET /api/services/:serviceId/reviews ─────────────────────────────────────
-/**
- * Get all reviews for a service with:
- *  - Aggregated star breakdown (count per star 1-5)
- *  - Sorted by createdAt desc (newest first)
- *  - Pagination via ?page=1&limit=10
- */
 exports.getServiceReviews = async (req, res, next) => {
     try {
         const { serviceId } = req.params;
@@ -94,7 +91,6 @@ exports.getServiceReviews = async (req, res, next) => {
         const limit = Math.min(50, parseInt(req.query.limit) || 10);
         const skip  = (page - 1) * limit;
 
-        // Star breakdown (1-5)
         const breakdown = await Review.aggregate([
             { $match: { service: require('mongoose').Types.ObjectId.createFromHexString(serviceId) } },
             { $group: { _id: '$rating', count: { $sum: 1 } } },
@@ -105,7 +101,6 @@ exports.getServiceReviews = async (req, res, next) => {
         breakdown.forEach(b => { starCounts[b._id] = b.count; });
         const totalReviews = Object.values(starCounts).reduce((a, b) => a + b, 0);
 
-        // Paginated reviews
         const reviews = await Review.find({ service: serviceId })
             .populate('user', 'name')
             .sort('-createdAt')
@@ -114,13 +109,7 @@ exports.getServiceReviews = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            data: {
-                totalReviews,
-                starCounts,
-                page,
-                totalPages: Math.ceil(totalReviews / limit),
-                reviews,
-            },
+            data: { totalReviews, starCounts, page, totalPages: Math.ceil(totalReviews / limit), reviews },
         });
     } catch (err) {
         next(err);
@@ -129,36 +118,58 @@ exports.getServiceReviews = async (req, res, next) => {
 
 // ─── GET /api/services/:serviceId/reviews/can-review ─────────────────────────
 /**
- * Check whether the logged-in user is eligible to review this service:
- *  - has a Completed booking containing this serviceId
- *  - has not already reviewed it (or has, so we return existing review for edit)
+ * Used by ServiceDetail page.
+ * Returns the FIRST completed booking for this service that has no review yet.
+ * If all bookings are reviewed it returns the latest review for editing.
  */
 exports.checkCanReview = async (req, res, next) => {
     try {
         const { serviceId } = req.params;
         const userId = req.user._id;
 
-        const completedBooking = await Booking.findOne({
-            user: userId,
-            status: 'Completed',
+        // All completed bookings that include this service
+        const completedBookings = await Booking.find({
+            user:               userId,
+            status:             'Completed',
             'services.service': serviceId,
-        }).select('_id services');
+        }).select('_id').sort('-createdAt');
 
-        if (!completedBooking) {
+        if (!completedBookings.length) {
             return res.status(200).json({
                 success: true,
                 data: { canReview: false, existingReview: null, bookingId: null },
             });
         }
 
-        const existingReview = await Review.findOne({ service: serviceId, user: userId });
+        const bookingIds = completedBookings.map(b => b._id);
 
-        res.status(200).json({
+        // Find which bookings already have a review from this user
+        const existingReviews = await Review.find({
+            service: serviceId,
+            user:    userId,
+            booking: { $in: bookingIds },
+        }).select('booking rating review');
+
+        const reviewedBookingIds = new Set(existingReviews.map(r => r.booking.toString()));
+
+        // Prefer the first unreviewed booking
+        const unreviewedBooking = completedBookings.find(b => !reviewedBookingIds.has(b._id.toString()));
+
+        if (unreviewedBooking) {
+            return res.status(200).json({
+                success: true,
+                data: { canReview: true, existingReview: null, bookingId: unreviewedBooking._id },
+            });
+        }
+
+        // All bookings reviewed — return latest review for editing
+        const latestReview = existingReviews[0];
+        return res.status(200).json({
             success: true,
             data: {
                 canReview:      true,
-                existingReview: existingReview || null,
-                bookingId:      completedBooking._id,
+                existingReview: latestReview,
+                bookingId:      latestReview.booking,
             },
         });
     } catch (err) {
@@ -168,8 +179,8 @@ exports.checkCanReview = async (req, res, next) => {
 
 // ─── GET /api/bookings/:bookingId/reviewable-services ────────────────────────
 /**
- * For a completed booking, return which services the user has/hasn't reviewed yet.
- * Used on the booking history page to show "Write Review" buttons.
+ * Returns services in a completed booking with each service's review status
+ * SCOPED TO THIS BOOKING — so re-booking the same service shows a fresh form.
  */
 exports.getReviewableServices = async (req, res, next) => {
     try {
@@ -180,30 +191,31 @@ exports.getReviewableServices = async (req, res, next) => {
         if (!booking) {
             return res.status(404).json({ success: false, message: 'Booking not found' });
         }
-
         if (booking.user.toString() !== userId.toString()) {
             return res.status(403).json({ success: false, message: 'Access denied' });
         }
-
         if (booking.status !== 'Completed') {
             return res.status(200).json({ success: true, data: { services: [] } });
         }
 
         // Unique service ids in this booking
-        const serviceIds = [...new Set(booking.services.map(s => s.service?._id?.toString()).filter(Boolean))];
+        const serviceIds = [...new Set(
+            booking.services.map(s => s.service?._id?.toString()).filter(Boolean)
+        )];
 
-        // Which ones has this user already reviewed?
+        // Reviews scoped to THIS booking only
         const existingReviews = await Review.find({
             user:    userId,
+            booking: booking._id,          // ← scoped to this booking
             service: { $in: serviceIds },
         }).select('service rating review');
 
         const reviewedMap = {};
         existingReviews.forEach(r => { reviewedMap[r.service.toString()] = r; });
 
+        // Deduplicate services within the booking
         const services = booking.services
             .filter((s, idx, arr) => {
-                // deduplicate by service id
                 const sid = s.service?._id?.toString();
                 return sid && arr.findIndex(x => x.service?._id?.toString() === sid) === idx;
             })
