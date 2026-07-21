@@ -50,22 +50,12 @@ exports.getCategoriesWithRecentSubCategories = async (req, res, next) => {
 exports.createCategory = async (req, res, next) => {
     try {
         if (!req.body?.name) return res.status(400).json({ success: false, message: 'Category name is required' });
-        console.log('[createCategory] req.body:', req.body);
-        console.log('[createCategory] req.file keys:', req.file ? Object.keys(req.file) : 'no file');
-        if (req.file) console.log('[createCategory] req.file.location:', req.file.location, '| req.file.key:', req.file.key);
         const data = { name: req.body.name };
         if (req.file) {
-            const uploaded = await uploadFile(
-                req.file,
-                "categories"
-            );
-            console.log('[createCategory] uploaded result:', uploaded);
-            console.log('[createCategory] setting data.image to:', uploaded.key);
+            const uploaded = await uploadFile(req.file, "categories");
             data.image = uploaded.key;
         }
-        console.log('[createCategory] final data to save:', data);
         const category = await Category.create(data);
-        console.log('[createCategory] saved category.image:', category.image);
         res.status(201).json({ success: true, data: { category } });
     } catch (err) { next(err); }
 };
