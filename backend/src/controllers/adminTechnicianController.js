@@ -78,7 +78,13 @@ const updateTechnicianRequest = async (req, res, next) => {
 
     const conversationMessage = adminMessage || (status === 'accepted' ? 'Request accepted.' : status === 'rejected' ? 'Request rejected.' : `Counter offer sent: $${Number(counterOffer || 0)}`);
     request.conversation = request.conversation || [];
-    request.conversation.push({ sender: 'admin', message: conversationMessage, createdAt: new Date() });
+    request.conversation.push({
+      sender: 'admin',
+      message: conversationMessage,
+      counterOffer: status === 'counter-offer' ? Number(counterOffer || 0) : 0,
+      counterOfferFrom: status === 'counter-offer' ? 'admin' : '',
+      createdAt: new Date(),
+    });
 
     if (status === 'accepted') {
       const job = await TechnicianJob.findById(request.job._id || request.job);
@@ -241,9 +247,12 @@ const updateTechnicianJobStatus = async (req, res, next) => {
 const sendTechnicianRequestMessage = async (req, res, next) => {
   try {
     const { requestId } = req.params;
-    const { message } = req.body;
+    const { message, counterOffer, counterOfferFrom } = req.body;
 
-    if (!message || !message.trim()) {
+    const trimmedMessage = message && message.trim();
+    const offerAmount = Number(counterOffer || 0);
+
+    if (!trimmedMessage && offerAmount <= 0) {
       return res.status(400).json({ success: false, message: 'Message cannot be empty' });
     }
 
@@ -252,15 +261,38 @@ const sendTechnicianRequestMessage = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Request not found' });
     }
 
-    request.adminMessage = message.trim();
+    if (offerAmount > 0) {
+      request.status = 'counter-offer';
+      request.counterOffer = offerAmount;
+      request.counterOfferFrom = 'admin';
+      request.adminMessage = trimmedMessage || `Counter offer sent: $${offerAmount}`;
+    } else if (trimmedMessage) {
+      request.adminMessage = trimmedMessage;
+    }
+
     request.conversation = request.conversation || [];
     request.conversation.push({
       sender: 'admin',
-      message: message.trim(),
+      message: trimmedMessage || `Counter offer sent: $${offerAmount}`,
+      counterOffer: offerAmount,
+      counterOfferFrom: offerAmount > 0 ? (counterOfferFrom || 'admin') : '',
       createdAt: new Date(),
     });
 
     await request.save();
+
+    const newMsg = request.conversation[request.conversation.length - 1];
+    emitToRequest(requestId, 'request:message', {
+      requestId,
+      message: newMsg,
+    });
+    emitToRequest(requestId, 'request:status', {
+      requestId,
+      status: request.status,
+      counterOffer: request.counterOffer,
+      counterOfferFrom: request.counterOfferFrom,
+    });
+
     res.status(200).json({ success: true, message: 'Message sent', data: { request } });
   } catch (error) {
     next(error);

@@ -63,7 +63,7 @@ const TechnicianVerification = () => {
                 <div className="mb-2"><strong>Documents</strong></div>
                 <div className="d-flex flex-wrap gap-2">
                   {Object.entries(request.documents || {}).filter(([, value]) => value).map(([key, value]) => (
-                    <a key={key} href={value.startsWith('http') ? value : `http://localhost:5000/uploads/${value}`} target="_blank" rel="noreferrer" className="btn btn-outline-dark btn-sm">
+                    <a key={key} href={value.startsWith('http') ? value : `http://localhost:5001/uploads/${value}`} target="_blank" rel="noreferrer" className="btn btn-outline-dark btn-sm">
                       {key}
                     </a>
                   ))}

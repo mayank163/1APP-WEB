@@ -175,6 +175,15 @@ io.on("connection", (socket) => {
 
     });
 
+    // Join/leave request-scoped rooms for live chat & status updates
+    socket.on('request:join', (requestId) => {
+        if (requestId) socket.join(`request:${requestId}`);
+    });
+
+    socket.on('request:leave', (requestId) => {
+        if (requestId) socket.leave(`request:${requestId}`);
+    });
+
     socket.on("disconnect", () => {
         console.log("User Disconnected:", socket.id);
     });

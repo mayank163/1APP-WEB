@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { FaUpload, FaTimes } from 'react-icons/fa';
 
-const BASE = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5000';
+const BASE = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5001';
 
 const ImageUpload = ({ file, existingUrl, onChange, onClear, label = 'Upload Image', accept = 'image/*', small = false }) => {
     const ref = useRef();

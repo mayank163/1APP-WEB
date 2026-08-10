@@ -26,11 +26,42 @@ const technicianJobRequestSchema = new mongoose.Schema({
     default: '',
     trim: true,
   },
+  counterOfferFrom: {
+    type: String,
+    enum: ['admin', 'technician', ''],
+    default: '',
+  },
   counterOffer: {
     type: Number,
     default: 0,
     min: 0,
   },
+  conversation: [{
+    sender: {
+      type: String,
+      enum: ['admin', 'technician', 'system'],
+      default: 'system',
+    },
+    message: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    counterOffer: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    counterOfferFrom: {
+      type: String,
+      enum: ['admin', 'technician', ''],
+      default: '',
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+  }],
   completedAt: {
     type: Date,
     default: null,

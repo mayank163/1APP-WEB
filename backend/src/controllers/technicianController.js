@@ -281,6 +281,105 @@ const markJobCompleted = async (req, res, next) => {
   }
 };
 
+const counterOffer = async (req, res, next) => {
+  try {
+    const { requestId } = req.params;
+    const { amount, message } = req.body;
+
+    if (!amount || Number(amount) <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a valid counter offer amount',
+      });
+    }
+
+    const request = await TechnicianJobRequest.findById(requestId);
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: 'Request not found',
+      });
+    }
+
+    // Make sure this request belongs to logged-in technician
+    if (request.technician.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not allowed to modify this request',
+      });
+    }
+
+    // Don't allow negotiation after accepted/rejected
+    if (['accepted', 'rejected'].includes(request.status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'This request is no longer available for negotiation',
+      });
+    }
+
+    const now = new Date();
+    const offerAmount = Number(amount);
+
+    request.status = 'counter-offer';
+    request.counterOffer = offerAmount;
+    request.counterOfferFrom = 'technician';
+
+    const trimmedMessage = message && message.trim();
+    if (trimmedMessage) {
+      request.adminMessage = trimmedMessage;
+    }
+
+    request.conversation = request.conversation || [];
+
+    request.conversation.push({
+      sender: 'technician',
+      message: trimmedMessage ? `Counter offer: ₹${offerAmount}. ${trimmedMessage}` : `Counter offer: ₹${offerAmount}.`,
+      counterOffer: offerAmount,
+      counterOfferFrom: 'technician',
+      createdAt: now,
+    });
+
+    await request.save();
+
+    // Socket.IO
+    try {
+      const { getIO } = require('../utils/socketInstance');
+
+      getIO()
+        .to(`request:${requestId}`)
+        .emit('request:message', {
+          requestId,
+          message: request.conversation[
+            request.conversation.length - 1
+          ],
+        });
+
+      getIO()
+        .to(`request:${requestId}`)
+        .emit('request:status', {
+          requestId,
+          status: request.status,
+          counterOffer: request.counterOffer,
+          counterOfferFrom: request.counterOfferFrom,
+        });
+    } catch (error) {
+      // Socket should not break API
+      console.log('Socket emit failed:', error.message);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Counter offer sent',
+      data: {
+        request,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getJobsForTechnicians,
   requestJob,
@@ -291,4 +390,5 @@ module.exports = {
   getMetrics,
   markReached,
   markJobCompleted,
+  counterOffer,
 };

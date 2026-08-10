@@ -5,6 +5,7 @@ const technicianController = require('../controllers/technicianController');
 
 router.get('/jobs', protect, restrictTo('technician', 'admin'), technicianController.getJobsForTechnicians);
 router.post('/jobs/:jobId/request', protect, restrictTo('technician'), technicianController.requestJob);
+router.post('/requests/:requestId/counter-offer',protect,restrictTo('technician'),technicianController.counterOffer);
 
 // ── Job progress: technician marks reached & completed ────────────────────────
 router.patch('/jobs/:jobId/reached', protect, restrictTo('technician'), technicianController.markReached);
