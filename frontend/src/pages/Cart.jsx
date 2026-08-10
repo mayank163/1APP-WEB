@@ -210,7 +210,7 @@ const Cart = () => {
                         <div style={{ background: '#fff', borderRadius: 14, padding: '20px 22px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
                             {Object.entries(grouped).map(([category, items], catIdx, arr) => (
                                 <div key={category}>
-                                    <div style={{ fontWeight: 800, fontSize: 16, color: '#111', marginBottom: 14 }}>{category}</div>
+                                    {/* <div style={{ fontWeight: 800, fontSize: 16, color: '#111', marginBottom: 14 }}>{category}</div> */}
                                     {items.map((item, idx) => (
                                         <div key={item.service._id}>
                                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>

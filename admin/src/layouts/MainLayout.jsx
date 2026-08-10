@@ -4,7 +4,7 @@ import adminApi from '../services/adminApi';
 import {
     FaLayout, FaChartBar, FaTasks, FaWrench, FaFolderOpen,
     FaUsers, FaTag, FaSignOutAlt, FaTools, FaPlus,
-    FaList, FaLayerGroup, FaBlog
+    FaList, FaLayerGroup, FaBlog, FaHardHat, FaCheckCircle
 } from 'react-icons/fa';
 
 const MainLayout = () => {
@@ -62,6 +62,8 @@ const MainLayout = () => {
                             { to: "/services", icon: <FaLayerGroup size={14} />, label: "Services" },
                             { to: "/users", icon: <FaUsers size={14} />, label: "Users" },
                             { to: "/offers", icon: <FaTag size={14} />, label: "Offers & Coupons" },
+                            { to: "/technician-jobs", icon: <FaHardHat size={14} />, label: "Technician Jobs" },
+                            { to: "/technician-verification", icon: <FaCheckCircle size={14} />, label: "Verification" },
                             { to: "/blogs", icon: <FaBlog size={14} />, label: "Blogs" },
                         ].map(({ to, icon, label, end }) => (
                             <li key={to} className="nav-item">

@@ -32,6 +32,28 @@ const uploadServiceMedia = multer({ storage, fileFilter: imageOrVideo, limits })
     { name: 'processStepImages', maxCount: 20 }
 ]);
 
+const technicianDocumentFilter = (req, file, cb) => {
+    const allowed = ['image/', 'application/pdf'];
+    const isAllowed = allowed.some(type => file.mimetype.startsWith(type));
+    if (isAllowed) return cb(null, true);
+    cb(new Error('Only image or PDF files are allowed for technician documents'), false);
+};
+
+const uploadTechnicianDocuments = multer({
+    storage,
+    limits,
+    fileFilter: technicianDocumentFilter,
+}).fields([
+    { name: 'drivingLicenseFront', maxCount: 1 },
+    { name: 'drivingLicenseBack', maxCount: 1 },
+    { name: 'residentialProof', maxCount: 1 },
+    { name: 'taxInformation', maxCount: 1 },
+    { name: 'cvResume', maxCount: 1 },
+    { name: 'backgroundVerification', maxCount: 1 },
+    { name: 'profilePhoto', maxCount: 1 }
+]);
+
 module.exports = upload;
 module.exports.uploadServiceMedia = uploadServiceMedia;
 module.exports.uploadCategoryMedia = uploadCategoryMedia;
+module.exports.uploadTechnicianDocuments = uploadTechnicianDocuments;

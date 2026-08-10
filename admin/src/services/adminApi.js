@@ -47,6 +47,15 @@ const adminApi = {
     },
     updateBooking: async (id, data) => (await API.put(`/admin/bookings/${id}`, data)).data,
 
+    // ─── Technician Jobs ─────────────────────────────────────────────────────
+    getTechnicianJobs: async () => (await API.get('/admin/technician-jobs')).data,
+    createTechnicianJob: async (payload) => (await API.post('/admin/technician-jobs', payload)).data,
+    getTechnicianRequests: async () => (await API.get('/admin/technician-requests')).data,
+    updateTechnicianRequest: async (id, payload) => (await API.patch(`/admin/technician-requests/${id}/status`, payload)).data,
+    sendTechnicianRequestMessage: async (id, message) => (await API.patch(`/admin/technician-requests/${id}/message`, { message })).data,
+    getTechnicianVerificationRequests: async () => (await API.get('/admin/technician-verifications')).data,
+    updateTechnicianVerificationStatus: async (technicianId, payload) => (await API.patch(`/admin/technician-verifications/${technicianId}/status`, payload)).data,
+
     // ─── Users ─────────────────────────────────────────────────────────────────
     getUsers: async () => (await API.get('/admin/users')).data,
 

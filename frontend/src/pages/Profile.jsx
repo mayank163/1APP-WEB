@@ -1,8 +1,8 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useRef } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { ProfileShimmer } from '../components/Shimmer';
-import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaCheckCircle, FaExclamationTriangle, FaCheckDouble, FaUpload, FaPhoneAlt, FaCrosshairs } from 'react-icons/fa';
+import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaCheckCircle, FaExclamationTriangle, FaCheckDouble, FaUpload, FaPhoneAlt, FaCrosshairs, FaCamera } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 // Reverse-geocode lat/lng → human-readable address using OpenStreetMap Nominatim (free, no key needed)
@@ -17,7 +17,7 @@ const reverseGeocode = async (lat, lng) => {
 };
 
 const Profile = () => {
-    const { user, updateProfile, sendOTP, verifyOTP, loading } = useContext(AuthContext);
+    const { user, updateProfile, uploadProfileImage, sendOTP, verifyOTP, loading } = useContext(AuthContext);
 
     // Form inputs
     const [name, setName] = useState(user?.name || '');
@@ -27,10 +27,38 @@ const Profile = () => {
     const [updating, setUpdating] = useState(false);
     const [locating, setLocating] = useState(false);
 
+    // Avatar upload
+    const avatarInputRef = useRef(null);
+    const [avatarPreview, setAvatarPreview] = useState(null);
+    const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
     // OTP verification variables
     const [showOtpField, setShowOtpField] = useState(false);
     const [otpCode, setOtpCode] = useState('');
     const [verifying, setVerifying] = useState(false);
+
+    const handleAvatarChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Show local preview immediately
+        const reader = new FileReader();
+        reader.onload = (ev) => setAvatarPreview(ev.target.result);
+        reader.readAsDataURL(file);
+
+        setUploadingAvatar(true);
+        try {
+            await uploadProfileImage(file);
+            toast.success('Profile photo updated!');
+        } catch (err) {
+            toast.error(err.message || 'Failed to upload photo');
+            setAvatarPreview(null);
+        } finally {
+            setUploadingAvatar(false);
+            // Reset input so the same file can be re-selected if needed
+            e.target.value = '';
+        }
+    };
 
     const handleSaveProfile = async (e) => {
         e.preventDefault();
@@ -132,11 +160,50 @@ const Profile = () => {
                 {/* 1. Profile overview */}
                 <div className="col-lg-4">
                     <div className="card border-0 shadow-sm rounded-4 bg-white p-4 text-center">
-                        <div className="mx-auto mb-3" style={{ width: '100px', height: '100px', borderRadius: '50%', border: '3px solid #2d6a4f', overflow: 'hidden', background: '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <span className="fw-bold text-secondary" style={{ fontSize: '2rem' }}>
-                                {user?.name?.charAt(0)?.toUpperCase()}
-                            </span>
+                        {/* Clickable avatar */}
+                        <div
+                            className="mx-auto mb-3 position-relative"
+                            style={{ width: '100px', height: '100px', cursor: 'pointer' }}
+                            onClick={() => !uploadingAvatar && avatarInputRef.current.click()}
+                            title="Click to change profile photo"
+                        >
+                            <div style={{ width: '100px', height: '100px', borderRadius: '50%', border: '3px solid #2d6a4f', overflow: 'hidden', background: '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                {avatarPreview || user?.profileImage?.url ? (
+                                    <img
+                                        src={avatarPreview || user.profileImage.url}
+                                        alt="Profile"
+                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                    />
+                                ) : (
+                                    <span className="fw-bold text-secondary" style={{ fontSize: '2rem' }}>
+                                        {user?.name?.charAt(0)?.toUpperCase()}
+                                    </span>
+                                )}
+                            </div>
+                            {/* Camera overlay */}
+                            <div
+                                style={{
+                                    position: 'absolute', bottom: 0, right: 0,
+                                    width: '28px', height: '28px', borderRadius: '50%',
+                                    background: uploadingAvatar ? '#adb5bd' : '#2d6a4f',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    border: '2px solid #fff', transition: 'background 0.2s'
+                                }}
+                            >
+                                {uploadingAvatar
+                                    ? <div className="spinner-border spinner-border-sm text-white" style={{ width: '14px', height: '14px', borderWidth: '2px' }} role="status" />
+                                    : <FaCamera size={12} color="#fff" />
+                                }
+                            </div>
                         </div>
+                        {/* Hidden file input */}
+                        <input
+                            ref={avatarInputRef}
+                            type="file"
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={handleAvatarChange}
+                        />
                         <h4 className="fw-bold mb-1">{user?.name}</h4>
                         <span className="badge text-uppercase mb-4" style={{ background: '#d8f3dc', color: '#2d6a4f', fontSize: '0.7rem', padding: '5px 10px', alignSelf: 'center' }}>{user?.role}</span>
 

@@ -68,8 +68,15 @@ const NavigationBar = () => {
                         {isAuthenticated ? (
                             <div className="dropdown">
                                 <button className="btn p-0 border-0 bg-transparent" type="button" data-bs-toggle="dropdown">
-                                    <div className="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style={{ width: 32, height: 32 }}>
-                                        <FaUser size={14} color="#fff" />
+                                    <div className="rounded-circle overflow-hidden d-flex align-items-center justify-content-center flex-shrink-0"
+                                        style={{ width: 32, height: 32, border: '2px solid #2d6a4f', background: user?.profileImage?.url ? 'transparent' : '#6c757d' }}>
+                                        {user?.profileImage?.url ? (
+                                            <img src={user.profileImage.url} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        ) : (
+                                            <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff', lineHeight: 1 }}>
+                                                {user?.name?.charAt(0)?.toUpperCase()}
+                                            </span>
+                                        )}
                                     </div>
                                 </button>
                                 <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-2 navbar-dropdown">

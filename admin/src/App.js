@@ -15,6 +15,8 @@ import SubcategoryManagement from './pages/SubcategoryManagement';
 import UserManagement from './pages/UserManagement';
 import OfferManagement from './pages/OfferManagement';
 import BlogManagement from './pages/BlogManagement';
+import TechnicianJobs from './pages/TechnicianJobs';
+import TechnicianVerification from './pages/TechnicianVerification';
 
 // Private Route Wrapper
 const AdminPrivateRoute = ({ children }) => {
@@ -48,6 +50,8 @@ function App() {
           <Route path="subcategories" element={<CategoryManagement />} />
           <Route path="users" element={<UserManagement />} />
           <Route path="offers" element={<OfferManagement />} />
+          <Route path="technician-jobs" element={<TechnicianJobs />} />
+          <Route path="technician-verification" element={<TechnicianVerification />} />
           <Route path="blogs" element={<BlogManagement />} />
         </Route>
       </Routes>

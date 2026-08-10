@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import adminApi from '../services/adminApi';
 import { ShimmerServiceTable } from '../components/Shimmer';
 import AdminImage from '../components/AdminImage';
@@ -108,6 +108,7 @@ const SubcategoryManagement = () => {
     const [editingStepIndex, setEditingStepIndex] = useState(null);
     
     const [submitting, setSubmitting] = useState(false);
+    const formRef = useRef(null);
 
     const fetchData = async () => {
         setLoading(true);
@@ -143,9 +144,9 @@ const SubcategoryManagement = () => {
     useEffect(() => {
         if (actualPrice && discountPercentage) {
             const calcOfferPrice = parseFloat(actualPrice) - (parseFloat(actualPrice) * parseFloat(discountPercentage) / 100);
-            setOfferPrice(Math.round(calcOfferPrice * 100) / 100);
+            setOfferPrice(Math.floor(calcOfferPrice));
         } else if (actualPrice) {
-            setOfferPrice(parseFloat(actualPrice));
+            setOfferPrice(Math.floor(parseFloat(actualPrice)));
         } else {
             setOfferPrice('');
         }
@@ -157,12 +158,12 @@ const SubcategoryManagement = () => {
             const calcOfferPrice = parseFloat(variantForm.actualPrice) - (parseFloat(variantForm.actualPrice) * parseFloat(variantForm.discountPercentage) / 100);
             setVariantForm(prev => ({
                 ...prev,
-                offerPrice: Math.round(calcOfferPrice * 100) / 100
+                offerPrice: Math.floor(calcOfferPrice)
             }));
         } else if (variantForm.actualPrice) {
             setVariantForm(prev => ({
                 ...prev,
-                offerPrice: parseFloat(variantForm.actualPrice)
+                offerPrice: Math.floor(parseFloat(variantForm.actualPrice))
             }));
         }
     }, [variantForm.actualPrice, variantForm.discountPercentage]);
@@ -220,7 +221,6 @@ const SubcategoryManagement = () => {
     const handleOpenCreate = () => { resetForm(); setShowForm(true); };
 
     const handleOpenEdit = (svc) => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
     setEditingId(svc._id);
     const catId = svc.category?._id || '';
     setSelectedCategoryId(catId);
@@ -257,6 +257,7 @@ const SubcategoryManagement = () => {
     setProcessSteps(svc.processSteps || []);
     setProcessStepImageFiles((svc.processSteps || []).map(() => null));
     setShowForm(true);
+    setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
 };
 
     const handleDelete = async (id) => {
@@ -635,7 +636,7 @@ const SubcategoryManagement = () => {
             let offerValue = priceValue;
             if (discountValue > 0) {
                 offerValue = priceValue - (priceValue * discountValue / 100);
-                offerValue = Math.round(offerValue * 100) / 100;
+                offerValue = Math.floor(offerValue);
             }
             
             formData.append('actualPrice', priceValue.toString());
@@ -777,7 +778,7 @@ const SubcategoryManagement = () => {
             </div>
 
             {showForm && (
-                <div className="card border-0 shadow-sm rounded-3 bg-white p-4 mb-4">
+                <div ref={formRef} className="card border-0 shadow-sm rounded-3 bg-white p-4 mb-4">
                     <h5 className="fw-bold mb-4 border-bottom pb-2">
                         {editingId ? 'Edit Service' : 'Create New Service'}
                     </h5>

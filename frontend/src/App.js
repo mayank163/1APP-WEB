@@ -32,6 +32,7 @@ import Reviews from './pages/Reviews';
 import AboutUs from './pages/AboutUs';
 import Blogs from './pages/Blogs';
 import BlogDetail from './pages/BlogDetail';
+import TechnicianDashboard from './pages/TechnicianDashboard';
 
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
 
@@ -58,6 +59,7 @@ const AppShell = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/checkout" element={<PrivateRoute><Checkout /></PrivateRoute>} />
           <Route path="/bookings" element={<PrivateRoute><Bookings /></PrivateRoute>} />
+          <Route path="/technician" element={<PrivateRoute><TechnicianDashboard /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/terms" element={<TermsAndConditions />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />

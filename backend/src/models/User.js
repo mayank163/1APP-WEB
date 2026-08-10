@@ -33,13 +33,78 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['user', 'admin'],
+        enum: ['user', 'admin', 'technician'],
         default: 'user'
+    },
+    skills: [{
+        type: String,
+        trim: true
+    }],
+    experienceLevel: {
+        type: String,
+        default: 'Beginner'
+    },
+    certifications: [{
+        type: String,
+        trim: true
+    }],
+    bankDetails: {
+        accountHolder: { type: String, default: '' },
+        bankName: { type: String, default: '' },
+        accountNumber: { type: String, default: '' },
+        ifscCode: { type: String, default: '' },
+        upiId: { type: String, default: '' }
+    },
+    profileCompleted: {
+        type: Boolean,
+        default: false
+    },
+    technicianProfile: {
+        skills: [{ type: String, trim: true }],
+        experienceLevel: { type: String, default: 'Beginner' },
+        yearsOfExperience: { type: Number, default: 0 },
+        certifications: [{ type: String, trim: true }],
+        photoUrl: { type: String, default: '' },
+        drivingLicenseFront: { type: String, default: '' },
+        drivingLicenseBack: { type: String, default: '' },
+        residentialProof: { type: String, default: '' },
+        taxInformation: { type: String, default: '' },
+        cvResume: { type: String, default: '' },
+        backgroundVerification: { type: String, default: '' },
+        verificationStatus: {
+            type: String,
+            enum: ['not-started', 'pending', 'approved', 'rejected'],
+            default: 'not-started'
+        },
+        verificationNotes: { type: String, default: '' },
+        submittedAt: { type: Date, default: null }
+    },
+    totalJobsDone: {
+        type: Number,
+        default: 0
+    },
+    totalEarnings: {
+        type: Number,
+        default: 0
+    },
+    totalWithdrawn: {
+        type: Number,
+        default: 0
     },
     isPhoneVerified: {
         type: Boolean,
         default: false
     },
+    profileImage: {
+        url: { type: String, default: '' },
+        s3Key: { type: String, default: '' }
+    },
+    cart: [
+        {
+            service: { type: mongoose.Schema.Types.ObjectId, ref: 'Service', required: true },
+            quantity: { type: Number, default: 1, min: 1 }
+        }
+    ],
     resetPasswordToken: String,
     resetPasswordExpire: Date
 }, {

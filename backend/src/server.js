@@ -20,7 +20,12 @@ const authRoutes = require('./routes/authRoutes');
 const serviceRoutes = require('./routes/serviceRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const adminTechnicianRoutes = require('./routes/adminTechnicianRoutes');
+const adminVerificationRoutes = require('./routes/adminVerificationRoutes');
+const technicianRoutes = require('./routes/technicianRoutes');
+const technicianAuthRoutes = require('./routes/technicianAuthRoutes');
 const blogRoutes = require('./routes/blogRoutes');
+const cartRoutes = require('./routes/cartRoutes');
 const Service = require('./models/Service');
 
 // Import middleware
@@ -111,7 +116,12 @@ app.use('/api/auth', authRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin', adminTechnicianRoutes);
+app.use('/api/admin', adminVerificationRoutes);
+app.use('/api/technician', technicianRoutes);
+app.use('/api/technician-auth', technicianAuthRoutes);
 app.use('/api/blogs', blogRoutes);
+app.use('/api/cart', cartRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

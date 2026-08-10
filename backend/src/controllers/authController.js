@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const otpService = require('../utils/otpService');
+const { uploadFile, deleteFile } = require('../utils/s3Upload');
 const {
     sendWelcomeEmail,
     sendLoginNotification,
@@ -312,6 +313,40 @@ exports.updateMe = async (req, res, next) => {
             data: {
                 user
             }
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
+ * @desc    Upload / replace user profile image
+ * @route   POST /api/auth/me/avatar
+ */
+exports.uploadProfileImage = async (req, res, next) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'Please upload an image file' });
+        }
+
+        const user = await User.findById(req.user.id);
+
+        // Delete old image from S3 if one exists
+        if (user.profileImage?.s3Key) {
+            await deleteFile(user.profileImage.s3Key).catch(err =>
+                console.error('Failed to delete old profile image:', err.message)
+            );
+        }
+
+        const { key } = await uploadFile(req.file, 'profile-images');
+        const imageUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+
+        user.profileImage = { url: imageUrl, s3Key: key };
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            data: { user }
         });
     } catch (err) {
         next(err);

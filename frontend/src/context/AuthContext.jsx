@@ -161,6 +161,18 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const uploadProfileImage = async (file) => {
+        try {
+            const res = await authService.uploadProfileImage(file);
+            if (res.success) {
+                setUser(res.data.user);
+                return res.data.user;
+            }
+        } catch (err) {
+            throw new Error(err.response?.data?.message || 'Image upload failed');
+        }
+    };
+
     return (
         <AuthContext.Provider value={{
             user,
@@ -174,8 +186,10 @@ export const AuthProvider = ({ children }) => {
             sendOTP,
             verifyOTP,
             updateProfile,
+            uploadProfileImage,
             isAuthenticated: !!user,
             isAdmin: user?.role === 'admin',
+            isTechnician: user?.role === 'technician',
             googleLogin
         }}>
             {children}

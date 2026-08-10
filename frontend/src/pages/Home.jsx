@@ -165,6 +165,81 @@ const Home = () => {
 
     return (
         <div className="home-page">
+            <style>{`
+                .hero-three-col {
+                    position: relative;
+                    z-index: 2;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 0 40px;
+                    height: 100%;
+                    gap: 24px;
+                    flex-wrap: wrap;
+                    overflow: hidden;
+                }
+
+                .hero-side-card {
+                    background: rgba(255,255,255,1);
+                    backdrop-filter: blur(15px);
+                    -webkit-backdrop-filter: blur(15px);
+                    border-radius: 28px;
+                    padding: 28px 24px 24px;
+                    width: 290px;
+                    max-width: 100%;
+                    flex: 0 0 290px;
+                    min-width: 0;
+                    overflow: hidden;
+                    box-shadow: 0 8px 40px rgba(0,0,0,0.16);
+                    align-self: center;
+                }
+
+                .hero-center-panel {
+                    flex: 1 1 320px;
+                    min-width: 0;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    text-align: center;
+                    padding: 0 16px;
+                }
+
+                @media (max-width: 1150px) {
+                    .hero-three-col {
+                        justify-content: center;
+                        padding: 0 20px;
+                    }
+
+                    .hero-side-card {
+                        flex-basis: min(290px, 100%);
+                        width: min(290px, 100%);
+                    }
+
+                    .hero-center-panel {
+                        order: -1;
+                        width: 100%;
+                        flex-basis: 100%;
+                    }
+                }
+
+                @media (max-width: 768px) {
+                    .hero-three-col {
+                        height: auto;
+                        min-height: 100%;
+                        padding: 24px 16px 120px;
+                    }
+
+                    .hero-side-card {
+                        width: 100%;
+                        flex-basis: 100%;
+                    }
+
+                    .hero-center-panel {
+                        padding: 0;
+                    }
+                }
+            `}</style>
 
             {/* Category Popup */}
             {popupCategory && (
@@ -211,46 +286,24 @@ const Home = () => {
                     <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(255,255,255,0.08)', zIndex: 1 }} />
 
                     {/* ── Three-column layout: LEFT CARD | CENTRE | RIGHT CARD ── */}
-                    <div style={{
-                        position: 'relative',
-                        zIndex: 2,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '0 40px',
-                        height: '100%',
-                        gap: '24px',
-                    }}>
+                    <div className="hero-three-col">
 
                         {/* ── LEFT CARD — Home Services subcategories ── */}
                         {(() => {
                             const homeCat = getCategoryByName('Home');
-                            const homeSubcategories = homeCat?.subcategories?.slice(0, 5) || [
-                                { name: 'Cleaning & Maintenance' },
-                                { name: 'Appliance Repair' },
-                                { name: 'Plumbing' },
-                                { name: 'Electrical' },
-                                { name: 'Painting' },
-                            ];
+                            const desiredSubNames = ['Cleaning', 'Diagnosis', 'Home Theater', 'Smart Home', 'TV Mounting'];
+                            const homeSubcategories = desiredSubNames.map(name =>
+                                homeCat?.subcategories?.find(s => s.name?.toLowerCase() === name.toLowerCase()) || { name }
+                            );
                             const subIcons = [
-                                <FaTools size={15} />,
+                                <FaSnowflake size={15} />,
                                 <FaWrench size={15} />,
-                                <FaTint size={15} />,
+                                <FaTools size={15} />,
+                                <FaHome size={15} />,
                                 <FaBolt size={15} />,
-                                <FaPaintRoller size={15} />,
                             ];
                             return (
-                                <div style={{
-                                    background: 'rgba(255,255,255,1)',
-                                    backdropFilter: 'blur(15px)',
-                                    WebkitBackdropFilter: 'blur(15px)',
-                                    borderRadius: '28px',
-                                    padding: '28px 24px 24px',
-                                    width: '290px',
-                                    flexShrink: 0,
-                                    boxShadow: '0 8px 40px rgba(0,0,0,0.16)',
-                                    alignSelf: 'center',
-                                }}>
+                                <div className="hero-side-card">
                                     {/* Card header */}
                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px' }}>
                                         <div style={{
@@ -322,15 +375,7 @@ const Home = () => {
                         })()}
 
                         {/* ── CENTRE — Trust badge, headline, CTA ── */}
-                        <div style={{
-                            flex: 1,
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            textAlign: 'center',
-                            padding: '0 16px',
-                        }}>
+                        <div className="hero-center-panel">
                             {/* Trust badge */}
                             <div style={{
                                 display: 'inline-flex', alignItems: 'center', gap: '7px',
@@ -369,10 +414,9 @@ const Home = () => {
                                 textShadow: '0 1px 6px rgba(241, 241, 241, 0.5)',
                                 padding: '12px ',
                             }}>
-                                All the services you need, right where you need them.
                             </p>
 
-                            
+
                         </div>
 
                         {/* ── RIGHT CARD — All other categories (no subcategories shown) ── */}
@@ -394,17 +438,7 @@ const Home = () => {
                             ];
 
                             return (
-                                <div style={{
-                                    background: 'rgba(255,255,255,1)',
-                                    backdropFilter: 'blur(15px)',
-                                    WebkitBackdropFilter: 'blur(15px)',
-                                    borderRadius: '28px',
-                                    padding: '28px 24px 24px',
-                                    width: '290px',
-                                    flexShrink: 0,
-                                    boxShadow: '0 8px 40px rgba(0,0,0,0.16)',
-                                    alignSelf: 'center',
-                                }}>
+                                <div className="hero-side-card">
                                     {/* Card header */}
                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px' }}>
                                         <div style={{
@@ -617,8 +651,10 @@ const Home = () => {
                     <div className="rounded-4 overflow-hidden d-flex" style={{ background: '#fdfdf0', minHeight: '200px' }}>
                         <div className="p-5 d-flex flex-column justify-content-center" style={{ flex: '0 0 45%' }}>
                             <h2 className="fw-bold mb-2" style={{ color: '#1a1a1a', fontSize: '1.6rem', lineHeight: 1.3 }}>Give your space the glow-up it deserves</h2>
-                            <p className="text-muted mb-4">Home painting</p>
-                            {/* <button className="btn rounded-3 px-4 py-2" style={{ width: 'fit-content', background: '#000000', color: '#fff', border: 'none' }}>Buy now</button> */}
+                            <p className="text-muted mb-5" style={{ fontSize: '16px', lineHeight: 1.8 }}>
+                                We believe deeply in driving social and economic progress across the region. We use our app to connect customers to the communities that need the most support.
+                            </p>
+                            <button className="btn rounded-3 px-4 py-2" style={{ width: 'fit-content', background: '#000000', color: '#fff', border: 'none' }}>Read More</button>
                         </div>
                         <div style={{ flex: '0 0 55%', overflow: 'hidden' }}>
                             <img
@@ -843,7 +879,7 @@ const Home = () => {
 
             {/* All Home Services Banner */}
             {/* 
-            
+
             <section className="py-5 bg-white">
                 <div className="container">
                     <div className="rounded-4 overflow-hidden position-relative" style={{ background: '#111', minHeight: '380px' }}>
@@ -854,14 +890,14 @@ const Home = () => {
                             style={{ objectFit: 'cover', top: 0, right: 0, width: '55%', opacity: 0.9 }}
                             onError={(e) => { e.target.style.display = 'none'; }}
                         />
-                  
+
                         <div className="position-absolute h-100" style={{ top: 0, left: 0, width: '60%', background: 'linear-gradient(to right, #111 60%, transparent 100%)' }} />
                         <div className="position-relative p-5 d-flex flex-column justify-content-center" style={{ minHeight: '380px', maxWidth: '520px' }}>
                             <span className="fw-bold text-white px-3 py-1 rounded-2 mb-3" style={{ background: '#000000', fontSize: '11px', width: 'fit-content', letterSpacing: '0.5px' }}>ONE APP. ALL SERVICES.</span>
                             <p className="text-white mb-1" style={{ fontSize: '12px', opacity: 0.7, letterSpacing: '1px' }}>ONE-APP</p>
                             <h2 className="fw-bold text-white mb-2" style={{ fontSize: '2.4rem', lineHeight: 1.2 }}>All Home Services<br />in One App</h2>
                             <p className="mb-4" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '14px', lineHeight: 1.6 }}>Everything your home needs,<br />delivered by trusted experts.</p>
-                            
+
                             <div className="d-flex flex-wrap gap-0 mb-4" style={{ maxWidth: '420px' }}>
                                 {[
                                     { icon: <FaTools />, label: 'Cleaning' },
@@ -882,7 +918,7 @@ const Home = () => {
                                     </div>
                                 ))}
                             </div>
-                           
+
                             <div className="d-flex align-items-center gap-4 flex-wrap">
                                 <button className="btn fw-semibold rounded-3 px-4 py-2" style={{ background: '#000000', color: '#fff', border: 'none' }} onClick={() => navigate('/services')}>Book Now</button>
                                 <div className="d-flex align-items-center gap-2" style={{ color: 'rgba(255,255,255,0.7)', fontSize: '12px' }}>
@@ -898,8 +934,8 @@ const Home = () => {
                     </div>
                 </div>
             </section> 
-            
-            
+
+
             */}
 
 
@@ -1037,7 +1073,7 @@ const Home = () => {
             {/* <section className="py-5 bg-white">
                 <div className="container">
                     <div className="row g-3">
-                       
+
                         <div className="col-lg-4">
                             <div className="rounded-4 p-4 h-100 d-flex flex-column justify-content-between" style={{ background: '#1a1a1a', minHeight: '220px' }}>
                                 <div>
@@ -1047,7 +1083,7 @@ const Home = () => {
                                 <button className="btn rounded-pill px-4 py-2 fw-semibold" style={{ width: 'fit-content', fontSize: '13px', background: '#000000', color: '#fff', border: 'none' }}>Join Plus Membership</button>
                             </div>
                         </div>
-                        
+
                         <div className="col-lg-8">
                             <div className="row g-3 h-100">
                                 {[
@@ -1238,7 +1274,7 @@ const Home = () => {
                         </div>
                     </div>
 
-                   
+
                     <div className="rounded-4 overflow-hidden position-relative" style={{ minHeight: '280px', background: '#111' }}>
                         <img src={tryHeroImg('events.png')} alt="Events & Media" className="position-absolute w-100 h-100" style={{ objectFit: 'cover', top: 0, left: 0, opacity: 0.55 }} onError={(e) => { e.target.style.display = 'none'; }} />
                         <div className="position-absolute w-100 h-100" style={{ top: 0, left: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.85) 45%, transparent 100%)' }} />

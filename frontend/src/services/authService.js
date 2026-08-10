@@ -56,6 +56,15 @@ const authService = {
         return response.data;
     },
 
+    uploadProfileImage: async (file) => {
+        const formData = new FormData();
+        formData.append('profileImage', file);
+        const response = await API.post('/auth/me/avatar', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return response.data;
+    },
+
     sendOTP: async () => {
         const response = await API.post('/auth/send-otp');
         return response.data;
