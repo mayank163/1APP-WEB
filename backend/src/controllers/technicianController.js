@@ -180,6 +180,107 @@ const getMetrics = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc  Technician presses "I have reached the location" button
+ * @route PATCH /api/technician/jobs/:jobId/reached
+ */
+const markReached = async (req, res, next) => {
+  try {
+    const { jobId } = req.params;
+
+    const job = await TechnicianJob.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ success: false, message: 'Job not found' });
+    }
+
+    // Only the assigned technician can mark reached
+    if (!job.assignedTechnician?._id || job.assignedTechnician._id.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'You are not assigned to this job' });
+    }
+
+    if (job.reachedAt) {
+      return res.status(400).json({ success: false, message: 'Location already marked as reached' });
+    }
+
+    const now = new Date();
+    job.reachedAt = now;
+    job.jobStartedAt = now;
+    job.status = 'in-progress';
+
+    job.conversation = job.conversation || [];
+    job.conversation.push({
+      sender: 'technician',
+      message: `Technician reached the location at ${now.toLocaleString('en-IN')}.`,
+      createdAt: now,
+    });
+
+    await job.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Reached location recorded',
+      data: { reachedAt: job.reachedAt, jobStartedAt: job.jobStartedAt, status: job.status },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc  Technician presses "Job Completed" button
+ * @route PATCH /api/technician/jobs/:jobId/complete
+ */
+const markJobCompleted = async (req, res, next) => {
+  try {
+    const { jobId } = req.params;
+
+    const job = await TechnicianJob.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ success: false, message: 'Job not found' });
+    }
+
+    // Only the assigned technician can mark completed
+    if (!job.assignedTechnician?._id || job.assignedTechnician._id.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'You are not assigned to this job' });
+    }
+
+    if (job.jobCompletedAt) {
+      return res.status(400).json({ success: false, message: 'Job already marked as completed' });
+    }
+
+    const now = new Date();
+    job.jobCompletedAt = now;
+
+    // Calculate duration from reachedAt or jobStartedAt
+    const startRef = job.jobStartedAt || job.reachedAt;
+    if (startRef) {
+      const diffMs = now - new Date(startRef);
+      job.jobDurationMinutes = Math.round(diffMs / 60000);
+    }
+
+    job.conversation = job.conversation || [];
+    job.conversation.push({
+      sender: 'technician',
+      message: `Technician marked job as completed at ${now.toLocaleString('en-IN')}.${job.jobDurationMinutes != null ? ` Duration: ${job.jobDurationMinutes} min.` : ''}`,
+      createdAt: now,
+    });
+
+    await job.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Job completion recorded. Waiting for admin to close and process payment.',
+      data: {
+        jobCompletedAt: job.jobCompletedAt,
+        jobDurationMinutes: job.jobDurationMinutes,
+        reachedAt: job.reachedAt,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getJobsForTechnicians,
   requestJob,
@@ -188,4 +289,6 @@ module.exports = {
   createWithdrawalRequest,
   updateRequestStatus,
   getMetrics,
+  markReached,
+  markJobCompleted,
 };

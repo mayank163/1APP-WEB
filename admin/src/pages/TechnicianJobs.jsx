@@ -8,6 +8,7 @@ import {
   FaPlus, FaEdit, FaTrash, FaEye, FaSearch, FaTimes,
   FaHardHat, FaMapMarkerAlt, FaRupeeSign, FaCalendarAlt,
   FaTools, FaUserCheck, FaInbox, FaBell, FaPaperPlane,
+  FaClock, FaCheckCircle, FaWallet,
 } from 'react-icons/fa';
 
 const emptyForm = {
@@ -19,22 +20,37 @@ const emptyForm = {
   preferredSkills: '',
   requirements: '',
   deadline: '',
+  estimatedTime: '',
 };
+
+// ─── Helper: format duration ───────────────────────────────────────────────────
+const formatDuration = (minutes) => {
+  if (minutes == null) return '—';
+  if (minutes < 60) return `${minutes} min`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m > 0 ? `${h}h ${m}min` : `${h}h`;
+};
+
+// ─── Helper: format datetime ───────────────────────────────────────────────────
+const fmtDT = (dt) => {
+  if (!dt) return '—';
+  return new Date(dt).toLocaleString('en-IN', {
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  });
+};
+
 
 // ─── Reusable Modal wrapper ────────────────────────────────────────────────────
 const Modal = ({ show, onClose, title, children, size = '' }) => {
   if (!show) return null;
   return (
     <div className="tj-modal-backdrop" onClick={onClose}>
-      <div
-        className={`tj-modal-box ${size}`}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className={`tj-modal-box ${size}`} onClick={(e) => e.stopPropagation()}>
         <div className="tj-modal-header">
           <h5 className="tj-modal-title">{title}</h5>
-          <button className="tj-modal-close" onClick={onClose}>
-            <FaTimes />
-          </button>
+          <button className="tj-modal-close" onClick={onClose}><FaTimes /></button>
         </div>
         <div className="tj-modal-body">{children}</div>
       </div>
@@ -42,135 +58,169 @@ const Modal = ({ show, onClose, title, children, size = '' }) => {
   );
 };
 
+// ─── Pay Wallet Modal ──────────────────────────────────────────────────────────
+const PayWalletModal = ({ show, job, onClose, onPay, paying }) => {
+  const [price, setPrice] = useState('');
+  const [note, setNote]   = useState('');
+  if (!show) return null;
+  return (
+    <div className="tj-modal-backdrop" onClick={onClose}>
+      <div className="tj-modal-box" onClick={(e) => e.stopPropagation()}>
+        <div className="tj-modal-header">
+          <h5 className="tj-modal-title">
+            <FaWallet className="me-2" style={{ color: '#16a34a' }} />
+            Pay Technician Wallet
+          </h5>
+          <button className="tj-modal-close" onClick={onClose}><FaTimes /></button>
+        </div>
+        <div className="tj-modal-body">
+          <p className="text-muted small mb-3">
+            Job: <strong>{job?.title}</strong> &nbsp;|&nbsp;
+            Tech: <strong>{job?.assignedTechnician?.name || '—'}</strong>
+          </p>
+          {job?.jobDurationMinutes != null && (
+            <div className="tj-pay-info-row mb-3">
+              <FaClock style={{ color: '#A5732F' }} />
+              <span>Job duration: <strong>{formatDuration(job.jobDurationMinutes)}</strong></span>
+            </div>
+          )}
+          <label className="tj-label">Final Price ($) <span className="text-danger">*</span></label>
+          <div className="tj-counter-input-wrap mb-3">
+            <span className="tj-counter-prefix">$</span>
+            <input
+              className="tj-counter-input"
+              type="number" min="1"
+              placeholder="Enter amount"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+            />
+          </div>
+          <label className="tj-label">Note (optional)</label>
+          <textarea
+            className="form-control tj-input mb-3"
+            rows={2}
+            placeholder="Payment note…"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+          />
+          <div className="d-flex gap-2 justify-content-end">
+            <button className="btn tj-btn-ghost" onClick={onClose} disabled={paying}>Cancel</button>
+            <button
+              className="btn tj-btn-pay"
+              disabled={paying || !price || Number(price) <= 0}
+              onClick={() => onPay(job._id, Number(price), note)}
+            >
+              {paying
+                ? <><span className="spinner-border spinner-border-sm me-2" />Processing…</>
+                : <><FaWallet className="me-2" />Credit to Wallet</>
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 // ─── Job Form (shared by Add + Edit) ──────────────────────────────────────────
 const JobForm = ({ form, setForm, onSubmit, onCancel, isEditing, saving }) => (
   <form onSubmit={onSubmit} className="row g-3">
     <div className="col-12">
       <label className="tj-label">Job Title <span className="text-danger">*</span></label>
-      <input
-        className="form-control tj-input"
-        value={form.title}
+      <input className="form-control tj-input" value={form.title}
         onChange={(e) => setForm({ ...form, title: e.target.value })}
-        placeholder="e.g. AC Service Repair"
-        required
-      />
+        placeholder="e.g. AC Service Repair" required />
     </div>
     <div className="col-md-6">
       <label className="tj-label">Category</label>
-      <input
-        className="form-control tj-input"
-        value={form.category}
+      <input className="form-control tj-input" value={form.category}
         onChange={(e) => setForm({ ...form, category: e.target.value })}
-        placeholder="General Service"
-      />
+        placeholder="General Service" />
     </div>
     <div className="col-md-6">
       <label className="tj-label">Budget ($) <span className="text-danger">*</span></label>
-      <input
-        className="form-control tj-input"
-        type="number"
-        min="0"
-        value={form.budget}
+      <input className="form-control tj-input" type="number" min="0" value={form.budget}
         onChange={(e) => setForm({ ...form, budget: e.target.value })}
-        placeholder="1500"
-        required
-      />
+        placeholder="1500" required />
     </div>
     <div className="col-md-6">
       <label className="tj-label">Location <span className="text-danger">*</span></label>
-      <input
-        className="form-control tj-input"
-        value={form.location}
+      <input className="form-control tj-input" value={form.location}
         onChange={(e) => setForm({ ...form, location: e.target.value })}
-        placeholder="Los Angeles"
-        required
-      />
+        placeholder="Los Angeles" required />
+    </div>
+    <div className="col-md-6">
+      <label className="tj-label">
+        <FaClock className="me-1" style={{ color: '#A5732F' }} />
+        Estimated Time
+      </label>
+      <input className="form-control tj-input" value={form.estimatedTime}
+        onChange={(e) => setForm({ ...form, estimatedTime: e.target.value })}
+        placeholder="e.g. 2-3 hours, 45 min" />
     </div>
     <div className="col-md-6">
       <label className="tj-label">Deadline</label>
-      <input
-        className="form-control tj-input"
-        type="datetime-local"
-        value={form.deadline}
-        onChange={(e) => setForm({ ...form, deadline: e.target.value })}
-      />
+      <input className="form-control tj-input" type="datetime-local" value={form.deadline}
+        onChange={(e) => setForm({ ...form, deadline: e.target.value })} />
     </div>
     <div className="col-12">
       <label className="tj-label">Description <span className="text-danger">*</span></label>
-      <textarea
-        className="form-control tj-input"
-        rows={3}
-        value={form.description}
+      <textarea className="form-control tj-input" rows={3} value={form.description}
         onChange={(e) => setForm({ ...form, description: e.target.value })}
-        placeholder="Describe the work required…"
-        required
-      />
+        placeholder="Describe the work required…" required />
     </div>
     <div className="col-md-6">
       <label className="tj-label">Preferred Skills</label>
-      <input
-        className="form-control tj-input"
-        value={form.preferredSkills}
+      <input className="form-control tj-input" value={form.preferredSkills}
         onChange={(e) => setForm({ ...form, preferredSkills: e.target.value })}
-        placeholder="AC, electrical, repair (comma separated)"
-      />
+        placeholder="AC, electrical, repair (comma separated)" />
     </div>
     <div className="col-md-6">
       <label className="tj-label">Requirements</label>
-      <input
-        className="form-control tj-input"
-        value={form.requirements}
+      <input className="form-control tj-input" value={form.requirements}
         onChange={(e) => setForm({ ...form, requirements: e.target.value })}
-        placeholder="Tools, safety gear (comma separated)"
-      />
+        placeholder="Tools, safety gear (comma separated)" />
     </div>
     <div className="col-12 d-flex justify-content-end gap-2 pt-2">
-      <button type="button" className="btn tj-btn-ghost" onClick={onCancel} disabled={saving}>
-        Cancel
-      </button>
+      <button type="button" className="btn tj-btn-ghost" onClick={onCancel} disabled={saving}>Cancel</button>
       <button type="submit" className="btn tj-btn-primary" disabled={saving}>
         {saving
           ? <><span className="spinner-border spinner-border-sm me-2" />Saving…</>
-          : isEditing ? 'Update Job' : 'Create Job'
-        }
+          : isEditing ? 'Update Job' : 'Create Job'}
       </button>
     </div>
   </form>
 );
 
+
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 const TechnicianJobs = () => {
-  const [jobs, setJobs]           = useState([]);
-  const [requests, setRequests]   = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [saving, setSaving]       = useState(false);
+  const [jobs, setJobs]         = useState([]);
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [saving, setSaving]     = useState(false);
+  const [paying, setPaying]     = useState(false);
 
-  // tabs: 'all' | 'open' | 'assigned' | 'completed' | 'requests'
-  const [activeTab, setActiveTab] = useState('all');
-
-  const [search, setSearch]             = useState('');
+  const [activeTab, setActiveTab]   = useState('all');
+  const [search, setSearch]         = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
 
-  // modals
   const [showAddModal, setShowAddModal]   = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewPanel, setShowViewPanel] = useState(false);
+  const [showPayModal, setShowPayModal]   = useState(false);
+  const [payModalJob, setPayModalJob]     = useState(null);
 
-  // job-specific requests modal
   const [jobRequestsModal, setJobRequestsModal] = useState({ show: false, job: null });
-  // which single request is open in the conversation view (null = list view)
   const [activeConvReq, setActiveConvReq]       = useState(null);
-  // admin reply message typed in the chat box
   const [adminReply, setAdminReply]             = useState('');
   const [decidingId, setDecidingId]             = useState(null);
   const [sending, setSending]                   = useState(false);
-
-  // Live conversation messages driven by socket (keyed by requestId)
   const [liveConversation, setLiveConversation] = useState([]);
-  // Ref to current open requestId so socket callbacks can read it without stale closure
   const activeReqIdRef = useRef(null);
 
-  const [form, setForm]             = useState(emptyForm);
+  const [form, setForm]                 = useState(emptyForm);
   const [editingJobId, setEditingJobId] = useState(null);
   const [selectedJob, setSelectedJob]   = useState(null);
 
@@ -193,30 +243,33 @@ const TechnicianJobs = () => {
 
   useEffect(() => { loadData(); }, []);
 
-  // ── Socket: listen for real-time chat messages + status changes ─────────────
+  // ── Socket ──────────────────────────────────────────────────────────────────
   useEffect(() => {
-    const handleIncomingMessage = ({ requestId, message }) => {
-      // Only update UI if the incoming message belongs to the open conversation
+    const handleMsg = ({ requestId, message }) => {
       if (activeReqIdRef.current !== requestId) return;
       setLiveConversation((prev) => [...prev, message]);
     };
-
-    const handleStatusChange = ({ requestId, status }) => {
+    const handleStatus = ({ requestId, status }) => {
       if (activeReqIdRef.current !== requestId) return;
-      // Sync requests list so the status badge + bell badge stay accurate
-      setRequests((prev) =>
-        prev.map((r) => r._id === requestId ? { ...r, status } : r)
-      );
+      setRequests((prev) => prev.map((r) => r._id === requestId ? { ...r, status } : r));
     };
-
-    socket.on('request:message', handleIncomingMessage);
-    socket.on('request:status',  handleStatusChange);
-
+    socket.on('request:message', handleMsg);
+    socket.on('request:status',  handleStatus);
     return () => {
-      socket.off('request:message', handleIncomingMessage);
-      socket.off('request:status',  handleStatusChange);
+      socket.off('request:message', handleMsg);
+      socket.off('request:status',  handleStatus);
     };
-  }, []); // mount/unmount only — callbacks read ref, not state
+  }, []);
+
+  const [socketConnected, setSocketConnected] = useState(socket.connected);
+  useEffect(() => {
+    const onConn = () => setSocketConnected(true);
+    const onDisc = () => setSocketConnected(false);
+    socket.on('connect', onConn);
+    socket.on('disconnect', onDisc);
+    return () => { socket.off('connect', onConn); socket.off('disconnect', onDisc); };
+  }, []);
+
 
   // ── Stats ───────────────────────────────────────────────────────────────────
   const stats = useMemo(() => ({
@@ -226,46 +279,34 @@ const TechnicianJobs = () => {
     completed: jobs.filter((j) => j.status === 'completed').length,
   }), [jobs]);
 
-  // ── Filtered jobs (table view) ───────────────────────────────────────────────
-  const filteredJobs = useMemo(() => {
-    return jobs.filter((job) => {
-      const tabStatus = activeTab === 'all' || activeTab === 'requests'
-        ? true
-        : job.status === activeTab;
-
-      const dropdownStatus = filterStatus === 'all' || job.status === filterStatus;
-
-      const matchSearch = !search ||
-        [job.title, job.category, job.location, job.description]
-          .join(' ').toLowerCase().includes(search.toLowerCase());
-
-      return tabStatus && dropdownStatus && matchSearch;
-    });
-  }, [jobs, activeTab, filterStatus, search]);
+  const filteredJobs = useMemo(() => jobs.filter((job) => {
+    const tabOk   = activeTab === 'all' || activeTab === 'requests' || job.status === activeTab;
+    const dropOk  = filterStatus === 'all' || job.status === filterStatus;
+    const srcOk   = !search ||
+      [job.title, job.category, job.location, job.description].join(' ')
+        .toLowerCase().includes(search.toLowerCase());
+    return tabOk && dropOk && srcOk;
+  }), [jobs, activeTab, filterStatus, search]);
 
   // ── Form helpers ────────────────────────────────────────────────────────────
   const buildPayload = (f) => ({
     ...f,
-    budget: Number(f.budget || 0),
+    budget:          Number(f.budget || 0),
     preferredSkills: f.preferredSkills.split(',').map((s) => s.trim()).filter(Boolean),
     requirements:    f.requirements.split(',').map((s) => s.trim()).filter(Boolean),
-    deadline: f.deadline || undefined,
+    deadline:        f.deadline || undefined,
+    estimatedTime:   f.estimatedTime || '',
   });
 
   const handleAdd = async (e) => {
-    e.preventDefault();
-    setSaving(true);
+    e.preventDefault(); setSaving(true);
     try {
       await adminApi.createTechnicianJob(buildPayload(form));
-      toast.success('Job created successfully!');
-      setShowAddModal(false);
-      setForm(emptyForm);
-      await loadData();
+      toast.success('Job created!');
+      setShowAddModal(false); setForm(emptyForm); await loadData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to create job');
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   };
 
   const openEditModal = (job) => {
@@ -278,26 +319,21 @@ const TechnicianJobs = () => {
       description:     job.description || '',
       preferredSkills: (job.preferredSkills || []).join(', '),
       requirements:    (job.requirements || []).join(', '),
-      deadline: job.deadline ? new Date(job.deadline).toISOString().slice(0, 16) : '',
+      deadline:        job.deadline ? new Date(job.deadline).toISOString().slice(0, 16) : '',
+      estimatedTime:   job.estimatedTime || '',
     });
     setShowEditModal(true);
   };
 
   const handleEdit = async (e) => {
-    e.preventDefault();
-    setSaving(true);
+    e.preventDefault(); setSaving(true);
     try {
       await adminApi.updateTechnicianJob(editingJobId, buildPayload(form));
       toast.success('Job updated!');
-      setShowEditModal(false);
-      setForm(emptyForm);
-      setEditingJobId(null);
-      await loadData();
+      setShowEditModal(false); setForm(emptyForm); setEditingJobId(null); await loadData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update job');
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   };
 
   const handleDelete = async (jobId) => {
@@ -307,25 +343,36 @@ const TechnicianJobs = () => {
       toast.success('Job deleted');
       if (selectedJob?._id === jobId) setShowViewPanel(false);
       await loadData();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Delete failed');
-    }
+    } catch (err) { toast.error(err.response?.data?.message || 'Delete failed'); }
   };
 
-  const openViewPanel = (job) => {
-    setSelectedJob(job);
-    setShowViewPanel(true);
+  const openViewPanel = (job) => { setSelectedJob(job); setShowViewPanel(true); };
+
+  // ── Pay wallet ──────────────────────────────────────────────────────────────
+  const openPayModal = (job) => { setPayModalJob(job); setShowPayModal(true); };
+
+  const handlePayWallet = async (jobId, finalPrice, note) => {
+    setPaying(true);
+    try {
+      await adminApi.payTechnicianWallet(jobId, { finalPrice, note });
+      toast.success(`$${finalPrice} credited to technician wallet!`);
+      setShowPayModal(false); setPayModalJob(null);
+      await loadData();
+      // Sync selected job if view panel is open
+      if (selectedJob?._id === jobId) {
+        setSelectedJob((prev) => prev ? { ...prev, finalPrice } : prev);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Payment failed');
+    } finally { setPaying(false); }
   };
+
 
   // ── Socket room helpers ─────────────────────────────────────────────────────
   const openConversation = (req) => {
-    setActiveConvReq(req);
-    setAdminReply('');
-    // Seed live conversation from what we already have
+    setActiveConvReq(req); setAdminReply('');
     setLiveConversation(req.conversation || []);
-    // Track in ref for socket callbacks
     activeReqIdRef.current = req._id;
-    // Join the backend room
     socket.emit('request:join', req._id);
   };
 
@@ -334,56 +381,30 @@ const TechnicianJobs = () => {
       socket.emit('request:leave', activeReqIdRef.current);
       activeReqIdRef.current = null;
     }
-    setActiveConvReq(null);
-    setAdminReply('');
-    setLiveConversation([]);
+    setActiveConvReq(null); setAdminReply(''); setLiveConversation([]);
   };
 
-  // ── Request decision (accept / reject) ────────────────────────────────────
   const handleDecision = async (requestId, status) => {
     setDecidingId(requestId);
     try {
-      await adminApi.updateTechnicianRequest(requestId, {
-        status,
-        adminMessage: adminReply,
-      });
+      await adminApi.updateTechnicianRequest(requestId, { status, adminMessage: adminReply });
       toast.success(status === 'accepted' ? 'Request accepted!' : 'Request rejected.');
-      setAdminReply('');
-      await loadData();
+      setAdminReply(''); await loadData();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Action failed');
-    } finally {
-      setDecidingId(null);
-    }
+    } finally { setDecidingId(null); }
   };
 
-  // ── Send standalone message to technician ───────────────────────────────────
   const handleSendMessage = async (requestId) => {
     if (!adminReply.trim()) return;
     setSending(true);
     try {
       await adminApi.sendTechnicianRequestMessage(requestId, adminReply.trim());
       setAdminReply('');
-      // Note: no loadData() here — socket event request:message updates liveConversation in real-time
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to send message');
-    } finally {
-      setSending(false);
-    }
+    } finally { setSending(false); }
   };
-
-  // ── Socket connection indicator ─────────────────────────────────────────────
-  const [socketConnected, setSocketConnected] = useState(socket.connected);
-  useEffect(() => {
-    const onConnect    = () => setSocketConnected(true);
-    const onDisconnect = () => setSocketConnected(false);
-    socket.on('connect',    onConnect);
-    socket.on('disconnect', onDisconnect);
-    return () => {
-      socket.off('connect',    onConnect);
-      socket.off('disconnect', onDisconnect);
-    };
-  }, []);
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
@@ -403,8 +424,7 @@ const TechnicianJobs = () => {
           </span>
         </div>
         <button className="btn tj-btn-primary" onClick={() => { setForm(emptyForm); setShowAddModal(true); }}>
-          <FaPlus className="me-2" />
-          Add Job
+          <FaPlus className="me-2" />Add Job
         </button>
       </div>
 
@@ -417,9 +437,7 @@ const TechnicianJobs = () => {
           { label: 'Completed',   value: stats.completed, color: '#16a34a', icon: <FaHardHat /> },
         ].map((s) => (
           <div key={s.label} className="tj-stat-card">
-            <div className="tj-stat-icon" style={{ background: s.color + '18', color: s.color }}>
-              {s.icon}
-            </div>
+            <div className="tj-stat-icon" style={{ background: s.color + '18', color: s.color }}>{s.icon}</div>
             <div>
               <div className="tj-stat-value" style={{ color: s.color }}>{s.value}</div>
               <div className="tj-stat-label">{s.label}</div>
@@ -437,15 +455,14 @@ const TechnicianJobs = () => {
           { key: 'completed', label: 'Completed' },
           { key: 'requests',  label: `Requests${requests.length ? ` (${requests.length})` : ''}`, accent: true },
         ].map((tab) => (
-          <button
-            key={tab.key}
+          <button key={tab.key}
             className={`tj-tab${activeTab === tab.key ? ' active' : ''}${tab.accent ? ' accent' : ''}`}
-            onClick={() => setActiveTab(tab.key)}
-          >
+            onClick={() => setActiveTab(tab.key)}>
             {tab.label}
           </button>
         ))}
       </div>
+
 
       {/* ── Content area ────────────────────────────────────────────────────── */}
       <div className="tj-content-card">
@@ -456,23 +473,14 @@ const TechnicianJobs = () => {
             <div className="tj-toolbar">
               <div className="tj-search-wrap">
                 <FaSearch className="tj-search-icon" />
-                <input
-                  className="tj-search-input"
-                  placeholder="Search by title, category, location…"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
+                <input className="tj-search-input" placeholder="Search by title, category, location…"
+                  value={search} onChange={(e) => setSearch(e.target.value)} />
                 {search && (
-                  <button className="tj-search-clear" onClick={() => setSearch('')}>
-                    <FaTimes />
-                  </button>
+                  <button className="tj-search-clear" onClick={() => setSearch('')}><FaTimes /></button>
                 )}
               </div>
-              <select
-                className="form-select tj-filter-select"
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-              >
+              <select className="form-select tj-filter-select" value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}>
                 <option value="all">All Statuses</option>
                 {JOB_STATUS_OPTIONS.map((s) => (
                   <option key={s} value={s}>{getJobStatusLabel(s)}</option>
@@ -480,7 +488,6 @@ const TechnicianJobs = () => {
               </select>
             </div>
 
-            {/* Jobs table */}
             {loading ? (
               <div className="tj-loading">
                 <div className="spinner-border" style={{ color: '#A5732F' }} />
@@ -495,6 +502,7 @@ const TechnicianJobs = () => {
                       <th>Job</th>
                       <th>Location</th>
                       <th>Budget</th>
+                      <th>Est. Time</th>
                       <th>Assigned To</th>
                       <th>Status</th>
                       <th>Deadline</th>
@@ -504,7 +512,7 @@ const TechnicianJobs = () => {
                   <tbody>
                     {filteredJobs.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="tj-empty">
+                        <td colSpan={9} className="tj-empty">
                           <FaHardHat size={28} style={{ color: '#ccc' }} />
                           <span>No jobs found</span>
                         </td>
@@ -523,18 +531,17 @@ const TechnicianJobs = () => {
                               {job.location || '—'}
                             </span>
                           </td>
+                          <td><span className="tj-budget">${Number(job.budget || 0).toLocaleString()}</span></td>
                           <td>
-                            <span className="tj-budget">
-                              ${Number(job.budget || 0).toLocaleString()}
+                            <span className="tj-est-time">
+                              {job.estimatedTime || '—'}
                             </span>
                           </td>
                           <td>
                             {job.assignedTechnician?.name ? (
                               <div className="tj-tech-name">
                                 <div className="fw-semibold small">{job.assignedTechnician.name}</div>
-                                <div className="text-muted" style={{ fontSize: '0.75rem' }}>
-                                  {job.assignedTechnician.phone}
-                                </div>
+                                <div className="text-muted" style={{ fontSize: '0.75rem' }}>{job.assignedTechnician.phone}</div>
                               </div>
                             ) : (
                               <span className="tj-unassigned">Unassigned</span>
@@ -548,50 +555,28 @@ const TechnicianJobs = () => {
                           <td>
                             <span className="tj-deadline">
                               {job.deadline
-                                ? new Date(job.deadline).toLocaleDateString('en-IN', {
-                                    day: '2-digit', month: 'short', year: 'numeric',
-                                  })
+                                ? new Date(job.deadline).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
                                 : '—'}
                             </span>
                           </td>
                           <td>
                             <div className="tj-actions">
-                              <button
-                                className="tj-action-btn view"
-                                title="View Details"
-                                onClick={() => openViewPanel(job)}
-                              >
-                                <FaEye />
-                              </button>
-                              <button
-                                className="tj-action-btn edit"
-                                title="Edit Job"
-                                onClick={() => openEditModal(job)}
-                              >
-                                <FaEdit />
-                              </button>
-                              <button
-                                className="tj-action-btn delete"
-                                title="Delete Job"
-                                onClick={() => handleDelete(job._id)}
-                              >
-                                <FaTrash />
-                              </button>
-                              <button
-                                className="tj-action-btn requests"
-                                title="View Requests"
-                                onClick={() => setJobRequestsModal({ show: true, job })}
-                              >
+                              <button className="tj-action-btn view" title="View Details" onClick={() => openViewPanel(job)}><FaEye /></button>
+                              <button className="tj-action-btn edit" title="Edit Job" onClick={() => openEditModal(job)}><FaEdit /></button>
+                              <button className="tj-action-btn delete" title="Delete Job" onClick={() => handleDelete(job._id)}><FaTrash /></button>
+                              <button className="tj-action-btn requests" title="View Requests"
+                                onClick={() => setJobRequestsModal({ show: true, job })}>
                                 <FaBell />
                                 {(() => {
-                                  const cnt = requests.filter(
-                                    (r) => (r.job?._id || r.job) === job._id
-                                  ).length;
-                                  return cnt > 0
-                                    ? <span className="tj-action-badge">{cnt}</span>
-                                    : null;
+                                  const cnt = requests.filter((r) => (r.job?._id || r.job) === job._id).length;
+                                  return cnt > 0 ? <span className="tj-action-badge">{cnt}</span> : null;
                                 })()}
                               </button>
+                              {job.status === 'completed' && (
+                                <button className="tj-action-btn pay" title="Pay Wallet" onClick={() => openPayModal(job)}>
+                                  <FaWallet />
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -604,6 +589,7 @@ const TechnicianJobs = () => {
           </>
         ) : (
 
+
           /* ── Requests tab ──────────────────────────────────────────────── */
           <div>
             <div className="tj-requests-header">
@@ -613,26 +599,18 @@ const TechnicianJobs = () => {
             </div>
 
             {loading ? (
-              <div className="tj-loading">
-                <div className="spinner-border" style={{ color: '#A5732F' }} />
-              </div>
+              <div className="tj-loading"><div className="spinner-border" style={{ color: '#A5732F' }} /></div>
             ) : requests.length === 0 ? (
               <div className="tj-empty">
-                <FaInbox size={28} style={{ color: '#ccc' }} />
-                <span>No requests yet</span>
+                <FaInbox size={28} style={{ color: '#ccc' }} /><span>No requests yet</span>
               </div>
             ) : (
               <div className="table-responsive">
                 <table className="tj-table">
                   <thead>
                     <tr>
-                      <th>#</th>
-                      <th>Technician</th>
-                      <th>Job</th>
-                      <th>Bid Amount</th>
-                      <th>Status</th>
-                      <th>Submitted</th>
-                      <th className="text-center">Actions</th>
+                      <th>#</th><th>Technician</th><th>Job</th><th>Bid Amount</th>
+                      <th>Status</th><th>Submitted</th><th className="text-center">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -640,67 +618,41 @@ const TechnicianJobs = () => {
                       <tr key={req._id}>
                         <td className="tj-row-num">{idx + 1}</td>
                         <td>
-                          <div className="tj-job-title">
-                            {req.technician?.name || req.technicianName || 'Unknown'}
-                          </div>
-                          <div className="tj-job-cat">
-                            {req.technician?.phone || req.technicianPhone || ''}
-                          </div>
+                          <div className="tj-job-title">{req.technician?.name || 'Unknown'}</div>
+                          <div className="tj-job-cat">{req.technician?.phone || ''}</div>
                         </td>
                         <td>
-                          <div className="tj-job-title">{req.job?.title || req.jobTitle || '—'}</div>
+                          <div className="tj-job-title">{req.job?.title || '—'}</div>
                           <div className="tj-job-cat">{req.job?.location || ''}</div>
                         </td>
                         <td>
                           <span className="tj-budget">
-                            {req.bidAmount
-                              ? `$${Number(req.bidAmount).toLocaleString()}`
-                              : '—'}
+                            {req.bidAmount ? `$${Number(req.bidAmount).toLocaleString()}` : '—'}
                           </span>
                         </td>
                         <td>
                           <span className={`badge tj-status-badge ${
-                            req.status === 'accepted'      ? 'text-bg-success' :
-                            req.status === 'rejected'      ? 'text-bg-danger'  :
-                            req.status === 'counter-offer' ? 'text-bg-warning' :
-                                                             'text-bg-secondary'
+                            req.status === 'accepted' ? 'text-bg-success' :
+                            req.status === 'rejected' ? 'text-bg-danger'  :
+                            req.status === 'counter-offer' ? 'text-bg-warning' : 'text-bg-secondary'
                           }`}>
-                            {req.status
-                              ? req.status.charAt(0).toUpperCase() + req.status.slice(1)
-                              : 'Pending'}
+                            {req.status ? req.status.charAt(0).toUpperCase() + req.status.slice(1) : 'Pending'}
                           </span>
                         </td>
                         <td>
                           <span className="tj-deadline">
                             {req.createdAt
-                              ? new Date(req.createdAt).toLocaleDateString('en-IN', {
-                                  day: '2-digit', month: 'short', year: 'numeric',
-                                })
+                              ? new Date(req.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
                               : '—'}
                           </span>
                         </td>
                         <td>
                           <div className="tj-actions justify-content-center">
-                            {req.status === 'pending' || !req.status ? (
+                            {(!req.status || req.status === 'pending') ? (
                               <>
-                                <button
-                                  className="tj-req-btn accept"
-                                  onClick={() => handleDecision(req._id, 'accepted')}
-                                >
-                                  Accept
-                                </button>
-                                <button
-                                  className="tj-req-btn counter"
-                                  onClick={() => handleDecision(req._id, 'counter-offer')}
-                                >
-                                  Counter
-                                </button>
-                                <button
-                                  className="tj-req-btn reject"
-                                  onClick={() => handleDecision(req._id, 'rejected')}
-                                >
-                                  Reject
-                                </button>
+                                <button className="tj-req-btn accept" onClick={() => handleDecision(req._id, 'accepted')}>Accept</button>
+                                <button className="tj-req-btn counter" onClick={() => handleDecision(req._id, 'counter-offer')}>Counter</button>
+                                <button className="tj-req-btn reject" onClick={() => handleDecision(req._id, 'rejected')}>Reject</button>
                               </>
                             ) : (
                               <span className="text-muted small">Decided</span>
@@ -717,47 +669,28 @@ const TechnicianJobs = () => {
         )}
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          ADD JOB MODAL
-      ═══════════════════════════════════════════════════════════════════════ */}
-      <Modal
-        show={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        title="Create New Job"
-        size="lg"
-      >
-        <JobForm
-          form={form}
-          setForm={setForm}
-          onSubmit={handleAdd}
-          onCancel={() => setShowAddModal(false)}
-          isEditing={false}
-          saving={saving}
-        />
+
+      {/* ── ADD / EDIT MODALS ────────────────────────────────────────────────── */}
+      <Modal show={showAddModal} onClose={() => setShowAddModal(false)} title="Create New Job" size="lg">
+        <JobForm form={form} setForm={setForm} onSubmit={handleAdd}
+          onCancel={() => setShowAddModal(false)} isEditing={false} saving={saving} />
       </Modal>
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          EDIT JOB MODAL
-      ═══════════════════════════════════════════════════════════════════════ */}
-      <Modal
-        show={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        title="Edit Job"
-        size="lg"
-      >
-        <JobForm
-          form={form}
-          setForm={setForm}
-          onSubmit={handleEdit}
-          onCancel={() => setShowEditModal(false)}
-          isEditing={true}
-          saving={saving}
-        />
+      <Modal show={showEditModal} onClose={() => setShowEditModal(false)} title="Edit Job" size="lg">
+        <JobForm form={form} setForm={setForm} onSubmit={handleEdit}
+          onCancel={() => setShowEditModal(false)} isEditing={true} saving={saving} />
       </Modal>
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          VIEW JOB SIDE PANEL
-      ═══════════════════════════════════════════════════════════════════════ */}
+      {/* ── PAY WALLET MODAL ─────────────────────────────────────────────────── */}
+      <PayWalletModal
+        show={showPayModal}
+        job={payModalJob}
+        onClose={() => { setShowPayModal(false); setPayModalJob(null); }}
+        onPay={handlePayWallet}
+        paying={paying}
+      />
+
+      {/* ── VIEW JOB SIDE PANEL ──────────────────────────────────────────────── */}
       {showViewPanel && selectedJob && (
         <div className="tj-view-overlay" onClick={() => setShowViewPanel(false)}>
           <div className="tj-view-panel" onClick={(e) => e.stopPropagation()}>
@@ -767,14 +700,11 @@ const TechnicianJobs = () => {
                 <h5 className="mb-0 fw-bold">{selectedJob.title}</h5>
                 <small className="text-muted">{selectedJob.category}</small>
               </div>
-              <button className="tj-modal-close" onClick={() => setShowViewPanel(false)}>
-                <FaTimes />
-              </button>
+              <button className="tj-modal-close" onClick={() => setShowViewPanel(false)}><FaTimes /></button>
             </div>
 
             <div className="tj-view-panel-body">
 
-              {/* Status */}
               <div className="tj-view-section">
                 <span className={`badge text-bg-${getJobStatusTone(selectedJob.status)} tj-status-badge`}>
                   {getJobStatusLabel(selectedJob.status)}
@@ -798,19 +728,20 @@ const TechnicianJobs = () => {
                   </div>
                 </div>
                 <div className="tj-detail-item">
+                  <FaClock style={{ color: '#A5732F' }} />
+                  <div>
+                    <div className="tj-detail-label">Estimated Time</div>
+                    <div className="tj-detail-value">{selectedJob.estimatedTime || '—'}</div>
+                  </div>
+                </div>
+                <div className="tj-detail-item">
                   <FaCalendarAlt style={{ color: '#A5732F' }} />
                   <div>
                     <div className="tj-detail-label">Deadline</div>
-                    <div className="tj-detail-value">
-                      {selectedJob.deadline
-                        ? new Date(selectedJob.deadline).toLocaleString('en-IN', {
-                            day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
-                          })
-                        : 'No deadline'}
-                    </div>
+                    <div className="tj-detail-value">{selectedJob.deadline ? fmtDT(selectedJob.deadline) : 'No deadline'}</div>
                   </div>
                 </div>
-                {selectedJob.finalPrice ? (
+                {selectedJob.finalPrice > 0 && (
                   <div className="tj-detail-item">
                     <FaRupeeSign style={{ color: '#16a34a' }} />
                     <div>
@@ -820,8 +751,50 @@ const TechnicianJobs = () => {
                       </div>
                     </div>
                   </div>
-                ) : null}
+                )}
               </div>
+
+
+              {/* ── Job Timeline ─────────────────────────────────────────────── */}
+              {(selectedJob.reachedAt || selectedJob.jobCompletedAt) && (
+                <div className="tj-view-block">
+                  <div className="tj-view-block-title">
+                    <FaClock className="me-1" style={{ color: '#A5732F' }} />
+                    Job Timeline
+                  </div>
+                  <div className="tj-timeline">
+                    {selectedJob.reachedAt && (
+                      <div className="tj-timeline-row">
+                        <span className="tj-timeline-dot reached" />
+                        <div>
+                          <div className="tj-timeline-label">Technician Reached</div>
+                          <div className="tj-timeline-time">{fmtDT(selectedJob.reachedAt)}</div>
+                        </div>
+                      </div>
+                    )}
+                    {selectedJob.jobCompletedAt && (
+                      <div className="tj-timeline-row">
+                        <span className="tj-timeline-dot completed" />
+                        <div>
+                          <div className="tj-timeline-label">Job Completed By Tech</div>
+                          <div className="tj-timeline-time">{fmtDT(selectedJob.jobCompletedAt)}</div>
+                        </div>
+                      </div>
+                    )}
+                    {selectedJob.jobDurationMinutes != null && (
+                      <div className="tj-timeline-row">
+                        <span className="tj-timeline-dot duration" />
+                        <div>
+                          <div className="tj-timeline-label">Total Duration</div>
+                          <div className="tj-timeline-time tj-duration-value">
+                            {formatDuration(selectedJob.jobDurationMinutes)}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Description */}
               <div className="tj-view-block">
@@ -829,14 +802,11 @@ const TechnicianJobs = () => {
                 <p className="tj-view-block-text">{selectedJob.description || '—'}</p>
               </div>
 
-              {/* Skills + Requirements */}
               {selectedJob.preferredSkills?.length > 0 && (
                 <div className="tj-view-block">
                   <div className="tj-view-block-title">Preferred Skills</div>
                   <div className="tj-tag-list">
-                    {selectedJob.preferredSkills.map((s) => (
-                      <span key={s} className="tj-tag">{s}</span>
-                    ))}
+                    {selectedJob.preferredSkills.map((s) => <span key={s} className="tj-tag">{s}</span>)}
                   </div>
                 </div>
               )}
@@ -845,21 +815,16 @@ const TechnicianJobs = () => {
                 <div className="tj-view-block">
                   <div className="tj-view-block-title">Requirements</div>
                   <div className="tj-tag-list">
-                    {selectedJob.requirements.map((r) => (
-                      <span key={r} className="tj-tag secondary">{r}</span>
-                    ))}
+                    {selectedJob.requirements.map((r) => <span key={r} className="tj-tag secondary">{r}</span>)}
                   </div>
                 </div>
               )}
 
-              {/* Assigned technician */}
               {selectedJob.assignedTechnician?.name && (
                 <div className="tj-view-block">
                   <div className="tj-view-block-title">Assigned Technician</div>
                   <div className="tj-tech-card">
-                    <div className="tj-tech-avatar">
-                      {selectedJob.assignedTechnician.name.charAt(0)}
-                    </div>
+                    <div className="tj-tech-avatar">{selectedJob.assignedTechnician.name.charAt(0)}</div>
                     <div>
                       <div className="fw-semibold">{selectedJob.assignedTechnician.name}</div>
                       <div className="text-muted small">{selectedJob.assignedTechnician.phone}</div>
@@ -868,31 +833,30 @@ const TechnicianJobs = () => {
                 </div>
               )}
 
+
               {/* Update status */}
               <div className="tj-view-block">
                 <div className="tj-view-block-title">Update Status</div>
                 <div className="tj-status-btn-group">
                   {JOB_STATUS_OPTIONS.map((s) => (
-                    <button
-                      key={s}
+                    <button key={s}
                       className={`tj-status-update-btn${selectedJob.status === s ? ' current' : ''}`}
                       onClick={async () => {
                         try {
                           const note = window.prompt('Add a note (optional)', '');
-                          const fp = s === 'completed'
+                          const fp   = s === 'completed'
                             ? Number(window.prompt('Enter final price ($)', '0')) || 0
                             : undefined;
                           await adminApi.updateTechnicianJobStatus(selectedJob._id, {
                             status: s, note: note || '', finalPrice: fp,
                           });
                           toast.success('Status updated!');
-                          setSelectedJob({ ...selectedJob, status: s });
+                          setSelectedJob({ ...selectedJob, status: s, ...(fp !== undefined && { finalPrice: fp }) });
                           await loadData();
                         } catch (err) {
                           toast.error(err.response?.data?.message || 'Update failed');
                         }
-                      }}
-                    >
+                      }}>
                       {getJobStatusLabel(s)}
                     </button>
                   ))}
@@ -900,69 +864,59 @@ const TechnicianJobs = () => {
               </div>
 
               {/* Quick actions */}
-              <div className="d-flex gap-2 pt-2">
-                <button className="btn tj-btn-outline w-50" onClick={() => { setShowViewPanel(false); openEditModal(selectedJob); }}>
+              <div className="d-flex gap-2 pt-2 flex-wrap">
+                <button className="btn tj-btn-outline flex-fill"
+                  onClick={() => { setShowViewPanel(false); openEditModal(selectedJob); }}>
                   <FaEdit className="me-2" />Edit Job
                 </button>
-                <button className="btn tj-btn-danger w-50" onClick={() => handleDelete(selectedJob._id)}>
-                  <FaTrash className="me-2" />Delete Job
+                {selectedJob.status === 'completed' && (
+                  <button className="btn tj-btn-pay flex-fill"
+                    onClick={() => openPayModal(selectedJob)}>
+                    <FaWallet className="me-2" />Pay Wallet
+                  </button>
+                )}
+                <button className="btn tj-btn-danger flex-fill"
+                  onClick={() => handleDelete(selectedJob._id)}>
+                  <FaTrash className="me-2" />Delete
                 </button>
               </div>
+
             </div>
           </div>
         </div>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          JOB-SPECIFIC REQUESTS — CONVERSATION MODAL
-      ═══════════════════════════════════════════════════════════════════════ */}
+
+      {/* ── JOB-SPECIFIC REQUESTS — CONVERSATION MODAL ──────────────────────── */}
       {jobRequestsModal.show && (
-        <div className="tj-modal-backdrop" onClick={() => {
-          setJobRequestsModal({ show: false, job: null });
-          closeConversation();
-        }}>
+        <div className="tj-modal-backdrop" onClick={() => { setJobRequestsModal({ show: false, job: null }); closeConversation(); }}>
           <div className="tj-modal-box xl" onClick={(e) => e.stopPropagation()}>
 
-            {/* ── Modal header ── */}
             <div className="tj-modal-header">
               <div className="d-flex align-items-center gap-2">
                 {activeConvReq && (
-                  <button
-                    className="tj-back-btn"
-                    onClick={() => closeConversation()}
-                    title="Back to list"
-                  >
-                    &#8592;
-                  </button>
+                  <button className="tj-back-btn" onClick={closeConversation} title="Back to list">&#8592;</button>
                 )}
                 <div>
                   <h5 className="tj-modal-title mb-0">
                     {activeConvReq
-                      ? `Chat with ${activeConvReq.technician?.name || activeConvReq.technicianName || 'Technician'}`
+                      ? `Chat with ${activeConvReq.technician?.name || 'Technician'}`
                       : `Requests — ${jobRequestsModal.job?.title || ''}`}
                   </h5>
                   {activeConvReq && (
-                    <small className="text-muted" style={{ fontSize: '0.75rem' }}>
-                      {jobRequestsModal.job?.title}
-                    </small>
+                    <small className="text-muted" style={{ fontSize: '0.75rem' }}>{jobRequestsModal.job?.title}</small>
                   )}
                 </div>
               </div>
-              <button className="tj-modal-close" onClick={() => {
-                setJobRequestsModal({ show: false, job: null });
-                closeConversation();
-              }}>
+              <button className="tj-modal-close" onClick={() => { setJobRequestsModal({ show: false, job: null }); closeConversation(); }}>
                 <FaTimes />
               </button>
             </div>
 
             <div className="tj-modal-body" style={{ padding: 0 }}>
 
-              {/* ════════ LIST VIEW ════════ */}
               {!activeConvReq && (() => {
-                const jobReqs = requests.filter(
-                  (r) => (r.job?._id || r.job) === jobRequestsModal.job?._id
-                );
+                const jobReqs = requests.filter((r) => (r.job?._id || r.job) === jobRequestsModal.job?._id);
                 return jobReqs.length === 0 ? (
                   <div className="tj-empty" style={{ padding: '3rem 1rem' }}>
                     <FaInbox size={32} style={{ color: '#ccc' }} />
@@ -971,41 +925,27 @@ const TechnicianJobs = () => {
                 ) : (
                   <div className="tj-conv-list">
                     {jobReqs.map((req) => {
-                      const techName = req.technician?.name || req.technicianName || 'Technician';
+                      const techName = req.technician?.name || 'Technician';
                       const hasReply = !!req.adminMessage;
                       return (
-                        <div
-                          key={req._id}
-                          className="tj-conv-row"
-                          onClick={() => openConversation(req)}
-                        >
-                          {/* Avatar */}
+                        <div key={req._id} className="tj-conv-row" onClick={() => openConversation(req)}>
                           <div className="tj-tech-avatar" style={{ width: 44, height: 44, fontSize: '1.05rem', flexShrink: 0 }}>
                             {techName.charAt(0).toUpperCase()}
                           </div>
-
-                          {/* Info */}
                           <div className="tj-conv-row-info">
                             <div className="tj-conv-row-name">{techName}</div>
                             <div className="tj-conv-row-preview">
                               {req.note
                                 ? `"${req.note.length > 60 ? req.note.slice(0, 60) + '…' : req.note}"`
-                                : req.bidAmount
-                                  ? `Bid: ₹${Number(req.bidAmount).toLocaleString()}`
-                                  : 'No message'}
+                                : req.bidAmount ? `Bid: ₹${Number(req.bidAmount).toLocaleString()}` : 'No message'}
                             </div>
                           </div>
-
-                          {/* Right side */}
                           <div className="tj-conv-row-meta">
                             <span className={`badge tj-status-badge ${
                               req.status === 'accepted' ? 'text-bg-success' :
-                              req.status === 'rejected' ? 'text-bg-danger'  :
-                              'text-bg-secondary'
+                              req.status === 'rejected' ? 'text-bg-danger' : 'text-bg-secondary'
                             }`}>
-                              {req.status
-                                ? req.status.charAt(0).toUpperCase() + req.status.slice(1)
-                                : 'Pending'}
+                              {req.status ? req.status.charAt(0).toUpperCase() + req.status.slice(1) : 'Pending'}
                             </span>
                             {req.createdAt && (
                               <div className="tj-conv-row-date">
@@ -1013,8 +953,6 @@ const TechnicianJobs = () => {
                               </div>
                             )}
                           </div>
-
-                          {/* Unread dot if pending + no reply */}
                           {(!req.status || req.status === 'pending') && !hasReply && (
                             <span className="tj-unread-dot" />
                           )}
@@ -1025,17 +963,15 @@ const TechnicianJobs = () => {
                 );
               })()}
 
-              {/* ════════ CONVERSATION VIEW ════════ */}
+
               {activeConvReq && (() => {
-                const req = requests.find((r) => r._id === activeConvReq._id) || activeConvReq;
-                const techName  = req.technician?.name || req.technicianName || 'Technician';
-                const techPhone = req.technician?.phone || req.technicianPhone || '';
+                const req       = requests.find((r) => r._id === activeConvReq._id) || activeConvReq;
+                const techName  = req.technician?.name || 'Technician';
+                const techPhone = req.technician?.phone || '';
                 const isDecided = req.status === 'accepted' || req.status === 'rejected';
 
                 return (
                   <div className="tj-chat-shell">
-
-                    {/* Technician info bar */}
                     <div className="tj-chat-info-bar">
                       <div className="tj-tech-avatar" style={{ width: 38, height: 38, fontSize: '0.95rem', flexShrink: 0 }}>
                         {techName.charAt(0).toUpperCase()}
@@ -1052,11 +988,7 @@ const TechnicianJobs = () => {
                       )}
                     </div>
 
-                    {/* Messages area — driven by liveConversation (real-time via socket) */}
-                    <div
-                      className="tj-chat-messages"
-                      ref={(el) => { if (el) el.scrollTop = el.scrollHeight; }}
-                    >
+                    <div className="tj-chat-messages" ref={(el) => { if (el) el.scrollTop = el.scrollHeight; }}>
                       {liveConversation.length > 0
                         ? liveConversation.map((msg, i) =>
                             msg.sender === 'admin' ? (
@@ -1064,12 +996,7 @@ const TechnicianJobs = () => {
                                 <div className="tj-bubble admin">
                                   <p className="mb-0">{msg.message}</p>
                                   {msg.createdAt && (
-                                    <div className="tj-bubble-time" style={{ textAlign: 'right' }}>
-                                      {new Date(msg.createdAt).toLocaleString('en-IN', {
-                                        day: '2-digit', month: 'short', year: 'numeric',
-                                        hour: '2-digit', minute: '2-digit',
-                                      })}
-                                    </div>
+                                    <div className="tj-bubble-time" style={{ textAlign: 'right' }}>{fmtDT(msg.createdAt)}</div>
                                   )}
                                 </div>
                                 <div className="tj-admin-avatar" title="Admin">A</div>
@@ -1082,23 +1009,13 @@ const TechnicianJobs = () => {
                                 <div className="tj-bubble tech">
                                   <p className="mb-0">{msg.message}</p>
                                   {req.bidAmount && i === 0 && (
-                                    <div className="tj-bubble-meta">
-                                      Bid: <strong>₹{Number(req.bidAmount).toLocaleString()}</strong>
-                                    </div>
+                                    <div className="tj-bubble-meta">Bid: <strong>₹{Number(req.bidAmount).toLocaleString()}</strong></div>
                                   )}
-                                  {msg.createdAt && (
-                                    <div className="tj-bubble-time">
-                                      {new Date(msg.createdAt).toLocaleString('en-IN', {
-                                        day: '2-digit', month: 'short', year: 'numeric',
-                                        hour: '2-digit', minute: '2-digit',
-                                      })}
-                                    </div>
-                                  )}
+                                  {msg.createdAt && <div className="tj-bubble-time">{fmtDT(msg.createdAt)}</div>}
                                 </div>
                               </div>
                             )
                           )
-                        /* Fallback: no conversation array yet — show raw note */
                         : (
                           <div className="tj-chat-row tech">
                             <div className="tj-tech-avatar" style={{ width: 32, height: 32, fontSize: '0.8rem', flexShrink: 0, alignSelf: 'flex-end' }}>
@@ -1110,24 +1027,13 @@ const TechnicianJobs = () => {
                                 : <p className="mb-0 fst-italic text-muted" style={{ fontSize: '0.82rem' }}>No message yet.</p>
                               }
                               {req.bidAmount && (
-                                <div className="tj-bubble-meta">
-                                  Bid: <strong>₹{Number(req.bidAmount).toLocaleString()}</strong>
-                                </div>
+                                <div className="tj-bubble-meta">Bid: <strong>₹{Number(req.bidAmount).toLocaleString()}</strong></div>
                               )}
-                              {req.createdAt && (
-                                <div className="tj-bubble-time">
-                                  {new Date(req.createdAt).toLocaleString('en-IN', {
-                                    day: '2-digit', month: 'short', year: 'numeric',
-                                    hour: '2-digit', minute: '2-digit',
-                                  })}
-                                </div>
-                              )}
+                              {req.createdAt && <div className="tj-bubble-time">{fmtDT(req.createdAt)}</div>}
                             </div>
                           </div>
                         )
                       }
-
-                      {/* Decision badge if already decided */}
                       {isDecided && (
                         <div className="tj-chat-decision-bar">
                           <span className={`badge ${req.status === 'accepted' ? 'text-bg-success' : 'text-bg-danger'}`}
@@ -1138,70 +1044,40 @@ const TechnicianJobs = () => {
                       )}
                     </div>
 
-                    {/* ── Chat footer ── */}
                     <div className="tj-chat-footer">
                       {!isDecided ? (
                         <>
-                          {/* Message input row with Send button */}
                           <div className="tj-chat-input-row">
-                            <textarea
-                              className="tj-chat-reply-input"
-                              rows={2}
+                            <textarea className="tj-chat-reply-input" rows={2}
                               placeholder="Type a message to the technician…"
-                              value={adminReply}
-                              onChange={(e) => setAdminReply(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' && !e.shiftKey) {
-                                  e.preventDefault();
-                                  handleSendMessage(req._id);
-                                }
-                              }}
+                              value={adminReply} onChange={(e) => setAdminReply(e.target.value)}
+                              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(req._id); } }}
                             />
-                            <button
-                              className="tj-send-btn"
-                              title="Send message"
+                            <button className="tj-send-btn" title="Send message"
                               disabled={!adminReply.trim() || sending}
-                              onClick={() => handleSendMessage(req._id)}
-                            >
-                              {sending
-                                ? <span className="spinner-border spinner-border-sm" />
-                                : <FaPaperPlane />
-                              }
+                              onClick={() => handleSendMessage(req._id)}>
+                              {sending ? <span className="spinner-border spinner-border-sm" /> : <FaPaperPlane />}
                             </button>
                           </div>
-
-                          {/* Accept / Reject */}
                           <div className="tj-chat-action-row">
-                            <button
-                              className="tj-chat-btn accept"
-                              disabled={decidingId === req._id}
-                              onClick={() => handleDecision(req._id, 'accepted')}
-                            >
-                              {decidingId === req._id
-                                ? <span className="spinner-border spinner-border-sm me-1" />
-                                : '✓ '}
+                            <button className="tj-chat-btn accept" disabled={decidingId === req._id}
+                              onClick={() => handleDecision(req._id, 'accepted')}>
+                              {decidingId === req._id ? <span className="spinner-border spinner-border-sm me-1" /> : '✓ '}
                               Accept Request
                             </button>
-                            <button
-                              className="tj-chat-btn reject"
-                              disabled={decidingId === req._id}
-                              onClick={() => handleDecision(req._id, 'rejected')}
-                            >
-                              {decidingId === req._id
-                                ? <span className="spinner-border spinner-border-sm me-1" />
-                                : '✕ '}
+                            <button className="tj-chat-btn reject" disabled={decidingId === req._id}
+                              onClick={() => handleDecision(req._id, 'rejected')}>
+                              {decidingId === req._id ? <span className="spinner-border spinner-border-sm me-1" /> : '✕ '}
                               Reject Request
                             </button>
                           </div>
                         </>
                       ) : (
                         <div className="tj-chat-decided-note">
-                          This request has already been <strong>{req.status}</strong>.
-                          No further action needed.
+                          This request has already been <strong>{req.status}</strong>. No further action needed.
                         </div>
                       )}
                     </div>
-
                   </div>
                 );
               })()}

@@ -244,3 +244,42 @@ exports.getTechnicianProfile = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.uploadProfileImageHandler = async (req, res, next) => {
+  try {
+    const technician = await User.findById(req.user._id);
+
+    if (!technician || technician.role !== 'technician') {
+      return res.status(403).json({ success: false, message: 'Only technician accounts can upload a profile image' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No image file uploaded' });
+    }
+
+    // Store as base64 data URL so it works without a separate file server
+    const mimeType = req.file.mimetype;
+    const base64 = req.file.buffer.toString('base64');
+    const dataUrl = `data:${mimeType};base64,${base64}`;
+
+    technician.profileImage = {
+      url: dataUrl,
+      s3Key: ''
+    };
+    // Also mirror into technicianProfile.photoUrl so verification flow picks it up
+    technician.technicianProfile = {
+      ...technician.technicianProfile,
+      photoUrl: dataUrl
+    };
+
+    await technician.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile image uploaded successfully',
+      data: { profileImageUrl: dataUrl }
+    });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -10,7 +10,7 @@ const emitToRequest = (requestId, event, payload) => {
 
 const createTechnicianJob = async (req, res, next) => {
   try {
-    const { title, category, location, budget, description, requirements, deadline, preferredSkills } = req.body;
+    const { title, category, location, budget, description, requirements, deadline, preferredSkills, estimatedTime } = req.body;
 
     if (!title || !location || !budget || !description) {
       return res.status(400).json({ success: false, message: 'Please provide all required job fields' });
@@ -26,6 +26,7 @@ const createTechnicianJob = async (req, res, next) => {
       postedBy: req.user._id,
       deadline: deadline ? new Date(deadline) : null,
       preferredSkills: Array.isArray(preferredSkills) ? preferredSkills : [],
+      estimatedTime: estimatedTime || '',
     });
 
     res.status(201).json({ success: true, message: 'Job posted successfully', data: { job } });
@@ -132,7 +133,7 @@ const updateTechnicianRequest = async (req, res, next) => {
 const updateTechnicianJob = async (req, res, next) => {
   try {
     const { jobId } = req.params;
-    const { title, category, location, budget, description, requirements, deadline, preferredSkills } = req.body;
+    const { title, category, location, budget, description, requirements, deadline, preferredSkills, estimatedTime } = req.body;
 
     const job = await TechnicianJob.findById(jobId);
     if (!job) {
@@ -147,6 +148,7 @@ const updateTechnicianJob = async (req, res, next) => {
     if (deadline !== undefined) job.deadline = deadline ? new Date(deadline) : null;
     if (Array.isArray(requirements)) job.requirements = requirements;
     if (Array.isArray(preferredSkills)) job.preferredSkills = preferredSkills;
+    if (estimatedTime !== undefined) job.estimatedTime = estimatedTime || '';
 
     await job.save();
     res.status(200).json({ success: true, message: 'Job updated successfully', data: { job } });
@@ -196,13 +198,23 @@ const updateTechnicianJobStatus = async (req, res, next) => {
     }
 
     if (status === 'completed') {
-      job.completedAt = new Date();
+      const now = new Date();
+      job.completedAt = now;
+      job.jobCompletedAt = now;
+
+      // Calculate duration from when technician marked job started (reachedAt) to completion
+      const startRef = job.jobStartedAt || job.reachedAt;
+      if (startRef) {
+        const diffMs = now - new Date(startRef);
+        job.jobDurationMinutes = Math.round(diffMs / 60000);
+      }
+
       const finalAmount = Number(job.finalPrice || 0);
       const request = await TechnicianJobRequest.findById(job.assignedRequest?._id || job.assignedRequest);
       if (request) {
         request.amountEarned = finalAmount;
         request.paymentStatus = 'pending';
-        request.completedAt = new Date();
+        request.completedAt = now;
         request.conversation = request.conversation || [];
         request.conversation.push({ sender: 'admin', message: `Job completed. Final price: $${finalAmount}`, createdAt: new Date() });
         await request.save();
@@ -255,6 +267,65 @@ const sendTechnicianRequestMessage = async (req, res, next) => {
   }
 };
 
+// ── Pay technician: set final price and credit wallet ───────────────────────
+const payTechnicianWallet = async (req, res, next) => {
+  try {
+    const { jobId } = req.params;
+    const { finalPrice, note } = req.body;
+
+    if (!finalPrice || Number(finalPrice) <= 0) {
+      return res.status(400).json({ success: false, message: 'Please provide a valid final price' });
+    }
+
+    const job = await TechnicianJob.findById(jobId).populate('assignedRequest');
+    if (!job) {
+      return res.status(404).json({ success: false, message: 'Job not found' });
+    }
+
+    if (job.status !== 'completed') {
+      return res.status(400).json({ success: false, message: 'Job must be completed before payment' });
+    }
+
+    if (!job.assignedTechnician?._id) {
+      return res.status(400).json({ success: false, message: 'No technician assigned to this job' });
+    }
+
+    const amount = Number(finalPrice);
+    job.finalPrice = amount;
+
+    const payNote = note || `Payment of $${amount} credited to wallet.`;
+    job.conversation = job.conversation || [];
+    job.conversation.push({ sender: 'admin', message: payNote, createdAt: new Date() });
+    await job.save();
+
+    // Credit the technician's wallet
+    const technician = await User.findById(job.assignedTechnician._id);
+    if (technician) {
+      technician.totalEarnings = (technician.totalEarnings || 0) + amount;
+      technician.totalJobsDone = (technician.totalJobsDone || 0) + 1;
+      await technician.save();
+    }
+
+    // Update the job request payment status
+    const request = await TechnicianJobRequest.findById(job.assignedRequest?._id || job.assignedRequest);
+    if (request) {
+      request.amountEarned = amount;
+      request.paymentStatus = 'paid';
+      request.conversation = request.conversation || [];
+      request.conversation.push({ sender: 'admin', message: payNote, createdAt: new Date() });
+      await request.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `$${amount} credited to technician wallet`,
+      data: { job, technicianBalance: technician ? technician.totalEarnings - (technician.totalWithdrawn || 0) : 0 },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createTechnicianJob,
   getTechnicianJobs,
@@ -264,4 +335,5 @@ module.exports = {
   updateTechnicianJob,
   deleteTechnicianJob,
   updateTechnicianJobStatus,
+  payTechnicianWallet,
 };

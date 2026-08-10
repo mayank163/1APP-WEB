@@ -53,7 +53,15 @@ const uploadTechnicianDocuments = multer({
     { name: 'profilePhoto', maxCount: 1 }
 ]);
 
+// Single profile image upload for technician signup
+const uploadProfileImage = multer({
+    storage,
+    fileFilter: imageOnly,
+    limits,
+}).single('profileImage');
+
 module.exports = upload;
 module.exports.uploadServiceMedia = uploadServiceMedia;
 module.exports.uploadCategoryMedia = uploadCategoryMedia;
 module.exports.uploadTechnicianDocuments = uploadTechnicianDocuments;
+module.exports.uploadProfileImage = uploadProfileImage;

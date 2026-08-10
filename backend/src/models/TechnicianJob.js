@@ -51,6 +51,27 @@ const technicianJobSchema = new mongoose.Schema({
     ref: 'TechnicianJobRequest',
     default: null,
   },
+  estimatedTime: {
+    type: String,
+    default: '',
+    trim: true,
+  },
+  reachedAt: {
+    type: Date,
+    default: null,
+  },
+  jobStartedAt: {
+    type: Date,
+    default: null,
+  },
+  jobCompletedAt: {
+    type: Date,
+    default: null,
+  },
+  jobDurationMinutes: {
+    type: Number,
+    default: null,
+  },
   finalPrice: {
     type: Number,
     default: 0,
