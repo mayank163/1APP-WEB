@@ -44,13 +44,14 @@ const uploadTechnicianDocuments = multer({
     limits,
     fileFilter: technicianDocumentFilter,
 }).fields([
-    { name: 'drivingLicenseFront', maxCount: 1 },
-    { name: 'drivingLicenseBack', maxCount: 1 },
-    { name: 'residentialProof', maxCount: 1 },
-    { name: 'taxInformation', maxCount: 1 },
-    { name: 'cvResume', maxCount: 1 },
+    { name: 'drivingLicenseFront',    maxCount: 1 },
+    { name: 'drivingLicenseBack',     maxCount: 1 },
+    { name: 'residentialProof',       maxCount: 1 },
+    { name: 'taxInformationW9',       maxCount: 1 },
+    { name: 'taxInformation1099',     maxCount: 1 },
+    { name: 'cvResume',               maxCount: 1 },
     { name: 'backgroundVerification', maxCount: 1 },
-    { name: 'profilePhoto', maxCount: 1 }
+    { name: 'profilePhoto',           maxCount: 1 },
 ]);
 
 // Single profile image upload for technician signup
@@ -60,8 +61,27 @@ const uploadProfileImage = multer({
     limits,
 }).single('profileImage');
 
+// Complete profile: certificates (multi), portfolio photos (multi)
+const uploadCompleteProfile = multer({
+    storage,
+    limits,
+    fileFilter: technicianDocumentFilter,
+}).fields([
+    { name: 'certificateImages', maxCount: 10 },
+    { name: 'portfolioPhotos',   maxCount: 10 },
+]);
+
+// Bank details: blank cheque (single image or PDF)
+const uploadBankDetails = multer({
+    storage,
+    limits,
+    fileFilter: technicianDocumentFilter,
+}).single('blankCheque');
+
 module.exports = upload;
 module.exports.uploadServiceMedia = uploadServiceMedia;
 module.exports.uploadCategoryMedia = uploadCategoryMedia;
 module.exports.uploadTechnicianDocuments = uploadTechnicianDocuments;
 module.exports.uploadProfileImage = uploadProfileImage;
+module.exports.uploadCompleteProfile = uploadCompleteProfile;
+module.exports.uploadBankDetails = uploadBankDetails;

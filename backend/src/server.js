@@ -184,6 +184,16 @@ io.on("connection", (socket) => {
         if (requestId) socket.leave(`request:${requestId}`);
     });
 
+    // Admin joins a global room to receive job-level broadcasts
+    socket.on('admin:join', () => {
+        socket.join('admin');
+        console.log(`[Socket] ${socket.id} joined admin room`);
+    });
+
+    socket.on('admin:leave', () => {
+        socket.leave('admin');
+    });
+
     socket.on("disconnect", () => {
         console.log("User Disconnected:", socket.id);
     });

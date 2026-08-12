@@ -15,6 +15,7 @@ router.delete('/technician-jobs/:jobId', adminTechnicianController.deleteTechnic
 // ── Job status + wallet payment ───────────────────────────────────────────────
 router.patch('/technician-jobs/:jobId/status', adminTechnicianController.updateTechnicianJobStatus);
 router.post('/technician-jobs/:jobId/pay-wallet', adminTechnicianController.payTechnicianWallet);
+router.patch('/technician-jobs/:jobId/reschedule', adminTechnicianController.rescheduleJob);
 
 // ── Requests ──────────────────────────────────────────────────────────────────
 router.get('/technician-requests', adminTechnicianController.getTechnicianRequests);

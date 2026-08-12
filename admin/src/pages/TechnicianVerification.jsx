@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import adminApi from '../services/adminApi';
+import socket from '../services/socket';
 
 const TechnicianVerification = () => {
   const [requests, setRequests] = useState([]);
@@ -18,6 +19,12 @@ const TechnicianVerification = () => {
 
   useEffect(() => {
     loadRequests();
+  }, []);
+
+  useEffect(() => {
+    const handler = () => loadRequests();
+    socket.on('technician:verificationUpdated', handler);
+    return () => socket.off('technician:verificationUpdated', handler);
   }, []);
 
   const updateStatus = async (technicianId, status) => {
@@ -62,11 +69,24 @@ const TechnicianVerification = () => {
               <div className="col-md-6">
                 <div className="mb-2"><strong>Documents</strong></div>
                 <div className="d-flex flex-wrap gap-2">
-                  {Object.entries(request.documents || {}).filter(([, value]) => value).map(([key, value]) => (
-                    <a key={key} href={value.startsWith('http') ? value : `http://localhost:5001/uploads/${value}`} target="_blank" rel="noreferrer" className="btn btn-outline-dark btn-sm">
-                      {key}
-                    </a>
-                  ))}
+                  {Object.entries(request.documents || {}).filter(([, value]) => value).map(([key, value]) => {
+                    const url = String(value).startsWith('http') ? String(value) : `${process.env.REACT_APP_IMAGE_URL}/${value}`;
+                    const labels = {
+                      profilePhoto: 'Profile Photo',
+                      drivingLicenseFront: 'DL Front',
+                      drivingLicenseBack: 'DL Back',
+                      residentialProof: 'Residential Proof',
+                      taxInformationW9: 'Tax W9',
+                      taxInformation1099: 'Tax 1099',
+                      cvResume: 'CV / Resume',
+                      backgroundVerification: 'Background Check',
+                    };
+                    return (
+                      <a key={key} href={url} target="_blank" rel="noreferrer" className="btn btn-outline-dark btn-sm">
+                        {labels[key] || key}
+                      </a>
+                    );
+                  })}
                 </div>
               </div>
             </div>

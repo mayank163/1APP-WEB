@@ -8,7 +8,7 @@ import {
   FaPlus, FaEdit, FaTrash, FaEye, FaSearch, FaTimes,
   FaHardHat, FaMapMarkerAlt, FaRupeeSign, FaCalendarAlt,
   FaTools, FaUserCheck, FaInbox, FaBell, FaPaperPlane,
-  FaClock, FaCheckCircle, FaWallet,
+  FaClock, FaCheckCircle, FaWallet, FaRedoAlt,
 } from 'react-icons/fa';
 
 const emptyForm = {
@@ -19,7 +19,7 @@ const emptyForm = {
   description: '',
   preferredSkills: '',
   requirements: '',
-  deadline: '',
+  serviceDate: '',
   estimatedTime: '',
 };
 
@@ -53,6 +53,62 @@ const Modal = ({ show, onClose, title, children, size = '' }) => {
           <button className="tj-modal-close" onClick={onClose}><FaTimes /></button>
         </div>
         <div className="tj-modal-body">{children}</div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Reschedule Modal ─────────────────────────────────────────────────────────
+const RescheduleModal = ({ show, job, onClose, onReschedule, rescheduling }) => {
+  const [scheduledDate, setScheduledDate] = useState('');
+  const [reason, setReason] = useState('');
+  if (!show) return null;
+  return (
+    <div className="tj-modal-backdrop" onClick={onClose}>
+      <div className="tj-modal-box" onClick={(e) => e.stopPropagation()}>
+        <div className="tj-modal-header">
+          <h5 className="tj-modal-title">
+            <FaRedoAlt className="me-2" style={{ color: '#A5732F' }} />
+            Reschedule Job
+          </h5>
+          <button className="tj-modal-close" onClick={onClose}><FaTimes /></button>
+        </div>
+        <div className="tj-modal-body">
+          <p className="text-muted small mb-3">Job: <strong>{job?.title}</strong></p>
+          {job?.scheduledDate && (
+            <p className="text-muted small mb-3">
+              Current date: <strong>{new Date(job.scheduledDate).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</strong>
+            </p>
+          )}
+          <label className="tj-label">New Scheduled Date <span className="text-danger">*</span></label>
+          <input
+            className="form-control tj-input mb-3"
+            type="datetime-local"
+            value={scheduledDate}
+            onChange={(e) => setScheduledDate(e.target.value)}
+          />
+          <label className="tj-label">Reason (optional)</label>
+          <textarea
+            className="form-control tj-input mb-3"
+            rows={2}
+            placeholder="Reason for rescheduling…"
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+          />
+          <div className="d-flex gap-2 justify-content-end">
+            <button className="btn tj-btn-ghost" onClick={onClose} disabled={rescheduling}>Cancel</button>
+            <button
+              className="btn tj-btn-primary"
+              disabled={rescheduling || !scheduledDate}
+              onClick={() => onReschedule(job._id, scheduledDate, reason)}
+            >
+              {rescheduling
+                ? <><span className="spinner-border spinner-border-sm me-2" />Saving…</>
+                : <><FaRedoAlt className="me-2" />Reschedule</>
+              }
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -160,9 +216,9 @@ const JobForm = ({ form, setForm, onSubmit, onCancel, isEditing, saving }) => (
         placeholder="e.g. 2-3 hours, 45 min" />
     </div>
     <div className="col-md-6">
-      <label className="tj-label">Deadline</label>
-      <input className="form-control tj-input" type="datetime-local" value={form.deadline}
-        onChange={(e) => setForm({ ...form, deadline: e.target.value })} />
+      <label className="tj-label">Service Date</label>
+      <input className="form-control tj-input" type="datetime-local" value={form.serviceDate}
+        onChange={(e) => setForm({ ...form, serviceDate: e.target.value })} />
     </div>
     <div className="col-12">
       <label className="tj-label">Description <span className="text-danger">*</span></label>
@@ -200,11 +256,16 @@ const TechnicianJobs = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [saving, setSaving]     = useState(false);
-  const [paying, setPaying]     = useState(false);
+  const [paying, setPaying]           = useState(false);
+  const [rescheduling, setRescheduling] = useState(false);
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [rescheduleJob, setRescheduleJob]             = useState(null);
 
   const [activeTab, setActiveTab]   = useState('all');
   const [search, setSearch]         = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [dateFilter, setDateFilter]     = useState('all'); // 'all' | 'today' | 'tomorrow' | 'custom'
+  const [customDate, setCustomDate]     = useState('');    // 'YYYY-MM-DD'
 
   const [showAddModal, setShowAddModal]   = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -253,13 +314,37 @@ const TechnicianJobs = () => {
       if (activeReqIdRef.current !== requestId) return;
       setRequests((prev) => prev.map((r) => r._id === requestId ? { ...r, status } : r));
     };
+    const handleJobCreated = ({ job }) => {
+      setJobs((prev) => [job, ...prev]);
+    };
+    const handleJobUpdated = ({ job }) => {
+      setJobs((prev) => prev.map((j) => j._id === job._id ? job : j));
+      setSelectedJob((prev) => prev?._id === job._id ? job : prev);
+    };
+    const handleJobDeleted = ({ jobId }) => {
+      setJobs((prev) => prev.filter((j) => j._id !== jobId));
+      setSelectedJob((prev) => prev?._id === jobId ? null : prev);
+      setShowViewPanel((prev) => prev && selectedJob?._id === jobId ? false : prev);
+    };
+    const handleRequestUpdated = ({ request }) => {
+      setRequests((prev) => prev.map((r) => r._id === request._id ? request : r));
+    };
+
     socket.on('request:message', handleMsg);
     socket.on('request:status',  handleStatus);
+    socket.on('job:created',     handleJobCreated);
+    socket.on('job:updated',     handleJobUpdated);
+    socket.on('job:deleted',     handleJobDeleted);
+    socket.on('request:updated', handleRequestUpdated);
     return () => {
       socket.off('request:message', handleMsg);
       socket.off('request:status',  handleStatus);
+      socket.off('job:created',     handleJobCreated);
+      socket.off('job:updated',     handleJobUpdated);
+      socket.off('job:deleted',     handleJobDeleted);
+      socket.off('request:updated', handleRequestUpdated);
     };
-  }, []);
+  }, [selectedJob]);
 
   const [socketConnected, setSocketConnected] = useState(socket.connected);
   useEffect(() => {
@@ -279,14 +364,39 @@ const TechnicianJobs = () => {
     completed: jobs.filter((j) => j.status === 'completed').length,
   }), [jobs]);
 
-  const filteredJobs = useMemo(() => jobs.filter((job) => {
-    const tabOk   = activeTab === 'all' || activeTab === 'requests' || job.status === activeTab;
-    const dropOk  = filterStatus === 'all' || job.status === filterStatus;
-    const srcOk   = !search ||
-      [job.title, job.category, job.location, job.description].join(' ')
-        .toLowerCase().includes(search.toLowerCase());
-    return tabOk && dropOk && srcOk;
-  }), [jobs, activeTab, filterStatus, search]);
+  const filteredJobs = useMemo(() => {
+    const toLocalDay = (dt) => {
+      if (!dt) return null;
+      const d = new Date(dt);
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    };
+    const todayStr    = toLocalDay(new Date());
+    const tomorrowStr = toLocalDay(new Date(Date.now() + 86400000));
+
+    return jobs.filter((job) => {
+      const tabOk  = activeTab === 'all' || activeTab === 'requests' || job.status === activeTab;
+      const dropOk = filterStatus === 'all' || job.status === filterStatus;
+      const srcOk  = !search ||
+        [job.title, job.category, job.location, job.description].join(' ')
+          .toLowerCase().includes(search.toLowerCase());
+
+      let dateOk = true;
+      if (dateFilter !== 'all') {
+        const jobDay = toLocalDay(job.serviceDate);
+        if (!jobDay) {
+          dateOk = false;
+        } else if (dateFilter === 'today') {
+          dateOk = jobDay === todayStr;
+        } else if (dateFilter === 'tomorrow') {
+          dateOk = jobDay === tomorrowStr;
+        } else if (dateFilter === 'custom') {
+          dateOk = customDate ? jobDay === customDate : true;
+        }
+      }
+
+      return tabOk && dropOk && srcOk && dateOk;
+    });
+  }, [jobs, activeTab, filterStatus, search, dateFilter, customDate]);
 
   // ── Form helpers ────────────────────────────────────────────────────────────
   const buildPayload = (f) => ({
@@ -294,7 +404,7 @@ const TechnicianJobs = () => {
     budget:          Number(f.budget || 0),
     preferredSkills: f.preferredSkills.split(',').map((s) => s.trim()).filter(Boolean),
     requirements:    f.requirements.split(',').map((s) => s.trim()).filter(Boolean),
-    deadline:        f.deadline || undefined,
+    serviceDate:     f.serviceDate || undefined,
     estimatedTime:   f.estimatedTime || '',
   });
 
@@ -319,7 +429,7 @@ const TechnicianJobs = () => {
       description:     job.description || '',
       preferredSkills: (job.preferredSkills || []).join(', '),
       requirements:    (job.requirements || []).join(', '),
-      deadline:        job.deadline ? new Date(job.deadline).toISOString().slice(0, 16) : '',
+      serviceDate:     job.serviceDate ? new Date(job.serviceDate).toISOString().slice(0, 16) : '',
       estimatedTime:   job.estimatedTime || '',
     });
     setShowEditModal(true);
@@ -347,6 +457,24 @@ const TechnicianJobs = () => {
   };
 
   const openViewPanel = (job) => { setSelectedJob(job); setShowViewPanel(true); };
+
+  // ── Reschedule ──────────────────────────────────────────────────────────────
+  const openRescheduleModal = (job) => { setRescheduleJob(job); setShowRescheduleModal(true); };
+
+  const handleReschedule = async (jobId, scheduledDate, reason) => {
+    setRescheduling(true);
+    try {
+      await adminApi.rescheduleJob(jobId, { scheduledDate, reason });
+      toast.success('Job rescheduled successfully!');
+      setShowRescheduleModal(false); setRescheduleJob(null);
+      await loadData();
+      if (selectedJob?._id === jobId) {
+        setSelectedJob((prev) => prev ? { ...prev, scheduledDate } : prev);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Reschedule failed');
+    } finally { setRescheduling(false); }
+  };
 
   // ── Pay wallet ──────────────────────────────────────────────────────────────
   const openPayModal = (job) => { setPayModalJob(job); setShowPayModal(true); };
@@ -447,7 +575,7 @@ const TechnicianJobs = () => {
       </div>
 
       {/* ── Tab bar ─────────────────────────────────────────────────────────── */}
-      <div className="tj-tabs">
+      {/* <div className="tj-tabs">
         {[
           { key: 'all',       label: 'All Jobs'  },
           { key: 'open',      label: 'Open'      },
@@ -461,7 +589,7 @@ const TechnicianJobs = () => {
             {tab.label}
           </button>
         ))}
-      </div>
+      </div> */}
 
 
       {/* ── Content area ────────────────────────────────────────────────────── */}
@@ -488,6 +616,33 @@ const TechnicianJobs = () => {
               </select>
             </div>
 
+            {/* Date filter bar */}
+            <div className="tj-date-filter-bar">
+              <FaCalendarAlt style={{ color: '#A5732F', flexShrink: 0 }} />
+              {['all', 'today', 'tomorrow', 'custom'].map((d) => (
+                <button
+                  key={d}
+                  className={`tj-date-btn${dateFilter === d ? ' active' : ''}`}
+                  onClick={() => { setDateFilter(d); if (d !== 'custom') setCustomDate(''); }}
+                >
+                  {d === 'all' ? 'All Dates' : d === 'today' ? 'Today' : d === 'tomorrow' ? 'Tomorrow' : 'Custom'}
+                </button>
+              ))}
+              {dateFilter === 'custom' && (
+                <input
+                  type="date"
+                  className="tj-date-picker"
+                  value={customDate}
+                  onChange={(e) => setCustomDate(e.target.value)}
+                />
+              )}
+              {dateFilter !== 'all' && (
+                <span className="tj-date-count">
+                  {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''}
+                </span>
+              )}
+            </div>
+
             {loading ? (
               <div className="tj-loading">
                 <div className="spinner-border" style={{ color: '#A5732F' }} />
@@ -505,7 +660,7 @@ const TechnicianJobs = () => {
                       <th>Est. Time</th>
                       <th>Assigned To</th>
                       <th>Status</th>
-                      <th>Deadline</th>
+                      <th>Service Date</th>
                       <th className="text-center">Actions</th>
                     </tr>
                   </thead>
@@ -554,8 +709,8 @@ const TechnicianJobs = () => {
                           </td>
                           <td>
                             <span className="tj-deadline">
-                              {job.deadline
-                                ? new Date(job.deadline).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+                              {job.serviceDate
+                                ? new Date(job.serviceDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
                                 : '—'}
                             </span>
                           </td>
@@ -571,6 +726,9 @@ const TechnicianJobs = () => {
                                   const cnt = requests.filter((r) => (r.job?._id || r.job) === job._id).length;
                                   return cnt > 0 ? <span className="tj-action-badge">{cnt}</span> : null;
                                 })()}
+                              </button>
+                              <button className="tj-action-btn" title="Reschedule Job" onClick={() => openRescheduleModal(job)} style={{ color: '#A5732F' }}>
+                                <FaRedoAlt />
                               </button>
                               {job.status === 'completed' && (
                                 <button className="tj-action-btn pay" title="Pay Wallet" onClick={() => openPayModal(job)}>
@@ -681,6 +839,15 @@ const TechnicianJobs = () => {
           onCancel={() => setShowEditModal(false)} isEditing={true} saving={saving} />
       </Modal>
 
+      {/* ── RESCHEDULE MODAL ─────────────────────────────────────────────────── */}
+      <RescheduleModal
+        show={showRescheduleModal}
+        job={rescheduleJob}
+        onClose={() => { setShowRescheduleModal(false); setRescheduleJob(null); }}
+        onReschedule={handleReschedule}
+        rescheduling={rescheduling}
+      />
+
       {/* ── PAY WALLET MODAL ─────────────────────────────────────────────────── */}
       <PayWalletModal
         show={showPayModal}
@@ -711,6 +878,22 @@ const TechnicianJobs = () => {
                 </span>
               </div>
 
+              {/* Scheduled date */}
+              {selectedJob.scheduledDate && (
+                <div className="tj-view-block">
+                  <div className="tj-view-block-title">
+                    <FaRedoAlt className="me-1" style={{ color: '#A5732F' }} />
+                    Scheduled Date
+                  </div>
+                  <div className="tj-detail-value">{fmtDT(selectedJob.scheduledDate)}</div>
+                  {selectedJob.rescheduleHistory?.length > 1 && (
+                    <div className="text-muted" style={{ fontSize: '0.78rem', marginTop: 4 }}>
+                      Rescheduled {selectedJob.rescheduleHistory.length - 1} time(s)
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Key details */}
               <div className="tj-detail-grid">
                 <div className="tj-detail-item">
@@ -737,8 +920,8 @@ const TechnicianJobs = () => {
                 <div className="tj-detail-item">
                   <FaCalendarAlt style={{ color: '#A5732F' }} />
                   <div>
-                    <div className="tj-detail-label">Deadline</div>
-                    <div className="tj-detail-value">{selectedJob.deadline ? fmtDT(selectedJob.deadline) : 'No deadline'}</div>
+                    <div className="tj-detail-label">Service Date</div>
+                    <div className="tj-detail-value">{selectedJob.serviceDate ? fmtDT(selectedJob.serviceDate) : 'No service date'}</div>
                   </div>
                 </div>
                 {selectedJob.finalPrice > 0 && (
@@ -868,6 +1051,10 @@ const TechnicianJobs = () => {
                 <button className="btn tj-btn-outline flex-fill"
                   onClick={() => { setShowViewPanel(false); openEditModal(selectedJob); }}>
                   <FaEdit className="me-2" />Edit Job
+                </button>
+                <button className="btn tj-btn-outline flex-fill"
+                  onClick={() => openRescheduleModal(selectedJob)}>
+                  <FaRedoAlt className="me-2" />Reschedule
                 </button>
                 {selectedJob.status === 'completed' && (
                   <button className="btn tj-btn-pay flex-fill"

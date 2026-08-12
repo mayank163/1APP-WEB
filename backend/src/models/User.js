@@ -53,7 +53,8 @@ const userSchema = new mongoose.Schema({
         bankName: { type: String, default: '' },
         accountNumber: { type: String, default: '' },
         ifscCode: { type: String, default: '' },
-        upiId: { type: String, default: '' }
+        upiId: { type: String, default: '' },
+        blankCheque: { type: String, default: '' }
     },
     profileCompleted: {
         type: Boolean,
@@ -65,10 +66,18 @@ const userSchema = new mongoose.Schema({
         yearsOfExperience: { type: Number, default: 0 },
         certifications: [{ type: String, trim: true }],
         photoUrl: { type: String, default: '' },
-        drivingLicenseFront: { type: String, default: '' },
-        drivingLicenseBack: { type: String, default: '' },
+        portfolioPhotos: [{ type: String, trim: true }],
+        previousCompanyName: { type: String, default: '' },
+        certificateImages: [{ type: String, trim: true }],
+        drivingLicense: {
+            front: { type: String, default: '' },
+            back:  { type: String, default: '' },
+        },
         residentialProof: { type: String, default: '' },
-        taxInformation: { type: String, default: '' },
+        taxInformation: {
+            w9Form:   { type: String, default: '' },
+            form1099: { type: String, default: '' },
+        },
         cvResume: { type: String, default: '' },
         backgroundVerification: { type: String, default: '' },
         verificationStatus: {

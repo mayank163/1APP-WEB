@@ -54,6 +54,7 @@ const adminApi = {
     deleteTechnicianJob: async (id) => (await API.delete(`/admin/technician-jobs/${id}`)).data,
     updateTechnicianJobStatus: async (id, payload) => (await API.patch(`/admin/technician-jobs/${id}/status`, payload)).data,
     payTechnicianWallet: async (id, payload) => (await API.post(`/admin/technician-jobs/${id}/pay-wallet`, payload)).data,
+    rescheduleJob: async (id, payload) => (await API.patch(`/admin/technician-jobs/${id}/reschedule`, payload)).data,
     getTechnicianRequests: async () => (await API.get('/admin/technician-requests')).data,
     updateTechnicianRequest: async (id, payload) => (await API.patch(`/admin/technician-requests/${id}/status`, payload)).data,
     sendTechnicianRequestMessage: async (id, message) => (await API.patch(`/admin/technician-requests/${id}/message`, { message })).data,

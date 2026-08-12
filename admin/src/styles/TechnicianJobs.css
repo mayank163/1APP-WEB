@@ -1371,3 +1371,61 @@
   background: currentColor;
   display: inline-block;
 }
+
+/* ── Date filter bar ─────────────────────────────────────────────────────── */
+.tj-date-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  border-bottom: 1px solid #f3ede5;
+  flex-wrap: wrap;
+  background: #fffbf7;
+}
+
+.tj-date-btn {
+  padding: 0.3rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1.5px solid #e9e0d5;
+  border-radius: 20px;
+  background: #fff;
+  color: #6c757d;
+  cursor: pointer;
+  transition: background 0.14s, border-color 0.14s, color 0.14s;
+  white-space: nowrap;
+}
+.tj-date-btn:hover {
+  border-color: #A5732F;
+  color: #A5732F;
+}
+.tj-date-btn.active {
+  background: #A5732F;
+  border-color: #A5732F;
+  color: #fff;
+}
+
+.tj-date-picker {
+  border: 1.5px solid #e9e0d5;
+  border-radius: 8px;
+  padding: 0.28rem 0.65rem;
+  font-size: 0.8rem;
+  background: #fdf9f5;
+  color: #1a1208;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.tj-date-picker:focus {
+  border-color: #A5732F;
+  box-shadow: 0 0 0 3px rgba(165, 115, 47, 0.12);
+}
+
+.tj-date-count {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #A5732F;
+  background: rgba(165, 115, 47, 0.1);
+  padding: 0.2em 0.75em;
+  border-radius: 20px;
+}

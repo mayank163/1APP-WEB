@@ -11,7 +11,10 @@ const socket = io(SOCKET_URL, {
     autoConnect: true,
 });
 
-socket.on('connect', () => console.log('[Admin Socket] connected:', socket.id));
+socket.on('connect', () => {
+    console.log('[Admin Socket] connected:', socket.id);
+    socket.emit('admin:join');
+});
 socket.on('disconnect', () => console.log('[Admin Socket] disconnected'));
 
 export default socket;

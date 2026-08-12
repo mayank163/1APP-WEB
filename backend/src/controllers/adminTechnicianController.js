@@ -8,9 +8,14 @@ const emitToRequest = (requestId, event, payload) => {
   try { getIO().to(`request:${requestId}`).emit(event, payload); } catch (_) {}
 };
 
+// Safely emit to the admin room (never throws if io not ready)
+const emitToAdmin = (event, payload) => {
+  try { getIO().to('admin').emit(event, payload); } catch (_) {}
+};
+
 const createTechnicianJob = async (req, res, next) => {
   try {
-    const { title, category, location, budget, description, requirements, deadline, preferredSkills, estimatedTime } = req.body;
+    const { title, category, location, budget, description, requirements, serviceDate, preferredSkills, estimatedTime } = req.body;
 
     if (!title || !location || !budget || !description) {
       return res.status(400).json({ success: false, message: 'Please provide all required job fields' });
@@ -24,12 +29,13 @@ const createTechnicianJob = async (req, res, next) => {
       description,
       requirements: Array.isArray(requirements) ? requirements : [],
       postedBy: req.user._id,
-      deadline: deadline ? new Date(deadline) : null,
+      serviceDate: serviceDate ? new Date(serviceDate) : null,
       preferredSkills: Array.isArray(preferredSkills) ? preferredSkills : [],
       estimatedTime: estimatedTime || '',
     });
 
     res.status(201).json({ success: true, message: 'Job posted successfully', data: { job } });
+    emitToAdmin('job:created', { job });
   } catch (error) {
     next(error);
   }
@@ -131,6 +137,7 @@ const updateTechnicianRequest = async (req, res, next) => {
     });
 
     res.status(200).json({ success: true, message: 'Request status updated', data: { request } });
+    emitToAdmin('request:updated', { request });
   } catch (error) {
     next(error);
   }
@@ -139,7 +146,7 @@ const updateTechnicianRequest = async (req, res, next) => {
 const updateTechnicianJob = async (req, res, next) => {
   try {
     const { jobId } = req.params;
-    const { title, category, location, budget, description, requirements, deadline, preferredSkills, estimatedTime } = req.body;
+    const { title, category, location, budget, description, requirements, serviceDate, preferredSkills, estimatedTime } = req.body;
 
     const job = await TechnicianJob.findById(jobId);
     if (!job) {
@@ -151,13 +158,14 @@ const updateTechnicianJob = async (req, res, next) => {
     if (location) job.location = location;
     if (budget !== undefined) job.budget = Number(budget || 0);
     if (description) job.description = description;
-    if (deadline !== undefined) job.deadline = deadline ? new Date(deadline) : null;
+    if (serviceDate !== undefined) job.serviceDate = serviceDate ? new Date(serviceDate) : null;
     if (Array.isArray(requirements)) job.requirements = requirements;
     if (Array.isArray(preferredSkills)) job.preferredSkills = preferredSkills;
     if (estimatedTime !== undefined) job.estimatedTime = estimatedTime || '';
 
     await job.save();
     res.status(200).json({ success: true, message: 'Job updated successfully', data: { job } });
+    emitToAdmin('job:updated', { job });
   } catch (error) {
     next(error);
   }
@@ -173,6 +181,7 @@ const deleteTechnicianJob = async (req, res, next) => {
     }
 
     res.status(200).json({ success: true, message: 'Job deleted successfully' });
+    emitToAdmin('job:deleted', { jobId });
   } catch (error) {
     next(error);
   }
@@ -238,6 +247,7 @@ const updateTechnicianJobStatus = async (req, res, next) => {
 
     await job.save();
     res.status(200).json({ success: true, message: 'Job status updated', data: { job } });
+    emitToAdmin('job:updated', { job });
   } catch (error) {
     next(error);
   }
@@ -353,6 +363,52 @@ const payTechnicianWallet = async (req, res, next) => {
       message: `$${amount} credited to technician wallet`,
       data: { job, technicianBalance: technician ? technician.totalEarnings - (technician.totalWithdrawn || 0) : 0 },
     });
+    emitToAdmin('job:updated', { job });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const rescheduleJob = async (req, res, next) => {
+  try {
+    const { jobId } = req.params;
+    const { scheduledDate, reason } = req.body;
+
+    if (!scheduledDate) {
+      return res.status(400).json({ success: false, message: 'Please provide a new scheduled date' });
+    }
+
+    const job = await TechnicianJob.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ success: false, message: 'Job not found' });
+    }
+
+    const newDate = new Date(scheduledDate);
+    if (isNaN(newDate)) {
+      return res.status(400).json({ success: false, message: 'Invalid date format' });
+    }
+
+    job.rescheduleHistory = job.rescheduleHistory || [];
+    job.rescheduleHistory.push({
+      previousDate: job.scheduledDate || null,
+      newDate,
+      reason: reason || '',
+      rescheduledAt: new Date(),
+    });
+
+    job.scheduledDate = newDate;
+    job.serviceDate = newDate;
+    job.conversation = job.conversation || [];
+    job.conversation.push({
+      sender: 'admin',
+      message: `Job rescheduled to ${newDate.toLocaleString('en-IN')}${reason ? `. Reason: ${reason}` : ''}.`,
+      createdAt: new Date(),
+    });
+
+    await job.save();
+
+    res.status(200).json({ success: true, message: 'Job rescheduled successfully', data: { job } });
+    emitToAdmin('job:updated', { job });
   } catch (error) {
     next(error);
   }
@@ -368,4 +424,5 @@ module.exports = {
   deleteTechnicianJob,
   updateTechnicianJobStatus,
   payTechnicianWallet,
+  rescheduleJob,
 };

@@ -86,10 +86,20 @@ const technicianJobSchema = new mongoose.Schema({
     enum: ['all', 'technicians'],
     default: 'technicians',
   },
-  deadline: {
+  serviceDate: {
     type: Date,
     default: null,
   },
+  scheduledDate: {
+    type: Date,
+    default: null,
+  },
+  rescheduleHistory: [{
+    previousDate: { type: Date },
+    newDate: { type: Date },
+    reason: { type: String, default: '' },
+    rescheduledAt: { type: Date, default: Date.now },
+  }],
   preferredSkills: [{
     type: String,
     trim: true,

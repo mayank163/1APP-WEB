@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const { emitVerificationUpdated } = require('../utils/socketEvents');
 
 const getTechnicianVerificationRequests = async (req, res, next) => {
   try {
@@ -16,12 +17,13 @@ const getTechnicianVerificationRequests = async (req, res, next) => {
         yearsOfExperience: user.technicianProfile?.yearsOfExperience || 0,
         certifications: user.technicianProfile?.certifications || [],
         documents: {
-          profilePhoto: user.technicianProfile?.photoUrl || '',
-          drivingLicenseFront: user.technicianProfile?.drivingLicenseFront || '',
-          drivingLicenseBack: user.technicianProfile?.drivingLicenseBack || '',
-          residentialProof: user.technicianProfile?.residentialProof || '',
-          taxInformation: user.technicianProfile?.taxInformation || '',
-          cvResume: user.technicianProfile?.cvResume || '',
+          profilePhoto:           user.technicianProfile?.photoUrl || '',
+          drivingLicenseFront:    user.technicianProfile?.drivingLicense?.front || '',
+          drivingLicenseBack:     user.technicianProfile?.drivingLicense?.back || '',
+          residentialProof:       user.technicianProfile?.residentialProof || '',
+          taxInformationW9:       user.technicianProfile?.taxInformation?.w9Form || '',
+          taxInformation1099:     user.technicianProfile?.taxInformation?.form1099 || '',
+          cvResume:               user.technicianProfile?.cvResume || '',
           backgroundVerification: user.technicianProfile?.backgroundVerification || '',
         },
         verificationStatus: user.technicianProfile?.verificationStatus || 'not-started',
@@ -50,13 +52,18 @@ const updateTechnicianVerificationStatus = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Technician not found' });
     }
 
+    const prev = technician.technicianProfile || {};
     technician.technicianProfile = {
-      ...technician.technicianProfile,
+      ...prev,
+      drivingLicense:  { front: prev.drivingLicense?.front || '', back: prev.drivingLicense?.back || '' },
+      taxInformation:  { w9Form: prev.taxInformation?.w9Form || '', form1099: prev.taxInformation?.form1099 || '' },
       verificationStatus: status,
-      verificationNotes: notes || technician.technicianProfile?.verificationNotes || ''
+      verificationNotes: notes || prev.verificationNotes || ''
     };
 
     await technician.save();
+
+    emitVerificationUpdated(technicianId, status, notes || '');
 
     res.status(200).json({
       success: true,
