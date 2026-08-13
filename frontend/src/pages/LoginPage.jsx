@@ -35,8 +35,9 @@ const LoginPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await login(identifier, password);
+            const user = await login(identifier, password);
             toast.success('Logged in successfully!');
+            if (user?.role === 'technician') navigate('/technician', { replace: true });
         } catch (err) {
             toast.error(err.message || 'Login failed');
         }

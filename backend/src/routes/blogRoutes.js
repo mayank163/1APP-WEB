@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const blogController = require('../controllers/blogController');
-const { protect, restrictTo } = require('../middleware/auth');
+const { protect, checkPermission } = require('../middleware/auth');
 const multer = require('multer');
 
 const uploadBlogMedia = multer({
@@ -18,8 +18,8 @@ const uploadBlogMedia = multer({
 
 router.get('/', blogController.getAllBlogs);
 router.get('/:id', blogController.getBlogById);
-router.post('/', protect, restrictTo('admin'), uploadBlogMedia, blogController.createBlog);
-router.put('/:id', protect, restrictTo('admin'), uploadBlogMedia, blogController.updateBlog);
-router.delete('/:id', protect, restrictTo('admin'), blogController.deleteBlog);
+router.post('/', protect, checkPermission('blogs', 'write'), uploadBlogMedia, blogController.createBlog);
+router.put('/:id', protect, checkPermission('blogs', 'write'), uploadBlogMedia, blogController.updateBlog);
+router.delete('/:id', protect, checkPermission('blogs', 'write'), blogController.deleteBlog);
 
 module.exports = router;

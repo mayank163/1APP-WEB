@@ -25,6 +25,7 @@ const requestJob = async (req, res, next) => {
     const existingRequest = await TechnicianJobRequest.findOne({
       job: jobId,
       technician: req.user._id,
+      status: { $in: ['pending', 'accepted', 'counter-offer'] },
     });
 
     if (existingRequest) {
@@ -118,6 +119,59 @@ const createWithdrawalRequest = async (req, res, next) => {
     next(error);
   }
 };
+
+const sendMessageOnRequest = async (req, res, next) => {
+  try {
+    const { requestId } = req.params;
+    const { message } = req.body;
+
+    if (!message?.trim()) {
+      return res.status(400).json({ success: false, message: 'Message is required' });
+    }
+
+    const request = await TechnicianJobRequest.findById(requestId);
+    if (!request) {
+      return res.status(404).json({ success: false, message: 'Request not found' });
+    }
+
+    if (request.technician.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Not allowed' });
+    }
+
+    const entry = { sender: 'technician', message: message.trim(), createdAt: new Date() };
+    request.conversation = request.conversation || [];
+    request.conversation.push(entry);
+    await request.save();
+
+    try {
+      const { getIO } = require('../utils/socketInstance');
+      getIO().to(`request:${requestId}`).emit('request:message', { requestId, message: entry });
+    } catch (e) {
+      console.log('Socket emit failed:', e.message);
+    }
+
+    res.status(200).json({ success: true, message: 'Message sent', data: { entry } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getRequestMessages = async (req, res, next) => {
+  try {
+    const { requestId } = req.params;
+    const request = await TechnicianJobRequest.findById(requestId);
+    if (!request) {
+      return res.status(404).json({ success: false, message: 'Request not found' });
+    }
+    if (request.technician.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Not allowed' });
+    }
+    res.status(200).json({ success: true, data: { conversation: request.conversation || [] } });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 const updateRequestStatus = async (req, res, next) => {
   try {
@@ -380,15 +434,27 @@ const counterOffer = async (req, res, next) => {
   }
 };
 
+const getWithdrawals = async (req, res, next) => {
+  try {
+    const withdrawals = await TechnicianWithdrawal.find({ technician: req.user._id }).sort('-createdAt');
+    res.status(200).json({ success: true, data: { withdrawals } });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getJobsForTechnicians,
   requestJob,
   getMyRequests,
   getTechnicianDashboard,
   createWithdrawalRequest,
+  getWithdrawals,
   updateRequestStatus,
   getMetrics,
   markReached,
   markJobCompleted,
   counterOffer,
+  sendMessageOnRequest,
+  getRequestMessages,
 };

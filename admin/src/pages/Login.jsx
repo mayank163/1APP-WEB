@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import adminApi from '../services/adminApi';
+import { useAdminAuth } from '../context/AdminAuthContext';
 import { FaLock, FaEnvelope, FaEye, FaEyeSlash, FaShieldAlt } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
@@ -98,6 +99,7 @@ const Login = () => {
     const [showPass, setShowPass] = useState(false);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const { saveAdmin } = useAdminAuth();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -105,6 +107,7 @@ const Login = () => {
         try {
             const res = await adminApi.login(email, password);
             if (res.success) {
+                saveAdmin(res.data?.admin || {});
                 toast.success('Admin login successful!');
                 navigate('/');
             }

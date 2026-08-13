@@ -1,23 +1,41 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import adminApi from '../services/adminApi';
+import { useAdminAuth } from '../context/AdminAuthContext';
 import {
-    FaLayout, FaChartBar, FaTasks, FaWrench, FaFolderOpen,
-    FaUsers, FaTag, FaSignOutAlt, FaTools, FaPlus,
-    FaList, FaLayerGroup, FaBlog, FaHardHat, FaCheckCircle,
-    FaBars, FaChevronLeft
+    FaChartBar, FaTasks, FaWrench, FaFolderOpen,
+    FaUsers, FaTag, FaSignOutAlt, FaTools,
+    FaLayerGroup, FaBlog, FaHardHat, FaCheckCircle,
+    FaBars, FaChevronLeft, FaUserShield
 } from 'react-icons/fa';
 
 const MainLayout = () => {
     const navigate = useNavigate();
     const [collapsed, setCollapsed] = useState(false);
+    const { admin, can, clearAdmin } = useAdminAuth();
 
     const handleLogout = () => {
         adminApi.logout();
+        clearAdmin();
         navigate('/login');
     };
 
-    
+    const allNavItems = [
+        { to: "/", icon: <FaChartBar size={14} />, label: "Dashboard", end: true, resource: 'dashboard' },
+        { to: "/bookings", icon: <FaTasks size={14} />, label: "Bookings", resource: 'bookings' },
+        { to: "/categories", icon: <FaWrench size={14} />, label: "Categories", resource: 'categories' },
+        { to: "/subcategories", icon: <FaFolderOpen size={14} />, label: "Sub-Categories", resource: 'subcategories' },
+        { to: "/services", icon: <FaLayerGroup size={14} />, label: "Services", resource: 'services' },
+        { to: "/users", icon: <FaUsers size={14} />, label: "Users", resource: 'users' },
+        { to: "/offers", icon: <FaTag size={14} />, label: "Offers & Coupons", resource: 'offers' },
+        { to: "/technician-jobs", icon: <FaHardHat size={14} />, label: "Technician Jobs", resource: 'technician_jobs' },
+        { to: "/technician-verification", icon: <FaCheckCircle size={14} />, label: "Verification", resource: 'technician_verification' },
+        { to: "/blogs", icon: <FaBlog size={14} />, label: "Blogs", resource: 'blogs' },
+        { to: "/sub-admins", icon: <FaUserShield size={14} />, label: "Sub-Admins", resource: 'sub_admins' },
+    ];
+
+    // Show nav item if super admin OR has at least read permission
+    const navItems = allNavItems.filter(item => can(item.resource, 'read'));
 
     return (
         <div
@@ -60,18 +78,7 @@ const MainLayout = () => {
                 <div className="p-3 flex-grow-1" style={{ overflowY: "auto" }}>
                     {!collapsed && <p className="text-uppercase fw-bold fs-8 mb-2 px-2" style={{ color: "rgba(255,255,255,0.35)", letterSpacing: "0.08em" }}>Navigation</p>}
                     <ul className="nav nav-pills flex-column gap-1">
-                        {[
-                            { to: "/", icon: <FaChartBar size={14} />, label: "Dashboard", end: true },
-                            { to: "/bookings", icon: <FaTasks size={14} />, label: "Bookings" },
-                            { to: "/categories", icon: <FaWrench size={14} />, label: "Categories" },
-                            { to: "/subcategories", icon: <FaFolderOpen size={14} />, label: "Sub-Categories" },
-                            { to: "/services", icon: <FaLayerGroup size={14} />, label: "Services" },
-                            { to: "/users", icon: <FaUsers size={14} />, label: "Users" },
-                            { to: "/offers", icon: <FaTag size={14} />, label: "Offers & Coupons" },
-                            { to: "/technician-jobs", icon: <FaHardHat size={14} />, label: "Technician Jobs" },
-                            { to: "/technician-verification", icon: <FaCheckCircle size={14} />, label: "Verification" },
-                            { to: "/blogs", icon: <FaBlog size={14} />, label: "Blogs" },
-                        ].map(({ to, icon, label, end }) => (
+                        {navItems.map(({ to, icon, label, end }) => (
                             <li key={to} className="nav-item">
                                 <NavLink
                                     to={to}
@@ -144,7 +151,10 @@ const MainLayout = () => {
                     </div>
                     <div className="d-flex align-items-center gap-2">
                         <span className="dot bg-success rounded-circle" style={{ width: '8px', height: '8px' }}></span>
-                        <span className="text-muted small fw-medium">Active</span>
+                        <span className="text-muted small fw-medium">{admin?.name || 'Admin'}</span>
+                        {admin?.isSuperAdmin && (
+                            <span style={{ background: '#fdf6ee', color: '#A5732F', border: '1px solid #f0e8dc', borderRadius: 20, padding: '2px 10px', fontSize: '0.72rem', fontWeight: 700 }}>Super Admin</span>
+                        )}
                     </div>
                 </header>
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-const BASE = 'http://localhost:5000/api';
+const BASE = 'http://localhost:5001/api';
 
 const formatDuration = (minutes) => {
   if (minutes == null) return null;
@@ -42,6 +42,11 @@ const TechnicianDashboard = () => {
   const [loading, setLoading]   = useState(true);
   const [activeTab, setActiveTab] = useState('open');
   const [reuploadingDoc, setReuploadingDoc] = useState(null); // documentId being uploaded
+  const [openChat, setOpenChat]     = useState(null);   // requestId with chat open
+  const [msgText, setMsgText]       = useState({});     // { [requestId]: text }
+  const [sendingMsg, setSendingMsg] = useState(false);
+  const [loadingChat, setLoadingChat] = useState(null); // requestId currently loading
+  const chatEndRef = useRef(null);
 
   // Profile image upload
   const [profileImagePreview, setProfileImagePreview] = useState(null);
@@ -106,6 +111,10 @@ const TechnicianDashboard = () => {
   };
 
   useEffect(() => { loadData(); }, []);
+
+  useEffect(() => {
+    if (openChat) chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [openChat, requests]);
 
 
   // ── Profile image ────────────────────────────────────────────────────────────
@@ -192,6 +201,48 @@ const TechnicianDashboard = () => {
       alert(data.message || 'Withdrawal requested');
       if (data.success) loadData();
     } catch { alert('Withdrawal failed'); }
+  };
+
+  const openChatFor = async (requestId) => {
+    if (openChat === requestId) { setOpenChat(null); return; }
+    setOpenChat(requestId);
+    setLoadingChat(requestId);
+    try {
+      const res = await fetch(`${BASE}/technician/requests/${requestId}/messages`, { headers: jsonHeaders() });
+      const data = await res.json();
+      if (data.success) {
+        setRequests((prev) => prev.map((r) =>
+          r._id === requestId ? { ...r, conversation: data.data.conversation } : r
+        ));
+      }
+    } catch { /* use existing conversation from state */ }
+    finally { setLoadingChat(null); }
+  };
+
+  const sendMessage = async (requestId) => {
+    const message = (msgText[requestId] || '').trim();
+    if (!message) return;
+    setSendingMsg(true);
+    try {
+      const res = await fetch(`${BASE}/technician/requests/${requestId}/message`, {
+        method: 'POST', headers: jsonHeaders(),
+        body: JSON.stringify({ message }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMsgText((p) => ({ ...p, [requestId]: '' }));
+        // Optimistically append message to local state immediately
+        const newEntry = data.data?.entry || { sender: 'technician', message, createdAt: new Date().toISOString() };
+        setRequests((prev) => prev.map((r) =>
+          r._id === requestId
+            ? { ...r, conversation: [...(r.conversation || []), newEntry] }
+            : r
+        ));
+      } else {
+        alert(data.message || 'Failed to send');
+      }
+    } catch { alert('Failed to send message'); }
+    finally { setSendingMsg(false); }
   };
 
   const reuploadDocument = async (documentId, file) => {
@@ -303,29 +354,41 @@ const TechnicianDashboard = () => {
           <h4 style={{ fontWeight: 700, marginBottom: 12 }}>Available Jobs</h4>
           {jobs.length === 0 ? (
             <div style={{ color: '#adb5bd', padding: '2rem', textAlign: 'center' }}>No open jobs right now.</div>
-          ) : jobs.map((job) => (
-            <div key={job._id} style={card}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '1rem', color: '#1a1208' }}>{job.title}</div>
-                  <div style={{ fontSize: '0.8rem', color: '#6c757d' }}>{job.category} &nbsp;·&nbsp; {job.location}</div>
+          ) : jobs.map((job) => {
+            const myRequest = requests.find(
+              (r) => (r.job?._id || r.job) === job._id && ['pending', 'accepted', 'counter-offer'].includes(r.status)
+            );
+            return (
+              <div key={job._id} style={card}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '1rem', color: '#1a1208' }}>{job.title}</div>
+                    <div style={{ fontSize: '0.8rem', color: '#6c757d' }}>{job.category} &nbsp;·&nbsp; {job.location}</div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontWeight: 800, color: '#A5732F', fontSize: '1.05rem' }}>${job.budget}</div>
+                    {job.estimatedTime && (
+                      <div style={{ fontSize: '0.75rem', color: '#6c757d' }}>⏱ {job.estimatedTime}</div>
+                    )}
+                  </div>
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontWeight: 800, color: '#A5732F', fontSize: '1.05rem' }}>${job.budget}</div>
-                  {job.estimatedTime && (
-                    <div style={{ fontSize: '0.75rem', color: '#6c757d' }}>⏱ {job.estimatedTime}</div>
-                  )}
-                </div>
+                <p style={{ color: '#495057', fontSize: '0.875rem', margin: '8px 0' }}>{job.description}</p>
+                {job.deadline && (
+                  <div style={{ fontSize: '0.75rem', color: '#dc3545', marginBottom: 8 }}>
+                    📅 Deadline: {new Date(job.deadline).toLocaleDateString('en-IN')}
+                  </div>
+                )}
+                {myRequest ? (
+                  <span style={{ fontSize: '0.82rem', fontWeight: 700,
+                    color: myRequest.status === 'accepted' ? '#16a34a' : myRequest.status === 'counter-offer' ? '#b45309' : '#6c757d' }}>
+                    {myRequest.status === 'accepted' ? '✓ Accepted' : myRequest.status === 'counter-offer' ? '⇄ Counter Offer' : '⏳ Request Sent'}
+                  </span>
+                ) : (
+                  <button style={btn('#1a1208')} onClick={() => requestJob(job._id)}>Request Job</button>
+                )}
               </div>
-              <p style={{ color: '#495057', fontSize: '0.875rem', margin: '8px 0' }}>{job.description}</p>
-              {job.deadline && (
-                <div style={{ fontSize: '0.75rem', color: '#dc3545', marginBottom: 8 }}>
-                  📅 Deadline: {new Date(job.deadline).toLocaleDateString('en-IN')}
-                </div>
-              )}
-              <button style={btn('#1a1208')} onClick={() => requestJob(job._id)}>Request Job</button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -411,52 +474,123 @@ const TechnicianDashboard = () => {
           <h4 style={{ fontWeight: 700, marginBottom: 12 }}>My Job Requests</h4>
           {requests.length === 0 ? (
             <div style={{ color: '#adb5bd', padding: '2rem', textAlign: 'center' }}>No requests yet.</div>
-          ) : requests.map((req) => (
-            <div key={req._id} style={card}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-                <div>
-                  <div style={{ fontWeight: 700, color: '#1a1208' }}>{req.job?.title || 'Job'}</div>
-                  <div style={{ fontSize: '0.8rem', color: '#6c757d' }}>{req.job?.location || ''}</div>
+          ) : requests.map((req) => {
+            const isOpen = openChat === req._id;
+            const convo  = req.conversation || [];
+            return (
+              <div key={req._id} style={card}>
+                {/* Header row */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                  <div>
+                    <div style={{ fontWeight: 700, color: '#1a1208' }}>{req.job?.title || 'Job'}</div>
+                    <div style={{ fontSize: '0.8rem', color: '#6c757d' }}>{req.job?.location || ''}</div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{
+                      padding: '3px 12px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 700,
+                      background:
+                        req.status === 'accepted'      ? 'rgba(22,163,74,0.12)' :
+                        req.status === 'rejected'      ? 'rgba(220,53,69,0.1)'  :
+                        req.status === 'counter-offer' ? 'rgba(234,179,8,0.15)' : 'rgba(108,117,125,0.1)',
+                      color:
+                        req.status === 'accepted'      ? '#16a34a' :
+                        req.status === 'rejected'      ? '#dc3545' :
+                        req.status === 'counter-offer' ? '#b45309' : '#6c757d',
+                    }}>
+                      {req.status ? req.status.charAt(0).toUpperCase() + req.status.slice(1) : 'Pending'}
+                    </span>
+                    <button
+                      onClick={() => openChatFor(req._id)}
+                      style={{ background: isOpen ? '#f0e8dc' : '#1a1208', color: isOpen ? '#1a1208' : '#fff',
+                        border: 'none', borderRadius: 8, padding: '5px 12px', fontSize: '0.78rem',
+                        fontWeight: 700, cursor: 'pointer' }}>
+                      💬 {isOpen ? 'Close' : `Chat${convo.length ? ` (${convo.length})` : ''}`}
+                    </button>
+                  </div>
                 </div>
-                <span style={{
-                  padding: '3px 12px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 700,
-                  background:
-                    req.status === 'accepted'      ? 'rgba(22,163,74,0.12)' :
-                    req.status === 'rejected'      ? 'rgba(220,53,69,0.1)'  :
-                    req.status === 'counter-offer' ? 'rgba(234,179,8,0.15)' : 'rgba(108,117,125,0.1)',
-                  color:
-                    req.status === 'accepted'      ? '#16a34a' :
-                    req.status === 'rejected'      ? '#dc3545' :
-                    req.status === 'counter-offer' ? '#b45309' : '#6c757d',
-                }}>
-                  {req.status
-                    ? req.status.charAt(0).toUpperCase() + req.status.slice(1)
-                    : 'Pending'}
-                </span>
+
+                {req.job?.estimatedTime && (
+                  <div style={{ fontSize: '0.8rem', color: '#A5732F', fontWeight: 600, marginTop: 4 }}>
+                    ⏱ Est. {req.job.estimatedTime}
+                  </div>
+                )}
+                {req.note && (
+                  <p style={{ color: '#6c757d', fontSize: '0.82rem', margin: '6px 0 0', fontStyle: 'italic' }}>
+                    "{req.note}"
+                  </p>
+                )}
+                {req.amountEarned > 0 && (
+                  <div style={{ marginTop: 6, fontWeight: 700, color: '#16a34a', fontSize: '0.9rem' }}>
+                    💰 Earned: ${req.amountEarned}
+                  </div>
+                )}
+
+                {/* ── Conversation window ── */}
+                {isOpen && (
+                  <div style={{ marginTop: 12, border: '1px solid #e9e0d5', borderRadius: 10, overflow: 'hidden' }}>
+                    {/* Messages */}
+                    <div style={{ height: 260, overflowY: 'auto', padding: '12px', background: '#fdf9f5',
+                      display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {loadingChat === req._id ? (
+                        <div style={{ color: '#adb5bd', textAlign: 'center', marginTop: 80, fontSize: '0.85rem' }}>Loading messages…</div>
+                      ) : convo.length === 0 ? (
+                        <div style={{ color: '#adb5bd', textAlign: 'center', marginTop: 80, fontSize: '0.85rem' }}>
+                          No messages yet. Start the conversation!
+                        </div>
+                      ) : convo.map((msg, i) => {
+                        const isMe = msg.sender === 'technician';
+                        return (
+                          <div key={i} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start' }}>
+                            <div style={{
+                              maxWidth: '72%', padding: '8px 12px', borderRadius: isMe ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
+                              background: isMe ? '#1a1208' : '#fff',
+                              color: isMe ? '#fff' : '#1a1208',
+                              border: isMe ? 'none' : '1px solid #e9e0d5',
+                              fontSize: '0.83rem', lineHeight: 1.45,
+                            }}>
+                              <div style={{ fontWeight: 600, fontSize: '0.7rem', marginBottom: 3,
+                                color: isMe ? '#d4a050' : '#A5732F' }}>
+                                {isMe ? 'You' : 'Admin'}
+                              </div>
+                              {msg.counterOffer > 0 && (
+                                <div style={{ fontWeight: 700, marginBottom: 2 }}>Counter offer: ₹{msg.counterOffer}</div>
+                              )}
+                              {msg.message}
+                              <div style={{ fontSize: '0.65rem', marginTop: 4,
+                                color: isMe ? 'rgba(255,255,255,0.55)' : '#adb5bd', textAlign: 'right' }}>
+                                {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : ''}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <div ref={chatEndRef} />
+                    </div>
+
+                    {/* Input */}
+                    <div style={{ display: 'flex', gap: 8, padding: '10px 12px', background: '#fff',
+                      borderTop: '1px solid #e9e0d5' }}>
+                      <input
+                        type="text"
+                        placeholder="Type a message…"
+                        value={msgText[req._id] || ''}
+                        onChange={(e) => setMsgText((p) => ({ ...p, [req._id]: e.target.value }))}
+                        onKeyDown={(e) => e.key === 'Enter' && !sendingMsg && sendMessage(req._id)}
+                        style={{ flex: 1, border: '1.5px solid #e9e0d5', borderRadius: 8,
+                          padding: '8px 12px', fontSize: '0.85rem', outline: 'none' }}
+                      />
+                      <button
+                        onClick={() => sendMessage(req._id)}
+                        disabled={sendingMsg || !msgText[req._id]?.trim()}
+                        style={btn('#A5732F', sendingMsg || !msgText[req._id]?.trim())}>
+                        {sendingMsg ? '…' : 'Send'}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-              {req.job?.estimatedTime && (
-                <div style={{ fontSize: '0.8rem', color: '#A5732F', fontWeight: 600, marginTop: 4 }}>
-                  ⏱ Est. {req.job.estimatedTime}
-                </div>
-              )}
-              {req.note && (
-                <p style={{ color: '#6c757d', fontSize: '0.82rem', margin: '6px 0 0', fontStyle: 'italic' }}>
-                  "{req.note}"
-                </p>
-              )}
-              {req.adminMessage && (
-                <div style={{ background: '#fdf9f5', borderRadius: 8, padding: '6px 10px', marginTop: 6,
-                  border: '1px solid #f0e8dc', fontSize: '0.82rem', color: '#495057' }}>
-                  <strong>Admin:</strong> {req.adminMessage}
-                </div>
-              )}
-              {req.amountEarned > 0 && (
-                <div style={{ marginTop: 6, fontWeight: 700, color: '#16a34a', fontSize: '0.9rem' }}>
-                  💰 Earned: ${req.amountEarned}
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

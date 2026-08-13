@@ -6,11 +6,22 @@ const authService = {
         const payload = identifier.includes('@')
             ? { email: identifier, password }
             : { phone: identifier, password };
-        const response = await API.post('/auth/login', payload);
-        if (response.data.token) {
-            localStorage.setItem('1App_token', response.data.token);
+
+        // Try regular user login first, then technician login
+        try {
+            const response = await API.post('/auth/login', payload);
+            if (response.data.token) {
+                localStorage.setItem('1App_token', response.data.token);
+            }
+            return response.data;
+        } catch (err) {
+            // If regular login fails, try technician login
+            const techRes = await API.post('/technician-auth/login', payload);
+            if (techRes.data.token) {
+                localStorage.setItem('1App_token', techRes.data.token);
+            }
+            return techRes.data;
         }
-        return response.data;
     },
 
     register: async (userData) => {

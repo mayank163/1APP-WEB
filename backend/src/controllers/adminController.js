@@ -1,6 +1,7 @@
 const Booking = require('../models/Booking');
 const User = require('../models/User');
 const Admin = require('../models/Admin');
+const { RESOURCES } = require('../models/Admin');
 const jwt = require('jsonwebtoken');
 const { sendBookingStatusUpdated } = require('../utils/emailService');
 
@@ -55,7 +56,8 @@ exports.login = async (req, res, next) => {
                     id: admin._id,
                     name: admin.name,
                     email: admin.email,
-                    role: admin.role,
+                    isSuperAdmin: admin.isSuperAdmin,
+                    isActive: admin.isActive,
                     permissions: admin.permissions
                 }
             }
@@ -253,41 +255,91 @@ exports.getAllUsers = async (req, res, next) => {
 };
 
 /**
- * @desc    Create a secondary admin
- * @route   POST /api/admin/register
+ * @desc    Create a sub-admin with RBAC permissions
+ * @route   POST /api/admin/sub-admins
  */
-exports.registerAdmin = async (req, res, next) => {
+exports.createSubAdmin = async (req, res, next) => {
     try {
         const { name, email, password, permissions } = req.body;
 
-        const emailExists = await Admin.findOne({ email });
-        if (emailExists) {
-            return res.status(400).json({
-                success: false,
-                message: 'Email already in use by another admin'
-            });
+        if (!name || !email || !password) {
+            return res.status(400).json({ success: false, message: 'Name, email and password are required.' });
         }
 
-        const admin = await Admin.create({
-            name,
-            email,
-            password,
-            permissions: permissions || ['manage_bookings', 'manage_services']
-        });
+        if (await Admin.findOne({ email })) {
+            return res.status(400).json({ success: false, message: 'Email already in use.' });
+        }
+
+        // Validate permissions
+        const validPerms = (permissions || []).filter(
+            p => RESOURCES.includes(p.resource) && ['read', 'write', 'both'].includes(p.access)
+        );
+
+        const admin = await Admin.create({ name, email, password, isSuperAdmin: false, permissions: validPerms });
 
         res.status(201).json({
             success: true,
-            message: 'Secondary Admin created successfully',
-            data: {
-                admin: {
-                    id: admin._id,
-                    name: admin.name,
-                    email: admin.email,
-                    permissions: admin.permissions
-                }
-            }
+            message: 'Sub-admin created successfully.',
+            data: { admin: { id: admin._id, name: admin.name, email: admin.email, isActive: admin.isActive, permissions: admin.permissions } }
         });
-    } catch (err) {
-        next(err);
-    }
+    } catch (err) { next(err); }
+};
+
+/**
+ * @desc    Get all sub-admins
+ * @route   GET /api/admin/sub-admins
+ */
+exports.getSubAdmins = async (req, res, next) => {
+    try {
+        const admins = await Admin.find({ isSuperAdmin: false }).sort('-createdAt');
+        res.status(200).json({ success: true, data: { admins } });
+    } catch (err) { next(err); }
+};
+
+/**
+ * @desc    Update sub-admin permissions / status
+ * @route   PUT /api/admin/sub-admins/:id
+ */
+exports.updateSubAdmin = async (req, res, next) => {
+    try {
+        const { permissions, isActive, name } = req.body;
+        const admin = await Admin.findById(req.params.id);
+        if (!admin || admin.isSuperAdmin) {
+            return res.status(404).json({ success: false, message: 'Sub-admin not found.' });
+        }
+
+        if (name) admin.name = name;
+        if (typeof isActive === 'boolean') admin.isActive = isActive;
+        if (permissions) {
+            admin.permissions = permissions.filter(
+                p => RESOURCES.includes(p.resource) && ['read', 'write', 'both'].includes(p.access)
+            );
+        }
+
+        await admin.save();
+        res.status(200).json({ success: true, message: 'Sub-admin updated.', data: { admin } });
+    } catch (err) { next(err); }
+};
+
+/**
+ * @desc    Delete sub-admin
+ * @route   DELETE /api/admin/sub-admins/:id
+ */
+exports.deleteSubAdmin = async (req, res, next) => {
+    try {
+        const admin = await Admin.findById(req.params.id);
+        if (!admin || admin.isSuperAdmin) {
+            return res.status(404).json({ success: false, message: 'Sub-admin not found.' });
+        }
+        await admin.deleteOne();
+        res.status(200).json({ success: true, message: 'Sub-admin deleted.' });
+    } catch (err) { next(err); }
+};
+
+/**
+ * @desc    Get available RBAC resources
+ * @route   GET /api/admin/sub-admins/resources
+ */
+exports.getResources = (req, res) => {
+    res.status(200).json({ success: true, data: { resources: RESOURCES } });
 };

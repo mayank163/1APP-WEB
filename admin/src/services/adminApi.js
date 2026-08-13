@@ -28,10 +28,16 @@ const adminApi = {
     // ─── Auth ──────────────────────────────────────────────────────────────────
     login: async (email, password) => {
         const res = await API.post('/admin/login', { email, password });
-        if (res.data.token) localStorage.setItem('1app_admin_token', res.data.token);
+        if (res.data.token) {
+            localStorage.setItem('1app_admin_token', res.data.token);
+            localStorage.setItem('1app_admin_info', JSON.stringify(res.data.data?.admin || {}));
+        }
         return res.data;
     },
-    logout: () => localStorage.removeItem('1app_admin_token'),
+    logout: () => {
+        localStorage.removeItem('1app_admin_token');
+        localStorage.removeItem('1app_admin_info');
+    },
 
     // ─── Dashboard ─────────────────────────────────────────────────────────────
     getStats: async () => (await API.get('/admin/stats')).data,
@@ -92,6 +98,13 @@ const adminApi = {
     updateService: async (id, fd) => (await API.put(`/services/${id}`, fd, multipart)).data,
     deleteService: async (id) => (await API.delete(`/services/${id}`)).data,
     getServiceHierarchy: async () => (await API.get('/services/hierarchy')).data,
+
+    // ─── Sub-Admins (RBAC) ──────────────────────────────────────────────────────
+    getSubAdmins: async () => (await API.get('/admin/sub-admins')).data,
+    getResources: async () => (await API.get('/admin/sub-admins/resources')).data,
+    createSubAdmin: async (data) => (await API.post('/admin/sub-admins', data)).data,
+    updateSubAdmin: async (id, data) => (await API.put(`/admin/sub-admins/${id}`, data)).data,
+    deleteSubAdmin: async (id) => (await API.delete(`/admin/sub-admins/${id}`)).data,
 
     // ─── Blogs ─────────────────────────────────────────────────────────────────
     getBlogs: async () => (await API.get('/blogs')).data,

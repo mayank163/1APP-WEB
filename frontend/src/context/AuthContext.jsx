@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }) => {
                 return res.data.user;
             }
         } catch (err) {
-            const errMsg = err.response?.data?.message || 'Login failed. Please try again.';
+            const errMsg = err.response?.data?.message || err.message || 'Login failed. Please try again.';
             setError(errMsg);
             throw new Error(errMsg);
         } finally {
