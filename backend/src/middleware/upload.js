@@ -78,6 +78,13 @@ const uploadBankDetails = multer({
     fileFilter: technicianDocumentFilter,
 }).single('blankCheque');
 
+// Single document re-upload (any field name 'file')
+const uploadSingleDocument = multer({
+    storage,
+    limits,
+    fileFilter: technicianDocumentFilter,
+}).single('file');
+
 module.exports = upload;
 module.exports.uploadServiceMedia = uploadServiceMedia;
 module.exports.uploadCategoryMedia = uploadCategoryMedia;
@@ -85,3 +92,4 @@ module.exports.uploadTechnicianDocuments = uploadTechnicianDocuments;
 module.exports.uploadProfileImage = uploadProfileImage;
 module.exports.uploadCompleteProfile = uploadCompleteProfile;
 module.exports.uploadBankDetails = uploadBankDetails;
+module.exports.uploadSingleDocument = uploadSingleDocument;

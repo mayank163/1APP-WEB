@@ -86,7 +86,18 @@ const userSchema = new mongoose.Schema({
             default: 'not-started'
         },
         verificationNotes: { type: String, default: '' },
-        submittedAt: { type: Date, default: null }
+        submittedAt: { type: Date, default: null },
+        documents: [{
+            documentId: { type: String, required: true },   // e.g. 'panCard', 'aadhaar'
+            label:      { type: String, default: '' },
+            s3Key:      { type: String, default: '' },
+            status: {
+                type: String,
+                enum: ['pending', 'approved', 'rejected'],
+                default: 'pending'
+            },
+            rejectionReason: { type: String, default: null }
+        }]
     },
     totalJobsDone: {
         type: Number,

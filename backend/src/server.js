@@ -67,9 +67,9 @@ if (fs.existsSync(uploadsPath)) {
 
 const io = new Server(server, {
     cors: {
-        origin: ['http://localhost:3000', 'http://localhost:3001'],
+        origin: '*',
         methods: ['GET', 'POST'],
-        credentials: true
+        credentials: false
     },
     pingInterval: 25000,
     pingTimeout: 60000,
@@ -192,6 +192,18 @@ io.on("connection", (socket) => {
 
     socket.on('admin:leave', () => {
         socket.leave('admin');
+    });
+
+    // Technician joins their own room to receive verification updates
+    socket.on('technician:join', (technicianId) => {
+        if (technicianId) {
+            socket.join(`technician:${technicianId}`);
+            console.log(`[Socket] ${socket.id} joined technician room: ${technicianId}`);
+        }
+    });
+
+    socket.on('technician:leave', (technicianId) => {
+        if (technicianId) socket.leave(`technician:${technicianId}`);
     });
 
     socket.on("disconnect", () => {

@@ -26,6 +26,7 @@ const getTechnicianVerificationRequests = async (req, res, next) => {
           cvResume:               user.technicianProfile?.cvResume || '',
           backgroundVerification: user.technicianProfile?.backgroundVerification || '',
         },
+        documentStatuses: user.technicianProfile?.documents || [],
         verificationStatus: user.technicianProfile?.verificationStatus || 'not-started',
         verificationNotes: user.technicianProfile?.verificationNotes || '',
         submittedAt: user.technicianProfile?.submittedAt || user.createdAt,
@@ -75,7 +76,46 @@ const updateTechnicianVerificationStatus = async (req, res, next) => {
   }
 };
 
+// PATCH /api/admin/technician-verifications/:technicianId/documents/:documentId
+const updateDocumentStatus = async (req, res, next) => {
+  try {
+    const { technicianId, documentId } = req.params;
+    const { status, rejectionReason } = req.body;
+
+    if (!['approved', 'rejected', 'pending'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Invalid status' });
+    }
+
+    const technician = await User.findById(technicianId);
+    if (!technician || technician.role !== 'technician') {
+      return res.status(404).json({ success: false, message: 'Technician not found' });
+    }
+
+    const docs = technician.technicianProfile?.documents || [];
+    const idx  = docs.findIndex(d => d.documentId === documentId);
+    if (idx < 0) return res.status(404).json({ success: false, message: 'Document not found' });
+
+    docs[idx].status          = status;
+    docs[idx].rejectionReason = status === 'rejected' ? (rejectionReason || 'Rejected by admin') : null;
+
+    technician.technicianProfile.documents = docs;
+    await technician.save();
+
+    // Emit socket event so technician app updates in real-time
+    emitVerificationUpdated(technicianId, technician.technicianProfile.verificationStatus, '');
+
+    res.status(200).json({
+      success: true,
+      message: `Document ${documentId} marked as ${status}`,
+      data: { document: docs[idx] }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getTechnicianVerificationRequests,
   updateTechnicianVerificationStatus,
+  updateDocumentStatus,
 };

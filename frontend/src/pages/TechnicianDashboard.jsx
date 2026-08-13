@@ -41,6 +41,7 @@ const TechnicianDashboard = () => {
   const [profile, setProfile]   = useState(null);
   const [loading, setLoading]   = useState(true);
   const [activeTab, setActiveTab] = useState('open');
+  const [reuploadingDoc, setReuploadingDoc] = useState(null); // documentId being uploaded
 
   // Profile image upload
   const [profileImagePreview, setProfileImagePreview] = useState(null);
@@ -193,6 +194,25 @@ const TechnicianDashboard = () => {
     } catch { alert('Withdrawal failed'); }
   };
 
+  const reuploadDocument = async (documentId, file) => {
+    if (!file) return;
+    setReuploadingDoc(documentId);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch(`${BASE}/technician-auth/documents/${documentId}`, {
+        method: 'PUT',
+        headers: apiHeaders(),
+        body: fd,
+      });
+      const data = await res.json();
+      alert(data.message || (data.success ? 'Document re-uploaded!' : 'Upload failed'));
+      if (data.success) loadData();
+    } catch { alert('Re-upload failed'); } finally {
+      setReuploadingDoc(null);
+    }
+  };
+
   if (loading) return <div style={{ padding: 32 }}>Loading technician dashboard…</div>;
 
 
@@ -266,9 +286,10 @@ const TechnicianDashboard = () => {
       {/* ── Tabs ─────────────────────────────────────────────────────────── */}
       <div style={{ display: 'flex', gap: 4, borderBottom: '2px solid #f0e8dc', marginBottom: 20 }}>
         {[
-          { key: 'open',     label: `Open Jobs (${jobs.length})` },
-          { key: 'my',       label: `My Jobs (${myJobs.length})` },
-          { key: 'requests', label: `My Requests (${requests.length})` },
+          { key: 'open',      label: `Open Jobs (${jobs.length})` },
+          { key: 'my',        label: `My Jobs (${myJobs.length})` },
+          { key: 'requests',  label: `My Requests (${requests.length})` },
+          { key: 'documents', label: 'My Documents' },
         ].map((t) => (
           <button key={t.key} style={tabStyle(t.key)} onClick={() => setActiveTab(t.key)}>
             {t.label}
@@ -438,6 +459,52 @@ const TechnicianDashboard = () => {
           ))}
         </div>
       )}
+
+      {/* ── My Documents ────────────────────────────────────────────────── */}
+      {activeTab === 'documents' && (() => {
+        const docs = profile?.technicianProfile?.documents || [];
+        const statusColor = { approved: '#16a34a', rejected: '#dc3545', pending: '#b45309' };
+        const statusIcon  = { approved: '✓', rejected: '✗', pending: '⏳' };
+        return (
+          <div>
+            <h4 style={{ fontWeight: 700, marginBottom: 12 }}>My Documents</h4>
+            {docs.length === 0 ? (
+              <div style={{ color: '#adb5bd', padding: '2rem', textAlign: 'center' }}>No documents uploaded yet.</div>
+            ) : docs.map((doc) => (
+              <div key={doc.documentId} style={{ ...card, display: 'flex', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 700, color: '#1a1208', marginBottom: 4 }}>{doc.label || doc.documentId}</div>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '3px 10px', borderRadius: 20, fontSize: '0.78rem', fontWeight: 700,
+                    background: doc.status === 'approved' ? 'rgba(22,163,74,0.1)' :
+                                doc.status === 'rejected' ? 'rgba(220,53,69,0.1)' : 'rgba(180,83,9,0.1)',
+                    color: statusColor[doc.status] || '#6c757d' }}>
+                    {statusIcon[doc.status]} {doc.status}
+                  </div>
+                  {doc.status === 'rejected' && doc.rejectionReason && (
+                    <div style={{ marginTop: 6, padding: '6px 10px', background: '#fff5f5',
+                      border: '1px solid #fecaca', borderRadius: 8, fontSize: '0.82rem', color: '#dc3545' }}>
+                      <strong>Reason:</strong> {doc.rejectionReason}
+                    </div>
+                  )}
+                </div>
+                {doc.status === 'rejected' && (
+                  <label style={{ ...btn('#A5732F'), display: 'inline-block', cursor: 'pointer',
+                    opacity: reuploadingDoc === doc.documentId ? 0.6 : 1 }}>
+                    {reuploadingDoc === doc.documentId ? 'Uploading…' : '↑ Re-upload'}
+                    <input
+                      type="file"
+                      hidden
+                      disabled={reuploadingDoc === doc.documentId}
+                      onChange={(e) => reuploadDocument(doc.documentId, e.target.files[0])}
+                    />
+                  </label>
+                )}
+              </div>
+            ))}
+          </div>
+        );
+      })()}
 
     </div>
   );

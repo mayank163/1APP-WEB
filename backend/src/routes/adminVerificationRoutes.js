@@ -8,5 +8,6 @@ router.use(restrictTo('admin'));
 
 router.get('/technician-verifications', adminTechVerificationController.getTechnicianVerificationRequests);
 router.patch('/technician-verifications/:technicianId/status', adminTechVerificationController.updateTechnicianVerificationStatus);
+router.patch('/technician-verifications/:technicianId/documents/:documentId', adminTechVerificationController.updateDocumentStatus);
 
 module.exports = router;

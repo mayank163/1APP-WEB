@@ -1176,51 +1176,46 @@ const TechnicianJobs = () => {
                     </div>
 
                     <div className="tj-chat-messages" ref={(el) => { if (el) el.scrollTop = el.scrollHeight; }}>
-                      {liveConversation.length > 0
-                        ? liveConversation.map((msg, i) =>
-                            msg.sender === 'admin' ? (
-                              <div key={i} className="tj-chat-row admin">
-                                <div className="tj-bubble admin">
-                                  <p className="mb-0">{msg.message}</p>
-                                  {msg.createdAt && (
-                                    <div className="tj-bubble-time" style={{ textAlign: 'right' }}>{fmtDT(msg.createdAt)}</div>
-                                  )}
-                                </div>
-                                <div className="tj-admin-avatar" title="Admin">A</div>
-                              </div>
-                            ) : (
-                              <div key={i} className="tj-chat-row tech">
-                                <div className="tj-tech-avatar" style={{ width: 32, height: 32, fontSize: '0.8rem', flexShrink: 0, alignSelf: 'flex-end' }}>
-                                  {techName.charAt(0).toUpperCase()}
-                                </div>
-                                <div className="tj-bubble tech">
-                                  <p className="mb-0">{msg.message}</p>
-                                  {req.bidAmount && i === 0 && (
-                                    <div className="tj-bubble-meta">Bid: <strong>₹{Number(req.bidAmount).toLocaleString()}</strong></div>
-                                  )}
-                                  {msg.createdAt && <div className="tj-bubble-time">{fmtDT(msg.createdAt)}</div>}
-                                </div>
-                              </div>
-                            )
-                          )
-                        : (
-                          <div className="tj-chat-row tech">
+                      {/* Always show the initial request note as the first message */}
+                      <div className="tj-chat-row tech">
+                        <div className="tj-tech-avatar" style={{ width: 32, height: 32, fontSize: '0.8rem', flexShrink: 0, alignSelf: 'flex-end' }}>
+                          {techName.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="tj-bubble tech">
+                          {req.note
+                            ? <p className="mb-0">{req.note}</p>
+                            : <p className="mb-0 fst-italic text-muted" style={{ fontSize: '0.82rem' }}>No message yet.</p>
+                          }
+                          {req.bidAmount && (
+                            <div className="tj-bubble-meta">Bid: <strong>₹{Number(req.bidAmount).toLocaleString()}</strong></div>
+                          )}
+                          {req.createdAt && <div className="tj-bubble-time">{fmtDT(req.createdAt)}</div>}
+                        </div>
+                      </div>
+                      {/* Conversation messages */}
+                      {liveConversation.map((msg, i) =>
+                        msg.sender === 'admin' ? (
+                          <div key={i} className="tj-chat-row admin">
+                            <div className="tj-bubble admin">
+                              <p className="mb-0">{msg.message}</p>
+                              {msg.createdAt && (
+                                <div className="tj-bubble-time" style={{ textAlign: 'right' }}>{fmtDT(msg.createdAt)}</div>
+                              )}
+                            </div>
+                            <div className="tj-admin-avatar" title="Admin">A</div>
+                          </div>
+                        ) : (
+                          <div key={i} className="tj-chat-row tech">
                             <div className="tj-tech-avatar" style={{ width: 32, height: 32, fontSize: '0.8rem', flexShrink: 0, alignSelf: 'flex-end' }}>
                               {techName.charAt(0).toUpperCase()}
                             </div>
                             <div className="tj-bubble tech">
-                              {req.note
-                                ? <p className="mb-0">{req.note}</p>
-                                : <p className="mb-0 fst-italic text-muted" style={{ fontSize: '0.82rem' }}>No message yet.</p>
-                              }
-                              {req.bidAmount && (
-                                <div className="tj-bubble-meta">Bid: <strong>₹{Number(req.bidAmount).toLocaleString()}</strong></div>
-                              )}
-                              {req.createdAt && <div className="tj-bubble-time">{fmtDT(req.createdAt)}</div>}
+                              <p className="mb-0">{msg.message}</p>
+                              {msg.createdAt && <div className="tj-bubble-time">{fmtDT(msg.createdAt)}</div>}
                             </div>
                           </div>
                         )
-                      }
+                      )}
                       {isDecided && (
                         <div className="tj-chat-decision-bar">
                           <span className={`badge ${req.status === 'accepted' ? 'text-bg-success' : 'text-bg-danger'}`}

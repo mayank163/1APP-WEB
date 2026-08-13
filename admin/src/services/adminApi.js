@@ -60,6 +60,7 @@ const adminApi = {
     sendTechnicianRequestMessage: async (id, message) => (await API.patch(`/admin/technician-requests/${id}/message`, { message })).data,
     getTechnicianVerificationRequests: async () => (await API.get('/admin/technician-verifications')).data,
     updateTechnicianVerificationStatus: async (technicianId, payload) => (await API.patch(`/admin/technician-verifications/${technicianId}/status`, payload)).data,
+    updateDocumentStatus: async (technicianId, documentId, payload) => (await API.patch(`/admin/technician-verifications/${technicianId}/documents/${documentId}`, payload)).data,
 
     // ─── Users ─────────────────────────────────────────────────────────────────
     getUsers: async () => (await API.get('/admin/users')).data,

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const technicianAuthController = require('../controllers/technicianAuthController');
 const { protect } = require('../middleware/auth');
-const { uploadTechnicianDocuments, uploadProfileImage, uploadCompleteProfile, uploadBankDetails } = require('../middleware/upload');
+const { uploadTechnicianDocuments, uploadProfileImage, uploadCompleteProfile, uploadBankDetails, uploadSingleDocument } = require('../middleware/upload');
 
 // ── New 3-step signup ─────────────────────────────────────────────────────────
 router.post('/send-otp',        technicianAuthController.sendOTP);
@@ -17,5 +17,6 @@ router.post('/upload-profile-image',   protect, uploadProfileImage, technicianAu
 router.post('/submit-for-verification',protect, technicianAuthController.submitForVerification);
 router.get('/me',                      protect, technicianAuthController.getTechnicianProfile);
 router.put('/bank-details',            protect, uploadBankDetails, technicianAuthController.updateBankDetails);
+router.put('/documents/:documentId',   protect, uploadSingleDocument, technicianAuthController.reuploadDocument);
 
 module.exports = router;

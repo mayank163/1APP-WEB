@@ -20,10 +20,15 @@ const emitRequestStatus = (requestId, payload) =>
   safeEmit((io) => io.to(`request:${requestId}`).emit('request:status', { requestId, ...payload }));
 
 // ── Verification events ───────────────────────────────────────────────────────
-const emitVerificationUpdated = (technicianId, status, notes) =>
-  safeEmit((io) =>
-    io.to('admin').emit('technician:verificationUpdated', { technicianId, status, notes })
-  );
+const emitVerificationUpdated = (technicianId, status, notes) => {
+  safeEmit(async (io) => {
+    const room = `technician:${technicianId}`;
+    const sockets = await io.in(room).fetchSockets();
+    console.log(`[Socket] Room "${room}" has ${sockets.length} connected client(s)`);
+    io.to('admin').emit('technician:verificationUpdated', { technicianId, status, notes });
+    io.to(room).emit('technician:verificationUpdated', { technicianId, status, notes });
+  });
+};
 
 module.exports = {
   emitJobCreated,

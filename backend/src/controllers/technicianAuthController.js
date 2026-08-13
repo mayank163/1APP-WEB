@@ -260,6 +260,18 @@ exports.completeTechnicianProfile = async (req, res, next) => {
   }
 };
 
+// Map of field name → { folder, label }
+const DOC_FIELDS = {
+  drivingLicenseFront:    { folder: 'technician-docs/driving-license', label: 'Driving License (Front)' },
+  drivingLicenseBack:     { folder: 'technician-docs/driving-license', label: 'Driving License (Back)' },
+  residentialProof:       { folder: 'technician-docs/residential-proof', label: 'Residential Proof' },
+  taxInformationW9:       { folder: 'technician-docs/tax', label: 'Tax W9' },
+  taxInformation1099:     { folder: 'technician-docs/tax', label: 'Tax 1099' },
+  cvResume:               { folder: 'technician-docs/cv', label: 'CV / Resume' },
+  backgroundVerification: { folder: 'technician-docs/background', label: 'Background Verification' },
+  profilePhoto:           { folder: 'technician-docs/profile-photo', label: 'Profile Photo' },
+};
+
 exports.uploadTechnicianDocuments = async (req, res, next) => {
   try {
     const technician = await User.findById(req.user._id);
@@ -272,15 +284,8 @@ exports.uploadTechnicianDocuments = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'No files uploaded' });
     }
 
-    const toS3Key = async (fileArr, folder) => {
-      if (!fileArr?.[0]) return null;
-      const { key } = await uploadFile(fileArr[0], folder);
-      return key;
-    };
-
     const prev = technician.technicianProfile || {};
 
-    // Delete old S3 files before replacing
     const replaceKey = async (newFile, oldKey, folder) => {
       if (!newFile?.[0]) return oldKey || '';
       if (oldKey) await deleteFile(oldKey).catch(() => {});
@@ -305,9 +310,86 @@ exports.uploadTechnicianDocuments = async (req, res, next) => {
       verificationStatus: 'pending',
     };
 
+    // Seed / update the documents array for each uploaded field
+    const existingDocs = prev.documents || [];
+    for (const [fieldName, meta] of Object.entries(DOC_FIELDS)) {
+      if (!req.files[fieldName]?.[0]) continue;
+      const s3Key = (() => {
+        switch (fieldName) {
+          case 'drivingLicenseFront':    return technician.technicianProfile.drivingLicense.front;
+          case 'drivingLicenseBack':     return technician.technicianProfile.drivingLicense.back;
+          case 'residentialProof':       return technician.technicianProfile.residentialProof;
+          case 'taxInformationW9':       return technician.technicianProfile.taxInformation.w9Form;
+          case 'taxInformation1099':     return technician.technicianProfile.taxInformation.form1099;
+          case 'cvResume':               return technician.technicianProfile.cvResume;
+          case 'backgroundVerification': return technician.technicianProfile.backgroundVerification;
+          case 'profilePhoto':           return technician.technicianProfile.photoUrl;
+          default: return '';
+        }
+      })();
+      const idx = existingDocs.findIndex(d => d.documentId === fieldName);
+      if (idx >= 0) {
+        existingDocs[idx] = { documentId: fieldName, label: meta.label, s3Key, status: 'pending', rejectionReason: null };
+      } else {
+        existingDocs.push({ documentId: fieldName, label: meta.label, s3Key, status: 'pending', rejectionReason: null });
+      }
+    }
+    technician.technicianProfile.documents = existingDocs;
+
     await technician.save();
 
     res.status(200).json({ success: true, message: 'Documents uploaded successfully', data: { user: technician } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// PUT /api/technician-auth/documents/:documentId  — re-upload a single rejected document
+exports.reuploadDocument = async (req, res, next) => {
+  try {
+    const { documentId } = req.params;
+    const technician = await User.findById(req.user._id);
+
+    if (!technician || technician.role !== 'technician') {
+      return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+
+    const meta = DOC_FIELDS[documentId];
+    if (!meta) return res.status(400).json({ success: false, message: 'Unknown document type' });
+
+    if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' });
+
+    const prev = technician.technicianProfile || {};
+    const docs  = prev.documents || [];
+    const docEntry = docs.find(d => d.documentId === documentId);
+
+    // Delete old S3 file
+    if (docEntry?.s3Key) await deleteFile(docEntry.s3Key).catch(() => {});
+
+    const { key } = await uploadFile(req.file, meta.folder);
+
+    // Update the flat field on technicianProfile
+    switch (documentId) {
+      case 'drivingLicenseFront':    prev.drivingLicense = { ...prev.drivingLicense, front: key }; break;
+      case 'drivingLicenseBack':     prev.drivingLicense = { ...prev.drivingLicense, back: key };  break;
+      case 'residentialProof':       prev.residentialProof = key; break;
+      case 'taxInformationW9':       prev.taxInformation = { ...prev.taxInformation, w9Form: key }; break;
+      case 'taxInformation1099':     prev.taxInformation = { ...prev.taxInformation, form1099: key }; break;
+      case 'cvResume':               prev.cvResume = key; break;
+      case 'backgroundVerification': prev.backgroundVerification = key; break;
+      case 'profilePhoto':           prev.photoUrl = key; break;
+    }
+
+    // Update documents array entry → reset to pending
+    const idx = docs.findIndex(d => d.documentId === documentId);
+    const updated = { documentId, label: meta.label, s3Key: key, status: 'pending', rejectionReason: null };
+    if (idx >= 0) docs[idx] = updated; else docs.push(updated);
+    prev.documents = docs;
+
+    technician.technicianProfile = prev;
+    await technician.save();
+
+    res.status(200).json({ success: true, message: 'Document re-uploaded. Pending admin review.', data: { document: updated } });
   } catch (error) {
     next(error);
   }
