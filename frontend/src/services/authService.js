@@ -10,15 +10,23 @@ const authService = {
         // Try regular user login first, then technician login
         try {
             const response = await API.post('/auth/login', payload);
-            if (response.data.token) {
-                localStorage.setItem('1App_token', response.data.token);
+            const token = response.data.accessToken || response.data.token;
+            if (token) {
+                localStorage.setItem('1App_token', token);
+            }
+            if (response.data.refreshToken) {
+                localStorage.setItem('1App_refreshToken', response.data.refreshToken);
             }
             return response.data;
         } catch (err) {
             // If regular login fails, try technician login
             const techRes = await API.post('/technician-auth/login', payload);
-            if (techRes.data.token) {
-                localStorage.setItem('1App_token', techRes.data.token);
+            const token = techRes.data.accessToken || techRes.data.token;
+            if (token) {
+                localStorage.setItem('1App_token', token);
+            }
+            if (techRes.data.refreshToken) {
+                localStorage.setItem('1App_refreshToken', techRes.data.refreshToken);
             }
             return techRes.data;
         }
@@ -26,8 +34,12 @@ const authService = {
 
     register: async (userData) => {
         const response = await API.post('/auth/register', userData);
-        if (response.data.token) {
-            localStorage.setItem('1App_token', response.data.token);
+        const token = response.data.accessToken || response.data.token;
+        if (token) {
+            localStorage.setItem('1App_token', token);
+        }
+        if (response.data.refreshToken) {
+            localStorage.setItem('1App_refreshToken', response.data.refreshToken);
         }
         return response.data;
     },
@@ -39,22 +51,31 @@ const authService = {
 
     verifyRegister: async (phone, code) => {
         const response = await API.post('/auth/verify-register', { phone, code });
-        if (response.data.token) {
-            localStorage.setItem('1App_token', response.data.token);
+        const token = response.data.accessToken || response.data.token;
+        if (token) {
+            localStorage.setItem('1App_token', token);
+        }
+        if (response.data.refreshToken) {
+            localStorage.setItem('1App_refreshToken', response.data.refreshToken);
         }
         return response.data;
     },
 
     googleLogin: async (accessToken) => {
         const response = await API.post('/auth/google', { accessToken });
-        if (response.data.token) {
-            localStorage.setItem('1App_token', response.data.token);
+        const token = response.data.accessToken || response.data.token;
+        if (token) {
+            localStorage.setItem('1App_token', token);
+        }
+        if (response.data.refreshToken) {
+            localStorage.setItem('1App_refreshToken', response.data.refreshToken);
         }
         return response.data;
     },
 
     logout: () => {
         localStorage.removeItem('1App_token');
+        localStorage.removeItem('1App_refreshToken');
     },
 
     getMe: async () => {

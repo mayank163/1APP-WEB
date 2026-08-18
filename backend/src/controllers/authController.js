@@ -12,23 +12,38 @@ const {
 const pendingRegistrations = new Map();
 const PENDING_REGISTRATION_TTL = 5 * 60 * 1000;
 
-const signToken = (id, role) => {
+const signAccessToken = (id, role) => {
     return jwt.sign(
-        { id, role },
-        process.env.JWT_SECRET || 'your_super_secret_jwt_key_change_this_in_production',
-        { expiresIn: process.env.JWT_EXPIRE || '7d' }
+        { id, role, type: 'access' },
+        process.env.JWT_SECRET,
+        {
+            expiresIn: process.env.JWT_EXPIRE || '7d'
+        }
+    );
+};
+
+const signRefreshToken = (id, role) => {
+    return jwt.sign(
+        { id, role, type: 'refresh' },
+        process.env.REFRESH_TOKEN_SECRET,
+        {
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRE || '30d'
+        }
     );
 };
 
 const sendTokenResponse = (user, statusCode, res) => {
-    const token = signToken(user._id, user.role);
+    const accessToken = signAccessToken(user._id, user.role);
+    const refreshToken = signRefreshToken(user._id, user.role);
 
     // Hide password
     user.password = undefined;
 
     res.status(statusCode).json({
         success: true,
-        token,
+        accessToken,
+        refreshToken,
+        expiresIn: process.env.JWT_EXPIRE || '15m',
         data: {
             user
         }
@@ -546,6 +561,77 @@ exports.verifyVerificationOTP = async (req, res, next) => {
             message: 'Phone number verified successfully',
             data: { user }
         });
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
+ * @desc    Generate new access token using refresh token
+ * @route   POST /api/auth/refresh-token
+ */
+exports.refreshToken = async (req, res, next) => {
+    try {
+        const { refreshToken } = req.body;
+
+        if (!refreshToken) {
+            return res.status(401).json({
+                success: false,
+                message: 'Refresh token is required'
+            });
+        }
+
+        let decoded;
+
+        try {
+            decoded = jwt.verify(
+                refreshToken,
+                process.env.REFRESH_TOKEN_SECRET || 'your_super_secret_refresh_key'
+            );
+        } catch (error) {
+            if (error.name === 'TokenExpiredError') {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Refresh token expired. Please login again.'
+                });
+            }
+
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid refresh token'
+            });
+        }
+
+        // Make sure this is actually a refresh token
+        if (decoded.type !== 'refresh') {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid token type'
+            });
+        }
+
+        // Check that user still exists
+        const user = await User.findById(decoded.id);
+
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: 'User no longer exists'
+            });
+        }
+
+        // Generate new access token
+        const accessToken = signAccessToken(
+            user._id,
+            user.role
+        );
+
+        res.status(200).json({
+            success: true,
+            accessToken,
+            expiresIn: process.env.JWT_EXPIRE || '15m'
+        });
+
     } catch (err) {
         next(err);
     }

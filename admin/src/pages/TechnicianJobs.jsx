@@ -9,6 +9,8 @@ import {
   FaHardHat, FaMapMarkerAlt, FaRupeeSign, FaCalendarAlt,
   FaTools, FaUserCheck, FaInbox, FaBell, FaPaperPlane,
   FaClock, FaCheckCircle, FaWallet, FaRedoAlt,
+  FaFileInvoiceDollar, FaReceipt, FaMoneyCheckAlt,
+  FaCheck, FaBan, FaExchangeAlt,
 } from 'react-icons/fa';
 
 const emptyForm = {
@@ -39,6 +41,401 @@ const fmtDT = (dt) => {
     day: '2-digit', month: 'short', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
   });
+};
+
+// ─── Helper: charges status badge ─────────────────────────────────────────────
+const ChargesBadge = ({ status }) => {
+  if (!status || status === 'none') return null;
+  const labels = {
+    pending:   'Charges Pending',
+    reviewing: 'Under Review',
+    agreed:    'Charges Agreed',
+    invoiced:  'Invoiced',
+  };
+  return (
+    <span className={`tj-charges-badge ${status}`}>
+      <FaFileInvoiceDollar />
+      {labels[status] || status}
+    </span>
+  );
+};
+
+// ─── ChargesPanel — admin reviews individual charge items ─────────────────────
+const ChargesPanel = ({ requestId, onChargesUpdated }) => {
+  const [charges, setCharges]               = useState([]);
+  const [loading, setLoading]               = useState(true);
+  const [actingId, setActingId]             = useState(null);
+  const [counterOpen, setCounterOpen]       = useState({});   // chargeId → bool
+  const [counterAmounts, setCounterAmounts] = useState({});   // chargeId → string
+  const [counterNotes, setCounterNotes]     = useState({});   // chargeId → string
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const res = await adminApi.getJobCharges(requestId);
+      setCharges(res.data?.charges || []);
+    } catch {
+      toast.error('Failed to load charges');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); }, [requestId]); // eslint-disable-line
+
+  const review = async (chargeId, action, extra = {}) => {
+    setActingId(chargeId);
+    try {
+      await adminApi.reviewCharge(chargeId, { action, ...extra });
+      toast.success(
+        action === 'accept' ? 'Charge accepted' :
+        action === 'reject' ? 'Charge rejected' :
+        'Counter-offer sent to technician'
+      );
+      setCounterOpen((p) => ({ ...p, [chargeId]: false }));
+      await load();
+      onChargesUpdated?.();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Action failed');
+    } finally {
+      setActingId(null); }
+  };
+
+  if (loading) return (
+    <div className="tj-loading" style={{ padding: '2rem' }}>
+      <div className="spinner-border spinner-border-sm" style={{ color: '#A5732F' }} />
+      <span>Loading charges…</span>
+    </div>
+  );
+
+  if (!charges.length) return (
+    <div className="tj-charges-empty">
+      <FaReceipt size={28} style={{ color: '#d1d5db' }} />
+      <span>No additional charges submitted yet</span>
+    </div>
+  );
+
+  return (
+    <div className="tj-charges-list">
+      {charges.map((c) => {
+        const isPending   = c.status === 'pending';
+        const isCountered = c.status === 'countered';
+        const isResolved  = ['accepted', 'rejected'].includes(c.status);
+        const showCounter = counterOpen[c._id];
+        const busy        = actingId === c._id;
+
+        return (
+          <div key={c._id} className="tj-charge-card">
+            {/* header */}
+            <div className="tj-charge-header">
+              <span className="tj-charge-label">{c.label}</span>
+              <span className="tj-charge-amount">${Number(c.requestedAmount).toLocaleString()}</span>
+            </div>
+
+            {/* description */}
+            {c.description && <div className="tj-charge-desc">{c.description}</div>}
+
+            {/* status row */}
+            <div className="tj-charge-status-row">
+              <span className={`tj-charge-status ${c.status}`}>
+                {c.status === 'pending'   && '⏳ Pending Review'}
+                {c.status === 'accepted'  && '✓ Accepted'}
+                {c.status === 'rejected'  && '✕ Rejected'}
+                {c.status === 'countered' && '↔ Counter Sent'}
+              </span>
+              {c.status === 'accepted' && c.agreedAmount != null && (
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#16a34a' }}>
+                  Agreed: ${Number(c.agreedAmount).toLocaleString()}
+                </span>
+              )}
+            </div>
+
+            {/* counter info */}
+            {isCountered && c.adminCounterAmount > 0 && (
+              <div className="tj-charge-counter-info">
+                Your counter: ${Number(c.adminCounterAmount).toLocaleString()}
+                {c.adminNote && ` — "${c.adminNote}"`}
+              </div>
+            )}
+
+            {/* admin note on resolved */}
+            {isResolved && c.adminNote && (
+              <div className="tj-charge-admin-note">Admin note: {c.adminNote}</div>
+            )}
+
+            {/* action buttons for pending / countered */}
+            {(isPending || isCountered) && !showCounter && (
+              <div className="tj-charge-actions">
+                <button
+                  className="tj-charge-btn accept"
+                  disabled={busy}
+                  onClick={() => review(c._id, 'accept')}
+                >
+                  {busy ? <span className="spinner-border spinner-border-sm" /> : <FaCheck />}
+                  Accept ${Number(c.requestedAmount).toLocaleString()}
+                </button>
+                <button
+                  className="tj-charge-btn counter"
+                  disabled={busy}
+                  onClick={() => setCounterOpen((p) => ({ ...p, [c._id]: true }))}
+                >
+                  <FaExchangeAlt /> Counter
+                </button>
+                <button
+                  className="tj-charge-btn reject"
+                  disabled={busy}
+                  onClick={() => review(c._id, 'reject')}
+                >
+                  <FaBan /> Reject
+                </button>
+              </div>
+            )}
+
+            {/* inline counter form */}
+            {showCounter && (
+              <div className="tj-counter-inline">
+                <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#2563eb' }}>
+                  Counter-offer for "{c.label}"
+                </div>
+                <div className="tj-counter-inline-row">
+                  <input
+                    type="number"
+                    min="1"
+                    className="tj-counter-inline-input"
+                    placeholder="Counter amount $"
+                    value={counterAmounts[c._id] || ''}
+                    onChange={(e) => setCounterAmounts((p) => ({ ...p, [c._id]: e.target.value }))}
+                  />
+                  <button
+                    className="tj-counter-inline-send"
+                    disabled={busy || !counterAmounts[c._id] || Number(counterAmounts[c._id]) <= 0}
+                    onClick={() => review(c._id, 'counter', {
+                      counterAmount: Number(counterAmounts[c._id]),
+                      adminNote: counterNotes[c._id] || '',
+                    })}
+                  >
+                    {busy ? <span className="spinner-border spinner-border-sm" /> : 'Send'}
+                  </button>
+                  <button
+                    className="tj-counter-inline-cancel"
+                    onClick={() => setCounterOpen((p) => ({ ...p, [c._id]: false }))}
+                  >
+                    Cancel
+                  </button>
+                </div>
+                <textarea
+                  className="tj-counter-note-input"
+                  rows={2}
+                  placeholder="Optional note to technician…"
+                  value={counterNotes[c._id] || ''}
+                  onChange={(e) => setCounterNotes((p) => ({ ...p, [c._id]: e.target.value }))}
+                />
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+// ─── InvoicePanel — view + generate + pay invoice ─────────────────────────────
+const InvoicePanel = ({ requestId, request, onInvoiceAction }) => {
+  const [invoice, setInvoice]     = useState(null);
+  const [loading, setLoading]     = useState(true);
+  const [generating, setGenerating] = useState(false);
+  const [paying, setPaying]       = useState(false);
+  const [adminNotes, setAdminNotes] = useState('');
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const res = await adminApi.getInvoice(requestId);
+      setInvoice(res.data?.invoice || null);
+    } catch (err) {
+      if (err.response?.status !== 404) toast.error('Failed to load invoice');
+      setInvoice(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); }, [requestId]); // eslint-disable-line
+
+  const generate = async () => {
+    setGenerating(true);
+    try {
+      const res = await adminApi.generateInvoice(requestId, { adminNotes });
+      toast.success(res.message || 'Invoice generated!');
+      setInvoice(res.data?.invoice || null);
+      onInvoiceAction?.();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to generate invoice');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const markPaid = async () => {
+    if (!window.confirm('Mark this invoice as paid and credit the technician wallet?')) return;
+    setPaying(true);
+    try {
+      const res = await adminApi.markInvoicePaid(requestId);
+      toast.success(res.message || 'Paid!');
+      await load();
+      onInvoiceAction?.();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Payment failed');
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  if (loading) return (
+    <div className="tj-loading" style={{ padding: '2rem' }}>
+      <div className="spinner-border spinner-border-sm" style={{ color: '#A5732F' }} />
+      <span>Loading invoice…</span>
+    </div>
+  );
+
+  // ── Can generate? (all charges resolved, request accepted, not yet invoiced)
+  const canGenerate = request?.status === 'accepted' &&
+    ['agreed', 'none'].includes(request?.chargesStatus) &&
+    !invoice;
+
+  if (!invoice) return (
+    <div className="tj-invoice-wrap">
+      <div className="tj-charges-empty">
+        <FaFileInvoiceDollar size={32} style={{ color: '#d1d5db' }} />
+        <span>No invoice yet</span>
+        {request?.chargesStatus === 'pending' && (
+          <div className="tj-charges-alert" style={{ marginTop: '0.5rem' }}>
+            <FaReceipt />
+            Pending charges must be reviewed before generating invoice
+          </div>
+        )}
+      </div>
+      {canGenerate && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+          <label className="tj-label">Admin Notes (optional)</label>
+          <textarea
+            className="form-control tj-input"
+            rows={2}
+            placeholder="Notes for this invoice…"
+            value={adminNotes}
+            onChange={(e) => setAdminNotes(e.target.value)}
+          />
+          <button
+            className="tj-btn-invoice"
+            disabled={generating}
+            onClick={generate}
+          >
+            {generating
+              ? <><span className="spinner-border spinner-border-sm" /> Generating…</>
+              : <><FaFileInvoiceDollar /> Generate Final Invoice</>
+            }
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  // ── Show invoice ───────────────────────────────────────────────────────────
+  return (
+    <div className="tj-invoice-wrap">
+
+      <div className="tj-invoice-header">
+        <div>
+          <div className="tj-invoice-number">{invoice.invoiceNumber}</div>
+          <div style={{ fontSize: '0.75rem', color: '#6c757d', marginTop: 2 }}>
+            Generated {fmtDT(invoice.createdAt)}
+          </div>
+        </div>
+        <span className={`tj-invoice-status ${invoice.status}`}>
+          {invoice.status === 'draft'     && '⬜ Draft'}
+          {invoice.status === 'finalised' && '✓ Finalised'}
+          {invoice.status === 'paid'      && '💰 Paid'}
+        </span>
+      </div>
+
+      {/* line items */}
+      <table className="tj-invoice-table">
+        <thead>
+          <tr>
+            <th style={{ width: '50%' }}>Description</th>
+            <th>Requested</th>
+            <th>Agreed</th>
+          </tr>
+        </thead>
+        <tbody>
+          {/* fixed charge */}
+          <tr>
+            <td>
+              <div className="tj-inv-label">{invoice.fixedJobLabel || 'Fixed Job Charge'}</div>
+            </td>
+            <td className="tj-inv-amount">${Number(invoice.fixedJobCharge).toLocaleString()}</td>
+            <td className="tj-inv-amount">${Number(invoice.fixedJobCharge).toLocaleString()}</td>
+          </tr>
+          {/* additional charges */}
+          {invoice.additionalCharges?.map((c, i) => (
+            <tr key={i}>
+              <td>
+                <div className="tj-inv-label">{c.label}</div>
+                {c.description && <div className="tj-inv-desc">{c.description}</div>}
+              </td>
+              <td className="tj-inv-amount">${Number(c.requestedAmount).toLocaleString()}</td>
+              <td className="tj-inv-amount">${Number(c.agreedAmount).toLocaleString()}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* totals */}
+      <div className="tj-invoice-totals">
+        <div className="tj-invoice-row">
+          <span>Fixed Charge</span>
+          <span>${Number(invoice.fixedJobCharge).toLocaleString()}</span>
+        </div>
+        {invoice.subtotalAdditional > 0 && (
+          <div className="tj-invoice-row">
+            <span>Additional Charges</span>
+            <span>${Number(invoice.subtotalAdditional).toLocaleString()}</span>
+          </div>
+        )}
+        <div className="tj-invoice-row total">
+          <span>Total</span>
+          <span className="tj-inv-total-val">${Number(invoice.totalAmount).toLocaleString()}</span>
+        </div>
+      </div>
+
+      {/* admin notes */}
+      {invoice.adminNotes && (
+        <div className="tj-charge-admin-note">Notes: {invoice.adminNotes}</div>
+      )}
+
+      {/* paid at */}
+      {invoice.paidAt && (
+        <div style={{ fontSize: '0.78rem', color: '#16a34a', fontWeight: 600 }}>
+          <FaCheckCircle style={{ marginRight: 4 }} />
+          Paid on {fmtDT(invoice.paidAt)}
+        </div>
+      )}
+
+      {/* mark paid */}
+      {invoice.status === 'finalised' && (
+        <button
+          className="tj-btn-mark-paid"
+          disabled={paying}
+          onClick={markPaid}
+        >
+          {paying
+            ? <><span className="spinner-border spinner-border-sm" /> Processing…</>
+            : <><FaWallet /> Mark as Paid & Credit Technician Wallet</>
+          }
+        </button>
+      )}
+    </div>
+  );
 };
 
 
@@ -281,6 +678,11 @@ const TechnicianJobs = () => {
   const [liveConversation, setLiveConversation] = useState([]);
   const activeReqIdRef = useRef(null);
 
+  // ── Charges / Invoice panel tab ('chat' | 'charges' | 'invoice') ───────────
+  const [convTab, setConvTab] = useState('chat');
+  // Live-updated chargesStatus for the open conversation request
+  const [liveChargesStatus, setLiveChargesStatus] = useState('none');
+
   const [form, setForm]                 = useState(emptyForm);
   const [editingJobId, setEditingJobId] = useState(null);
   const [selectedJob, setSelectedJob]   = useState(null);
@@ -307,42 +709,81 @@ const TechnicianJobs = () => {
   // ── Socket ──────────────────────────────────────────────────────────────────
   useEffect(() => {
     const handleMsg = ({ requestId, message }) => {
+      console.log('[Socket] ← request:message', { requestId, message });
       if (activeReqIdRef.current !== requestId) return;
       setLiveConversation((prev) => [...prev, message]);
     };
     const handleStatus = ({ requestId, status }) => {
+      console.log('[Socket] ← request:status', { requestId, status });
       if (activeReqIdRef.current !== requestId) return;
       setRequests((prev) => prev.map((r) => r._id === requestId ? { ...r, status } : r));
     };
     const handleJobCreated = ({ job }) => {
+      console.log('[Socket] ← job:created', { jobId: job._id, title: job.title });
       setJobs((prev) => [job, ...prev]);
     };
     const handleJobUpdated = ({ job }) => {
+      console.log('[Socket] ← job:updated', { jobId: job._id, status: job.status });
       setJobs((prev) => prev.map((j) => j._id === job._id ? job : j));
       setSelectedJob((prev) => prev?._id === job._id ? job : prev);
     };
     const handleJobDeleted = ({ jobId }) => {
+      console.log('[Socket] ← job:deleted', { jobId });
       setJobs((prev) => prev.filter((j) => j._id !== jobId));
       setSelectedJob((prev) => prev?._id === jobId ? null : prev);
       setShowViewPanel((prev) => prev && selectedJob?._id === jobId ? false : prev);
     };
     const handleRequestUpdated = ({ request }) => {
+      console.log('[Socket] ← request:updated', { requestId: request._id, status: request.status });
       setRequests((prev) => prev.map((r) => r._id === request._id ? request : r));
     };
+    // charges & invoice real-time events
+    const handleChargesSubmitted = ({ requestId }) => {
+      console.log('[Socket] ← charges:submitted', { requestId });
+      if (activeReqIdRef.current === requestId) setLiveChargesStatus('pending');
+      setRequests((prev) => prev.map((r) =>
+        r._id === requestId ? { ...r, chargesStatus: 'pending' } : r
+      ));
+      loadData();
+    };
+    const handleChargeReviewed = ({ requestId, requestChargesStatus }) => {
+      console.log('[Socket] ← charge:reviewed', { requestId, requestChargesStatus });
+      if (activeReqIdRef.current === requestId && requestChargesStatus) {
+        setLiveChargesStatus(requestChargesStatus);
+      }
+      loadData();
+    };
+    const handleInvoiceGenerated = ({ requestId }) => {
+      console.log('[Socket] ← invoice:generated', { requestId });
+      if (activeReqIdRef.current === requestId) setLiveChargesStatus('invoiced');
+      loadData();
+    };
+    const handleInvoicePaid = ({ requestId, amount }) => {
+      console.log('[Socket] ← invoice:paid', { requestId, amount });
+      loadData();
+    };
 
-    socket.on('request:message', handleMsg);
-    socket.on('request:status',  handleStatus);
-    socket.on('job:created',     handleJobCreated);
-    socket.on('job:updated',     handleJobUpdated);
-    socket.on('job:deleted',     handleJobDeleted);
-    socket.on('request:updated', handleRequestUpdated);
+    socket.on('request:message',     handleMsg);
+    socket.on('request:status',      handleStatus);
+    socket.on('job:created',         handleJobCreated);
+    socket.on('job:updated',         handleJobUpdated);
+    socket.on('job:deleted',         handleJobDeleted);
+    socket.on('request:updated',     handleRequestUpdated);
+    socket.on('charges:submitted',   handleChargesSubmitted);
+    socket.on('charge:reviewed',     handleChargeReviewed);
+    socket.on('invoice:generated',   handleInvoiceGenerated);
+    socket.on('invoice:paid',        handleInvoicePaid);
     return () => {
-      socket.off('request:message', handleMsg);
-      socket.off('request:status',  handleStatus);
-      socket.off('job:created',     handleJobCreated);
-      socket.off('job:updated',     handleJobUpdated);
-      socket.off('job:deleted',     handleJobDeleted);
-      socket.off('request:updated', handleRequestUpdated);
+      socket.off('request:message',   handleMsg);
+      socket.off('request:status',    handleStatus);
+      socket.off('job:created',       handleJobCreated);
+      socket.off('job:updated',       handleJobUpdated);
+      socket.off('job:deleted',       handleJobDeleted);
+      socket.off('request:updated',   handleRequestUpdated);
+      socket.off('charges:submitted', handleChargesSubmitted);
+      socket.off('charge:reviewed',   handleChargeReviewed);
+      socket.off('invoice:generated', handleInvoiceGenerated);
+      socket.off('invoice:paid',      handleInvoicePaid);
     };
   }, [selectedJob]);
 
@@ -500,16 +941,21 @@ const TechnicianJobs = () => {
   const openConversation = (req) => {
     setActiveConvReq(req); setAdminReply('');
     setLiveConversation(req.conversation || []);
+    setConvTab('chat');
+    setLiveChargesStatus(req.chargesStatus || 'none');
     activeReqIdRef.current = req._id;
+    console.log('[Socket] → request:join', req._id);
     socket.emit('request:join', req._id);
   };
 
   const closeConversation = () => {
     if (activeReqIdRef.current) {
+      console.log('[Socket] → request:leave', activeReqIdRef.current);
       socket.emit('request:leave', activeReqIdRef.current);
       activeReqIdRef.current = null;
     }
     setActiveConvReq(null); setAdminReply(''); setLiveConversation([]);
+    setConvTab('chat'); setLiveChargesStatus('none');
   };
 
   const handleDecision = async (requestId, status) => {
@@ -1134,6 +1580,7 @@ const TechnicianJobs = () => {
                             }`}>
                               {req.status ? req.status.charAt(0).toUpperCase() + req.status.slice(1) : 'Pending'}
                             </span>
+                            <ChargesBadge status={req.chargesStatus} />
                             {req.createdAt && (
                               <div className="tj-conv-row-date">
                                 {new Date(req.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
@@ -1156,9 +1603,11 @@ const TechnicianJobs = () => {
                 const techName  = req.technician?.name || 'Technician';
                 const techPhone = req.technician?.phone || '';
                 const isDecided = req.status === 'accepted' || req.status === 'rejected';
+                const hasPendingCharges = liveChargesStatus === 'pending' || liveChargesStatus === 'reviewing';
 
                 return (
                   <div className="tj-chat-shell">
+                    {/* ── technician info bar ── */}
                     <div className="tj-chat-info-bar">
                       <div className="tj-tech-avatar" style={{ width: 38, height: 38, fontSize: '0.95rem', flexShrink: 0 }}>
                         {techName.charAt(0).toUpperCase()}
@@ -1170,96 +1619,181 @@ const TechnicianJobs = () => {
                       {req.bidAmount && (
                         <div className="tj-chat-bid ms-auto">
                           <span className="tj-chat-bid-label">Bid</span>
-                          <span className="tj-chat-bid-value">₹{Number(req.bidAmount).toLocaleString()}</span>
+                          <span className="tj-chat-bid-value">${Number(req.bidAmount).toLocaleString()}</span>
+                        </div>
+                      )}
+                      {liveChargesStatus !== 'none' && (
+                        <div className="ms-auto">
+                          <ChargesBadge status={liveChargesStatus} />
                         </div>
                       )}
                     </div>
 
-                    <div className="tj-chat-messages" ref={(el) => { if (el) el.scrollTop = el.scrollHeight; }}>
-                      {/* Always show the initial request note as the first message */}
-                      <div className="tj-chat-row tech">
-                        <div className="tj-tech-avatar" style={{ width: 32, height: 32, fontSize: '0.8rem', flexShrink: 0, alignSelf: 'flex-end' }}>
-                          {techName.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="tj-bubble tech">
-                          {req.note
-                            ? <p className="mb-0">{req.note}</p>
-                            : <p className="mb-0 fst-italic text-muted" style={{ fontSize: '0.82rem' }}>No message yet.</p>
-                          }
-                          {req.bidAmount && (
-                            <div className="tj-bubble-meta">Bid: <strong>₹{Number(req.bidAmount).toLocaleString()}</strong></div>
+                    {/* ── tab bar: Chat / Charges / Invoice ── */}
+                    {req.status === 'accepted' && (
+                      <div className="tj-charges-tabs">
+                        <button
+                          className={`tj-charges-tab${convTab === 'chat' ? ' active' : ''}`}
+                          onClick={() => setConvTab('chat')}
+                        >
+                          💬 Chat
+                        </button>
+                        <button
+                          className={`tj-charges-tab${convTab === 'charges' ? ' active' : ''}`}
+                          onClick={() => setConvTab('charges')}
+                        >
+                          <FaReceipt style={{ marginRight: 4 }} />
+                          Charges
+                          {hasPendingCharges && <span className="tj-tab-dot" />}
+                        </button>
+                        <button
+                          className={`tj-charges-tab${convTab === 'invoice' ? ' active' : ''}`}
+                          onClick={() => setConvTab('invoice')}
+                        >
+                          <FaFileInvoiceDollar style={{ marginRight: 4 }} />
+                          Invoice
+                          {liveChargesStatus === 'invoiced' && (
+                            <FaCheckCircle style={{ marginLeft: 4, color: '#16a34a', fontSize: '0.7rem' }} />
                           )}
-                          {req.createdAt && <div className="tj-bubble-time">{fmtDT(req.createdAt)}</div>}
-                        </div>
+                        </button>
                       </div>
-                      {/* Conversation messages */}
-                      {liveConversation.map((msg, i) =>
-                        msg.sender === 'admin' ? (
-                          <div key={i} className="tj-chat-row admin">
-                            <div className="tj-bubble admin">
-                              <p className="mb-0">{msg.message}</p>
-                              {msg.createdAt && (
-                                <div className="tj-bubble-time" style={{ textAlign: 'right' }}>{fmtDT(msg.createdAt)}</div>
-                              )}
-                            </div>
-                            <div className="tj-admin-avatar" title="Admin">A</div>
+                    )}
+
+                    {/* ── CHAT TAB ── */}
+                    {convTab === 'chat' && (
+                      <>
+                        {hasPendingCharges && (
+                          <div className="tj-charges-alert">
+                            <FaReceipt />
+                            Technician has submitted additional charges awaiting your review
+                            <button
+                              className="btn btn-sm ms-auto"
+                              style={{ background: 'rgba(180,83,9,0.12)', color: '#b45309', fontWeight: 700, fontSize: '0.75rem', padding: '0.2rem 0.6rem', borderRadius: 6 }}
+                              onClick={() => setConvTab('charges')}
+                            >
+                              Review Charges →
+                            </button>
                           </div>
-                        ) : (
-                          <div key={i} className="tj-chat-row tech">
+                        )}
+
+                        <div className="tj-chat-messages" ref={(el) => { if (el) el.scrollTop = el.scrollHeight; }}>
+                          {/* initial request note */}
+                          <div className="tj-chat-row tech">
                             <div className="tj-tech-avatar" style={{ width: 32, height: 32, fontSize: '0.8rem', flexShrink: 0, alignSelf: 'flex-end' }}>
                               {techName.charAt(0).toUpperCase()}
                             </div>
                             <div className="tj-bubble tech">
-                              <p className="mb-0">{msg.message}</p>
-                              {msg.createdAt && <div className="tj-bubble-time">{fmtDT(msg.createdAt)}</div>}
+                              {req.note
+                                ? <p className="mb-0">{req.note}</p>
+                                : <p className="mb-0 fst-italic text-muted" style={{ fontSize: '0.82rem' }}>No message yet.</p>
+                              }
+                              {req.bidAmount && (
+                                <div className="tj-bubble-meta">Bid: <strong>${Number(req.bidAmount).toLocaleString()}</strong></div>
+                              )}
+                              {req.createdAt && <div className="tj-bubble-time">{fmtDT(req.createdAt)}</div>}
                             </div>
                           </div>
-                        )
-                      )}
-                      {isDecided && (
-                        <div className="tj-chat-decision-bar">
-                          <span className={`badge ${req.status === 'accepted' ? 'text-bg-success' : 'text-bg-danger'}`}
-                            style={{ fontSize: '0.8rem', padding: '0.45em 1em' }}>
-                            {req.status === 'accepted' ? '✓ Request Accepted' : '✕ Request Rejected'}
-                          </span>
+                          {/* conversation messages */}
+                          {liveConversation.map((msg, i) =>
+                            msg.sender === 'admin' ? (
+                              <div key={i} className="tj-chat-row admin">
+                                <div className={`tj-bubble ${msg.counterOffer > 0 ? 'counter' : 'admin'}`}>
+                                  <p className="mb-0">{msg.message}</p>
+                                  {msg.counterOffer > 0 && (
+                                    <div className="tj-bubble-meta">
+                                      Counter offer: <strong>${Number(msg.counterOffer).toLocaleString()}</strong>
+                                    </div>
+                                  )}
+                                  {msg.createdAt && (
+                                    <div className="tj-bubble-time" style={{ textAlign: 'right' }}>{fmtDT(msg.createdAt)}</div>
+                                  )}
+                                </div>
+                                <div className="tj-admin-avatar" title="Admin">A</div>
+                              </div>
+                            ) : (
+                              <div key={i} className="tj-chat-row tech">
+                                <div className="tj-tech-avatar" style={{ width: 32, height: 32, fontSize: '0.8rem', flexShrink: 0, alignSelf: 'flex-end' }}>
+                                  {techName.charAt(0).toUpperCase()}
+                                </div>
+                                <div className="tj-bubble tech">
+                                  <p className="mb-0">{msg.message}</p>
+                                  {msg.createdAt && <div className="tj-bubble-time">{fmtDT(msg.createdAt)}</div>}
+                                </div>
+                              </div>
+                            )
+                          )}
+                          {isDecided && (
+                            <div className="tj-chat-decision-bar">
+                              <span className={`badge ${req.status === 'accepted' ? 'text-bg-success' : 'text-bg-danger'}`}
+                                style={{ fontSize: '0.8rem', padding: '0.45em 1em' }}>
+                                {req.status === 'accepted' ? '✓ Request Accepted' : '✕ Request Rejected'}
+                              </span>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
 
-                    <div className="tj-chat-footer">
-                      {!isDecided ? (
-                        <>
-                          <div className="tj-chat-input-row">
-                            <textarea className="tj-chat-reply-input" rows={2}
-                              placeholder="Type a message to the technician…"
-                              value={adminReply} onChange={(e) => setAdminReply(e.target.value)}
-                              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(req._id); } }}
-                            />
-                            <button className="tj-send-btn" title="Send message"
-                              disabled={!adminReply.trim() || sending}
-                              onClick={() => handleSendMessage(req._id)}>
-                              {sending ? <span className="spinner-border spinner-border-sm" /> : <FaPaperPlane />}
-                            </button>
-                          </div>
-                          <div className="tj-chat-action-row">
-                            <button className="tj-chat-btn accept" disabled={decidingId === req._id}
-                              onClick={() => handleDecision(req._id, 'accepted')}>
-                              {decidingId === req._id ? <span className="spinner-border spinner-border-sm me-1" /> : '✓ '}
-                              Accept Request
-                            </button>
-                            <button className="tj-chat-btn reject" disabled={decidingId === req._id}
-                              onClick={() => handleDecision(req._id, 'rejected')}>
-                              {decidingId === req._id ? <span className="spinner-border spinner-border-sm me-1" /> : '✕ '}
-                              Reject Request
-                            </button>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="tj-chat-decided-note">
-                          This request has already been <strong>{req.status}</strong>. No further action needed.
+                        <div className="tj-chat-footer">
+                          {!isDecided ? (
+                            <>
+                              <div className="tj-chat-input-row">
+                                <textarea className="tj-chat-reply-input" rows={2}
+                                  placeholder="Type a message to the technician…"
+                                  value={adminReply} onChange={(e) => setAdminReply(e.target.value)}
+                                  onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(req._id); } }}
+                                />
+                                <button className="tj-send-btn" title="Send message"
+                                  disabled={!adminReply.trim() || sending}
+                                  onClick={() => handleSendMessage(req._id)}>
+                                  {sending ? <span className="spinner-border spinner-border-sm" /> : <FaPaperPlane />}
+                                </button>
+                              </div>
+                              <div className="tj-chat-action-row">
+                                <button className="tj-chat-btn accept" disabled={decidingId === req._id}
+                                  onClick={() => handleDecision(req._id, 'accepted')}>
+                                  {decidingId === req._id ? <span className="spinner-border spinner-border-sm me-1" /> : '✓ '}
+                                  Accept Request
+                                </button>
+                                <button className="tj-chat-btn reject" disabled={decidingId === req._id}
+                                  onClick={() => handleDecision(req._id, 'rejected')}>
+                                  {decidingId === req._id ? <span className="spinner-border spinner-border-sm me-1" /> : '✕ '}
+                                  Reject Request
+                                </button>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="tj-chat-decided-note">
+                              This request has already been <strong>{req.status}</strong>. No further action needed.
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
+                      </>
+                    )}
+
+                    {/* ── CHARGES TAB ── */}
+                    {convTab === 'charges' && (
+                      <div style={{ flex: 1, overflowY: 'auto' }}>
+                        <ChargesPanel
+                          requestId={req._id}
+                          onChargesUpdated={() => {
+                            loadData();
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {/* ── INVOICE TAB ── */}
+                    {convTab === 'invoice' && (
+                      <div style={{ flex: 1, overflowY: 'auto' }}>
+                        <InvoicePanel
+                          requestId={req._id}
+                          request={req}
+                          onInvoiceAction={() => {
+                            setLiveChargesStatus('invoiced');
+                            loadData();
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
                 );
               })()}

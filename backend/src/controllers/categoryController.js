@@ -5,7 +5,12 @@ const { getIO } = require('../utils/socketInstance');
 
 // Helper — broadcast category change to all connected clients
 const emitCategoryEvent = (event, payload) => {
-    try { getIO().emit(event, payload); } catch (_) { /* io not ready yet */ }
+    try {
+        getIO().emit(event, payload);
+        console.log(`[Socket] emitCategoryEvent → event="${event}"`);
+    } catch (e) {
+        console.warn(`[Socket] emitCategoryEvent failed for event "${event}":`, e.message);
+    }
 };
 
 // ─── CATEGORY ────────────────────────────────────────────────────────────────

@@ -11,7 +11,7 @@ const protect = async (req, res, next) => {
         if (!token) {
             return res.status(401).json({ success: false, message: 'Not logged in.' });
         }
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_super_secret_jwt_key_change_this_in_production');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         let currentUser;
         if (decoded.role === 'admin') {

@@ -9,6 +9,7 @@ router.post('/send-otp',        technicianAuthController.sendOTP);
 router.post('/verify-otp',      technicianAuthController.verifyOTP);
 router.post('/complete-signup', technicianAuthController.completeSignup);
 router.post('/login',           technicianAuthController.login);
+router.post('/refresh-token',   technicianAuthController.refreshToken);
 
 // ── Post-signup profile steps ─────────────────────────────────────────────────
 router.post('/complete-profile',       protect, uploadCompleteProfile, technicianAuthController.completeTechnicianProfile);

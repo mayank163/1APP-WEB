@@ -64,6 +64,13 @@ const adminApi = {
     getTechnicianRequests: async () => (await API.get('/admin/technician-requests')).data,
     updateTechnicianRequest: async (id, payload) => (await API.patch(`/admin/technician-requests/${id}/status`, payload)).data,
     sendTechnicianRequestMessage: async (id, message) => (await API.patch(`/admin/technician-requests/${id}/message`, { message })).data,
+    // ── Additional Charges (admin side) ────────────────────────────────────────
+    getJobCharges: async (requestId) => (await API.get(`/admin/technician-requests/${requestId}/charges`)).data,
+    reviewCharge: async (chargeId, payload) => (await API.patch(`/admin/charges/${chargeId}/review`, payload)).data,
+    generateInvoice: async (requestId, payload = {}) => (await API.post(`/admin/technician-requests/${requestId}/invoice`, payload)).data,
+    getInvoice: async (requestId) => (await API.get(`/admin/technician-requests/${requestId}/invoice`)).data,
+    markInvoicePaid: async (requestId, payload = {}) => (await API.patch(`/admin/technician-requests/${requestId}/invoice/pay`, payload)).data,
+
     getTechnicianVerificationRequests: async () => (await API.get('/admin/technician-verifications')).data,
     updateTechnicianVerificationStatus: async (technicianId, payload) => (await API.patch(`/admin/technician-verifications/${technicianId}/status`, payload)).data,
     updateDocumentStatus: async (technicianId, documentId, payload) => (await API.patch(`/admin/technician-verifications/${technicianId}/documents/${documentId}`, payload)).data,

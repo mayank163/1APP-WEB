@@ -1429,3 +1429,448 @@
   padding: 0.2em 0.75em;
   border-radius: 20px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ADDITIONAL CHARGES & INVOICE — new styles
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Charges status badge inside requests list ───────────────────────────── */
+.tj-charges-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.22em 0.65em;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.tj-charges-badge.none      { background: #f3f4f6; color: #9ca3af; }
+.tj-charges-badge.pending   { background: rgba(234,179,8,0.15);  color: #b45309; }
+.tj-charges-badge.reviewing { background: rgba(37,99,235,0.1);   color: #2563eb; }
+.tj-charges-badge.agreed    { background: rgba(22,163,74,0.12);  color: #16a34a; }
+.tj-charges-badge.invoiced  { background: rgba(165,115,47,0.15); color: #A5732F; }
+
+/* ── Charges view tab bar (inside conversation modal) ────────────────────── */
+.tj-charges-tabs {
+  display: flex;
+  border-bottom: 2px solid #f0e8dc;
+  background: #fdf9f5;
+}
+.tj-charges-tab {
+  flex: 1;
+  padding: 0.6rem 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: #adb5bd;
+  cursor: pointer;
+  border-bottom: 2.5px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.14s, border-color 0.14s;
+}
+.tj-charges-tab:hover { color: #495057; }
+.tj-charges-tab.active {
+  color: #A5732F;
+  border-bottom-color: #A5732F;
+}
+
+/* ── Charges list (inside modal) ─────────────────────────────────────────── */
+.tj-charges-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+}
+
+.tj-charge-card {
+  background: #fdf9f5;
+  border: 1px solid #f0e8dc;
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  transition: box-shadow 0.15s;
+}
+.tj-charge-card:hover { box-shadow: 0 2px 8px rgba(165,115,47,0.1); }
+
+.tj-charge-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.tj-charge-label {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #1a1208;
+}
+
+.tj-charge-amount {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #A5732F;
+}
+
+.tj-charge-desc {
+  font-size: 0.78rem;
+  color: #6c757d;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.tj-charge-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* status pill */
+.tj-charge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2em 0.6em;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+}
+.tj-charge-status.pending   { background: rgba(234,179,8,0.15);  color: #b45309; }
+.tj-charge-status.accepted  { background: rgba(22,163,74,0.12);  color: #16a34a; }
+.tj-charge-status.rejected  { background: rgba(220,53,69,0.1);   color: #dc3545; }
+.tj-charge-status.countered { background: rgba(37,99,235,0.1);   color: #2563eb; }
+
+/* counter info under a charge */
+.tj-charge-counter-info {
+  font-size: 0.8rem;
+  color: #2563eb;
+  font-weight: 600;
+  background: rgba(37,99,235,0.06);
+  padding: 0.35rem 0.7rem;
+  border-radius: 7px;
+  border: 1px solid rgba(37,99,235,0.15);
+}
+
+/* admin note on a charge */
+.tj-charge-admin-note {
+  font-size: 0.78rem;
+  color: #6c757d;
+  font-style: italic;
+  padding: 0.3rem 0.65rem;
+  background: #f8f9fa;
+  border-left: 3px solid #dee2e6;
+  border-radius: 0 6px 6px 0;
+}
+
+/* ── Action buttons on a charge card (for admin) ─────────────────────────── */
+.tj-charge-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.tj-charge-btn {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border-radius: 7px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.12s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.tj-charge-btn:hover:not(:disabled) { opacity: 0.85; transform: translateY(-1px); }
+.tj-charge-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.tj-charge-btn.accept  { background: rgba(22,163,74,0.12);  color: #16a34a; }
+.tj-charge-btn.reject  { background: rgba(220,53,69,0.1);   color: #dc3545; }
+.tj-charge-btn.counter { background: rgba(37,99,235,0.1);   color: #2563eb; }
+
+/* ── Counter-offer input row for a specific charge ───────────────────────── */
+.tj-charge-counter-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.tj-charge-counter-input {
+  flex: 1;
+  min-width: 100px;
+  border: 1.5px solid #e9e0d5;
+  border-radius: 8px;
+  padding: 0.38rem 0.7rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  outline: none;
+  background: #fdf9f5;
+  transition: border-color 0.15s;
+}
+.tj-charge-counter-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+
+/* ── Generate invoice button ─────────────────────────────────────────────── */
+.tj-btn-invoice {
+  background: linear-gradient(135deg, #A5732F, #c9893a);
+  border: none;
+  color: #fff;
+  font-weight: 700;
+  padding: 0.55rem 1.3rem;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+  font-size: 0.875rem;
+}
+.tj-btn-invoice:hover:not(:disabled) {
+  background: linear-gradient(135deg, #8c5f25, #b37530);
+  box-shadow: 0 4px 14px rgba(165,115,47,0.35);
+  transform: translateY(-1px);
+}
+.tj-btn-invoice:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* ── Invoice display ─────────────────────────────────────────────────────── */
+.tj-invoice-wrap {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tj-invoice-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.tj-invoice-number {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #1a1208;
+  letter-spacing: 0.04em;
+}
+
+.tj-invoice-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.3em 0.8em;
+  border-radius: 20px;
+}
+.tj-invoice-status.draft     { background: #f3f4f6; color: #6b7280; }
+.tj-invoice-status.finalised { background: rgba(37,99,235,0.1); color: #2563eb; }
+.tj-invoice-status.paid      { background: rgba(22,163,74,0.12); color: #16a34a; }
+
+/* line items table */
+.tj-invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.tj-invoice-table th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #6c757d;
+  font-weight: 700;
+  background: #fdf9f5;
+  border-bottom: 2px solid #f0e8dc;
+}
+.tj-invoice-table td {
+  padding: 0.7rem 0.75rem;
+  border-bottom: 1px solid #f8f3ed;
+  color: #1a1208;
+  vertical-align: middle;
+}
+.tj-invoice-table tr:last-child td { border-bottom: none; }
+.tj-invoice-table .tj-inv-amount {
+  text-align: right;
+  font-weight: 700;
+  color: #A5732F;
+  white-space: nowrap;
+}
+.tj-invoice-table .tj-inv-label { font-weight: 600; }
+.tj-invoice-table .tj-inv-desc  { font-size: 0.75rem; color: #6c757d; }
+
+/* totals section */
+.tj-invoice-totals {
+  background: #fdf9f5;
+  border: 1px solid #f0e8dc;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tj-invoice-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: #495057;
+}
+
+.tj-invoice-row.total {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #1a1208;
+  border-top: 2px solid #f0e8dc;
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
+}
+.tj-invoice-row.total .tj-inv-total-val { color: #A5732F; }
+
+/* ── Mark Paid button ────────────────────────────────────────────────────── */
+.tj-btn-mark-paid {
+  background: #16a34a;
+  border: none;
+  color: #fff;
+  font-weight: 700;
+  padding: 0.6rem 1.4rem;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+  font-size: 0.9rem;
+  width: 100%;
+  justify-content: center;
+}
+.tj-btn-mark-paid:hover:not(:disabled) {
+  background: #15803d;
+  box-shadow: 0 4px 14px rgba(22,163,74,0.35);
+  transform: translateY(-1px);
+}
+.tj-btn-mark-paid:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* ── Charges pending alert inside conversation ───────────────────────────── */
+.tj-charges-alert {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 1rem;
+  background: rgba(234,179,8,0.1);
+  border: 1px solid rgba(234,179,8,0.3);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #b45309;
+  margin: 0 1.25rem;
+}
+
+/* ── Empty charges state ─────────────────────────────────────────────────── */
+.tj-charges-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2.5rem 1rem;
+  gap: 0.5rem;
+  color: #adb5bd;
+  font-size: 0.875rem;
+}
+
+/* ── Charges tab notification dot ───────────────────────────────────────── */
+.tj-tab-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f59e0b;
+  margin-left: 4px;
+  vertical-align: middle;
+  position: relative;
+  top: -1px;
+}
+
+/* ── Charge counter inline form ──────────────────────────────────────────── */
+.tj-counter-inline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  background: rgba(37,99,235,0.05);
+  border: 1px solid rgba(37,99,235,0.18);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  margin-top: 0.3rem;
+}
+
+.tj-counter-inline-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.tj-counter-inline-input {
+  flex: 1;
+  border: 1.5px solid #c7d2fe;
+  border-radius: 7px;
+  padding: 0.38rem 0.7rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.tj-counter-inline-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+
+.tj-counter-note-input {
+  width: 100%;
+  border: 1.5px solid #c7d2fe;
+  border-radius: 7px;
+  padding: 0.38rem 0.7rem;
+  font-size: 0.8rem;
+  outline: none;
+  transition: border-color 0.15s;
+  font-family: inherit;
+}
+.tj-counter-note-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+
+.tj-counter-inline-cancel {
+  background: none;
+  border: none;
+  color: #adb5bd;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0;
+}
+.tj-counter-inline-cancel:hover { color: #dc3545; }
+
+.tj-counter-inline-send {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 0.38rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.tj-counter-inline-send:hover:not(:disabled) { background: #1d4ed8; }
+.tj-counter-inline-send:disabled { opacity: 0.5; cursor: not-allowed; }

@@ -14,12 +14,18 @@ const getJobsForTechnicians = async (req, res, next) => {
 
 const requestJob = async (req, res, next) => {
   try {
-    const { jobId } = req.params;
-    const { note } = req.body;
+    const { jobId }    = req.params;
+    const note         = req.body?.note;
+    const fixedPrice   = req.body?.fixedPrice;   // optional — technician's proposed fixed price
+    const charges      = req.body?.charges;       // optional — array of additional charges
 
     const job = await TechnicianJob.findById(jobId);
     if (!job) {
       return res.status(404).json({ success: false, message: 'Job not found' });
+    }
+
+    if (job.status !== 'open') {
+      return res.status(400).json({ success: false, message: 'This job is no longer open for requests' });
     }
 
     const existingRequest = await TechnicianJobRequest.findOne({
@@ -32,14 +38,87 @@ const requestJob = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'You already requested this job' });
     }
 
-    const request = await TechnicianJobRequest.create({
-      job: jobId,
-      technician: req.user._id,
-      note: note || '',
-      status: 'pending',
-    });
+    // Determine if technician is proposing a different fixed price
+    const hasBid     = fixedPrice && Number(fixedPrice) > 0;
+    const bidAmount  = hasBid ? Number(fixedPrice) : null;
 
-    res.status(201).json({ success: true, message: 'Job request sent', data: { request } });
+    // Build opening conversation message
+    const parts = [];
+    if (note?.trim()) parts.push(note.trim());
+    if (hasBid) parts.push(`Proposed fixed price: $${bidAmount.toLocaleString()}`);
+
+    const requestData = {
+      job:             jobId,
+      technician:      req.user._id,
+      note:            note?.trim() || '',
+      status:          'pending',
+      counterOffer:    hasBid ? bidAmount : 0,
+      counterOfferFrom: hasBid ? 'technician' : '',
+      conversation: [{
+        sender:          'technician',
+        message:         parts.length ? parts.join('. ') : 'Job request submitted.',
+        counterOffer:    hasBid ? bidAmount : 0,
+        counterOfferFrom: hasBid ? 'technician' : '',
+        createdAt:       new Date(),
+      }],
+    };
+
+    if (hasBid) requestData.bidAmount = bidAmount;
+
+    // Validate charges if provided
+    const hasCharges = Array.isArray(charges) && charges.length > 0;
+    if (hasCharges) {
+      for (const c of charges) {
+        if (!c.label?.trim()) {
+          return res.status(400).json({ success: false, message: 'Each charge must have a label' });
+        }
+        if (!c.amount || Number(c.amount) <= 0) {
+          return res.status(400).json({ success: false, message: `Amount for "${c.label}" must be > 0` });
+        }
+      }
+      requestData.chargesStatus = 'pending';
+    }
+
+    const request = await TechnicianJobRequest.create(requestData);
+
+    // Create AdditionalCharge docs if charges were provided
+    let createdCharges = [];
+    if (hasCharges) {
+      const AdditionalCharge = require('../models/AdditionalCharge');
+      createdCharges = await AdditionalCharge.insertMany(
+        charges.map((c) => ({
+          job:             jobId,
+          request:         request._id,
+          technician:      req.user._id,
+          label:           c.label.trim(),
+          description:     c.description ? c.description.trim() : '',
+          requestedAmount: Number(c.amount),
+          status:          'pending',
+          submittedAt:     new Date(),
+        }))
+      );
+    }
+
+    // Notify admin
+    try {
+      const { getIO } = require('../utils/socketInstance');
+      getIO().to('admin').emit('job:request:new', { jobId, request, charges: createdCharges });
+      console.log(`[Socket] emitToAdmin → room="admin" event="job:request:new" jobId="${jobId}" requestId="${request._id}"`);
+    } catch (e) {
+      console.warn('[Socket] emitToAdmin failed for event "job:request:new":', e.message);
+    }
+
+    const msg = hasCharges
+      ? `Job request sent with ${createdCharges.length} additional charge(s)${hasBid ? ` and a fixed price of $${bidAmount}` : ''}`
+      : hasBid
+        ? `Job request sent with a proposed price of $${bidAmount}`
+        : 'Job request sent';
+
+    res.status(201).json({
+      success: true,
+      message: msg,
+      data: { request, charges: createdCharges },
+    });
   } catch (error) {
     next(error);
   }
@@ -146,8 +225,9 @@ const sendMessageOnRequest = async (req, res, next) => {
     try {
       const { getIO } = require('../utils/socketInstance');
       getIO().to(`request:${requestId}`).emit('request:message', { requestId, message: entry });
+      console.log(`[Socket] emitToRequest → room="request:${requestId}" event="request:message"`);
     } catch (e) {
-      console.log('Socket emit failed:', e.message);
+      console.warn('[Socket] emitToRequest failed for event "request:message":', e.message);
     }
 
     res.status(200).json({ success: true, message: 'Message sent', data: { entry } });
@@ -408,6 +488,7 @@ const counterOffer = async (req, res, next) => {
             request.conversation.length - 1
           ],
         });
+      console.log(`[Socket] emitToRequest → room="request:${requestId}" event="request:message"`);
 
       getIO()
         .to(`request:${requestId}`)
@@ -417,9 +498,10 @@ const counterOffer = async (req, res, next) => {
           counterOffer: request.counterOffer,
           counterOfferFrom: request.counterOfferFrom,
         });
+      console.log(`[Socket] emitToRequest → room="request:${requestId}" event="request:status" status="${request.status}"`);
     } catch (error) {
       // Socket should not break API
-      console.log('Socket emit failed:', error.message);
+      console.warn('[Socket] emit failed in counterOffer:', error.message);
     }
 
     res.status(200).json({

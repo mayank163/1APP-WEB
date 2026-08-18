@@ -54,8 +54,6 @@ mongoose.connect(process.env.MONGODB_URI)
 // ========== UPLOADS FOLDER - SAHI PATH ==========
 // ✅ Uploads src folder mein hai
 const uploadsPath = path.join(__dirname, '..', 'uploads');
-console.log('📁 Uploads path:', uploadsPath);
-console.log('📁 Uploads exists:', fs.existsSync(uploadsPath));
 
 if (fs.existsSync(uploadsPath)) {
     const files = fs.readdirSync(uploadsPath);
@@ -88,7 +86,8 @@ console.log('✅ Serving static files from:', uploadsPath);
 // Security middleware
 app.use(helmet());
 app.use(cors({
-    origin: ['http://1app-frontend.s3-website-us-west-1.amazonaws.com','http://1app-admin.s3-website-us-west-1.amazonaws.com','*','http://localhost:3000','http://localhost:3001'],
+    // origin: ['http://1app-frontend.s3-website-us-west-1.amazonaws.com','http://1app-admin.s3-website-us-west-1.amazonaws.com','*','http://localhost:3000','http://localhost:3001'],
+    origin: '*',
     credentials: true,
     optionsSuccessStatus: 200
 }));
@@ -177,11 +176,17 @@ io.on("connection", (socket) => {
 
     // Join/leave request-scoped rooms for live chat & status updates
     socket.on('request:join', (requestId) => {
-        if (requestId) socket.join(`request:${requestId}`);
+        if (requestId) {
+            socket.join(`request:${requestId}`);
+            console.log(`[Socket] ${socket.id} joined request room: ${requestId}`);
+        }
     });
 
     socket.on('request:leave', (requestId) => {
-        if (requestId) socket.leave(`request:${requestId}`);
+        if (requestId) {
+            socket.leave(`request:${requestId}`);
+            console.log(`[Socket] ${socket.id} left request room: ${requestId}`);
+        }
     });
 
     // Admin joins a global room to receive job-level broadcasts
@@ -192,6 +197,7 @@ io.on("connection", (socket) => {
 
     socket.on('admin:leave', () => {
         socket.leave('admin');
+        console.log(`[Socket] ${socket.id} left admin room`);
     });
 
     // Technician joins their own room to receive verification updates
@@ -203,7 +209,10 @@ io.on("connection", (socket) => {
     });
 
     socket.on('technician:leave', (technicianId) => {
-        if (technicianId) socket.leave(`technician:${technicianId}`);
+        if (technicianId) {
+            socket.leave(`technician:${technicianId}`);
+            console.log(`[Socket] ${socket.id} left technician room: ${technicianId}`);
+        }
     });
 
     socket.on("disconnect", () => {

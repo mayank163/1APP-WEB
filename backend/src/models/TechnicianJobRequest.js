@@ -76,6 +76,39 @@ const technicianJobRequestSchema = new mongoose.Schema({
     default: 0,
     min: 0,
   },
+
+  // ── Additional Charges & Invoice tracking ─────────────────────────────
+  chargesStatus: {
+    // 'none'      — no charges submitted yet
+    // 'pending'   — technician has submitted charges, awaiting admin review
+    // 'reviewing' — admin is reviewing (some accepted/rejected/countered)
+    // 'agreed'    — all charges resolved (accepted or rejected), ready to invoice
+    // 'invoiced'  — final invoice generated
+    type: String,
+    enum: ['none', 'pending', 'reviewing', 'agreed', 'invoiced'],
+    default: 'none',
+  },
+  invoice: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'JobInvoice',
+    default: null,
+  },
+  // Cached agreed totals (populated when invoice is generated)
+  agreedFixedCharge: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
+  agreedAdditionalTotal: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
+  agreedTotal: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
 }, {
   timestamps: true,
 });

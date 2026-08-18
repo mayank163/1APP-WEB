@@ -177,6 +177,7 @@ const Home = () => {
                     gap: 24px;
                     flex-wrap: wrap;
                     overflow: hidden;
+                    
                 }
 
                 .hero-side-card {
@@ -209,6 +210,7 @@ const Home = () => {
                     .hero-three-col {
                         justify-content: center;
                         padding: 0 20px;
+                        
                     }
 
                     .hero-side-card {
@@ -267,383 +269,363 @@ const Home = () => {
             )}
 
 
-            {/* ── Hero Section ── */}
-            <div style={{ padding: 0, background: '#fff' }}>
-                <div style={{
-                    position: 'relative',
-                    overflow: 'hidden',
-                    minHeight: '580px',
-                    height: '680px',
-                }}>
-                    {/* Background photo */}
-                    <img
-                        src={tryHeroImg('BG.png')}
-                        alt="Hero"
-                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }}
-                        onError={(e) => { e.target.style.display = 'none'; }}
-                    />
-                    {/* Subtle overlay */}
-                    <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(255,255,255,0.08)', zIndex: 1 }} />
+{/* ── Hero Section ── */}
+<div style={{ padding: 0, background: '#fff',}}>
+    <div style={{
+        position: 'relative',
+        overflow: 'hidden',
+        minHeight: '380px',
+        height: '440px',
+    }}>
+        {/* Background photo */}
+        <img
+            src={tryHeroImg('BG.png')}
+            alt="Hero"
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }}
+            onError={(e) => { e.target.style.display = 'none'; }}
+        />
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(255,255,255,0.08)', zIndex: 1 }} />
 
-                    {/* ── Three-column layout: LEFT CARD | CENTRE | RIGHT CARD ── */}
-                    <div className="hero-three-col">
-
-                        {/* ── LEFT CARD — Home Services subcategories ── */}
-                        {(() => {
-                            const homeCat = getCategoryByName('Home');
-                            const desiredSubNames = ['Cleaning', 'Diagnosis', 'Home Theater', 'Smart Home', 'TV Mounting'];
-                            const homeSubcategories = desiredSubNames.map(name =>
-                                homeCat?.subcategories?.find(s => s.name?.toLowerCase() === name.toLowerCase()) || { name }
-                            );
-                            const subIcons = [
-                                <FaSnowflake size={15} />,
-                                <FaWrench size={15} />,
-                                <FaTools size={15} />,
-                                <FaHome size={15} />,
-                                <FaBolt size={15} />,
-                            ];
-                            return (
-                                <div className="hero-side-card">
-                                    {/* Card header */}
-                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px' }}>
-                                        <div style={{
-                                            width: '58px', height: '58px', borderRadius: '50%',
-                                            background: '#1a1a1a',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            marginBottom: '12px',
-                                        }}>
-                                            <FaHome size={24} style={{ color: '#fff' }} />
-                                        </div>
-                                        <span style={{ fontWeight: 700, fontSize: '17px', color: '#1a1a1a' }}>Home Services</span>
-                                    </div>
-
-                                    {/* Subcategory list */}
-                                    <div style={{ marginBottom: '20px' }}>
-                                        {homeSubcategories.map((sub, i) => (
-                                            <div
-                                                key={i}
-                                                onClick={() => sub._id
-                                                    ? navigate(`/services?category=${sub.category?._id || sub.category || homeCat?.id}&subcategory=${sub._id}`)
-                                                    : (homeCat ? navigate(`/services?category=${homeCat.id}`) : handleCategoryClick('Home Services'))
-                                                }
-                                                style={{
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                                    padding: '11px 0',
-                                                    borderBottom: i < homeSubcategories.length - 1 ? '1px solid rgba(0,0,0,0.07)' : 'none',
-                                                    cursor: 'pointer',
-                                                }}
-                                            >
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                    <span style={{ color: '#555', flexShrink: 0 }}>{subIcons[i] || <FaTools size={15} />}</span>
-                                                    <span style={{ fontSize: '14px', color: '#2a2a2a', fontWeight: 600 }}>{sub.name}</span>
-                                                </div>
-                                                <FaArrowRight size={11} style={{ color: '#bbb', flexShrink: 0 }} />
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Explore All Home Services button */}
-                                    <button
-                                        onClick={() => homeCat ? navigate(`/services?category=${homeCat.id}`) : handleCategoryClick('Home Services')}
-                                        style={{
-                                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                            width: '100%',
-                                            background: '#1a1a1a',
-                                            color: '#fff',
-                                            border: 'none',
-                                            borderRadius: '999px',
-                                            padding: '11px 16px',
-                                            fontSize: '14px',
-                                            fontWeight: 600,
-                                            cursor: 'pointer',
-                                        }}
-                                    >
-                                        <span>Explore All Services</span>
-                                        <span style={{
-                                            background: '#fff',
-                                            color: '#1a1a1a',
-                                            borderRadius: '50%',
-                                            width: '26px', height: '26px',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            flexShrink: 0,
-                                        }}>
-                                            <FaArrowRight size={11} />
-                                        </span>
-                                    </button>
-                                </div>
-                            );
-                        })()}
-
-                        {/* ── CENTRE — Trust badge, headline, CTA ── */}
-                        <div className="hero-center-panel">
-                            {/* Trust badge */}
+        <div className="hero-three-col">
+            {/* LEFT CARD - Home Services */}
+            {(() => {
+                const homeCat = getCategoryByName('Home');
+                const desiredSubNames = ['Cleaning', 'Diagnosis', 'Home Theater', 'Smart Home', 'TV Mounting'];
+                const homeSubcategories = desiredSubNames.map(name =>
+                    homeCat?.subcategories?.find(s => s.name?.toLowerCase() === name.toLowerCase()) || { name }
+                );
+                const subIcons = [
+                    <FaSnowflake size={13} />,
+                    <FaWrench size={13} />,
+                    <FaTools size={13} />,
+                    <FaHome size={13} />,
+                    <FaBolt size={13} />,
+                ];
+                return (
+                    <div className="hero-side-card" style={{ padding: '20px 18px 18px', width: '250px', flex: '0 0 250px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '14px' }}>
                             <div style={{
-                                display: 'inline-flex', alignItems: 'center', gap: '7px',
-                                background: 'rgba(255,255,255,0.20)',
-                                borderRadius: '999px',
-                                padding: '6px 18px',
-                                fontSize: '12px', fontWeight: 600, color: '#1a1a1a',
-                                letterSpacing: '0.5px',
-                                marginBottom: '22px',
-                                boxShadow: '0 2px 12px rgba(0,0,0,0.10)',
+                                width: '44px', height: '44px',
+                                borderRadius: '50%',
+                                background: '#1a1a1a',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                marginBottom: '8px',
                             }}>
-                                <FaStar size={11} style={{ color: '#1a1a1a' }} />
-                                TRUSTED BY 10,000+ CUSTOMERS
+                                <FaHome size={18} style={{ color: '#fff' }} />
                             </div>
-
-                            {/* Headline */}
-                            <h1 style={{
-                                fontSize: 'clamp(32px, 4vw, 54px)',
-                                fontWeight: 800,
-                                color: '#1a1a1a',
-                                textAlign: 'center',
-                                lineHeight: 1.12,
-                                marginBottom: '14px',
-                                textShadow: '0 1px 8px rgba(255,255,255,0.6)',
-                            }}>
-                                At your ease,<br />
-                                at your <em style={{ fontStyle: 'italic', fontWeight: 900, fontFamily: 'playfair display' }}>Doorsteps!</em>
-                            </h1>
-
-                            {/* ── Booking Bar ── */}
-                            <HeroBookingBar />
-                            {/* Subtitle */}
-                            <p style={{
-                                fontSize: '20px', color: '#000000ff', fontWeight: 'bold',
-                                textAlign: 'center', marginBottom: '28px', lineHeight: 1.5,
-                                textShadow: '0 1px 6px rgba(241, 241, 241, 0.5)',
-                                padding: '12px ',
-                            }}>
-                            </p>
-
-
+                            <span style={{ fontWeight: 700, fontSize: '15px', color: '#1a1a1a' }}>Home Services</span>
                         </div>
 
-                        {/* ── RIGHT CARD — All other categories (no subcategories shown) ── */}
-                        {(() => {
-                            const homeCat = getCategoryByName('Home');
-                            const otherCats = categoriesWithSubs
-                                .filter(c => {
-                                    if (!homeCat) return true;
-                                    return (c.id || c._id) !== (homeCat.id || homeCat._id);
-                                })
-                                .slice(0, 5);
-
-                            const catIcons = [
-                                <FaBriefcase size={15} />,
-                                <FaLaptop size={15} />,
-                                <FaBullhorn size={15} />,
-                                <FaUserMd size={15} />,
-                                <FaGraduationCap size={15} />,
-                            ];
-
-                            return (
-                                <div className="hero-side-card">
-                                    {/* Card header */}
-                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px' }}>
-                                        <div style={{
-                                            width: '58px', height: '58px', borderRadius: '50%',
-                                            background: '#1a1a1a',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            marginBottom: '12px',
-                                        }}>
-                                            <FaBriefcase size={24} style={{ color: '#fff' }} />
-                                        </div>
-                                        <span style={{ fontWeight: 700, fontSize: '17px', color: '#1a1a1a' }}>All Services</span>
+                        <div style={{ marginBottom: '14px' }}>
+                            {homeSubcategories.map((sub, i) => (
+                                <div
+                                    key={i}
+                                    onClick={() => sub._id
+                                        ? navigate(`/services?category=${sub.category?._id || sub.category || homeCat?.id}&subcategory=${sub._id}`)
+                                        : (homeCat ? navigate(`/services?category=${homeCat.id}`) : handleCategoryClick('Home Services'))
+                                    }
+                                    style={{
+                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                        padding: '8px 0',
+                                        borderBottom: i < homeSubcategories.length - 1 ? '1px solid rgba(0,0,0,0.07)' : 'none',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <span style={{ color: '#555', flexShrink: 0 }}>{subIcons[i] || <FaTools size={13} />}</span>
+                                        <span style={{ fontSize: '13px', color: '#2a2a2a', fontWeight: 600 }}>{sub.name}</span>
                                     </div>
-
-                                    {/* Category list (top-level, no subcategories) */}
-                                    <div style={{ marginBottom: '20px' }}>
-                                        {otherCats.map((cat, i) => (
-                                            <div
-                                                key={cat.id || cat._id || i}
-                                                onClick={() => cat.subcategories && cat.subcategories.length > 0
-                                                    ? setPopupCategory({ label: cat.name, categoryId: cat.id || cat._id, subcategories: cat.subcategories })
-                                                    : navigate(`/services?category=${cat.id || cat._id}`)
-                                                }
-                                                style={{
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                                    padding: '11px 0',
-                                                    borderBottom: i < otherCats.length - 1 ? '1px solid rgba(0,0,0,0.07)' : 'none',
-                                                    cursor: 'pointer',
-                                                }}
-                                            >
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                    <span style={{ color: '#555', flexShrink: 0 }}>{catIcons[i] || <FaTools size={15} />}</span>
-                                                    <span style={{ fontSize: '14px', color: '#2a2a2a', fontWeight: 600 }}>{cat.name}</span>
-                                                </div>
-                                                <FaArrowRight size={11} style={{ color: '#bbb', flexShrink: 0 }} />
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Explore All Services button */}
-                                    <button
-                                        onClick={() => setShowAllCategories(true)}
-                                        style={{
-                                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                            width: '100%',
-                                            background: '#1a1a1a',
-                                            color: '#fff',
-                                            border: 'none',
-                                            borderRadius: '999px',
-                                            padding: '11px 16px',
-                                            fontSize: '14px',
-                                            fontWeight: 600,
-                                            cursor: 'pointer',
-                                        }}
-                                    >
-                                        <span>Explore All Services</span>
-                                        <span style={{
-                                            background: '#fff',
-                                            color: '#1a1a1a',
-                                            borderRadius: '50%',
-                                            width: '26px', height: '26px',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            flexShrink: 0,
-                                        }}>
-                                            <FaArrowRight size={11} />
-                                        </span>
-                                    </button>
+                                    <FaArrowRight size={10} style={{ color: '#bbb', flexShrink: 0 }} />
                                 </div>
-                            );
-                        })()}
+                            ))}
+                        </div>
 
+                        <button
+                            onClick={() => homeCat ? navigate(`/services?category=${homeCat.id}`) : handleCategoryClick('Home Services')}
+                            style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                width: '100%',
+                                background: '#1a1a1a',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '999px',
+                                padding: '8px 14px',
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                            }}
+                        >
+                            <span>Explore All Services</span>
+                            <span style={{
+                                background: '#fff',
+                                color: '#1a1a1a',
+                                borderRadius: '50%',
+                                width: '22px', height: '22px',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                flexShrink: 0,
+                            }}>
+                                <FaArrowRight size={10} />
+                            </span>
+                        </button>
                     </div>
+                );
+            })()}
 
-                    {/* ── Stats bar fixed at the bottom of the hero card ── */}
-                    <div style={{
-                        position: 'absolute',
-                        bottom: '20px',
-                        left: '28px',
-                        right: '28px',
-                        zIndex: 3,
-                        background: 'rgba(255,255,255,0.92)',
-                        backdropFilter: 'blur(16px)',
-                        WebkitBackdropFilter: 'blur(16px)',
-                        borderRadius: '999px',
-                        padding: '14px 28px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-around',
-                        boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
-                    }}>
-                        {[
-                            { icon: <FaTag size={18} />, value: '50+', label: 'SERVICE CATEGORIES' },
-                            { icon: <FaUsers size={18} />, value: '500+', label: 'EXPERT PROFESSIONALS' },
-                            { icon: <FaUserCircle size={18} />, value: '10K+', label: 'HAPPY CUSTOMERS' },
-                            { icon: <FaStar size={18} />, value: '4.8/5', label: 'AVERAGE RATING' },
-                        ].map((stat, i, arr) => (
-                            <React.Fragment key={i}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <div style={{
-                                        width: '42px', height: '42px', borderRadius: '50%',
-                                        background: '#1a1a1a',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        color: '#fff', flexShrink: 0,
-                                    }}>
-                                        {stat.icon}
-                                    </div>
-                                    <div>
-                                        <div style={{ fontWeight: 800, fontSize: '18px', color: '#1a1a1a', lineHeight: 1.1 }}>{stat.value}</div>
-                                        <div style={{ fontSize: '10px', color: '#888', fontWeight: 600, letterSpacing: '0.5px' }}>{stat.label}</div>
-                                    </div>
-                                </div>
-                                {i < arr.length - 1 && (
-                                    <div style={{ width: '1px', height: '36px', background: 'rgba(0,0,0,0.10)' }} />
-                                )}
-                            </React.Fragment>
-                        ))}
-                    </div>
+            {/* CENTRE PANEL */}
+            <div className="hero-center-panel" style={{ padding: '0 8px' }}>
+                <div style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '5px',
+                    background: 'rgba(255,255,255,0.20)',
+                    borderRadius: '999px',
+                    padding: '4px 14px',
+                    fontSize: '10px', fontWeight: 600, color: '#1a1a1a',
+                    letterSpacing: '0.5px',
+                    marginBottom: '14px',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.10)',
+                }}>
+                    <FaStar size={10} style={{ color: '#1a1a1a' }} />
+                    TRUSTED BY 10,000+ CUSTOMERS
                 </div>
+
+                <h1 style={{
+                    fontSize: 'clamp(26px, 3.2vw, 44px)',
+                    fontWeight: 800,
+                    color: '#1a1a1a',
+                    textAlign: 'center',
+                    lineHeight: 1.12,
+                    marginBottom: '10px',
+                    textShadow: '0 1px 8px rgba(255,255,255,0.6)',
+                }}>
+                    At your ease,<br />
+                    at your <em style={{ fontStyle: 'italic', fontWeight: 900, fontFamily: 'playfair display' }}>Doorsteps!</em>
+                </h1>
+
+                <HeroBookingBar />
             </div>
 
-            {/* Exclusive Home Services Offers */}
-            <section className="py-5 bg-white">
-                <div className="container">
-                    <h2 className="fw-bold mb-1">Exclusive Home Services Offers</h2>
-                    <p className="text-muted mb-4">Book Cleaner, Plumber, Handyman, Gardner or any one for your home help.</p>
-                    <div className="position-relative">
-                        <div
-                            id="offersScrollRow"
-                            className="d-flex gap-4 pb-2"
-                            style={{ overflowX: 'auto', scrollbarWidth: 'none', scrollBehavior: 'smooth' }}
-                        >
-                            {[
-                                { badge: 'UP TO $500 OFF', title: 'Home Cleaning', desc: 'Deep Cleaning. Sofa Cleaning. Spotless Spaces.', img: 'cleaning_image.png', categoryName: 'Cleaning', subcategoryName: 'Home Cleaning' },
-                                { badge: 'SAME DAY SERVICE', title: 'Plumbing', desc: 'Leak Repairs. Pipe Installation. Water Solutions.', img: 'plumbing_image.png', categoryName: 'Plumbing', subcategoryName: null },
-                                { badge: 'CERTIFIED EXPERTS', title: 'Electrical', desc: 'Switches. Wiring. Safe Installations.', img: 'electrician.png', categoryName: 'Electrical', subcategoryName: null },
-                                { badge: 'UP TO $300 OFF', title: 'Handyman', desc: 'Repairs. Installations. Fix Anything.', img: 'handy_man.png', categoryName: 'Handyman', subcategoryName: null },
-                                { badge: 'SAME DAY SERVICE', title: 'AC & Appliance', desc: 'AC Service. Appliance Repair. Quick Fix.', img: 'ac_repair.png', categoryName: 'AC', subcategoryName: null },
-                            ].map((item, idx) => {
-                                const offerCat = getCategoryByName(item.categoryName);
-                                const offerSub = offerCat && item.subcategoryName
-                                    ? offerCat.subcategories?.find(s =>
-                                        s.name?.toLowerCase().includes(item.subcategoryName.toLowerCase()) ||
-                                        item.subcategoryName.toLowerCase().includes(s.name?.toLowerCase())
-                                    )
-                                    : null;
-                                const handleOfferClick = () => {
-                                    if (offerCat && offerSub) {
-                                        navigate(`/services?category=${offerCat.id}&subcategory=${offerSub._id}`);
-                                    } else if (offerCat) {
-                                        navigate(`/services?category=${offerCat.id}`);
-                                    } else {
-                                        navigate(`/services?search=${encodeURIComponent(item.categoryName)}`);
-                                    }
-                                };
-                                return (
-                                <div
-                                    key={idx}
-                                    className="rounded-4 overflow-hidden position-relative flex-shrink-0"
-                                    style={{ width: 'calc(33.33% - 12px)', minWidth: '260px', minHeight: '260px', background: '#222', cursor: 'pointer' }}
-                                    onClick={handleOfferClick}
-                                >
-                                    <img
-                                        src={tryHeroImg(item.img)}
-                                        alt={item.title}
-                                        className="position-absolute w-100 h-100"
-                                        style={{ objectFit: 'cover', top: 0, left: 0, opacity: 0.55 }}
-                                        onError={(e) => { e.target.style.display = 'none'; }}
-                                    />
-                                    <div className="position-relative p-4 d-flex flex-column justify-content-between" style={{ minHeight: '260px' }}>
-                                        <div>
-                                            <span className="fw-bold text-white px-2 py-1 rounded-2 mb-2 d-inline-block" style={{ background: '#000000', fontSize: '10px', letterSpacing: '0.5px' }}>{item.badge}</span>
-                                            <p className="text-white mb-1" style={{ fontSize: '11px', opacity: 0.7, letterSpacing: '1px' }}>ONE-APP</p>
-                                            <h4 className="fw-bold text-white mb-2">{item.title}</h4>
-                                            <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '13px', lineHeight: 1.6 }}>{item.desc}</p>
-                                        </div>
-                                        <button
-                                            className="btn fw-semibold rounded-3 px-4 py-2"
-                                            style={{ width: 'fit-content', background: '#000000', color: '#fff', border: 'none' }}
-                                            onClick={(e) => { e.stopPropagation(); handleOfferClick(); }}
-                                        >
-                                            Book Now
-                                        </button>
-                                    </div>
-                                </div>
-                                );
-                            })}
+            {/* RIGHT CARD - All Services */}
+            {(() => {
+                const homeCat = getCategoryByName('Home');
+                const otherCats = categoriesWithSubs
+                    .filter(c => {
+                        if (!homeCat) return true;
+                        return (c.id || c._id) !== (homeCat.id || homeCat._id);
+                    })
+                    .slice(0, 5);
+
+                const catIcons = [
+                    <FaBriefcase size={13} />,
+                    <FaLaptop size={13} />,
+                    <FaBullhorn size={13} />,
+                    <FaUserMd size={13} />,
+                    <FaGraduationCap size={13} />,
+                ];
+
+                return (
+                    <div className="hero-side-card" style={{ padding: '20px 18px 18px', width: '250px', flex: '0 0 250px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '14px' }}>
+                            <div style={{
+                                width: '44px', height: '44px',
+                                borderRadius: '50%',
+                                background: '#1a1a1a',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                marginBottom: '8px',
+                            }}>
+                                <FaBriefcase size={18} style={{ color: '#fff' }} />
+                            </div>
+                            <span style={{ fontWeight: 700, fontSize: '15px', color: '#1a1a1a' }}>All Services</span>
                         </div>
-                        {/* Left Arrow */}
+
+                        <div style={{ marginBottom: '14px' }}>
+                            {otherCats.map((cat, i) => (
+                                <div
+                                    key={cat.id || cat._id || i}
+                                    onClick={() => cat.subcategories && cat.subcategories.length > 0
+                                        ? setPopupCategory({ label: cat.name, categoryId: cat.id || cat._id, subcategories: cat.subcategories })
+                                        : navigate(`/services?category=${cat.id || cat._id}`)
+                                    }
+                                    style={{
+                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                        padding: '8px 0',
+                                        borderBottom: i < otherCats.length - 1 ? '1px solid rgba(0,0,0,0.07)' : 'none',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <span style={{ color: '#555', flexShrink: 0 }}>{catIcons[i] || <FaTools size={13} />}</span>
+                                        <span style={{ fontSize: '13px', color: '#2a2a2a', fontWeight: 600 }}>{cat.name}</span>
+                                    </div>
+                                    <FaArrowRight size={10} style={{ color: '#bbb', flexShrink: 0 }} />
+                                </div>
+                            ))}
+                        </div>
+
                         <button
-                            className="position-absolute d-flex align-items-center justify-content-center border-0 bg-white rounded-circle shadow"
-                            style={{ top: '50%', left: '-18px', transform: 'translateY(-50%)', width: '36px', height: '36px', zIndex: 2, cursor: 'pointer' }}
-                            onClick={() => { const el = document.getElementById('offersScrollRow'); el.scrollBy({ left: -300, behavior: 'smooth' }); }}
+                            onClick={() => setShowAllCategories(true)}
+                            style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                width: '100%',
+                                background: '#1a1a1a',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '999px',
+                                padding: '8px 14px',
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                cursor: 'pointer',
+                            }}
                         >
-                            <FaArrowRight style={{ transform: 'rotate(180deg)', fontSize: '14px' }} />
-                        </button>
-                        {/* Right Arrow */}
-                        <button
-                            className="position-absolute d-flex align-items-center justify-content-center border-0 bg-white rounded-circle shadow"
-                            style={{ top: '50%', right: '-18px', transform: 'translateY(-50%)', width: '36px', height: '36px', zIndex: 2, cursor: 'pointer' }}
-                            onClick={() => { const el = document.getElementById('offersScrollRow'); el.scrollBy({ left: 300, behavior: 'smooth' }); }}
-                        >
-                            <FaArrowRight style={{ fontSize: '14px' }} />
+                            <span>Explore All Services</span>
+                            <span style={{
+                                background: '#fff',
+                                color: '#1a1a1a',
+                                borderRadius: '50%',
+                                width: '22px', height: '22px',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                flexShrink: 0,
+                            }}>
+                                <FaArrowRight size={10} />
+                            </span>
                         </button>
                     </div>
-                </div>
-            </section>
+                );
+            })()}
+        </div>
+
+        {/* Stats bar */}
+        {/* <div style={{
+            position: 'absolute',
+            bottom: '8px',
+            left: '16px',
+            right: '16px',
+            zIndex: 3,
+            background: 'rgba(255,255,255,0.92)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            borderRadius: '999px',
+            padding: '8px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-around',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
+        }}>
+            {[
+                { icon: <FaTag size={14} />, value: '50+', label: 'SERVICE CATEGORIES' },
+                { icon: <FaUsers size={14} />, value: '500+', label: 'EXPERT PROFESSIONALS' },
+                { icon: <FaUserCircle size={14} />, value: '10K+', label: 'HAPPY CUSTOMERS' },
+                { icon: <FaStar size={14} />, value: '4.8/5', label: 'AVERAGE RATING' },
+            ].map((stat, i, arr) => (
+                <React.Fragment key={i}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{
+                            width: '28px', height: '28px',
+                            borderRadius: '50%',
+                            background: '#1a1a1a',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: '#fff', flexShrink: 0,
+                        }}>
+                            {stat.icon}
+                        </div>
+                        <div>
+                            <div style={{ fontWeight: 800, fontSize: '13px', color: '#1a1a1a', lineHeight: 1.1 }}>{stat.value}</div>
+                            <div style={{ fontSize: '8px', color: '#888', fontWeight: 600, letterSpacing: '0.3px' }}>{stat.label}</div>
+                        </div>
+                    </div>
+                    {i < arr.length - 1 && (
+                        <div style={{ width: '1px', height: '22px', background: 'rgba(0,0,0,0.10)' }} />
+                    )}
+                </React.Fragment>
+            ))}
+        </div> */}
+    </div>
+</div>
+
+{/* ── Exclusive Home Services Offers ── */}
+<section className="py-3 bg-white" style={{ marginTop: '-5px' }}>
+    <div className="container">
+        <h2 className="fw-bold mb-1" style={{ fontSize: '1.5rem' }}>Exclusive Home Services Offers</h2>
+        <p className="text-muted mb-3" style={{ fontSize: '0.9rem' }}>Book Cleaner, Plumber, Handyman, Gardner or any one for your home help.</p>
+        <div className="position-relative">
+            <div
+                id="offersScrollRow"
+                className="d-flex gap-3 pb-1"
+                style={{ overflowX: 'auto', scrollbarWidth: 'none', scrollBehavior: 'smooth' }}
+            >
+                {[
+                    { badge: 'UP TO $500 OFF', title: 'Home Cleaning', desc: 'Deep Cleaning. Sofa Cleaning. Spotless Spaces.', img: 'cleaning_image.png', categoryName: 'Cleaning', subcategoryName: 'Home Cleaning' },
+                    { badge: 'SAME DAY SERVICE', title: 'Plumbing', desc: 'Leak Repairs. Pipe Installation. Water Solutions.', img: 'plumbing_image.png', categoryName: 'Plumbing', subcategoryName: null },
+                    { badge: 'CERTIFIED EXPERTS', title: 'Electrical', desc: 'Switches. Wiring. Safe Installations.', img: 'electrician.png', categoryName: 'Electrical', subcategoryName: null },
+                    { badge: 'UP TO $300 OFF', title: 'Handyman', desc: 'Repairs. Installations. Fix Anything.', img: 'handy_man.png', categoryName: 'Handyman', subcategoryName: null },
+                    { badge: 'SAME DAY SERVICE', title: 'AC & Appliance', desc: 'AC Service. Appliance Repair. Quick Fix.', img: 'ac_repair.png', categoryName: 'AC', subcategoryName: null },
+                ].map((item, idx) => {
+                    const offerCat = getCategoryByName(item.categoryName);
+                    const offerSub = offerCat && item.subcategoryName
+                        ? offerCat.subcategories?.find(s =>
+                            s.name?.toLowerCase().includes(item.subcategoryName.toLowerCase()) ||
+                            item.subcategoryName.toLowerCase().includes(s.name?.toLowerCase())
+                        )
+                        : null;
+                    const handleOfferClick = () => {
+                        if (offerCat && offerSub) {
+                            navigate(`/services?category=${offerCat.id}&subcategory=${offerSub._id}`);
+                        } else if (offerCat) {
+                            navigate(`/services?category=${offerCat.id}`);
+                        } else {
+                            navigate(`/services?search=${encodeURIComponent(item.categoryName)}`);
+                        }
+                    };
+                    return (
+                        <div
+                            key={idx}
+                            className="rounded-4 overflow-hidden position-relative flex-shrink-0"
+                            style={{ width: 'calc(33.33% - 8px)', minWidth: '220px', minHeight: '200px', background: '#222', cursor: 'pointer' }}
+                            onClick={handleOfferClick}
+                        >
+                            <img
+                                src={tryHeroImg(item.img)}
+                                alt={item.title}
+                                className="position-absolute w-100 h-100"
+                                style={{ objectFit: 'cover', top: 0, left: 0, opacity: 0.55 }}
+                                onError={(e) => { e.target.style.display = 'none'; }}
+                            />
+                            <div className="position-relative p-3 d-flex flex-column justify-content-between" style={{ minHeight: '200px' }}>
+                                <div>
+                                    <span className="fw-bold text-white px-2 py-1 rounded-2 mb-2 d-inline-block" style={{ background: '#000000', fontSize: '9px', letterSpacing: '0.5px' }}>{item.badge}</span>
+                                    <p className="text-white mb-1" style={{ fontSize: '10px', opacity: 0.7, letterSpacing: '1px' }}>ONE-APP</p>
+                                    <h4 className="fw-bold text-white mb-1" style={{ fontSize: '1rem' }}>{item.title}</h4>
+                                    <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '11px', lineHeight: 1.5 }}>{item.desc}</p>
+                                </div>
+                                <button
+                                    className="btn fw-semibold rounded-3 px-3 py-1"
+                                    style={{ width: 'fit-content', background: '#000000', color: '#fff', border: 'none', fontSize: '12px' }}
+                                    onClick={(e) => { e.stopPropagation(); handleOfferClick(); }}
+                                >
+                                    Book Now
+                                </button>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+            {/* Left Arrow */}
+            <button
+                className="position-absolute d-flex align-items-center justify-content-center border-0 bg-white rounded-circle shadow"
+                style={{ top: '50%', left: '-14px', transform: 'translateY(-50%)', width: '30px', height: '30px', zIndex: 2, cursor: 'pointer' }}
+                onClick={() => { const el = document.getElementById('offersScrollRow'); el.scrollBy({ left: -250, behavior: 'smooth' }); }}
+            >
+                <FaArrowRight style={{ transform: 'rotate(180deg)', fontSize: '12px' }} />
+            </button>
+            {/* Right Arrow */}
+            <button
+                className="position-absolute d-flex align-items-center justify-content-center border-0 bg-white rounded-circle shadow"
+                style={{ top: '50%', right: '-14px', transform: 'translateY(-50%)', width: '30px', height: '30px', zIndex: 2, cursor: 'pointer' }}
+                onClick={() => { const el = document.getElementById('offersScrollRow'); el.scrollBy({ left: 250, behavior: 'smooth' }); }}
+            >
+                <FaArrowRight style={{ fontSize: '12px' }} />
+            </button>
+        </div>
+    </div>
+</section>
 
             {/* Home Painting Banner */}
             <section className="py-5 bg-white">

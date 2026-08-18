@@ -41,6 +41,7 @@ API.interceptors.response.use(
     (error) => {
         if (error.response && error.response.status === 401) {
             localStorage.removeItem('1App_token');
+            localStorage.removeItem('1App_refreshToken');
             // optionally redirect or handle logout
         }
         return Promise.reject(error);

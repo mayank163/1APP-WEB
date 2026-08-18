@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { protect, restrictTo } = require('../middleware/auth');
 const technicianController = require('../controllers/technicianController');
+const chargesController    = require('../controllers/chargesController');
 
 router.get('/jobs', protect, restrictTo('technician', 'admin'), technicianController.getJobsForTechnicians);
 router.post('/jobs/:jobId/request', protect, restrictTo('technician'), technicianController.requestJob);
@@ -19,5 +20,17 @@ router.patch('/requests/:requestId/status', protect, restrictTo('admin'), techni
 router.post('/requests/:requestId/message', protect, restrictTo('technician'), technicianController.sendMessageOnRequest);
 router.get('/requests/:requestId/messages', protect, restrictTo('technician'), technicianController.getRequestMessages);
 router.get('/metrics', protect, restrictTo('technician'), technicianController.getMetrics);
+
+// ── Additional Charges flow (technician side) ─────────────────────────────────
+// Submit one or more additional charges for admin review
+router.post('/requests/:requestId/charges',   protect, restrictTo('technician'), chargesController.submitCharges);
+// Get all charges for a request (with admin review status on each)
+router.get('/requests/:requestId/charges',    protect, restrictTo('technician'), chargesController.getMyCharges);
+// Full request status — charges + invoice + next action hint
+router.get('/requests/:requestId/status',     protect, restrictTo('technician'), chargesController.getMyRequestStatus);
+// Accept or reject an admin counter-offer on a single charge
+router.patch('/charges/:chargeId/respond',    protect, restrictTo('technician'), chargesController.respondToCounter);
+// View the final invoice once generated
+router.get('/requests/:requestId/invoice',    protect, restrictTo('technician'), chargesController.getTechnicianInvoice);
 
 module.exports = router;

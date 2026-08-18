@@ -119,6 +119,10 @@ const userSchema = new mongoose.Schema({
         url: { type: String, default: '' },
         s3Key: { type: String, default: '' }
     },
+    fcmTokens: {
+    type: [String],
+    default: [],    
+    },
     cart: [
         {
             service: { type: mongoose.Schema.Types.ObjectId, ref: 'Service', required: true },

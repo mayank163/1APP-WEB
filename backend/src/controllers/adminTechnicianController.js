@@ -2,25 +2,51 @@ const TechnicianJob = require('../models/TechnicianJob');
 const TechnicianJobRequest = require('../models/TechnicianJobRequest');
 const User = require('../models/User');
 const { getIO } = require('../utils/socketInstance');
+const sendNotification = require('../services/notificationService');
 
 // Safely emit to a request-scoped room (never throws if io not ready)
 const emitToRequest = (requestId, event, payload) => {
-  try { getIO().to(`request:${requestId}`).emit(event, payload); } catch (_) {}
+  try {
+    getIO().to(`request:${requestId}`).emit(event, payload);
+    console.log(`[Socket] emitToRequest → room="request:${requestId}" event="${event}"`, JSON.stringify(payload));
+  } catch (e) {
+    console.warn(`[Socket] emitToRequest failed for event "${event}":`, e.message);
+  }
 };
 
 // Safely emit to the admin room (never throws if io not ready)
 const emitToAdmin = (event, payload) => {
-  try { getIO().to('admin').emit(event, payload); } catch (_) {}
+  try {
+    getIO().to('admin').emit(event, payload);
+    console.log(`[Socket] emitToAdmin → room="admin" event="${event}"`, JSON.stringify(payload));
+  } catch (e) {
+    console.warn(`[Socket] emitToAdmin failed for event "${event}":`, e.message);
+  }
 };
 
 const createTechnicianJob = async (req, res, next) => {
   try {
-    const { title, category, location, budget, description, requirements, serviceDate, preferredSkills, estimatedTime } = req.body;
+    const {
+      title,
+      category,
+      location,
+      budget,
+      description,
+      requirements,
+      serviceDate,
+      preferredSkills,
+      estimatedTime
+    } = req.body;
 
+    // Validate required fields
     if (!title || !location || !budget || !description) {
-      return res.status(400).json({ success: false, message: 'Please provide all required job fields' });
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide all required job fields'
+      });
     }
 
+    // Create job
     const job = await TechnicianJob.create({
       title,
       category: category || 'General Service',
@@ -30,12 +56,78 @@ const createTechnicianJob = async (req, res, next) => {
       requirements: Array.isArray(requirements) ? requirements : [],
       postedBy: req.user._id,
       serviceDate: serviceDate ? new Date(serviceDate) : null,
-      preferredSkills: Array.isArray(preferredSkills) ? preferredSkills : [],
+      preferredSkills: Array.isArray(preferredSkills)
+        ? preferredSkills
+        : [],
       estimatedTime: estimatedTime || '',
     });
 
-    res.status(201).json({ success: true, message: 'Job posted successfully', data: { job } });
+    // --------------------------------------------------
+    // SEND NOTIFICATION TO TECHNICIANS
+    // --------------------------------------------------
+
+    try {
+      // Find active technicians
+      const technicians = await User.find({
+        role: 'technician',
+        isActive: true,
+        fcmTokens: {
+          $exists: true,
+          $ne: []
+        }
+      }).select('_id fcmTokens');
+
+      if (technicians.length > 0) {
+
+        await sendNotification({
+          recipients: technicians,
+          sender: req.user._id,
+
+          type: 'new_job',
+
+          title: 'New Job Available',
+
+          message: `A new ${job.title} job is available.`,
+
+          data: {
+            jobId: job._id.toString(),
+            type: 'new_job',
+          },
+        });
+
+      }
+
+    } catch (notificationError) {
+
+      // Notification failure should NOT make
+      // the job creation API fail.
+
+      console.error(
+        'Failed to send new job notification:',
+        notificationError
+      );
+    }
+
+    // Notify admin room about new job
     emitToAdmin('job:created', { job });
+
+    // Broadcast to ALL connected clients (technicians) so their dashboards update live
+    try {
+      getIO().emit('job:new', { job });
+      console.log(`[Socket] broadcast → event="job:new" jobId="${job._id}" title="${job.title}"`);
+    } catch (e) {
+      console.warn('[Socket] broadcast failed for event "job:new":', e.message);
+    }
+
+    // API response
+    return res.status(201).json({
+      success: true,
+      message: 'Job posted successfully',
+      data: {
+        job
+      }
+    });
+
   } catch (error) {
     next(error);
   }
@@ -67,6 +159,8 @@ const updateTechnicianRequest = async (req, res, next) => {
   try {
     const { requestId } = req.params;
     const { status, adminMessage, counterOffer } = req.body;
+
+    console.log(`[Admin] updateTechnicianRequest called → requestId="${requestId}" status="${status}"`);
 
     if (!['accepted', 'rejected', 'counter-offer'].includes(status)) {
       return res.status(400).json({ success: false, message: 'Invalid request status' });

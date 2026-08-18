@@ -8,7 +8,7 @@ const { sendBookingStatusUpdated } = require('../utils/emailService');
 const signToken = (id, role) => {
     return jwt.sign(
         { id, role },
-        process.env.JWT_SECRET || 'your_super_secret_jwt_key_change_this_in_production',
+        process.env.JWT_SECRET,
         { expiresIn: process.env.JWT_EXPIRE || '7d' }
     );
 };

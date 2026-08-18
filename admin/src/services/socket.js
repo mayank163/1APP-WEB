@@ -13,6 +13,7 @@ const socket = io(SOCKET_URL, {
 
 socket.on('connect', () => {
     console.log('[Admin Socket] connected:', socket.id);
+    console.log('[Socket] → admin:join');
     socket.emit('admin:join');
 });
 socket.on('disconnect', () => console.log('[Admin Socket] disconnected'));

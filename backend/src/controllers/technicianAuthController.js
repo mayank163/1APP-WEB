@@ -7,16 +7,50 @@ const { uploadFile, deleteFile } = require('../utils/s3Upload');
 const pendingRegistrations = new Map();
 const TTL = 10 * 60 * 1000;
 
-const signToken = (id, role) => jwt.sign(
-  { id, role },
-  process.env.JWT_SECRET || 'your_super_secret_jwt_key_change_this_in_production',
-  { expiresIn: process.env.JWT_EXPIRE || '7d' }
-);
+const signAccessToken = (id, role) => {
+    return jwt.sign(
+        {
+            id,
+            role,
+            type: 'access'
+        },
+        process.env.JWT_SECRET,
+        {
+            expiresIn: process.env.JWT_EXPIRE || '7d'
+        }
+    );
+};
+
+const signRefreshToken = (id, role) => {
+    return jwt.sign(
+        {
+            id,
+            role,
+            type: 'refresh'
+        },
+        process.env.REFRESH_TOKEN_SECRET,
+        {
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRE || '30d'
+        }
+    );
+};
 
 const sendTokenResponse = (user, statusCode, res) => {
-  const token = signToken(user._id, user.role);
-  user.password = undefined;
-  res.status(statusCode).json({ success: true, token, data: { user } });
+    const accessToken = signAccessToken(user._id, user.role);
+    const refreshToken = signRefreshToken(user._id, user.role);
+
+    // Hide password
+    user.password = undefined;
+
+    res.status(statusCode).json({
+        success: true,
+        accessToken,
+        refreshToken,
+        expiresIn: process.env.JWT_EXPIRE || '15m',
+        data: {
+            user
+        }
+    });
 };
 
 const sendEmailOTP = async (email, otp) => {
@@ -478,4 +512,80 @@ exports.uploadProfileImageHandler = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+// ── Refresh Token ─────────────────────────────────────────────────────────────
+// POST /api/technician-auth/refresh-token
+// Body: { "refreshToken": "..." }
+
+exports.refreshToken = async (req, res, next) => {
+    try {
+        const { refreshToken } = req.body;
+
+        if (!refreshToken) {
+            return res.status(401).json({
+                success: false,
+                message: 'Refresh token is required'
+            });
+        }
+
+        let decoded;
+
+        try {
+            decoded = jwt.verify(
+                refreshToken,
+                process.env.REFRESH_TOKEN_SECRET ||
+                'your_super_secret_refresh_key'
+            );
+        } catch (error) {
+
+            if (error.name === 'TokenExpiredError') {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Refresh token expired. Please login again.'
+                });
+            }
+
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid refresh token'
+            });
+        }
+
+        // Make sure this token is a refresh token
+        if (decoded.type !== 'refresh') {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid token type'
+            });
+        }
+
+        // Find technician
+        const technician = await User.findOne({
+            _id: decoded.id,
+            role: 'technician'
+        });
+
+        if (!technician) {
+            return res.status(401).json({
+                success: false,
+                message: 'Technician account not found'
+            });
+        }
+
+        // Generate new access token
+        const accessToken = signAccessToken(
+            technician._id,
+            technician.role
+        );
+
+        res.status(200).json({
+            success: true,
+            accessToken,
+            expiresIn: process.env.JWT_EXPIRE || '15m'
+        });
+
+    } catch (error) {
+        next(error);
+    }
 };
