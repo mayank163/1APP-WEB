@@ -1160,7 +1160,7 @@ const TechnicianDashboard = () => {
       })()}
 
     </div>
-  );
+  );//
 };
 
 export default TechnicianDashboard;
