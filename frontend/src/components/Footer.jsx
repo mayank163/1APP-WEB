@@ -82,9 +82,13 @@ export default function Footer() {
             <div
                 className="footer-links-wrapper"
                 style={{
-                    maxWidth: '1200px',
+                    maxWidth: '1350px',
                     margin: '0 auto',
                     padding: '45px 30px 35px',
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                    gap: '30px',
+                    alignItems: 'start',
                 }}
             >
                 <div
@@ -234,33 +238,33 @@ export default function Footer() {
                 {/* =========================
     PHONE MOCKUP
 ========================= */}
-<div
-    className="footer-phone"
-    style={{
-        position: 'absolute',
-        right: '-40px',
-        bottom: '-5px',
-        width: '500px',
-        zIndex: 3,
+                <div
+                    className="footer-phone"
+                    style={{
+                        position: 'absolute',
+                        right: '-40px',
+                        bottom: '-5px',
+                        width: '500px',
+                        zIndex: 3,
 
-        // Tilt phone to the right
-        transform: 'rotate(0deg)',
-        transformOrigin: 'center bottom',
-    }}
->
-    <img
-        src={tryHeroImg('mobile.png')}
-        alt="1APP mobile application"
-        style={{
-            width: '40%',
-            height: 'auto',
-            display: 'block',
-            objectFit: 'contain',
-            filter: 'drop-shadow(0px 15px 30px rgba(0,0,0,0.45))',
-            margin: '0px 0px 20px 160px'
-        }}
-    />
-</div>
+                        // Tilt phone to the right
+                        transform: 'rotate(0deg)',
+                        transformOrigin: 'center bottom',
+                    }}
+                >
+                    <img
+                        src={tryHeroImg('mobile.png')}
+                        alt="1APP mobile application"
+                        style={{
+                            width: '40%',
+                            height: 'auto',
+                            display: 'block',
+                            objectFit: 'contain',
+                            filter: 'drop-shadow(0px 15px 30px rgba(0,0,0,0.45))',
+                            margin: '0px 0px 20px 160px'
+                        }}
+                    />
+                </div>
 
             </section>
 
