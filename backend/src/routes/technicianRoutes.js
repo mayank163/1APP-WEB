@@ -14,12 +14,15 @@ router.patch('/jobs/:jobId/complete', protect, restrictTo('technician'), technic
 
 router.get('/requests', protect, restrictTo('technician'), technicianController.getMyRequests);
 router.get('/dashboard', protect, restrictTo('technician'), technicianController.getTechnicianDashboard);
+router.get('/conversation/:requestId', protect, restrictTo('technician'), technicianController.getConversationByRequestId);
 router.post('/withdraw', protect, restrictTo('technician'), technicianController.createWithdrawalRequest);
 router.get('/withdrawals', protect, restrictTo('technician'), technicianController.getWithdrawals);
 router.patch('/requests/:requestId/status', protect, restrictTo('admin'), technicianController.updateRequestStatus);
 router.post('/requests/:requestId/message', protect, restrictTo('technician'), technicianController.sendMessageOnRequest);
 router.get('/requests/:requestId/messages', protect, restrictTo('technician'), technicianController.getRequestMessages);
 router.get('/metrics', protect, restrictTo('technician'), technicianController.getMetrics);
+router.get('/myjobs', protect, restrictTo('technician'), technicianController.getMyJobs);
+
 
 // ── Additional Charges flow (technician side) ─────────────────────────────────
 // Submit one or more additional charges for admin review

@@ -171,6 +171,34 @@ const getTechnicianDashboard = async (req, res, next) => {
   }
 };
 
+const getConversationByRequestId = async (req, res, next) => {
+  try {
+    const { requestId } = req.params;
+
+    const request = await TechnicianJobRequest.findOne({
+      _id: requestId,
+      technician: req.user._id,
+    }).select('conversation');
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: 'Request not found',
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        requestId: request._id,
+        conversation: request.conversation || [],
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const createWithdrawalRequest = async (req, res, next) => {
   try {
     const { amount, method, details } = req.body;
@@ -525,6 +553,30 @@ const getWithdrawals = async (req, res, next) => {
   }
 };
 
+const getMyJobs = async (req, res, next) => {
+  try {
+    const requests = await TechnicianJobRequest.find({
+      technician: req.user._id,
+      status: 'accepted',
+    })
+      .populate('job')
+      .sort({ createdAt: -1 });
+
+    const myJobs = requests
+      .filter((request) => request.job)
+      .map((request) => request.job);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        jobs: myJobs,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getJobsForTechnicians,
   requestJob,
@@ -539,4 +591,6 @@ module.exports = {
   counterOffer,
   sendMessageOnRequest,
   getRequestMessages,
+  getConversationByRequestId,
+  getMyJobs,
 };

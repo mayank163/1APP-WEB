@@ -201,7 +201,7 @@ const RequestJobModal = ({ job, onClose, onSuccess }) => {
 
 // ─── ChargesInvoicePanel ───────────────────────────────────────────────────────
 // Shows charges + admin review status + respond to counters + invoice
-const ChargesInvoicePanel = ({ requestId, onUpdate }) => {
+const ChargesInvoicePanel = ({ requestId, onUpdate, refreshKey = 0 }) => {
   const [data, setData]         = useState(null);
   const [loading, setLoading]   = useState(true);
   const [responding, setResponding] = useState(null); // chargeId being acted on
@@ -216,7 +216,7 @@ const ChargesInvoicePanel = ({ requestId, onUpdate }) => {
     } finally { setLoading(false); }
   }, [requestId]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load(); }, [load, refreshKey]);
 
   const respond = async (chargeId, action) => {
     setResponding(chargeId);
@@ -448,6 +448,8 @@ const TechnicianDashboard = () => {
   // socket
   const { socket } = useSocket();
   const openChatReqIdRef = useRef(null); // tracks which request room we're currently in
+  const openChargesPanelRef = useRef(null); // tracks currently open charges panel
+  const [chargesRefreshKey, setChargesRefreshKey] = useState(0);
 
   const loadData = useCallback(async () => {
     try {
@@ -548,8 +550,15 @@ const TechnicianDashboard = () => {
     };
 
     // ── charge:reviewed — admin accepted / rejected / countered a charge ─────
-    const onChargeReviewed = ({ requestId, requestChargesStatus }) => {
-      console.log('[Socket] ← charge:reviewed', { requestId, requestChargesStatus });
+    const onChargeReviewed = ({ requestId, requestChargesStatus, charge, action }) => {
+      console.log('[Socket] ← charge:reviewed', {
+        requestId,
+        requestChargesStatus,
+        chargeId: charge?._id,
+        action,
+      });
+
+      // Update the request card immediately.
       setRequests((prev) =>
         prev.map((r) =>
           r._id === requestId
@@ -557,6 +566,13 @@ const TechnicianDashboard = () => {
             : r
         )
       );
+
+      // If this request's Charges & Invoice panel is open, force it to
+      // re-fetch the latest charge/invoice state from the API.
+      if (openChargesPanelRef.current === requestId) {
+        console.log('[Socket] → refreshing ChargesInvoicePanel', requestId);
+        setChargesRefreshKey((prev) => prev + 1);
+      }
     };
 
     // ── charge:responded — tech accepted/rejected counter (echo) ─────────────
@@ -708,7 +724,13 @@ const TechnicianDashboard = () => {
       return;
     }
 
+    // If charges panel was open for a different request, leave that room
+    if (openChargesPanelRef.current && openChargesPanelRef.current !== requestId) {
+      console.log('[Socket] → request:leave (charges panel displaced by chat)', openChargesPanelRef.current);
+      socket?.emit('request:leave', openChargesPanelRef.current);
+    }
     setOpenChargesPanel(null);
+    openChargesPanelRef.current = null;
     setOpenChat(requestId);
     setLoadingChat(requestId);
     try {
@@ -746,8 +768,33 @@ const TechnicianDashboard = () => {
   };
 
   const toggleChargesPanel = (requestId) => {
-    setOpenChat(null);
-    setOpenChargesPanel((p) => p === requestId ? null : requestId);
+    // Close chat and leave its room if open
+    if (openChat) {
+      if (openChatReqIdRef.current) {
+        console.log('[Socket] → request:leave (from toggleChargesPanel)', openChatReqIdRef.current);
+        socket?.emit('request:leave', openChatReqIdRef.current);
+        openChatReqIdRef.current = null;
+      }
+      setOpenChat(null);
+    }
+
+    setOpenChargesPanel((prev) => {
+      const isClosing = prev === requestId;
+      const next = isClosing ? null : requestId;
+      openChargesPanelRef.current = next;
+
+      if (!isClosing) {
+        // Joining request room so we receive charge:reviewed events in real-time
+        console.log('[Socket] → request:join (charges panel open)', requestId);
+        socket?.emit('request:join', requestId);
+      } else {
+        // Leaving request room when charges panel is closed
+        console.log('[Socket] → request:leave (charges panel closed)', requestId);
+        socket?.emit('request:leave', requestId);
+      }
+
+      return next;
+    });
   };
 
   // ── document re-upload ───────────────────────────────────────────────────────
@@ -1103,6 +1150,7 @@ const TechnicianDashboard = () => {
                     <ChargesInvoicePanel
                       requestId={req._id}
                       onUpdate={loadData}
+                      refreshKey={chargesRefreshKey}
                     />
                   </div>
                 )}
@@ -1160,7 +1208,7 @@ const TechnicianDashboard = () => {
       })()}
 
     </div>
-  );//
+  );
 };
 
 export default TechnicianDashboard;

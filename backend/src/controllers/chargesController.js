@@ -87,9 +87,9 @@ exports.submitCharges = async (req, res, next) => {
     }
 
     // Allow adding charges while request is pending OR accepted (not after invoiced/rejected)
-    if (['rejected', 'invoiced'].includes(request.status) || request.chargesStatus === 'invoiced') {
-      return res.status(400).json({ success: false, message: 'Cannot add charges — request is already resolved' });
-    }
+    // if (['rejected', 'invoiced'].includes(request.status) || request.chargesStatus === 'invoiced') {
+    //   return res.status(400).json({ success: false, message: 'Cannot add charges — request is already resolved' });
+    // }
 
     // Validate each charge
     const validLabels = ['Gas', 'Toll', 'Travel', 'Spare Parts', 'Extra Labor', 'Other'];
@@ -117,7 +117,29 @@ exports.submitCharges = async (req, res, next) => {
     }
 
     // Update request chargesStatus
-    await TechnicianJobRequest.findByIdAndUpdate(requestId, { chargesStatus: 'pending' });
+    const conversationMessage = {
+  sender: 'technician',
+
+  message: 'Additional charges submitted for admin review.',
+
+  charges: created.map((charge) => ({
+    label: charge.label,
+    amount: charge.requestedAmount,
+    description: charge.description,
+  })),
+
+  createdAt: new Date(),
+};
+    await TechnicianJobRequest.findByIdAndUpdate(
+  requestId,
+  {
+    status: 'pending',
+    chargesStatus: 'pending',
+    $push: {
+      conversation: conversationMessage,
+    },
+  }
+);
 
     // Notify admin in real-time
     emitToAdmin('charges:submitted', { requestId, count: created.length });

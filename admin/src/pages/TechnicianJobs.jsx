@@ -1169,7 +1169,11 @@ const TechnicianJobs = () => {
                                 onClick={() => setJobRequestsModal({ show: true, job })}>
                                 <FaBell />
                                 {(() => {
-                                  const cnt = requests.filter((r) => (r.job?._id || r.job) === job._id).length;
+                                  const cnt = requests.filter(
+  (r) =>
+    (r.job?._id || r.job)?.toString() === job._id?.toString() &&
+    r.status?.toLowerCase() === "pending"
+).length;
                                   return cnt > 0 ? <span className="tj-action-badge">{cnt}</span> : null;
                                 })()}
                               </button>
