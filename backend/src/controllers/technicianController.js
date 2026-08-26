@@ -577,6 +577,83 @@ const getMyJobs = async (req, res, next) => {
   }
 };
 
+const getDetailsByJobId = async (req, res, next) => {
+  try {
+    const { jobId } = req.params;
+
+    // Get complete job details
+    const job = await TechnicianJob.findById(jobId)
+      .populate('assignedTechnician', 'name email phone skills experienceLevel');
+
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        message: 'Job not found',
+      });
+    }
+
+    // Get this technician's request for this job
+    const request = await TechnicianJobRequest.findOne({
+      job: jobId,
+      technician: req.user._id,
+    })
+      .populate('technician', 'name email phone skills experienceLevel')
+      .populate('job');
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: 'You have not requested this job',
+      });
+    }
+
+    // Get additional charges related to this request
+    let charges = [];
+
+    try {
+      const AdditionalCharge = require('../models/AdditionalCharge');
+
+      charges = await AdditionalCharge.find({
+        job: jobId,
+        request: request._id,
+        technician: req.user._id,
+      }).sort({ createdAt: 1 });
+    } catch (error) {
+      console.warn(
+        '[getDetailsByJobId] Failed to fetch additional charges:',
+        error.message
+      );
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        job,
+        request: {
+          _id: request._id,
+          status: request.status,
+          note: request.note,
+          bidAmount: request.bidAmount || 0,
+          counterOffer: request.counterOffer || 0,
+          counterOfferFrom: request.counterOfferFrom || '',
+          adminMessage: request.adminMessage || '',
+          createdAt: request.createdAt,
+          updatedAt: request.updatedAt,
+          completedAt: request.completedAt,
+        },
+
+        // All conversation messages between technician and admin
+        conversation: request.conversation || [],
+
+        // Additional charges requested for this job
+        charges,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getJobsForTechnicians,
   requestJob,
@@ -593,4 +670,5 @@ module.exports = {
   getRequestMessages,
   getConversationByRequestId,
   getMyJobs,
+  getDetailsByJobId,
 };

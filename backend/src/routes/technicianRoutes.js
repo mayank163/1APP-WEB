@@ -15,6 +15,7 @@ router.patch('/jobs/:jobId/complete', protect, restrictTo('technician'), technic
 router.get('/requests', protect, restrictTo('technician'), technicianController.getMyRequests);
 router.get('/dashboard', protect, restrictTo('technician'), technicianController.getTechnicianDashboard);
 router.get('/conversation/:requestId', protect, restrictTo('technician'), technicianController.getConversationByRequestId);
+router.get('/details/:jobId', protect, restrictTo('technician'), technicianController.getDetailsByJobId);
 router.post('/withdraw', protect, restrictTo('technician'), technicianController.createWithdrawalRequest);
 router.get('/withdrawals', protect, restrictTo('technician'), technicianController.getWithdrawals);
 router.patch('/requests/:requestId/status', protect, restrictTo('admin'), technicianController.updateRequestStatus);
