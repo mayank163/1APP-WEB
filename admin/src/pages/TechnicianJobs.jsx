@@ -60,6 +60,75 @@ const ChargesBadge = ({ status }) => {
   );
 };
 
+// ─── NegotiationHistory — collapsible timeline of all rounds ──────────────────
+const NegotiationHistory = ({ history }) => {
+  const [open, setOpen] = useState(false);
+  if (!history || history.length === 0) return null;
+  return (
+    <div style={{ marginTop: 8 }}>
+      <button
+        onClick={() => setOpen((p) => !p)}
+        style={{
+          background: 'none', border: 'none', cursor: 'pointer',
+          fontSize: '0.75rem', fontWeight: 600, color: '#6c757d',
+          padding: '2px 0', display: 'flex', alignItems: 'center', gap: 4,
+        }}
+      >
+        {open ? '▲' : '▼'} {open ? 'Hide' : 'View'} negotiation history ({history.length} rounds)
+      </button>
+      {open && (
+        <div style={{
+          marginTop: 6, borderLeft: '2px solid #e9e0d5',
+          paddingLeft: 10, display: 'flex', flexDirection: 'column', gap: 6,
+        }}>
+          {history.map((h, i) => {
+            const isAdmin = h.actor === 'admin';
+            const actionColor = h.action === 'accept' ? '#16a34a'
+              : h.action === 'reject' ? '#dc3545'
+              : h.action === 'submit' ? '#A5732F'
+              : '#2563eb'; // counter
+            const actionLabel = h.action === 'submit'  ? '📤 Submitted'
+              : h.action === 'accept'  ? '✓ Accepted'
+              : h.action === 'reject'  ? '✕ Rejected'
+              : '↔ Countered';
+            return (
+              <div key={i} style={{
+                background: isAdmin ? 'rgba(37,99,235,0.04)' : 'rgba(165,115,47,0.05)',
+                border: `1px solid ${isAdmin ? 'rgba(37,99,235,0.12)' : 'rgba(165,115,47,0.15)'}`,
+                borderRadius: 6, padding: '6px 8px', fontSize: '0.75rem',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                  <span style={{ fontWeight: 700, color: isAdmin ? '#2563eb' : '#A5732F' }}>
+                    {isAdmin ? '👤 Admin' : '🔧 Technician'}
+                  </span>
+                  <span style={{ color: '#adb5bd', fontSize: '0.68rem' }}>
+                    {h.createdAt ? new Date(h.createdAt).toLocaleString('en-IN', {
+                      day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
+                    }) : ''}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontWeight: 700, color: actionColor }}>{actionLabel}</span>
+                  {h.amount != null && (
+                    <span style={{ fontWeight: 800, color: '#1a1208' }}>
+                      ${Number(h.amount).toLocaleString()}
+                    </span>
+                  )}
+                </div>
+                {h.note && (
+                  <div style={{ marginTop: 2, color: '#6c757d', fontStyle: 'italic' }}>
+                    "{h.note}"
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ─── ChargesPanel — admin reviews individual charge items ─────────────────────
 const ChargesPanel = ({ requestId, onChargesUpdated }) => {
   const [charges, setCharges]               = useState([]);
@@ -93,12 +162,15 @@ const ChargesPanel = ({ requestId, onChargesUpdated }) => {
         'Counter-offer sent to technician'
       );
       setCounterOpen((p) => ({ ...p, [chargeId]: false }));
+      setCounterAmounts((p) => ({ ...p, [chargeId]: '' }));
+      setCounterNotes((p) => ({ ...p, [chargeId]: '' }));
       await load();
       onChargesUpdated?.();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Action failed');
     } finally {
-      setActingId(null); }
+      setActingId(null);
+    }
   };
 
   if (loading) return (
@@ -118,91 +190,136 @@ const ChargesPanel = ({ requestId, onChargesUpdated }) => {
   return (
     <div className="tj-charges-list">
       {charges.map((c) => {
-        const isPending   = c.status === 'pending';
-        const isCountered = c.status === 'countered';
-        const isResolved  = ['accepted', 'rejected'].includes(c.status);
-        const showCounter = counterOpen[c._id];
-        const busy        = actingId === c._id;
+        const isPending          = c.status === 'pending';
+        const isCountered        = c.status === 'countered';
+        const isResolved         = ['accepted', 'rejected'].includes(c.status);
+        const showCounter        = counterOpen[c._id];
+        const busy               = actingId === c._id;
+
+        // Use pendingWith to determine whose turn it is (reliable after backend fix)
+        const myTurn             = isCountered && c.pendingWith === 'admin';
+        const techTurn           = isCountered && c.pendingWith === 'technician';
+
+        // The active offer admin needs to respond to when it is our turn
+        const activeOffer        = myTurn
+          ? Number(c.technicianCounterAmount || 0)
+          : Number(c.requestedAmount || 0);
 
         return (
           <div key={c._id} className="tj-charge-card">
-            {/* header */}
+            {/* ── Header: label + original asked amount ── */}
             <div className="tj-charge-header">
               <span className="tj-charge-label">{c.label}</span>
-              <span className="tj-charge-amount">${Number(c.requestedAmount).toLocaleString()}</span>
+              <span className="tj-charge-amount">
+                Asked: ${Number(c.requestedAmount).toLocaleString()}
+              </span>
             </div>
 
-            {/* description */}
             {c.description && <div className="tj-charge-desc">{c.description}</div>}
 
-            {/* status row */}
+            {/* ── Status row ── */}
             <div className="tj-charge-status-row">
               <span className={`tj-charge-status ${c.status}`}>
-                {c.status === 'pending'   && '⏳ Pending Review'}
-                {c.status === 'accepted'  && '✓ Accepted'}
-                {c.status === 'rejected'  && '✕ Rejected'}
-                {c.status === 'countered' && '↔ Counter Sent'}
+                {isPending   && '⏳ Pending Review'}
+                {isResolved  && c.status === 'accepted' && '✓ Accepted'}
+                {isResolved  && c.status === 'rejected' && '✕ Rejected'}
+                {myTurn      && '↔ Tech Re-countered — Your Turn'}
+                {techTurn    && '⏳ Waiting for Technician'}
               </span>
               {c.status === 'accepted' && c.agreedAmount != null && (
                 <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#16a34a' }}>
-                  Agreed: ${Number(c.agreedAmount).toLocaleString()}
+                  ✓ Final: ${Number(c.agreedAmount).toLocaleString()}
                 </span>
               )}
             </div>
 
-            {/* counter info */}
-            {isCountered && c.adminCounterAmount > 0 && (
-              <div className="tj-charge-counter-info">
-                Your counter: ${Number(c.adminCounterAmount).toLocaleString()}
-                {c.adminNote && ` — "${c.adminNote}"`}
+            {/* ── Active counter highlight (my turn) ── */}
+            {myTurn && (
+              <div className="tj-charge-counter-info" style={{
+                background: 'rgba(22,163,74,0.07)',
+                borderColor: 'rgba(22,163,74,0.2)',
+                color: '#15803d',
+              }}>
+                Technician counter-offer: <strong>${Number(c.technicianCounterAmount).toLocaleString()}</strong>
+                {c.technicianResponseNote && (
+                  <span style={{ color: '#6c757d', fontStyle: 'italic' }}> — "{c.technicianResponseNote}"</span>
+                )}
               </div>
             )}
 
-            {/* admin note on resolved */}
-            {isResolved && c.adminNote && (
-              <div className="tj-charge-admin-note">Admin note: {c.adminNote}</div>
+            {/* ── Waiting for tech (admin already countered) ── */}
+            {techTurn && !showCounter && (
+              <div className="tj-charge-counter-info" style={{
+                background: 'rgba(37,99,235,0.05)',
+                borderColor: 'rgba(37,99,235,0.15)',
+                color: '#2563eb',
+              }}>
+                Your counter-offer: <strong>${Number(c.adminCounterAmount).toLocaleString()}</strong>
+                {c.adminNote && (
+                  <span style={{ color: '#6c757d', fontStyle: 'italic' }}> — "{c.adminNote}"</span>
+                )}
+                <div style={{ marginTop: 4, fontSize: '0.72rem', fontWeight: 600 }}>
+                  ⏳ Waiting for technician to accept or re-counter…
+                </div>
+              </div>
             )}
 
-            {/* action buttons for pending / countered */}
-            {(isPending || isCountered) && !showCounter && (
+            {/* ── Negotiation history (always visible, collapsible) ── */}
+            <NegotiationHistory history={c.counterHistory} />
+
+            {/* ── Actions: fresh pending submission ── */}
+            {isPending && !showCounter && (
               <div className="tj-charge-actions">
-                <button
-                  className="tj-charge-btn accept"
-                  disabled={busy}
-                  onClick={() => review(c._id, 'accept')}
-                >
+                <button className="tj-charge-btn accept" disabled={busy} onClick={() => review(c._id, 'accept')}>
                   {busy ? <span className="spinner-border spinner-border-sm" /> : <FaCheck />}
                   Accept ${Number(c.requestedAmount).toLocaleString()}
                 </button>
-                <button
-                  className="tj-charge-btn counter"
-                  disabled={busy}
-                  onClick={() => setCounterOpen((p) => ({ ...p, [c._id]: true }))}
-                >
+                <button className="tj-charge-btn counter" disabled={busy}
+                  onClick={() => setCounterOpen((p) => ({ ...p, [c._id]: true }))}>
                   <FaExchangeAlt /> Counter
                 </button>
-                <button
-                  className="tj-charge-btn reject"
-                  disabled={busy}
-                  onClick={() => review(c._id, 'reject')}
-                >
+                <button className="tj-charge-btn reject" disabled={busy} onClick={() => review(c._id, 'reject')}>
                   <FaBan /> Reject
                 </button>
               </div>
             )}
 
-            {/* inline counter form */}
+            {/* ── Actions: technician re-countered, admin's turn ── */}
+            {myTurn && !showCounter && (
+              <div className="tj-charge-actions">
+                <button className="tj-charge-btn accept" disabled={busy}
+                  onClick={() => review(c._id, 'accept')}>
+                  {busy ? <span className="spinner-border spinner-border-sm" /> : <FaCheck />}
+                  Accept ${Number(c.technicianCounterAmount).toLocaleString()}
+                </button>
+                <button className="tj-charge-btn counter" disabled={busy}
+                  onClick={() => {
+                    setCounterAmounts((p) => ({ ...p, [c._id]: String(c.technicianCounterAmount || '') }));
+                    setCounterOpen((p) => ({ ...p, [c._id]: true }));
+                  }}>
+                  <FaExchangeAlt /> Re-counter
+                </button>
+                <button className="tj-charge-btn reject" disabled={busy} onClick={() => review(c._id, 'reject')}>
+                  <FaBan /> Reject
+                </button>
+              </div>
+            )}
+
+            {/* ── Inline counter / re-counter form ── */}
             {showCounter && (
               <div className="tj-counter-inline">
                 <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#2563eb' }}>
-                  Counter-offer for "{c.label}"
+                  {myTurn ? 'Re-counter offer' : 'Counter-offer'} for "{c.label}"
+                  <span style={{ color: '#adb5bd', fontWeight: 400, marginLeft: 6 }}>
+                    (tech asked ${Number(myTurn ? c.technicianCounterAmount : c.requestedAmount).toLocaleString()})
+                  </span>
                 </div>
                 <div className="tj-counter-inline-row">
                   <input
                     type="number"
                     min="1"
                     className="tj-counter-inline-input"
-                    placeholder="Counter amount $"
+                    placeholder="Your counter amount $"
                     value={counterAmounts[c._id] || ''}
                     onChange={(e) => setCounterAmounts((p) => ({ ...p, [c._id]: e.target.value }))}
                   />
@@ -214,7 +331,9 @@ const ChargesPanel = ({ requestId, onChargesUpdated }) => {
                       adminNote: counterNotes[c._id] || '',
                     })}
                   >
-                    {busy ? <span className="spinner-border spinner-border-sm" /> : 'Send'}
+                    {busy
+                      ? <span className="spinner-border spinner-border-sm" />
+                      : myTurn ? 'Send Re-counter' : 'Send Counter'}
                   </button>
                   <button
                     className="tj-counter-inline-cancel"
@@ -753,6 +872,12 @@ const TechnicianJobs = () => {
       }
       loadData();
     };
+
+    // Technician accepted, rejected, or re-countered an existing charge.
+    const handleChargeResponded = ({ requestId, chargeId, action, amount }) => {
+      console.log('[Socket] ← charge:responded', { requestId, chargeId, action, amount });
+      if (activeReqIdRef.current === requestId) loadData();
+    };
     const handleInvoiceGenerated = ({ requestId }) => {
       console.log('[Socket] ← invoice:generated', { requestId });
       if (activeReqIdRef.current === requestId) setLiveChargesStatus('invoiced');
@@ -782,6 +907,7 @@ const TechnicianJobs = () => {
       socket.off('request:updated',   handleRequestUpdated);
       socket.off('charges:submitted', handleChargesSubmitted);
       socket.off('charge:reviewed',   handleChargeReviewed);
+      socket.off('charge:responded',  handleChargeResponded);
       socket.off('invoice:generated', handleInvoiceGenerated);
       socket.off('invoice:paid',      handleInvoicePaid);
     };

@@ -37,7 +37,7 @@ const technicianJobSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['open', 'assigned', 'visited', 'in-progress', 'completed', 'closed'],
+    enum: ['open', 'assigned', 'visited', 'inprogress', 'completed', 'closed'],
     default: 'open',
   },
   assignedTechnician: {
@@ -103,6 +103,11 @@ const technicianJobSchema = new mongoose.Schema({
   preferredSkills: [{
     type: String,
     trim: true,
+  }],
+  // Technician IDs who have sent a request for this job
+  requestedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
   }],
   conversation: [{
     sender: { type: String, enum: ['admin', 'technician', 'system'], default: 'system' },

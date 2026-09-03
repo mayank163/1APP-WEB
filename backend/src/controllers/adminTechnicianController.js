@@ -286,7 +286,7 @@ const updateTechnicianJobStatus = async (req, res, next) => {
     const { jobId } = req.params;
     const { status, finalPrice, note } = req.body;
 
-    const validStatuses = ['open', 'assigned', 'visited', 'in-progress', 'completed', 'closed'];
+    const validStatuses = ['open', 'assigned', 'visited', 'inprogress', 'completed', 'closed'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ success: false, message: 'Invalid job status' });
     }

@@ -5,8 +5,212 @@ const TechnicianWithdrawal = require('../models/TechnicianWithdrawal');
 
 const getJobsForTechnicians = async (req, res, next) => {
   try {
-    const jobs = await TechnicianJob.find({ status: 'open' }).sort('-createdAt');
-    res.status(200).json({ success: true, data: { jobs } });
+    const {
+      filter = 'new',
+      fromDate,
+      toDate,
+    } = req.query;
+
+    const techId = req.user._id;
+
+    let jobs = [];
+
+    // --------------------------------
+    // NEW
+    // Open jobs this technician has NOT yet requested
+    // --------------------------------
+    if (filter === 'new') {
+      jobs = await TechnicianJob.find({
+        status: 'open',
+        requestedBy: { $nin: [techId] },
+      }).sort('-createdAt');
+    }
+
+    // --------------------------------
+    // REQUESTED
+    // Jobs where this technician's ID appears in requestedBy
+    // --------------------------------
+    else if (filter === 'requested') {
+      jobs = await TechnicianJob.find({
+        requestedBy: techId,
+      }).sort('-createdAt');
+    }
+
+    // --------------------------------
+    // ACTIVE
+    // Jobs assigned to this technician that are not completed
+    // --------------------------------
+    else if (filter === 'active') {
+      jobs = await TechnicianJob.find({
+        'assignedTechnician._id': techId,
+        status: {
+          $in: ['assigned', 'visited', 'inprogress'],
+        },
+        completedAt: null,
+      }).sort('-createdAt');
+    }
+
+    // --------------------------------
+    // COMPLETED
+    // Jobs assigned to this technician that are completed
+    // --------------------------------
+    else if (filter === 'completed') {
+      jobs = await TechnicianJob.find({
+        'assignedTechnician._id': techId,
+        $or: [
+          { status: 'completed' },
+          { completedAt: { $ne: null } },
+        ],
+      }).sort('-completedAt');
+    }
+
+    // --------------------------------
+    // TODAY
+    // --------------------------------
+    else if (filter === 'today') {
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+
+      const endOfToday = new Date();
+      endOfToday.setHours(23, 59, 59, 999);
+
+      jobs = await TechnicianJob.find({
+        status: 'assigned',
+        requestedBy: { $nin: [techId] },
+        scheduledDate: {
+          $gte: startOfToday,
+          $lte: endOfToday,
+        },
+      }).sort('scheduledDate');
+    }
+
+    // --------------------------------
+    // TOMORROW
+    // --------------------------------
+    else if (filter === 'tomorrow') {
+      const startOfTomorrow = new Date();
+      startOfTomorrow.setDate(
+        startOfTomorrow.getDate() + 1
+      );
+      startOfTomorrow.setHours(0, 0, 0, 0);
+
+      const endOfTomorrow = new Date();
+      endOfTomorrow.setDate(
+        endOfTomorrow.getDate() + 1
+      );
+      endOfTomorrow.setHours(23, 59, 59, 999);
+
+      jobs = await TechnicianJob.find({
+        status: 'assigned',
+        requestedBy: { $nin: [techId] },
+        scheduledDate: {
+          $gte: startOfTomorrow,
+          $lte: endOfTomorrow,
+        },
+      }).sort('scheduledDate');
+    }
+
+    // --------------------------------
+    // CUSTOM DATE RANGE
+    // --------------------------------
+    else if (filter === 'custom') {
+      if (!fromDate || !toDate) {
+        return res.status(400).json({
+          success: false,
+          message:
+            'fromDate and toDate are required for custom filter',
+        });
+      }
+
+      const startDate = new Date(fromDate);
+      startDate.setHours(0, 0, 0, 0);
+
+      const endDate = new Date(toDate);
+      endDate.setHours(23, 59, 59, 999);
+
+      if (
+        isNaN(startDate.getTime()) ||
+        isNaN(endDate.getTime())
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid fromDate or toDate',
+        });
+      }
+
+      jobs = await TechnicianJob.find({
+        status: 'assigned',
+        requestedBy: { $nin: [techId] },
+        scheduledDate: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+      }).sort('scheduledDate');
+    }
+
+    // --------------------------------
+    // INVALID FILTER
+    // --------------------------------
+    else {
+      return res.status(400).json({
+        success: false,
+        message:
+          'Invalid filter. Use: new, requested, active, completed, today, tomorrow, custom',
+      });
+    }
+
+    // --------------------------------
+    // GET REQUEST IDs
+    // FOR CURRENT TECHNICIAN + JOBS
+    // --------------------------------
+
+    const jobIds = jobs.map((job) => job._id);
+
+    const requests = await TechnicianJobRequest.find({
+      job: { $in: jobIds },
+      technician: techId,
+    }).select('_id job technician');
+
+    // --------------------------------
+    // GROUP REQUEST IDS BY JOB
+    // --------------------------------
+
+    const requestsByJob = {};
+
+    requests.forEach((request) => {
+      const jobId = request.job.toString();
+
+      if (!requestsByJob[jobId]) {
+        requestsByJob[jobId] = [];
+      }
+
+      requestsByJob[jobId].push(request._id);
+    });
+
+    // --------------------------------
+    // ADD REQUEST IDS TO EACH JOB
+    // --------------------------------
+
+    const jobsWithRequests = jobs.map((job) => {
+      const jobObj = job.toObject();
+
+      
+        jobObj.requestId =
+  requestsByJob[job._id.toString()]?.[0]?.toString() || null;
+
+      return jobObj;
+    });
+
+    // --------------------------------
+    // RESPONSE
+    // --------------------------------
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        jobs: jobsWithRequests,
+      },
+    });
   } catch (error) {
     next(error);
   }
@@ -46,6 +250,29 @@ const requestJob = async (req, res, next) => {
     const parts = [];
     if (note?.trim()) parts.push(note.trim());
     if (hasBid) parts.push(`Proposed fixed price: $${bidAmount.toLocaleString()}`);
+    // Use service date/time from the job details
+    const serviceDateTime = job.serviceDate
+      ? new Date(job.serviceDate).toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+        })
+      : 'scheduled time';
+
+    // Job information
+    const jobInfo =
+      job.title ||
+      job.name ||
+      job.description ||
+      `Job #${job._id}`;
+
+    const defaultMessage = `Requested for ${jobInfo} on ${serviceDateTime}.`;
+
+    const conversationMessage = parts.length
+      ? parts.join('. ')
+      : defaultMessage;
 
     const requestData = {
       job:             jobId,
@@ -56,7 +283,7 @@ const requestJob = async (req, res, next) => {
       counterOfferFrom: hasBid ? 'technician' : '',
       conversation: [{
         sender:          'technician',
-        message:         parts.length ? parts.join('. ') : 'Job request submitted.',
+        message:         parts.length ? parts.join('. ') : conversationMessage,
         counterOffer:    hasBid ? bidAmount : 0,
         counterOfferFrom: hasBid ? 'technician' : '',
         createdAt:       new Date(),
@@ -80,6 +307,12 @@ const requestJob = async (req, res, next) => {
     }
 
     const request = await TechnicianJobRequest.create(requestData);
+
+    // Track this technician in the job's requestedBy array (no duplicates)
+    await TechnicianJob.findByIdAndUpdate(
+      jobId,
+      { $addToSet: { requestedBy: req.user._id } }
+    );
 
     // Create AdditionalCharge docs if charges were provided
     let createdCharges = [];
@@ -139,7 +372,6 @@ const getMyRequests = async (req, res, next) => {
 const getTechnicianDashboard = async (req, res, next) => {
   try {
     const technician = await User.findById(req.user._id);
-    const requests = await TechnicianJobRequest.find({ technician: req.user._id }).populate('job');
     const withdrawals = await TechnicianWithdrawal.find({ technician: req.user._id }).sort('-createdAt');
 
     const totalJobsDone = technician.totalJobsDone || 0;
@@ -162,7 +394,6 @@ const getTechnicianDashboard = async (req, res, next) => {
           availableBalance,
           profileCompleted: technician.profileCompleted || false,
         },
-        requests,
         withdrawals,
       },
     });
@@ -264,6 +495,113 @@ const sendMessageOnRequest = async (req, res, next) => {
   }
 };
 
+const cancelJobRequest = async (req, res, next) => {
+  try {
+    const { requestId } = req.params;
+
+    // Authentication check
+    if (!req.user?._id) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required',
+      });
+    }
+
+    const technicianId = req.user._id;
+
+    // Find the request
+    const request = await TechnicianJobRequest.findById(requestId);
+
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        message: 'Request not found',
+      });
+    }
+
+    // Verify this request belongs to the logged-in technician
+    if (
+      !request.technician ||
+      request.technician.toString() !== technicianId.toString()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not allowed to cancel this request',
+      });
+    }
+
+    // Only pending / counter-offer requests can be cancelled
+    if (!['pending', 'counter-offer'].includes(request.status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Request cannot be cancelled because its current status is "${request.status}"`,
+      });
+    }
+
+    const jobId = request.job;
+
+    // ------------------------------------------------
+    // 1. DELETE REQUEST FROM TechnicianJobRequest
+    // ------------------------------------------------
+    await TechnicianJobRequest.findByIdAndDelete(requestId);
+
+    // ------------------------------------------------
+    // 2. REMOVE TECHNICIAN FROM JOB.requestedBy
+    // ------------------------------------------------
+    await TechnicianJob.findByIdAndUpdate(
+      jobId,
+      {
+        $pull: {
+          requestedBy: technicianId,
+        },
+      },
+      {
+        new: true,
+      }
+    );
+
+    // ------------------------------------------------
+    // 3. SOCKET NOTIFICATION
+    // ------------------------------------------------
+    try {
+      const { getIO } = require('../utils/socketInstance');
+
+      getIO()
+        .to('admin')
+        .emit('job:request:cancelled', {
+          requestId,
+          jobId,
+          technicianId,
+        });
+
+      console.log(
+        `[Socket] Technician cancelled request="${requestId}"`
+      );
+    } catch (socketError) {
+      console.warn(
+        '[Socket] cancelJobRequest socket failed:',
+        socketError.message
+      );
+    }
+
+    // ------------------------------------------------
+    // RESPONSE
+    // ------------------------------------------------
+    return res.status(200).json({
+      success: true,
+      message: 'Job request cancelled and removed successfully',
+      data: {
+        requestId,
+        jobId,
+        technicianId,
+      },
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
 const getRequestMessages = async (req, res, next) => {
   try {
     const { requestId } = req.params;
@@ -320,20 +658,87 @@ const updateRequestStatus = async (req, res, next) => {
 const getMetrics = async (req, res, next) => {
   try {
     const technician = await User.findById(req.user._id);
-    const requests = await TechnicianJobRequest.find({ technician: req.user._id });
-    const acceptedCount = requests.filter(r => r.status === 'accepted').length;
-    const pendingCount = requests.filter(r => r.status === 'pending').length;
 
-    res.status(200).json({
+    // Get all requests with job populated
+    const requests = await TechnicianJobRequest.find({
+      technician: req.user._id,
+    })
+      .populate('job')
+      .sort({ createdAt: -1 });
+
+    // Request counts
+    const acceptedCount = requests.filter(
+      (r) => r.status === 'accepted'
+    ).length;
+
+    const pendingCount = requests.filter(
+      (r) => r.status === 'pending'
+    ).length;
+
+    // =====================================
+    // EXTRACT MY JOBS
+    // Same logic as attached frontend file
+    // =====================================
+    const myJobs = requests
+      .filter((request) => request.status === 'accepted' && request.job)
+      .map((request) => request.job);
+
+    // =====================================
+    // ACTIVE JOBS
+    // Jobs that are assigned (accepted) but NOT completed yet
+    // =====================================
+    const activeJobs = myJobs.filter(
+      (job) => job.status !== 'completed'
+    ).length;
+
+    // =====================================
+    // TODAY'S SCHEDULE
+    // From the same myJobs
+    // =====================================
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+    const todaySchedule = myJobs.filter((job) => {
+      if (!job.serviceDate) return false;
+
+      const serviceDate = new Date(job.serviceDate);
+
+      return (
+        serviceDate >= startOfToday &&
+        serviceDate <= endOfToday
+      );
+    }).length;
+
+    // =====================================
+    // TOTAL REQUESTS
+    // =====================================
+    const totalRequests = requests.length;
+
+    // =====================================
+    // RESPONSE
+    // =====================================
+    return res.status(200).json({
       success: true,
       data: {
         metrics: {
           totalJobsDone: technician.totalJobsDone || 0,
           totalEarnings: technician.totalEarnings || 0,
           totalWithdrawn: technician.totalWithdrawn || 0,
-          availableBalance: Math.max((technician.totalEarnings || 0) - (technician.totalWithdrawn || 0), 0),
+
+          availableBalance: Math.max(
+            (technician.totalEarnings || 0) -
+              (technician.totalWithdrawn || 0),
+            0
+          ),
+
           acceptedCount,
           pendingCount,
+          activeJobs, // Now correctly counts assigned but not completed jobs
+          todaySchedule,
+          totalRequests,
         },
       },
     });
@@ -367,7 +772,7 @@ const markReached = async (req, res, next) => {
     const now = new Date();
     job.reachedAt = now;
     job.jobStartedAt = now;
-    job.status = 'in-progress';
+    job.status = 'inprogress';
 
     job.conversation = job.conversation || [];
     job.conversation.push({
@@ -443,106 +848,106 @@ const markJobCompleted = async (req, res, next) => {
   }
 };
 
-const counterOffer = async (req, res, next) => {
-  try {
-    const { requestId } = req.params;
-    const { amount, message } = req.body;
+// const counterOffer = async (req, res, next) => {
+//   try {
+//     const { requestId } = req.params;
+//     const { amount, message } = req.body;
 
-    if (!amount || Number(amount) <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide a valid counter offer amount',
-      });
-    }
+//     if (!amount || Number(amount) <= 0) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'Please provide a valid counter offer amount',
+//       });
+//     }
 
-    const request = await TechnicianJobRequest.findById(requestId);
+//     const request = await TechnicianJobRequest.findById(requestId);
 
-    if (!request) {
-      return res.status(404).json({
-        success: false,
-        message: 'Request not found',
-      });
-    }
+//     if (!request) {
+//       return res.status(404).json({
+//         success: false,
+//         message: 'Request not found',
+//       });
+//     }
 
-    // Make sure this request belongs to logged-in technician
-    if (request.technician.toString() !== req.user._id.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: 'You are not allowed to modify this request',
-      });
-    }
+//     // Make sure this request belongs to logged-in technician
+//     if (request.technician.toString() !== req.user._id.toString()) {
+//       return res.status(403).json({
+//         success: false,
+//         message: 'You are not allowed to modify this request',
+//       });
+//     }
 
-    // Don't allow negotiation after accepted/rejected
-    if (['accepted', 'rejected'].includes(request.status)) {
-      return res.status(400).json({
-        success: false,
-        message: 'This request is no longer available for negotiation',
-      });
-    }
+//     // Don't allow negotiation after accepted/rejected
+//     if (['accepted', 'rejected'].includes(request.status)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: 'This request is no longer available for negotiation',
+//       });
+//     }
 
-    const now = new Date();
-    const offerAmount = Number(amount);
+//     const now = new Date();
+//     const offerAmount = Number(amount);
 
-    request.status = 'counter-offer';
-    request.counterOffer = offerAmount;
-    request.counterOfferFrom = 'technician';
+//     request.status = 'counter-offer';
+//     request.counterOffer = offerAmount;
+//     request.counterOfferFrom = 'technician';
 
-    const trimmedMessage = message && message.trim();
-    if (trimmedMessage) {
-      request.adminMessage = trimmedMessage;
-    }
+//     const trimmedMessage = message && message.trim();
+//     if (trimmedMessage) {
+//       request.adminMessage = trimmedMessage;
+//     }
 
-    request.conversation = request.conversation || [];
+//     request.conversation = request.conversation || [];
 
-    request.conversation.push({
-      sender: 'technician',
-      message: trimmedMessage ? `Counter offer: ₹${offerAmount}. ${trimmedMessage}` : `Counter offer: ₹${offerAmount}.`,
-      counterOffer: offerAmount,
-      counterOfferFrom: 'technician',
-      createdAt: now,
-    });
+//     request.conversation.push({
+//       sender: 'technician',
+//       message: trimmedMessage ? `Counter offer: ₹${offerAmount}. ${trimmedMessage}` : `Counter offer: ₹${offerAmount}.`,
+//       counterOffer: offerAmount,
+//       counterOfferFrom: 'technician',
+//       createdAt: now,
+//     });
 
-    await request.save();
+//     await request.save();
 
-    // Socket.IO
-    try {
-      const { getIO } = require('../utils/socketInstance');
+//     // Socket.IO
+//     try {
+//       const { getIO } = require('../utils/socketInstance');
 
-      getIO()
-        .to(`request:${requestId}`)
-        .emit('request:message', {
-          requestId,
-          message: request.conversation[
-            request.conversation.length - 1
-          ],
-        });
-      console.log(`[Socket] emitToRequest → room="request:${requestId}" event="request:message"`);
+//       getIO()
+//         .to(`request:${requestId}`)
+//         .emit('request:message', {
+//           requestId,
+//           message: request.conversation[
+//             request.conversation.length - 1
+//           ],
+//         });
+//       console.log(`[Socket] emitToRequest → room="request:${requestId}" event="request:message"`);
 
-      getIO()
-        .to(`request:${requestId}`)
-        .emit('request:status', {
-          requestId,
-          status: request.status,
-          counterOffer: request.counterOffer,
-          counterOfferFrom: request.counterOfferFrom,
-        });
-      console.log(`[Socket] emitToRequest → room="request:${requestId}" event="request:status" status="${request.status}"`);
-    } catch (error) {
-      // Socket should not break API
-      console.warn('[Socket] emit failed in counterOffer:', error.message);
-    }
+//       getIO()
+//         .to(`request:${requestId}`)
+//         .emit('request:status', {
+//           requestId,
+//           status: request.status,
+//           counterOffer: request.counterOffer,
+//           counterOfferFrom: request.counterOfferFrom,
+//         });
+//       console.log(`[Socket] emitToRequest → room="request:${requestId}" event="request:status" status="${request.status}"`);
+//     } catch (error) {
+//       // Socket should not break API
+//       console.warn('[Socket] emit failed in counterOffer:', error.message);
+//     }
 
-    res.status(200).json({
-      success: true,
-      message: 'Counter offer sent',
-      data: {
-        request,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+//     res.status(200).json({
+//       success: true,
+//       message: 'Counter offer sent',
+//       data: {
+//         request,
+//       },
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
 const getWithdrawals = async (req, res, next) => {
   try {
@@ -553,29 +958,148 @@ const getWithdrawals = async (req, res, next) => {
   }
 };
 
-const getMyJobs = async (req, res, next) => {
-  try {
-    const requests = await TechnicianJobRequest.find({
-      technician: req.user._id,
-      status: 'accepted',
-    })
-      .populate('job')
-      .sort({ createdAt: -1 });
+// const getMyJobs = async (req, res, next) => {
+//   try {
+//     const { filter, fromDate, toDate, search } = req.query;
 
-    const myJobs = requests
-      .filter((request) => request.job)
-      .map((request) => request.job);
+//     // --------------------------------
+//     // GET TECHNICIAN JOB REQUESTS
+//     // --------------------------------
 
-    return res.status(200).json({
-      success: true,
-      data: {
-        jobs: myJobs,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+//     const requestQuery = {
+//       technician: req.user._id,
+//     };
+
+//     // Requested jobs
+//     if (filter === 'requested') {
+//       requestQuery.status = 'pending';
+//     } else {
+//       // My jobs = accepted jobs
+//       requestQuery.status = 'accepted';
+//     }
+
+//     const requests = await TechnicianJobRequest.find(requestQuery)
+//       .populate('job')
+//       .sort({ createdAt: -1 });
+
+//     let myJobs = requests
+//       .filter((request) => request.job)
+//       .map((request) => request.job);
+
+//     // --------------------------------
+//     // ACTIVE JOBS
+//     // --------------------------------
+
+//     if (filter === 'active') {
+//       myJobs = myJobs.filter((job) => {
+//         return !job.completedAt;
+//       });
+//     }  
+
+//     // --------------------------------
+//     // COMPLETED JOBS
+//     //GET /api/technician/my-jobs?filter=completed
+//     // --------------------------------
+
+//     if (filter === 'completed') {
+//       myJobs = myJobs.filter((job) => job.completedAt);
+//     }
+
+//     // --------------------------------
+//     // TODAY / YESTERDAY / TOMORROW
+//     // --------------------------------
+
+//     if (['today', 'yesterday', 'tomorrow'].includes(filter)) {
+//       const startDate = new Date();
+
+//       if (filter === 'yesterday') {
+//         startDate.setDate(startDate.getDate() - 1);
+//       }
+
+//       if (filter === 'tomorrow') {
+//         startDate.setDate(startDate.getDate() + 1);
+//       }
+
+//       startDate.setHours(0, 0, 0, 0);
+
+//       const endDate = new Date(startDate);
+//       endDate.setHours(23, 59, 59, 999);
+
+//       myJobs = myJobs.filter((job) => {
+//         if (!job.scheduledDate) {
+//           return false;
+//         }
+
+//         const scheduledDate = new Date(job.scheduledDate);
+
+//         return (
+//           scheduledDate >= startDate &&
+//           scheduledDate <= endDate
+//         );
+//       });
+//     }
+
+//     // --------------------------------
+//     // CUSTOM DATE RANGE
+//     // --------------------------------
+
+//     if (fromDate || toDate) {
+//       myJobs = myJobs.filter((job) => {
+//         if (!job.scheduledDate) {
+//           return false;
+//         }
+
+//         const scheduledDate = new Date(job.scheduledDate);
+
+//         if (fromDate) {
+//           const startDate = new Date(fromDate);
+//           startDate.setHours(0, 0, 0, 0);
+
+//           if (scheduledDate < startDate) {
+//             return false;
+//           }
+//         }
+
+//         if (toDate) {
+//           const endDate = new Date(toDate);
+//           endDate.setHours(23, 59, 59, 999);
+
+//           if (scheduledDate > endDate) {
+//             return false;
+//           }
+//         }
+
+//         return true;
+//       });
+//     }
+
+//     // --------------------------------
+//     // SEARCH
+//     // --------------------------------
+
+//     if (search) {
+//       const searchText = search.trim().toLowerCase();
+
+//       myJobs = myJobs.filter((job) => {
+//         return (
+//           job.title?.toLowerCase().includes(searchText) ||
+//           job.category?.toLowerCase().includes(searchText) ||
+//           job.description?.toLowerCase().includes(searchText) ||
+//           job.location?.toLowerCase().includes(searchText)
+//         );
+//       });
+//     }
+
+//     return res.status(200).json({
+//       success: true,
+//       data: {
+//         jobs: myJobs,
+//       },
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
 const getDetailsByJobId = async (req, res, next) => {
   try {
@@ -657,6 +1181,7 @@ const getDetailsByJobId = async (req, res, next) => {
 module.exports = {
   getJobsForTechnicians,
   requestJob,
+  cancelJobRequest,
   getMyRequests,
   getTechnicianDashboard,
   createWithdrawalRequest,
@@ -665,10 +1190,10 @@ module.exports = {
   getMetrics,
   markReached,
   markJobCompleted,
-  counterOffer,
+  // counterOffer,
   sendMessageOnRequest,
   getRequestMessages,
   getConversationByRequestId,
-  getMyJobs,
+  // getMyJobs,
   getDetailsByJobId,
 };

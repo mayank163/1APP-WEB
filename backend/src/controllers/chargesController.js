@@ -103,15 +103,25 @@ exports.submitCharges = async (req, res, next) => {
         return res.status(400).json({ success: false, message: `Amount for "${c.label}" must be > 0` });
       }
 
+      const amt = Number(c.amount);
       const charge = await AdditionalCharge.create({
         job:             request.job._id || request.job,
         request:         requestId,
         technician:      req.user._id,
         label:           c.label.trim(),
         description:     c.description ? c.description.trim() : '',
-        requestedAmount: Number(c.amount),
+        requestedAmount: amt,
         status:          'pending',
+        pendingWith:     'admin',
         submittedAt:     new Date(),
+        // Seed history with the initial submission
+        counterHistory: [{
+          round:  1,
+          actor:  'technician',
+          action: 'submit',
+          amount: amt,
+          note:   c.description ? c.description.trim() : '',
+        }],
       });
       created.push(charge);
     }
@@ -158,57 +168,114 @@ exports.submitCharges = async (req, res, next) => {
 // =============================================================================
 // TECHNICIAN — Respond to admin counter-offer on a single charge
 // PATCH /api/technician/charges/:chargeId/respond
-// Body: { action: 'accept' | 'reject', note? }
+// Body: { action: 'accept' | 'counter', amount? (required for counter), note? }
 // =============================================================================
 exports.respondToCounter = async (req, res, next) => {
   try {
-    const { chargeId }     = req.params;
-    const action           = req.body?.action;
-    const note             = req.body?.note;
+    const { chargeId } = req.params;
+    const action = req.body?.action;
+    const note   = req.body?.note;
+    const amount = req.body?.amount;
 
-    if (!['accept', 'reject'].includes(action)) {
-      return res.status(400).json({ success: false, message: 'action must be "accept" or "reject"' });
+    if (!['accept', 'counter'].includes(action)) {
+      return res.status(400).json({
+        success: false,
+        message: 'action must be "accept" or "counter"',
+      });
     }
 
     const charge = await AdditionalCharge.findById(chargeId);
     if (!charge) {
       return res.status(404).json({ success: false, message: 'Charge not found' });
     }
-
     if (charge.technician.toString() !== req.user._id.toString()) {
       return res.status(403).json({ success: false, message: 'Not authorised' });
     }
-
-    if (charge.status !== 'countered') {
+    // Must be countered AND it must be the technician's turn
+    if (charge.status !== 'countered' || charge.pendingWith !== 'technician') {
       return res.status(400).json({
         success: false,
-        message: 'This charge has no pending counter-offer to respond to',
+        message: 'This charge has no pending counter-offer for you to respond to',
       });
     }
 
-    const now = new Date();
-    charge.technicianResponseNote = note ? note.trim() : '';
-    charge.resolvedAt = now;
+    const now        = new Date();
+    const cleanNote  = note ? note.trim() : '';
+    // The amount the admin last offered is what tech is responding to
+    const adminOffer = charge.adminCounterAmount;
+
+    // Determine current history round
+    const nextRound = (charge.counterHistory?.length || 0) + 1;
 
     if (action === 'accept') {
+      // Technician accepts admin's latest counter-offer → agreedAmount = adminCounterAmount
       charge.status       = 'accepted';
-      charge.agreedAmount = charge.adminCounterAmount;
+      charge.pendingWith  = null;
+      charge.agreedAmount = adminOffer;
+      charge.resolvedAt   = now;
+      charge.technicianResponseNote = cleanNote;
+
+      // Record in history
+      charge.counterHistory.push({
+        round:  nextRound,
+        actor:  'technician',
+        action: 'accept',
+        amount: adminOffer,
+        note:   cleanNote,
+        createdAt: now,
+      });
+
     } else {
-      charge.status       = 'rejected';
-      charge.agreedAmount = null;
+      // Technician re-counters with a new amount
+      if (amount === undefined || amount === null || isNaN(amount) || Number(amount) <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'A valid counter-offer amount is required',
+        });
+      }
+
+      const techAmt = Number(amount);
+
+      charge.status                 = 'countered';
+      charge.pendingWith            = 'admin';      // now admin's turn
+      charge.technicianCounterAmount = techAmt;
+      charge.technicianResponseNote  = cleanNote;
+      // Clear admin's offer — admin must now decide on tech's new amount
+      charge.adminCounterAmount     = null;
+      charge.adminNote              = '';
+      charge.resolvedAt             = null;
+      charge.reviewedAt             = null;
+
+      // Record in history
+      charge.counterHistory.push({
+        round:  nextRound,
+        actor:  'technician',
+        action: 'counter',
+        amount: techAmt,
+        note:   cleanNote,
+        createdAt: now,
+      });
     }
 
     await charge.save();
 
-    // Re-sync parent request
     const newStatus = await syncChargesStatus(charge.request.toString());
 
-    emitToAdmin('charge:responded', { chargeId, action, requestId: charge.request });
-    emitToRequest(charge.request.toString(), 'charge:responded', { chargeId, action });
+    emitToAdmin('charge:responded', {
+      chargeId,
+      action,
+      requestId: charge.request,
+      amount:    action === 'counter' ? charge.technicianCounterAmount : charge.agreedAmount,
+    });
+    emitToRequest(charge.request.toString(), 'charge:responded', {
+      chargeId,
+      action,
+      amount: action === 'counter' ? charge.technicianCounterAmount : charge.agreedAmount,
+    });
 
     return res.status(200).json({
       success: true,
-      message: action === 'accept' ? 'Counter-offer accepted' : 'Counter-offer rejected',
+      message: action === 'accept' ? 'Counter-offer accepted' : 'New counter-offer submitted to admin',
       data: { charge, requestChargesStatus: newStatus },
     });
   } catch (err) {
@@ -263,18 +330,22 @@ exports.getMyCharges = async (req, res, next) => {
         requestedAmount:  c.requestedAmount,
         agreedAmount:     agreedPrice,
         status:           c.status,
+        pendingWith:      c.pendingWith || null,
         adminAction,
         // counter-offer details
         adminCounterAmount: c.adminCounterAmount || null,
         adminNote:          c.adminNote         || null,
+        technicianCounterAmount: c.technicianCounterAmount || null,
         // your response to counter
         technicianResponseNote: c.technicianResponseNote || null,
+        // full negotiation history
+        counterHistory: c.counterHistory || [],
         // timestamps
         submittedAt: c.submittedAt,
         reviewedAt:  c.reviewedAt,
         resolvedAt:  c.resolvedAt,
         // what to do next
-        needsYourResponse: c.status === 'countered',
+        needsYourResponse: c.status === 'countered' && c.pendingWith === 'technician',
       };
     });
 
@@ -336,7 +407,7 @@ exports.getMyRequestStatus = async (req, res, next) => {
 
     // Separate charges by what needs action vs what is resolved
     const pendingAdminReview = charges.filter((c) => c.status === 'pending');
-    const awaitingYourReply  = charges.filter((c) => c.status === 'countered');
+    const awaitingYourReply  = charges.filter((c) => c.status === 'countered' && c.pendingWith === 'technician');
     const accepted           = charges.filter((c) => c.status === 'accepted');
     const rejected           = charges.filter((c) => c.status === 'rejected');
 
@@ -411,19 +482,22 @@ exports.getMyRequestStatus = async (req, res, next) => {
 // ── Format helper used above ───────────────────────────────────────────────────
 function fmt(c) {
   return {
-    _id:                   c._id,
-    label:                 c.label,
-    description:           c.description,
-    requestedAmount:       c.requestedAmount,
-    adminCounterAmount:    c.adminCounterAmount || null,
-    adminNote:             c.adminNote          || null,
-    agreedAmount:          c.agreedAmount       || null,
-    status:                c.status,
-    needsYourResponse:     c.status === 'countered',
-    technicianResponseNote: c.technicianResponseNote || null,
-    submittedAt:           c.submittedAt,
-    reviewedAt:            c.reviewedAt,
-    resolvedAt:            c.resolvedAt,
+    _id:                    c._id,
+    label:                  c.label,
+    description:            c.description,
+    requestedAmount:        c.requestedAmount,
+    adminCounterAmount:     c.adminCounterAmount  || null,
+    adminNote:              c.adminNote           || null,
+    technicianCounterAmount: c.technicianCounterAmount || null,
+    technicianResponseNote:  c.technicianResponseNote || null,
+    agreedAmount:           c.agreedAmount        || null,
+    status:                 c.status,
+    pendingWith:            c.pendingWith          || null,
+    needsYourResponse:      c.status === 'countered' && c.pendingWith === 'technician',
+    counterHistory:         c.counterHistory       || [],
+    submittedAt:            c.submittedAt,
+    reviewedAt:             c.reviewedAt,
+    resolvedAt:             c.resolvedAt,
   };
 }
 exports.getTechnicianInvoice = async (req, res, next) => {
@@ -476,10 +550,10 @@ exports.getJobCharges = async (req, res, next) => {
 // =============================================================================
 exports.reviewCharge = async (req, res, next) => {
   try {
-    const { chargeId }        = req.params;
-    const action              = req.body?.action;
-    const counterAmount       = req.body?.counterAmount;
-    const adminNote           = req.body?.adminNote;
+    const { chargeId }  = req.params;
+    const action        = req.body?.action;
+    const counterAmount = req.body?.counterAmount;
+    const adminNote     = req.body?.adminNote;
 
     if (!['accept', 'reject', 'counter'].includes(action)) {
       return res.status(400).json({ success: false, message: 'action must be accept | reject | counter' });
@@ -488,27 +562,68 @@ exports.reviewCharge = async (req, res, next) => {
     const charge = await AdditionalCharge.findById(chargeId);
     if (!charge) return res.status(404).json({ success: false, message: 'Charge not found' });
 
-    if (!['pending', 'countered'].includes(charge.status)) {
+    // Allow admin to act on:
+    //   - 'pending'   (fresh submission from technician)
+    //   - 'countered' where pendingWith === 'admin' (technician re-countered and is waiting for admin)
+    const adminCanAct = charge.status === 'pending' ||
+      (charge.status === 'countered' && charge.pendingWith === 'admin');
+    if (!adminCanAct) {
       return res.status(400).json({
         success: false,
-        message: 'Charge is already resolved and cannot be reviewed again',
+        message: charge.status === 'countered'
+          ? 'Waiting for technician to respond — you cannot act yet'
+          : 'Charge is already resolved and cannot be reviewed again',
       });
     }
 
     const now       = new Date();
-    charge.adminNote = adminNote ? adminNote.trim() : '';
+    const cleanNote = adminNote ? adminNote.trim() : '';
+
+    // Determine the amount admin is responding to:
+    //   - If tech re-countered (pendingWith=admin), the active offer is technicianCounterAmount
+    //   - Otherwise it is the original requestedAmount
+    const activeOfferAmount =
+      (charge.pendingWith === 'admin' && charge.technicianCounterAmount)
+        ? charge.technicianCounterAmount
+        : charge.requestedAmount;
+
+    // Next history round
+    const nextRound = (charge.counterHistory?.length || 0) + 1;
+
+    charge.adminNote  = cleanNote;
     charge.reviewedAt = now;
 
     switch (action) {
       case 'accept':
+        // agreedAmount = whichever offer admin is accepting (tech re-counter OR original ask)
         charge.status       = 'accepted';
-        charge.agreedAmount = charge.requestedAmount;
+        charge.pendingWith  = null;
+        charge.agreedAmount = activeOfferAmount;
         charge.resolvedAt   = now;
+
+        charge.counterHistory.push({
+          round:     nextRound,
+          actor:     'admin',
+          action:    'accept',
+          amount:    activeOfferAmount,
+          note:      cleanNote,
+          createdAt: now,
+        });
         break;
 
       case 'reject':
-        charge.status     = 'rejected';
-        charge.resolvedAt = now;
+        charge.status      = 'rejected';
+        charge.pendingWith = null;
+        charge.resolvedAt  = now;
+
+        charge.counterHistory.push({
+          round:     nextRound,
+          actor:     'admin',
+          action:    'reject',
+          amount:    null,
+          note:      cleanNote,
+          createdAt: now,
+        });
         break;
 
       case 'counter': {
@@ -516,8 +631,21 @@ exports.reviewCharge = async (req, res, next) => {
         if (!amt || amt <= 0) {
           return res.status(400).json({ success: false, message: 'Counter amount must be > 0' });
         }
-        charge.status             = 'countered';
-        charge.adminCounterAmount = amt;
+        charge.status              = 'countered';
+        charge.pendingWith         = 'technician'; // technician's turn now
+        charge.adminCounterAmount  = amt;
+        // Clear tech's previous counter so only the latest active offer is tracked
+        charge.technicianCounterAmount = null;
+        charge.technicianResponseNote  = '';
+
+        charge.counterHistory.push({
+          round:     nextRound,
+          actor:     'admin',
+          action:    'counter',
+          amount:    amt,
+          note:      cleanNote,
+          createdAt: now,
+        });
         break;
       }
 
@@ -527,10 +655,8 @@ exports.reviewCharge = async (req, res, next) => {
 
     await charge.save();
 
-    // Re-sync parent request chargesStatus
     const newChargesStatus = await syncChargesStatus(charge.request.toString());
 
-    // Notify technician in real-time
     emitToRequest(charge.request.toString(), 'charge:reviewed', {
       chargeId,
       action,
@@ -541,7 +667,9 @@ exports.reviewCharge = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      message: `Charge ${action}ed`,
+      message: action === 'accept' ? 'Charge accepted'
+             : action === 'reject' ? 'Charge rejected'
+             : 'Counter-offer sent to technician',
       data: { charge, requestChargesStatus: newChargesStatus },
     });
   } catch (err) {
