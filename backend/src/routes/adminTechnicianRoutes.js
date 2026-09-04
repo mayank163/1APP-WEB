@@ -17,6 +17,10 @@ router.get('/technician-requests', checkPermission('technician_jobs', 'read'), a
 router.patch('/technician-requests/:requestId/status', checkPermission('technician_jobs', 'write'), adminTechnicianController.updateTechnicianRequest);
 router.patch('/technician-requests/:requestId/message', checkPermission('technician_jobs', 'write'), adminTechnicianController.sendTechnicianRequestMessage);
 
+// ── Conversation timeline (charges + messages as one stream) ─────────────────
+// Returns full typed conversation for a request — admin view
+router.get('/technician-requests/:requestId/conversation', checkPermission('technician_jobs', 'read'), adminTechnicianController.getRequestConversation);
+
 // ── Additional Charges & Invoice (admin side) ─────────────────────────────────
 // Get all charges submitted by technician for a request
 router.get('/technician-requests/:requestId/charges',        checkPermission('technician_jobs', 'read'),  chargesController.getJobCharges);

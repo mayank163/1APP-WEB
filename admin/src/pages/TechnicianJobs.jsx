@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import LocationPicker from '../components/LocationPicker';
 import { toast } from 'react-toastify';
 import adminApi from '../services/adminApi';
 import socket from '../services/socket';
@@ -17,6 +18,7 @@ const emptyForm = {
   title: '',
   category: 'General Service',
   location: '',
+  coordinates: null,   // { address, lat, lng }
   budget: '',
   description: '',
   preferredSkills: '',
@@ -716,11 +718,14 @@ const JobForm = ({ form, setForm, onSubmit, onCancel, isEditing, saving }) => (
         onChange={(e) => setForm({ ...form, budget: e.target.value })}
         placeholder="1500" required />
     </div>
-    <div className="col-md-6">
+    <div className="col-12">
       <label className="tj-label">Location <span className="text-danger">*</span></label>
-      <input className="form-control tj-input" value={form.location}
-        onChange={(e) => setForm({ ...form, location: e.target.value })}
-        placeholder="Los Angeles" required />
+      <LocationPicker
+        value={form.coordinates ? { address: form.location, ...form.coordinates } : null}
+        onChange={({ address, lat, lng }) =>
+          setForm({ ...form, location: address, coordinates: { lat, lng } })
+        }
+      />
     </div>
     <div className="col-md-6">
       <label className="tj-label">
@@ -973,6 +978,7 @@ const TechnicianJobs = () => {
     requirements:    f.requirements.split(',').map((s) => s.trim()).filter(Boolean),
     serviceDate:     f.serviceDate || undefined,
     estimatedTime:   f.estimatedTime || '',
+    coordinates:     f.coordinates || undefined,
   });
 
   const handleAdd = async (e) => {
@@ -992,6 +998,7 @@ const TechnicianJobs = () => {
       title:           job.title || '',
       category:        job.category || 'General Service',
       location:        job.location || '',
+      coordinates:     job.coordinates?.lat ? job.coordinates : null,
       budget:          job.budget || '',
       description:     job.description || '',
       preferredSkills: (job.preferredSkills || []).join(', '),

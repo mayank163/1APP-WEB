@@ -1,5 +1,6 @@
 const TechnicianJob = require('../models/TechnicianJob');
 const TechnicianJobRequest = require('../models/TechnicianJobRequest');
+const AdditionalCharge = require('../models/AdditionalCharge');
 const User = require('../models/User');
 const { getIO } = require('../utils/socketInstance');
 const sendNotification = require('../services/notificationService');
@@ -30,6 +31,7 @@ const createTechnicianJob = async (req, res, next) => {
       title,
       category,
       location,
+      coordinates,
       budget,
       description,
       requirements,
@@ -54,6 +56,7 @@ const createTechnicianJob = async (req, res, next) => {
       budget: Number(budget),
       description,
       requirements: Array.isArray(requirements) ? requirements : [],
+      coordinates: coordinates || { lat: null, lng: null },
       postedBy: req.user._id,
       serviceDate: serviceDate ? new Date(serviceDate) : null,
       preferredSkills: Array.isArray(preferredSkills)
@@ -171,66 +174,140 @@ const updateTechnicianRequest = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Request not found' });
     }
 
-    request.status = status;
-    request.adminMessage = adminMessage || '';
-    request.counterOfferFrom = 'admin';
-    if (counterOffer !== undefined) request.counterOffer = Number(counterOffer || 0);
+    const now          = new Date();
+    const offerAmount  = Number(counterOffer || 0);
+    const cleanMessage = adminMessage ? adminMessage.trim() : '';
 
-    const conversationMessage = adminMessage || (status === 'accepted' ? 'Request accepted.' : status === 'rejected' ? 'Request rejected.' : `Counter offer sent: $${Number(counterOffer || 0)}`);
-    request.conversation = request.conversation || [];
-    request.conversation.push({
-      sender: 'admin',
-      message: conversationMessage,
-      counterOffer: status === 'counter-offer' ? Number(counterOffer || 0) : 0,
-      counterOfferFrom: status === 'counter-offer' ? 'admin' : '',
-      createdAt: new Date(),
-    });
+    request.status       = status;
+    request.adminMessage = cleanMessage;
+
+    // ── Build a typed conversation entry ─────────────────────────────────
+    let convEntry;
 
     if (status === 'accepted') {
-      const job = await TechnicianJob.findById(request.job._id || request.job);
-      const technician = await User.findById(request.technician._id || request.technician);
+      convEntry = {
+        sender:    'admin',
+        type:      'message',
+        message:   cleanMessage || 'Request accepted.',
+        createdAt: now,
+      };
+    } else if (status === 'rejected') {
+      convEntry = {
+        sender:    'admin',
+        type:      'message',
+        message:   cleanMessage || 'Request rejected.',
+        createdAt: now,
+      };
+    } else {
+      // counter-offer on the fixed job price
+      request.counterOfferFrom = 'admin';
+      request.counterOffer     = offerAmount;
+
+      convEntry = {
+        sender:           'admin',
+        type:             'fixed_charge',
+        message:          cleanMessage || `Counter offer: ₹${offerAmount}`,
+        fixedCharge:      offerAmount,
+        counterOffer:     offerAmount,
+        counterOfferFrom: 'admin',
+        createdAt:        now,
+      };
+    }
+
+    request.conversation = request.conversation || [];
+    request.conversation.push(convEntry);
+
+    // ── On accept: assign job + calculate final amount ────────────────────
+    let finalAmountData = null;
+
+    if (status === 'accepted') {
+      const job        = request.job._id ? request.job : await TechnicianJob.findById(request.job);
+      const technician = request.technician._id
+        ? request.technician
+        : await User.findById(request.technician);
 
       if (job) {
-        job.status = 'assigned';
+        job.status             = 'assigned';
         job.assignedTechnician = {
-          _id: technician._id,
-          name: technician.name,
+          _id:   technician._id,
+          name:  technician.name,
           email: technician.email,
           phone: technician.phone,
         };
         job.assignedRequest = request._id;
-        job.conversation = job.conversation || [];
+        job.conversation    = job.conversation || [];
         job.conversation.push({
-          sender: 'admin',
-          message: `${technician.name} has been assigned to this job.`,
-          createdAt: new Date(),
+          sender:    'admin',
+          message:   `${technician.name} has been assigned to this job.`,
+          createdAt: now,
         });
         await job.save();
       }
 
-      request.completedAt = null;
+      request.completedAt   = null;
       request.paymentStatus = 'pending';
-      request.amountEarned = 0;
-    }
+      request.amountEarned  = 0;
 
-    if (status === 'counter-offer') {
-      request.counterOffer = Number(counterOffer || 0);
+      // ── Calculate final job amount once the request is accepted ──────
+      // Fixed charge: use the agreed counter-offer bid if any, else job budget
+      const jobBudget = job?.budget || 0;
+      const fixedCharge = request.counterOffer > 0 ? request.counterOffer : jobBudget;
+
+      // Sum all *already accepted* additional charges for this request
+      const acceptedCharges = await AdditionalCharge.find({
+        request: requestId,
+        status:  'accepted',
+      });
+      const additionalTotal = acceptedCharges.reduce((sum, c) => sum + (c.agreedAmount || 0), 0);
+      const totalAmount     = fixedCharge + additionalTotal;
+
+      request.agreedFixedCharge     = fixedCharge;
+      request.agreedAdditionalTotal = additionalTotal;
+      request.agreedTotal           = totalAmount;
+      request.finalJobAmount        = totalAmount;
+
+      finalAmountData = { fixedCharge, additionalTotal, total: totalAmount };
+
+      // Push a 'final_amount' system entry so the timeline shows the breakdown
+      request.conversation.push({
+        sender:                 'system',
+        type:                   'final_amount',
+        message:                `Request accepted. Final job amount: ₹${totalAmount} (Fixed: ₹${fixedCharge}${additionalTotal > 0 ? ` + Additional: ₹${additionalTotal}` : ''}).`,
+        fixedJobCharge:         fixedCharge,
+        additionalChargesTotal: additionalTotal,
+        finalAmount:            totalAmount,
+        createdAt:              now,
+      });
+
+      // Mirror the final price on the job document
+      if (job) {
+        await TechnicianJob.findByIdAndUpdate(job._id, { finalPrice: totalAmount });
+      }
     }
 
     await request.save();
 
-    // Real-time: notify everyone in this request's room
-    const newMsg = request.conversation[request.conversation.length - 1];
-    emitToRequest(requestId, 'request:message', {
-      requestId,
-      message: newMsg,
-    });
-    emitToRequest(requestId, 'request:status', {
-      requestId,
-      status: request.status,
-    });
+    // ── Real-time notifications ───────────────────────────────────────────
+    const latestMsg = request.conversation[request.conversation.length - 1];
+    emitToRequest(requestId, 'request:message', { requestId, message: latestMsg });
+    emitToRequest(requestId, 'request:status',  { requestId, status: request.status });
 
-    res.status(200).json({ success: true, message: 'Request status updated', data: { request } });
+    if (finalAmountData) {
+      emitToRequest(requestId, 'final_amount:calculated', {
+        requestId,
+        ...finalAmountData,
+      });
+      emitToAdmin('final_amount:calculated', { requestId, ...finalAmountData });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Request status updated',
+      data: {
+        request,
+        ...(finalAmountData && { finalJobAmount: finalAmountData.total }),
+      },
+    });
     emitToAdmin('request:updated', { request });
   } catch (error) {
     next(error);
@@ -240,7 +317,7 @@ const updateTechnicianRequest = async (req, res, next) => {
 const updateTechnicianJob = async (req, res, next) => {
   try {
     const { jobId } = req.params;
-    const { title, category, location, budget, description, requirements, serviceDate, preferredSkills, estimatedTime } = req.body;
+    const { title, category, location, coordinates, budget, description, requirements, serviceDate, preferredSkills, estimatedTime } = req.body;
 
     const job = await TechnicianJob.findById(jobId);
     if (!job) {
@@ -250,6 +327,7 @@ const updateTechnicianJob = async (req, res, next) => {
     if (title) job.title = title;
     if (category) job.category = category;
     if (location) job.location = location;
+    if (coordinates) job.coordinates = coordinates;
     if (budget !== undefined) job.budget = Number(budget || 0);
     if (description) job.description = description;
     if (serviceDate !== undefined) job.serviceDate = serviceDate ? new Date(serviceDate) : null;
@@ -354,7 +432,7 @@ const sendTechnicianRequestMessage = async (req, res, next) => {
     const { message, counterOffer, counterOfferFrom } = req.body;
 
     const trimmedMessage = message && message.trim();
-    const offerAmount = Number(counterOffer || 0);
+    const offerAmount    = Number(counterOffer || 0);
 
     if (!trimmedMessage && offerAmount <= 0) {
       return res.status(400).json({ success: false, message: 'Message cannot be empty' });
@@ -366,34 +444,42 @@ const sendTechnicianRequestMessage = async (req, res, next) => {
     }
 
     if (offerAmount > 0) {
-      request.status = 'counter-offer';
-      request.counterOffer = offerAmount;
+      request.status           = 'counter-offer';
+      request.counterOffer     = offerAmount;
       request.counterOfferFrom = 'admin';
-      request.adminMessage = trimmedMessage || `Counter offer sent: $${offerAmount}`;
+      request.adminMessage     = trimmedMessage || `Counter offer sent: ₹${offerAmount}`;
     } else if (trimmedMessage) {
       request.adminMessage = trimmedMessage;
     }
 
-    request.conversation = request.conversation || [];
-    request.conversation.push({
-      sender: 'admin',
-      message: trimmedMessage || `Counter offer sent: $${offerAmount}`,
-      counterOffer: offerAmount,
-      counterOfferFrom: offerAmount > 0 ? (counterOfferFrom || 'admin') : '',
-      createdAt: new Date(),
-    });
+    const now = new Date();
+    const entry = offerAmount > 0
+      ? {
+          sender:           'admin',
+          type:             'fixed_charge',
+          message:          trimmedMessage || `Counter offer: ₹${offerAmount}`,
+          fixedCharge:      offerAmount,
+          counterOffer:     offerAmount,
+          counterOfferFrom: counterOfferFrom || 'admin',
+          createdAt:        now,
+        }
+      : {
+          sender:    'admin',
+          type:      'message',
+          message:   trimmedMessage,
+          createdAt: now,
+        };
 
+    request.conversation = request.conversation || [];
+    request.conversation.push(entry);
     await request.save();
 
     const newMsg = request.conversation[request.conversation.length - 1];
-    emitToRequest(requestId, 'request:message', {
-      requestId,
-      message: newMsg,
-    });
+    emitToRequest(requestId, 'request:message', { requestId, message: newMsg });
     emitToRequest(requestId, 'request:status', {
       requestId,
-      status: request.status,
-      counterOffer: request.counterOffer,
+      status:           request.status,
+      counterOffer:     request.counterOffer,
       counterOfferFrom: request.counterOfferFrom,
     });
 
@@ -508,12 +594,76 @@ const rescheduleJob = async (req, res, next) => {
   }
 };
 
+// ── Format a single conversation entry for the timeline API ─────────────────
+const formatConvEntry = (entry) => {
+  const base = {
+    _id:       entry._id,
+    sender:    entry.sender,
+    type:      entry.type || 'message',
+    message:   entry.message,
+    createdAt: entry.createdAt,
+  };
+
+  switch (entry.type) {
+    case 'fixed_charge':
+      return { ...base, fixedCharge: entry.fixedCharge, counterOfferFrom: entry.counterOfferFrom };
+    case 'charge_submitted':
+      return { ...base, charges: entry.charges || [] };
+    case 'charge_reviewed':
+    case 'charge_responded':
+      return { ...base, chargeId: entry.chargeId, chargeLabel: entry.chargeLabel, action: entry.action, amount: entry.amount, note: entry.note };
+    case 'final_amount':
+    case 'invoice_generated':
+      return { ...base, fixedJobCharge: entry.fixedJobCharge, additionalChargesTotal: entry.additionalChargesTotal, finalAmount: entry.finalAmount };
+    default:
+      return base;
+  }
+};
+
+/**
+ * GET /api/admin/technician-requests/:requestId/conversation
+ * Returns the full typed conversation timeline for a request — admin view.
+ */
+const getRequestConversation = async (req, res, next) => {
+  try {
+    const { requestId } = req.params;
+
+    const request = await TechnicianJobRequest.findById(requestId)
+      .populate('job',        'title location budget category status')
+      .populate('technician', 'name phone email')
+      .select('conversation status chargesStatus finalJobAmount agreedTotal agreedFixedCharge agreedAdditionalTotal job technician');
+
+    if (!request) {
+      return res.status(404).json({ success: false, message: 'Request not found' });
+    }
+
+    const conversation = (request.conversation || []).map(formatConvEntry);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        requestId:      request._id,
+        status:         request.status,
+        chargesStatus:  request.chargesStatus,
+        finalJobAmount: request.finalJobAmount || null,
+        agreedTotal:    request.agreedTotal    || null,
+        job:            request.job,
+        technician:     request.technician,
+        conversation,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createTechnicianJob,
   getTechnicianJobs,
   getTechnicianRequests,
   updateTechnicianRequest,
   sendTechnicianRequestMessage,
+  getRequestConversation,
   updateTechnicianJob,
   deleteTechnicianJob,
   updateTechnicianJobStatus,

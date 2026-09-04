@@ -1874,3 +1874,19 @@
 }
 .tj-counter-inline-send:hover:not(:disabled) { background: #1d4ed8; }
 .tj-counter-inline-send:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Google Places autocomplete dropdown — must render above modal overlay ── */
+.pac-container {
+  z-index: 9999 !important;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  border: 1.5px solid #e9e0d5;
+  font-family: inherit;
+}
+.pac-item {
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+.pac-item:hover { background: #fdf9f5; }
+.pac-item-selected { background: #fdf9f5; }

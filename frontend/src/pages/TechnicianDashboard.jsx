@@ -146,7 +146,7 @@ const RequestJobModal = ({ job, onClose, onSuccess }) => {
         </div>
 
         <div style={{ fontSize: '0.82rem', color: '#6c757d', marginBottom: 16 }}>
-          Job budget: <strong style={{ color: '#A5732F' }}>${job.budget}</strong> &nbsp;·&nbsp; {job.location}
+          Job budget: <strong style={{ color: '#A5732F' }}>₹{job.budget}</strong> &nbsp;·&nbsp; {job.location}
         </div>
 
         <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#495057', display: 'block', marginBottom: 4 }}>
@@ -165,7 +165,7 @@ const RequestJobModal = ({ job, onClose, onSuccess }) => {
             borderRadius: 8, overflow: 'hidden', marginBottom: 16 }}>
           <span style={{ padding: '0 12px', fontWeight: 700, color: '#A5732F',
               background: 'rgba(165,115,47,0.07)', borderRight: '1.5px solid #e9e0d5',
-              alignSelf: 'stretch', display: 'flex', alignItems: 'center' }}>$</span>
+              alignSelf: 'stretch', display: 'flex', alignItems: 'center' }}>₹</span>
           <input type="number" min="0" value={fixedPrice} onChange={(e) => setFixed(e.target.value)}
             placeholder={`${job.budget} (job budget)`}
             style={{ flex: 1, border: 'none', outline: 'none', padding: '8px 12px', fontSize: '0.9rem', fontWeight: 600 }} />
@@ -189,7 +189,7 @@ const RequestJobModal = ({ job, onClose, onSuccess }) => {
                   borderRadius: 7, overflow: 'hidden' }}>
                 <span style={{ padding: '0 8px', fontWeight: 700, color: '#A5732F',
                     background: 'rgba(165,115,47,0.07)', borderRight: '1.5px solid #e9e0d5',
-                    alignSelf: 'stretch', display: 'flex', alignItems: 'center', fontSize: '0.85rem' }}>$</span>
+                    alignSelf: 'stretch', display: 'flex', alignItems: 'center', fontSize: '0.85rem' }}>₹</span>
                 <input type="number" min="1" value={c.amount} onChange={(e) => updateCharge(i, 'amount', e.target.value)}
                   placeholder="0.00"
                   style={{ border: 'none', outline: 'none', padding: '6px 10px', fontSize: '0.9rem', fontWeight: 700, width: 90 }} />
@@ -287,7 +287,7 @@ const SubmitChargesModal = ({ requestId, onClose, onSuccess }) => {
                   borderRadius: 7, overflow: 'hidden' }}>
                 <span style={{ padding: '0 8px', fontWeight: 700, color: '#A5732F',
                     background: 'rgba(165,115,47,0.07)', borderRight: '1.5px solid #e9e0d5',
-                    alignSelf: 'stretch', display: 'flex', alignItems: 'center', fontSize: '0.85rem' }}>$</span>
+                    alignSelf: 'stretch', display: 'flex', alignItems: 'center', fontSize: '0.85rem' }}>₹</span>
                 <input type="number" min="1" value={c.amount} onChange={(e) => updateCharge(i, 'amount', e.target.value)}
                   placeholder="0.00"
                   style={{ border: 'none', outline: 'none', padding: '6px 10px', fontSize: '0.9rem', fontWeight: 700, width: 90 }} />
@@ -327,11 +327,23 @@ const JobDetailModal = ({ jobId, onClose }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    API.get(`/technician/details/${jobId}`)
-      .then(({ data }) => { if (data.success) setDetail(data.data); })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    let cancelled = false;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const { data } = await API.get(`/technician/details/${jobId}`);
+        if (!cancelled && data.success) setDetail(data.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
   }, [jobId]);
+
+  const job = detail?.job;
 
   return (
     <div
@@ -351,128 +363,40 @@ const JobDetailModal = ({ jobId, onClose }) => {
 
         {loading && <div style={{ textAlign: 'center', padding: '2rem', color: '#adb5bd' }}>Loading…</div>}
 
-        {!loading && detail && (() => {
-          const { job, request, conversation, charges } = detail;
-          return (
-            <>
-              {/* Job info */}
-              <div style={{ ...S.card, marginBottom: 12 }}>
-                <div style={{ fontWeight: 800, fontSize: '1rem', color: '#1a1208', marginBottom: 4 }}>{job.title}</div>
-                <div style={{ fontSize: '0.8rem', color: '#6c757d', marginBottom: 6 }}>{job.category} · {job.location}</div>
-                <p style={{ fontSize: '0.875rem', color: '#495057', margin: '0 0 8px' }}>{job.description}</p>
-                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: '0.82rem' }}>
-                  <span>💰 Budget: <strong style={{ color: '#A5732F' }}>${job.budget}</strong></span>
-                  {job.estimatedTime && <span>⏱ Est. time: <strong>{job.estimatedTime}</strong></span>}
-                  <span>Status: {reqStatusBadge(job.status)}</span>
+        {!loading && !job && (
+          <div style={{ textAlign: 'center', padding: '2rem', color: '#dc3545' }}>Job not found.</div>
+        )}
+
+        {!loading && job && (
+          <>
+            <div style={{ ...S.card, marginBottom: 12 }}>
+              <div style={{ fontWeight: 800, fontSize: '1rem', color: '#1a1208', marginBottom: 4 }}>{job.title}</div>
+              <div style={{ fontSize: '0.8rem', color: '#6c757d', marginBottom: 8 }}>
+                {job.category || '—'} · {job.location || '—'}
+              </div>
+              {job.description && (
+                <p style={{ fontSize: '0.875rem', color: '#495057', margin: '0 0 10px' }}>{job.description}</p>
+              )}
+              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: '0.82rem' }}>
+                <span>💰 Budget: <strong style={{ color: '#A5732F' }}>₹{Number(job.budget || 0).toLocaleString()}</strong></span>
+                {job.estimatedTime && <span>⏱ Est. time: <strong>{job.estimatedTime}</strong></span>}
+                {job.serviceDate && <span>📅 Service: <strong>{fmtDT(job.serviceDate)}</strong></span>}
+                <span>Status: {reqStatusBadge(job.status)}</span>
+              </div>
+            </div>
+
+            {job.assignedTechnician && (
+              <div style={{ ...S.card, marginBottom: 0 }}>
+                <div style={{ fontWeight: 700, color: '#1a1208', marginBottom: 8 }}>Assigned Technician</div>
+                <div style={{ fontSize: '0.83rem', color: '#495057' }}>
+                  <strong>{job.assignedTechnician.name || 'Technician'}</strong>
+                  {job.assignedTechnician.phone && <div>📞 {job.assignedTechnician.phone}</div>}
+                  {job.assignedTechnician.email && <div>✉️ {job.assignedTechnician.email}</div>}
                 </div>
               </div>
-
-              {/* Request info */}
-              <div style={{ ...S.card, marginBottom: 12 }}>
-                <div style={{ fontWeight: 700, color: '#1a1208', marginBottom: 8 }}>Your Request</div>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 6 }}>
-                  {reqStatusBadge(request.status)}
-                  {request.bidAmount > 0 && (
-                    <span style={S.badge('#A5732F', 'rgba(165,115,47,0.1)')}>Bid: ${request.bidAmount}</span>
-                  )}
-                  {request.counterOffer > 0 && (
-                    <span style={S.badge('#2563eb', 'rgba(37,99,235,0.1)')}>
-                      Counter: ${request.counterOffer} ({request.counterOfferFrom})
-                    </span>
-                  )}
-                </div>
-                {request.note && <p style={{ fontSize: '0.82rem', color: '#6c757d', fontStyle: 'italic', margin: '4px 0 0' }}>"{request.note}"</p>}
-                {request.adminMessage && (
-                  <div style={{ marginTop: 8, padding: '6px 10px', background: 'rgba(37,99,235,0.05)',
-                      border: '1px solid rgba(37,99,235,0.15)', borderRadius: 8, fontSize: '0.82rem', color: '#2563eb' }}>
-                    Admin note: {request.adminMessage}
-                  </div>
-                )}
-              </div>
-
-              {/* Charges */}
-              {charges && charges.length > 0 && (
-                <div style={{ ...S.card, marginBottom: 12 }}>
-                  <div style={{ fontWeight: 700, color: '#1a1208', marginBottom: 8 }}>Additional Charges</div>
-                  {charges.map((c) => (
-                    <div key={c._id} style={{ display: 'flex', justifyContent: 'space-between',
-                        alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #f0e8dc' }}>
-                      <div>
-                        <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{c.label}</span>
-                        {c.description && <span style={{ color: '#6c757d', fontSize: '0.78rem', marginLeft: 6 }}>{c.description}</span>}
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontWeight: 700, color: '#A5732F' }}>${Number(c.requestedAmount).toLocaleString()}</div>
-                        {chargeStatusBadge(c.status)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Conversation */}
-              {conversation && conversation.length > 0 && (
-                <div style={{ ...S.card, marginBottom: 0 }}>
-                  <div style={{ fontWeight: 700, color: '#1a1208', marginBottom: 10 }}>Conversation</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {conversation.map((msg, i) => {
-                      const isMe = msg.sender === 'technician';
-
-                      if (msg.type === 'counter-offer' ||
-                          (!msg.type && (msg.counterOffer > 0 || msg.counterAmount > 0))) {
-                        return (
-                          <div key={i} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start' }}>
-                            <CounterOfferBubble msg={msg} isMe={isMe} />
-                          </div>
-                        );
-                      }
-                      if (msg.type === 'accept' || msg.type === 'reject') {
-                        return (
-                          <div key={i} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start' }}>
-                            <AcceptRejectBubble msg={msg} isMe={isMe} />
-                          </div>
-                        );
-                      }
-                      if (msg.type === 'system' || msg.sender === 'system') {
-                        return (
-                          <div key={i} style={{ display: 'flex', justifyContent: 'center' }}>
-                            <div style={{
-                              fontSize: '0.72rem', color: '#adb5bd', background: '#f8f3ed',
-                              border: '1px solid #e9e0d5', borderRadius: 20,
-                              padding: '3px 12px', fontStyle: 'italic',
-                            }}>
-                              {msg.message}
-                            </div>
-                          </div>
-                        );
-                      }
-                      return (
-                        <div key={i} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start' }}>
-                          <div style={{ maxWidth: '75%', padding: '8px 12px',
-                              borderRadius: isMe ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
-                              background: isMe ? '#1a1208' : '#f8f3ed',
-                              color: isMe ? '#fff' : '#1a1208',
-                              border: isMe ? 'none' : '1px solid #e9e0d5',
-                              fontSize: '0.83rem', lineHeight: 1.45 }}>
-                            <div style={{ fontWeight: 600, fontSize: '0.7rem', marginBottom: 3,
-                                color: isMe ? '#d4a050' : '#A5732F' }}>
-                              {isMe ? 'You' : 'Admin'}
-                            </div>
-                            {msg.message}
-                            <div style={{ fontSize: '0.65rem', marginTop: 4, textAlign: 'right',
-                                color: isMe ? 'rgba(255,255,255,0.5)' : '#adb5bd' }}>
-                              {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : ''}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </>
-          );
-        })()}
+            )}
+          </>
+        )}
       </div>
     </div>
   );
@@ -517,7 +441,7 @@ const WithdrawModal = ({ availableBalance, onClose, onSuccess }) => {
         </div>
 
         <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: 14 }}>
-          Available balance: <strong style={{ color: '#16a34a' }}>${availableBalance.toLocaleString()}</strong>
+          Available balance: <strong style={{ color: '#16a34a' }}>₹{availableBalance.toLocaleString()}</strong>
         </div>
 
         <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#495057', display: 'block', marginBottom: 4 }}>Amount</label>
@@ -525,7 +449,7 @@ const WithdrawModal = ({ availableBalance, onClose, onSuccess }) => {
             borderRadius: 8, overflow: 'hidden', marginBottom: 12 }}>
           <span style={{ padding: '0 12px', fontWeight: 700, color: '#A5732F',
               background: 'rgba(165,115,47,0.07)', borderRight: '1.5px solid #e9e0d5',
-              alignSelf: 'stretch', display: 'flex', alignItems: 'center' }}>$</span>
+              alignSelf: 'stretch', display: 'flex', alignItems: 'center' }}>₹</span>
           <input type="number" min="1" max={availableBalance} value={amount}
             onChange={(e) => setAmount(e.target.value)}
             style={{ flex: 1, border: 'none', outline: 'none', padding: '8px 12px', fontSize: '0.9rem', fontWeight: 600 }} />
@@ -668,7 +592,7 @@ const CounterOfferBubble = ({ msg, isMe }) => {
                           </span>
                         </span>
                       ) : (
-                        <span style={{ fontWeight: 700 }}>${Number(c.amount).toLocaleString()}</span>
+                        <span style={{ fontWeight: 700 }}>₹{Number(c.amount).toLocaleString()}</span>
                       )}
                     </div>
                   </div>
@@ -1009,7 +933,7 @@ const ChargesInvoicePanel = ({ requestId, onUpdate, refreshKey = 0 }) => {
                             border: '1.5px solid #e9e0d5', borderRadius: 7, overflow: 'hidden', flex: 1, minWidth: 130 }}>
                           <span style={{ padding: '0 8px', fontWeight: 700, color: '#A5732F',
                               background: 'rgba(165,115,47,0.07)', borderRight: '1.5px solid #e9e0d5',
-                              alignSelf: 'stretch', display: 'flex', alignItems: 'center', fontSize: '0.85rem' }}>$</span>
+                              alignSelf: 'stretch', display: 'flex', alignItems: 'center', fontSize: '0.85rem' }}>₹</span>
                           <input
                             type="number"
                             min="1"
@@ -1127,18 +1051,18 @@ const ChargesInvoicePanel = ({ requestId, onUpdate, refreshKey = 0 }) => {
             <div style={{ background: '#fdf9f5', borderRadius: 8, padding: '10px 12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.83rem', color: '#495057', marginBottom: 4 }}>
                 <span>Fixed Charge</span>
-                <span>${Number(invoice.fixedJobCharge).toLocaleString()}</span>
+                <span>₹{Number(invoice.fixedJobCharge).toLocaleString()}</span>
               </div>
               {invoice.subtotalAdditional > 0 && (
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.83rem', color: '#495057', marginBottom: 4 }}>
                   <span>Additional Charges</span>
-                  <span>${Number(invoice.subtotalAdditional).toLocaleString()}</span>
+                  <span>₹{Number(invoice.subtotalAdditional).toLocaleString()}</span>
                 </div>
               )}
               <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: '1rem',
                   color: '#1a1208', borderTop: '2px solid #f0e8dc', paddingTop: 8, marginTop: 4 }}>
                 <span>Total</span>
-                <span style={{ color: '#A5732F' }}>${Number(invoice.totalAmount).toLocaleString()}</span>
+                <span style={{ color: '#A5732F' }}>₹{Number(invoice.totalAmount).toLocaleString()}</span>
               </div>
             </div>
             {invoice.status === 'paid' && invoice.paidAt && (
@@ -1186,7 +1110,6 @@ const TechnicianDashboard = () => {
   const [sendingMsg, setSendingMsg] = useState(false);
   const [loadingChat, setLoadingChat] = useState(null);
   const [reuploadingDoc, setReuploadingDoc] = useState(null);
-  const [counteringRequest, setCounteringRequest] = useState(null); // requestId being countered
 
   // profile image
   const [profileImagePreview, setProfileImagePreview] = useState(null);
@@ -1263,7 +1186,7 @@ const TechnicianDashboard = () => {
   // ── Use GET /technician/myjobs to independently refresh assigned jobs ─────────
   const refreshMyJobs = useCallback(async () => {
     try {
-      const { data } = await API.get('/technician/myjobs');
+      const { data } = await API.get('/technician/jobs?filter=active');
       if (data.success) setMyJobs(data.data.jobs || []);
     } catch (err) {
       console.error('refreshMyJobs error:', err);
@@ -1426,28 +1349,30 @@ const TechnicianDashboard = () => {
     } catch (err) { alert(err.response?.data?.message || 'Failed to mark completed'); }
   };
 
-  // ── counter offer on request (POST /requests/:requestId/counter-offer) ────────
-  const sendCounterOffer = async (requestId) => {
-    const amountStr = window.prompt('Enter your counter-offer amount:', '');
-    if (amountStr === null) return;
-    const amount = Number(amountStr);
-    if (!amount || amount <= 0) { alert('Enter a valid amount'); return; }
-    const message = window.prompt('Add a note (optional):', '') || '';
-    setCounteringRequest(requestId);
+  // ── cancel request ───────────────────────────────────────────────────────────
+  const cancelRequest = async (requestId) => {
+    if (!window.confirm('Cancel this job request?')) return;
     try {
-      const { data } = await API.post(`/technician/requests/${requestId}/counter-offer`, { amount, message });
+      const { data } = await API.patch(`/technician/job-requests/${requestId}/cancel`);
       if (data.success) {
-        alert('Counter-offer sent!');
-        setRequests((prev) =>
-          prev.map((r) => r._id === requestId
-            ? { ...r, status: 'counter-offer', counterOffer: amount, counterOfferFrom: 'technician' }
-            : r)
-        );
+        alert(data.message || 'Request cancelled');
+        if (openChat === requestId) {
+          socket?.emit('request:leave', requestId);
+          openChatReqIdRef.current = null;
+          setOpenChat(null);
+        }
+        if (openChargesPanel === requestId) {
+          socket?.emit('request:leave', requestId);
+          openChargesPanelRef.current = null;
+          setOpenChargesPanel(null);
+        }
+        await loadData();
       } else {
-        alert(data.message || 'Failed');
+        alert(data.message || 'Failed to cancel request');
       }
-    } catch (err) { alert(err.response?.data?.message || 'Failed to send counter-offer'); }
-    finally { setCounteringRequest(null); }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to cancel request');
+    }
   };
 
   // ── chat ─────────────────────────────────────────────────────────────────────
@@ -1473,10 +1398,16 @@ const TechnicianDashboard = () => {
     setLoadingChat(requestId);
 
     try {
-      const { data } = await API.get(`/technician/requests/${requestId}/messages`);
+      const { data } = await API.get(`/technician/requests/${requestId}/conversation`);
       if (data.success) {
         setRequests((prev) =>
-          prev.map((r) => r._id === requestId ? { ...r, conversation: data.data.conversation } : r)
+          prev.map((r) => r._id === requestId ? {
+            ...r,
+            conversation: data.data.conversation || [],
+            status: data.data.status ?? r.status,
+            chargesStatus: data.data.chargesStatus ?? r.chargesStatus,
+            finalJobAmount: data.data.finalJobAmount ?? r.finalJobAmount,
+          } : r)
         );
       }
     } catch { /* use existing */ }
@@ -1636,12 +1567,12 @@ const TechnicianDashboard = () => {
       </div>
 
       {/* ── Stats row ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 12, marginBottom: 16 }}>
         {[
           { label: 'Total Jobs', value: summary.totalJobsDone, color: '#1a1208' },
-          { label: 'Total Earned', value: `$${summary.totalEarnings.toLocaleString()}`, color: '#A5732F' },
-          { label: 'Withdrawn', value: `$${summary.totalWithdrawn.toLocaleString()}`, color: '#dc3545' },
-          { label: 'Available', value: `$${summary.availableBalance.toLocaleString()}`, color: '#16a34a' },
+          { label: 'Total Earned', value: `₹${summary.totalEarnings.toLocaleString()}`, color: '#A5732F' },
+          { label: 'Withdrawn', value: `₹${summary.totalWithdrawn.toLocaleString()}`, color: '#dc3545' },
+          { label: 'Available', value: `₹${summary.availableBalance.toLocaleString()}`, color: '#16a34a' },
         ].map((s) => (
           <div key={s.label} style={{ ...S.card, textAlign: 'center', marginBottom: 0 }}>
             <div style={{ fontWeight: 800, fontSize: '1.4rem', color: s.color }}>{s.value}</div>
@@ -1654,7 +1585,7 @@ const TechnicianDashboard = () => {
 
       {/* ── Metrics row (from /technician/metrics) ── */}
       {metrics && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12, marginBottom: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 12, marginBottom: 16 }}>
           {[
             { label: 'Accepted Jobs', value: metrics.acceptedCount, color: '#16a34a' },
             { label: 'Pending Requests', value: metrics.pendingCount, color: '#b45309' },
@@ -1712,7 +1643,7 @@ const TechnicianDashboard = () => {
                       <div style={{ fontSize: '0.8rem', color: '#6c757d' }}>{job.category} · {job.location}</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontWeight: 800, color: '#A5732F', fontSize: '1.05rem' }}>${job.budget}</div>
+                      <div style={{ fontWeight: 800, color: '#A5732F', fontSize: '1.05rem' }}>₹{job.budget}</div>
                       {job.estimatedTime && <div style={{ fontSize: '0.75rem', color: '#6c757d' }}>⏱ {job.estimatedTime}</div>}
                     </div>
                   </div>
@@ -1726,15 +1657,7 @@ const TechnicianDashboard = () => {
                             : myReq.status === 'counter-offer' ? '— Awaiting admin review'
                             : '— Waiting for admin response'}
                         </span>
-                        {/* Counter-offer button when admin sent a counter */}
-                        {myReq.status === 'counter-offer' && myReq.counterOfferFrom === 'admin' && (
-                          <button
-                            disabled={counteringRequest === myReq._id}
-                            onClick={() => sendCounterOffer(myReq._id)}
-                            style={S.btn('#2563eb', counteringRequest === myReq._id)}>
-                            {counteringRequest === myReq._id ? '…' : `↔ Counter ($${myReq.counterOffer})`}
-                          </button>
-                        )}
+                        
                       </>
                     ) : (
                       <button style={S.btn('#1a1208')} onClick={() => setRequestModal(job)}>Request Job</button>
@@ -1826,6 +1749,25 @@ const TechnicianDashboard = () => {
                       style={{ ...S.ghost, fontSize: '0.78rem', padding: '6px 12px' }}>
                       🔍 Details
                     </button>
+                    {(job.coordinates?.lat && job.coordinates?.lng) ? (
+                      <a
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${job.coordinates.lat},${job.coordinates.lng}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ ...S.btn('#16a34a'), textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                      >
+                        🗺️ Navigate
+                      </a>
+                    ) : job.location ? (
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.location)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ ...S.btn('#16a34a'), textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                      >
+                        🗺️ Navigate
+                      </a>
+                    ) : null}
                   </div>
                 </div>
               );
@@ -1953,6 +1895,17 @@ const TechnicianDashboard = () => {
                     )}
 
                     {/* Submit additional charges — available on accepted requests */}
+                    {['pending', 'counter-offer'].includes(req.status) && (
+                      <button
+                        onClick={() => cancelRequest(req._id)}
+                        style={{ background: 'rgba(220,53,69,0.08)', color: '#dc3545',
+                          border: '1.5px solid rgba(220,53,69,0.25)', borderRadius: 8,
+                          padding: '6px 14px', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}
+                      >
+                        ✕ Cancel Request
+                      </button>
+                    )}
+
                     {req.status === 'accepted' && (
                       <button onClick={() => setSubmitChargesModal(req._id)}
                         style={{ background: 'rgba(22,163,74,0.1)', color: '#16a34a',

@@ -28,7 +28,7 @@ const getJobsForTechnicians = async (req, res, next) => {
 
     // --------------------------------
     // REQUESTED
-    // Jobs where this technician's ID appears in requestedBy
+    // Jobs where this technician has requested
     // --------------------------------
     else if (filter === 'requested') {
       jobs = await TechnicianJob.find({
@@ -66,17 +66,18 @@ const getJobsForTechnicians = async (req, res, next) => {
 
     // --------------------------------
     // TODAY
+    // Jobs assigned to this technician today
+    // Date only - ignore time
     // --------------------------------
     else if (filter === 'today') {
-      const startOfToday = new Date();
-      startOfToday.setHours(0, 0, 0, 0);
+      const today = new Date().toISOString().split('T')[0];
 
-      const endOfToday = new Date();
-      endOfToday.setHours(23, 59, 59, 999);
+      const startOfToday = new Date(`${today}T00:00:00.000Z`);
+      const endOfToday = new Date(`${today}T23:59:59.999Z`);
 
       jobs = await TechnicianJob.find({
         status: 'assigned',
-        requestedBy: { $nin: [techId] },
+        'assignedTechnician._id': techId,
         scheduledDate: {
           $gte: startOfToday,
           $lte: endOfToday,
@@ -84,25 +85,32 @@ const getJobsForTechnicians = async (req, res, next) => {
       }).sort('scheduledDate');
     }
 
+
     // --------------------------------
     // TOMORROW
+    // Jobs assigned to this technician tomorrow
+    // Date only - ignore time
     // --------------------------------
     else if (filter === 'tomorrow') {
-      const startOfTomorrow = new Date();
-      startOfTomorrow.setDate(
-        startOfTomorrow.getDate() + 1
-      );
-      startOfTomorrow.setHours(0, 0, 0, 0);
+      const tomorrow = new Date();
 
-      const endOfTomorrow = new Date();
-      endOfTomorrow.setDate(
-        endOfTomorrow.getDate() + 1
+      tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+
+      const tomorrowDate = tomorrow
+        .toISOString()
+        .split('T')[0];
+
+      const startOfTomorrow = new Date(
+        `${tomorrowDate}T00:00:00.000Z`
       );
-      endOfTomorrow.setHours(23, 59, 59, 999);
+
+      const endOfTomorrow = new Date(
+        `${tomorrowDate}T23:59:59.999Z`
+      );
 
       jobs = await TechnicianJob.find({
         status: 'assigned',
-        requestedBy: { $nin: [techId] },
+        'assignedTechnician._id': techId,
         scheduledDate: {
           $gte: startOfTomorrow,
           $lte: endOfTomorrow,
@@ -110,8 +118,11 @@ const getJobsForTechnicians = async (req, res, next) => {
       }).sort('scheduledDate');
     }
 
+
     // --------------------------------
     // CUSTOM DATE RANGE
+    // Jobs assigned to this technician
+    // Date only - ignore time
     // --------------------------------
     else if (filter === 'custom') {
       if (!fromDate || !toDate) {
@@ -122,11 +133,13 @@ const getJobsForTechnicians = async (req, res, next) => {
         });
       }
 
-      const startDate = new Date(fromDate);
-      startDate.setHours(0, 0, 0, 0);
+      // Extract only YYYY-MM-DD
+      const from = fromDate.split('T')[0];
+      const to = toDate.split('T')[0];
 
-      const endDate = new Date(toDate);
-      endDate.setHours(23, 59, 59, 999);
+      // Validate dates
+      const startDate = new Date(`${from}T00:00:00.000Z`);
+      const endDate = new Date(`${to}T23:59:59.999Z`);
 
       if (
         isNaN(startDate.getTime()) ||
@@ -140,7 +153,7 @@ const getJobsForTechnicians = async (req, res, next) => {
 
       jobs = await TechnicianJob.find({
         status: 'assigned',
-        requestedBy: { $nin: [techId] },
+        'assignedTechnician._id': techId,
         scheduledDate: {
           $gte: startDate,
           $lte: endDate,
@@ -160,43 +173,44 @@ const getJobsForTechnicians = async (req, res, next) => {
     }
 
     // --------------------------------
-    // GET REQUEST IDs
+    // GET REQUESTS
     // FOR CURRENT TECHNICIAN + JOBS
     // --------------------------------
-
     const jobIds = jobs.map((job) => job._id);
 
     const requests = await TechnicianJobRequest.find({
       job: { $in: jobIds },
       technician: techId,
-    }).select('_id job technician');
+    }).select('_id job technician status');
 
     // --------------------------------
-    // GROUP REQUEST IDS BY JOB
+    // GROUP REQUEST DATA BY JOB
     // --------------------------------
-
     const requestsByJob = {};
 
     requests.forEach((request) => {
       const jobId = request.job.toString();
 
-      if (!requestsByJob[jobId]) {
-        requestsByJob[jobId] = [];
-      }
-
-      requestsByJob[jobId].push(request._id);
+      requestsByJob[jobId] = {
+        requestId: request._id.toString(),
+        status: request.status,
+      };
     });
 
     // --------------------------------
-    // ADD REQUEST IDS TO EACH JOB
+    // ADD REQUEST ID + STATUS TO JOB
     // --------------------------------
-
     const jobsWithRequests = jobs.map((job) => {
       const jobObj = job.toObject();
 
-      
-        jobObj.requestId =
-  requestsByJob[job._id.toString()]?.[0]?.toString() || null;
+      const request =
+        requestsByJob[job._id.toString()];
+
+      jobObj.requestId =
+        request?.requestId || null;
+
+      jobObj.requestStatus =
+        request?.status || null;
 
       return jobObj;
     });
@@ -204,13 +218,13 @@ const getJobsForTechnicians = async (req, res, next) => {
     // --------------------------------
     // RESPONSE
     // --------------------------------
-
     return res.status(200).json({
       success: true,
       data: {
         jobs: jobsWithRequests,
       },
     });
+
   } catch (error) {
     next(error);
   }
@@ -218,10 +232,10 @@ const getJobsForTechnicians = async (req, res, next) => {
 
 const requestJob = async (req, res, next) => {
   try {
-    const { jobId }    = req.params;
-    const note         = req.body?.note;
-    const fixedPrice   = req.body?.fixedPrice;   // optional — technician's proposed fixed price
-    const charges      = req.body?.charges;       // optional — array of additional charges
+    const { jobId }  = req.params;
+    const note       = req.body?.note;
+    const fixedPrice = req.body?.fixedPrice;  // optional — technician's proposed fixed price
+    const charges    = req.body?.charges;     // optional — array of additional charges
 
     const job = await TechnicianJob.findById(jobId);
     if (!job) {
@@ -233,66 +247,60 @@ const requestJob = async (req, res, next) => {
     }
 
     const existingRequest = await TechnicianJobRequest.findOne({
-      job: jobId,
+      job:       jobId,
       technician: req.user._id,
-      status: { $in: ['pending', 'accepted', 'counter-offer'] },
+      status:    { $in: ['pending', 'accepted', 'counter-offer'] },
     });
 
     if (existingRequest) {
       return res.status(400).json({ success: false, message: 'You already requested this job' });
     }
 
-    // Determine if technician is proposing a different fixed price
-    const hasBid     = fixedPrice && Number(fixedPrice) > 0;
-    const bidAmount  = hasBid ? Number(fixedPrice) : null;
+    const hasBid    = fixedPrice && Number(fixedPrice) > 0;
+    const bidAmount = hasBid ? Number(fixedPrice) : null;
+    const now       = new Date();
 
-    // Build opening conversation message
-    const parts = [];
-    if (note?.trim()) parts.push(note.trim());
-    if (hasBid) parts.push(`Proposed fixed price: $${bidAmount.toLocaleString()}`);
-    // Use service date/time from the job details
+    // ── Build the opening conversation entry ─────────────────────────────
     const serviceDateTime = job.serviceDate
-      ? new Date(job.serviceDate).toLocaleString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-          hour: 'numeric',
-          minute: '2-digit',
+      ? new Date(job.serviceDate).toLocaleString('en-IN', {
+          month: 'short', day: 'numeric', year: 'numeric',
+          hour: 'numeric', minute: '2-digit',
         })
       : 'scheduled time';
 
-    // Job information
-    const jobInfo =
-      job.title ||
-      job.name ||
-      job.description ||
-      `Job #${job._id}`;
+    const jobInfo = job.title || job.description || `Job #${job._id}`;
 
-    const defaultMessage = `Requested for ${jobInfo} on ${serviceDateTime}.`;
+    // Opening message entry
+    const openingEntry = note?.trim()
+      ? {
+          sender:    'technician',
+          type:      'message',
+          message:   note.trim(),
+          createdAt: now,
+        }
+      : {
+          sender:    'technician',
+          type:      'message',
+          message:   `Requested for ${jobInfo} on ${serviceDateTime}.`,
+          createdAt: now,
+        };
 
-    const conversationMessage = parts.length
-      ? parts.join('. ')
-      : defaultMessage;
+    const initialConversation = [openingEntry];
 
-    const requestData = {
-      job:             jobId,
-      technician:      req.user._id,
-      note:            note?.trim() || '',
-      status:          'pending',
-      counterOffer:    hasBid ? bidAmount : 0,
-      counterOfferFrom: hasBid ? 'technician' : '',
-      conversation: [{
-        sender:          'technician',
-        message:         parts.length ? parts.join('. ') : conversationMessage,
-        counterOffer:    hasBid ? bidAmount : 0,
-        counterOfferFrom: hasBid ? 'technician' : '',
-        createdAt:       new Date(),
-      }],
-    };
+    // If technician proposed a fixed price, add a 'fixed_charge' entry
+    if (hasBid) {
+      initialConversation.push({
+        sender:           'technician',
+        type:             'fixed_charge',
+        message:          `Proposed fixed price: ₹${bidAmount}`,
+        fixedCharge:      bidAmount,
+        counterOffer:     bidAmount,
+        counterOfferFrom: 'technician',
+        createdAt:        now,
+      });
+    }
 
-    if (hasBid) requestData.bidAmount = bidAmount;
-
-    // Validate charges if provided
+    // ── Validate charges if provided ─────────────────────────────────────
     const hasCharges = Array.isArray(charges) && charges.length > 0;
     if (hasCharges) {
       for (const c of charges) {
@@ -303,33 +311,77 @@ const requestJob = async (req, res, next) => {
           return res.status(400).json({ success: false, message: `Amount for "${c.label}" must be > 0` });
         }
       }
-      requestData.chargesStatus = 'pending';
     }
+
+    const requestData = {
+      job:              jobId,
+      technician:       req.user._id,
+      note:             note?.trim() || '',
+      status:           'pending',
+      counterOffer:     hasBid ? bidAmount : 0,
+      counterOfferFrom: hasBid ? 'technician' : '',
+      conversation:     initialConversation,
+      ...(hasCharges && { chargesStatus: 'pending' }),
+    };
+
+    if (hasBid) requestData.bidAmount = bidAmount;
 
     const request = await TechnicianJobRequest.create(requestData);
 
-    // Track this technician in the job's requestedBy array (no duplicates)
-    await TechnicianJob.findByIdAndUpdate(
-      jobId,
-      { $addToSet: { requestedBy: req.user._id } }
-    );
+    // Track technician in the job's requestedBy array
+    await TechnicianJob.findByIdAndUpdate(jobId, { $addToSet: { requestedBy: req.user._id } });
 
-    // Create AdditionalCharge docs if charges were provided
+    // ── Create AdditionalCharge docs with proper counterHistory ──────────
     let createdCharges = [];
     if (hasCharges) {
       const AdditionalCharge = require('../models/AdditionalCharge');
-      createdCharges = await AdditionalCharge.insertMany(
-        charges.map((c) => ({
+
+      const chargeDocs = charges.map((c) => {
+        const amt = Number(c.amount);
+        return {
           job:             jobId,
           request:         request._id,
           technician:      req.user._id,
           label:           c.label.trim(),
           description:     c.description ? c.description.trim() : '',
-          requestedAmount: Number(c.amount),
+          requestedAmount: amt,
           status:          'pending',
-          submittedAt:     new Date(),
-        }))
-      );
+          pendingWith:     'admin',
+          submittedAt:     now,
+          counterHistory: [
+            {
+              round:     1,
+              actor:     'technician',
+              action:    'submit',
+              amount:    amt,
+              note:      c.description ? c.description.trim() : '',
+              createdAt: now,
+            },
+          ],
+        };
+      });
+
+      createdCharges = await AdditionalCharge.insertMany(chargeDocs);
+
+      // Add a 'charge_submitted' conversation entry to the request
+      const chargeSnapshots = createdCharges.map((ch) => ({
+        chargeId:    ch._id,
+        label:       ch.label,
+        description: ch.description,
+        amount:      ch.requestedAmount,
+      }));
+
+      await TechnicianJobRequest.findByIdAndUpdate(request._id, {
+        $push: {
+          conversation: {
+            sender:  'technician',
+            type:    'charge_submitted',
+            message: `Submitted ${createdCharges.length} additional charge${createdCharges.length > 1 ? 's' : ''} for admin review.`,
+            charges: chargeSnapshots,
+            createdAt: now,
+          },
+        },
+      });
     }
 
     // Notify admin
@@ -342,9 +394,9 @@ const requestJob = async (req, res, next) => {
     }
 
     const msg = hasCharges
-      ? `Job request sent with ${createdCharges.length} additional charge(s)${hasBid ? ` and a fixed price of $${bidAmount}` : ''}`
+      ? `Job request sent with ${createdCharges.length} additional charge(s)${hasBid ? ` and a fixed price of ₹${bidAmount}` : ''}`
       : hasBid
-        ? `Job request sent with a proposed price of $${bidAmount}`
+        ? `Job request sent with a proposed price of ₹${bidAmount}`
         : 'Job request sent';
 
     res.status(201).json({
@@ -402,27 +454,84 @@ const getTechnicianDashboard = async (req, res, next) => {
   }
 };
 
-const getConversationByRequestId = async (req, res, next) => {
+// ── Format a single conversation entry for the timeline API ─────────────────
+const formatConvEntry = (entry) => {
+  const base = {
+    _id:       entry._id,
+    sender:    entry.sender,
+    type:      entry.type || 'message',
+    message:   entry.message,
+    createdAt: entry.createdAt,
+  };
+
+  switch (entry.type) {
+    case 'fixed_charge':
+      return { ...base, fixedCharge: entry.fixedCharge, counterOfferFrom: entry.counterOfferFrom };
+
+    case 'charge_submitted':
+      return { ...base, charges: entry.charges || [] };
+
+    case 'charge_reviewed':
+    case 'charge_responded':
+      return {
+        ...base,
+        chargeId:    entry.chargeId,
+        chargeLabel: entry.chargeLabel,
+        action:      entry.action,
+        amount:      entry.amount,
+        note:        entry.note,
+      };
+
+    case 'final_amount':
+    case 'invoice_generated':
+      return {
+        ...base,
+        fixedJobCharge:         entry.fixedJobCharge,
+        additionalChargesTotal: entry.additionalChargesTotal,
+        finalAmount:            entry.finalAmount,
+      };
+
+    default:
+      return base;
+  }
+};
+
+/**
+ * GET /api/technician/requests/:requestId/conversation
+ * Returns the full typed conversation timeline for a request.
+ * Accessible by the owning technician.
+ */
+const getRequestConversation = async (req, res, next) => {
   try {
     const { requestId } = req.params;
 
-    const request = await TechnicianJobRequest.findOne({
-      _id: requestId,
-      technician: req.user._id,
-    }).select('conversation');
+    const request = await TechnicianJobRequest.findById(requestId)
+      .populate('job', 'title location budget category status')
+      .select('conversation status chargesStatus finalJobAmount agreedTotal agreedFixedCharge agreedAdditionalTotal technician job');
 
     if (!request) {
-      return res.status(404).json({
-        success: false,
-        message: 'Request not found',
-      });
+      return res.status(404).json({ success: false, message: 'Request not found' });
     }
+
+    // Both technician and admin (req.user.role check) can call this
+    const isOwner = request.technician.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === 'admin';
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ success: false, message: 'Not authorised' });
+    }
+
+    const conversation = (request.conversation || []).map(formatConvEntry);
 
     return res.status(200).json({
       success: true,
       data: {
-        requestId: request._id,
-        conversation: request.conversation || [],
+        requestId:      request._id,
+        status:         request.status,
+        chargesStatus:  request.chargesStatus,
+        finalJobAmount: request.finalJobAmount || null,
+        agreedTotal:    request.agreedTotal    || null,
+        job:            request.job,
+        conversation,
       },
     });
   } catch (error) {
@@ -476,7 +585,12 @@ const sendMessageOnRequest = async (req, res, next) => {
       return res.status(403).json({ success: false, message: 'Not allowed' });
     }
 
-    const entry = { sender: 'technician', message: message.trim(), createdAt: new Date() };
+    const entry = {
+      sender:    'technician',
+      type:      'message',
+      message:   message.trim(),
+      createdAt: new Date(),
+    };
     request.conversation = request.conversation || [];
     request.conversation.push(entry);
     await request.save();
@@ -693,23 +807,31 @@ const getMetrics = async (req, res, next) => {
 
     // =====================================
     // TODAY'S SCHEDULE
-    // From the same myJobs
+    // Compare DATE only, ignore TIME
+    // Exclude completed jobs
     // =====================================
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
 
-    const endOfToday = new Date();
-    endOfToday.setHours(23, 59, 59, 999);
+    const today = new Date().toISOString().split('T')[0];
 
     const todaySchedule = myJobs.filter((job) => {
-      if (!job.serviceDate) return false;
 
-      const serviceDate = new Date(job.serviceDate);
+      // Exclude completed jobs
+      if (job.status === 'completed' || job.completedAt) {
+        return false;
+      }
 
-      return (
-        serviceDate >= startOfToday &&
-        serviceDate <= endOfToday
-      );
+      // No service date
+      if (!job.serviceDate) {
+        return false;
+      }
+
+      // Extract only YYYY-MM-DD
+      const serviceDate = new Date(job.serviceDate)
+        .toISOString()
+        .split('T')[0];
+
+      return serviceDate === today;
+
     }).length;
 
     // =====================================
@@ -1116,61 +1238,10 @@ const getDetailsByJobId = async (req, res, next) => {
       });
     }
 
-    // Get this technician's request for this job
-    const request = await TechnicianJobRequest.findOne({
-      job: jobId,
-      technician: req.user._id,
-    })
-      .populate('technician', 'name email phone skills experienceLevel')
-      .populate('job');
-
-    if (!request) {
-      return res.status(404).json({
-        success: false,
-        message: 'You have not requested this job',
-      });
-    }
-
-    // Get additional charges related to this request
-    let charges = [];
-
-    try {
-      const AdditionalCharge = require('../models/AdditionalCharge');
-
-      charges = await AdditionalCharge.find({
-        job: jobId,
-        request: request._id,
-        technician: req.user._id,
-      }).sort({ createdAt: 1 });
-    } catch (error) {
-      console.warn(
-        '[getDetailsByJobId] Failed to fetch additional charges:',
-        error.message
-      );
-    }
-
     return res.status(200).json({
       success: true,
       data: {
-        job,
-        request: {
-          _id: request._id,
-          status: request.status,
-          note: request.note,
-          bidAmount: request.bidAmount || 0,
-          counterOffer: request.counterOffer || 0,
-          counterOfferFrom: request.counterOfferFrom || '',
-          adminMessage: request.adminMessage || '',
-          createdAt: request.createdAt,
-          updatedAt: request.updatedAt,
-          completedAt: request.completedAt,
-        },
-
-        // All conversation messages between technician and admin
-        conversation: request.conversation || [],
-
-        // Additional charges requested for this job
-        charges,
+        job
       },
     });
   } catch (error) {
@@ -1193,7 +1264,7 @@ module.exports = {
   // counterOffer,
   sendMessageOnRequest,
   getRequestMessages,
-  getConversationByRequestId,
+  getRequestConversation,
   // getMyJobs,
   getDetailsByJobId,
 };

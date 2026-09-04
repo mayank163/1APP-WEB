@@ -16,6 +16,10 @@ const technicianJobSchema = new mongoose.Schema({
     required: [true, 'Job location is required'],
     trim: true,
   },
+  coordinates: {
+    lat: { type: Number, default: null },
+    lng: { type: Number, default: null },
+  },
   budget: {
     type: Number,
     required: [true, 'Budget is required'],
