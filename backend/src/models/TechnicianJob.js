@@ -6,10 +6,17 @@ const technicianJobSchema = new mongoose.Schema({
     required: [true, 'Job title is required'],
     trim: true,
   },
-  category: {
-    type: String,
-    default: 'General Service',
-    trim: true,
+  categoryInfo: {
+    _id:  { type: mongoose.Schema.Types.ObjectId, ref: 'Category', default: null },
+    name: { type: String, default: '', trim: true },
+    subcategory: {
+      _id:  { type: mongoose.Schema.Types.ObjectId, ref: 'SubCategory', default: null },
+      name: { type: String, default: '', trim: true },
+      service: {
+        _id:  { type: mongoose.Schema.Types.ObjectId, ref: 'Service', default: null },
+        name: { type: String, default: '', trim: true },
+      },
+    },
   },
   location: {
     type: String,

@@ -1890,3 +1890,10 @@
 }
 .pac-item:hover { background: #fdf9f5; }
 .pac-item-selected { background: #fdf9f5; }
+
+/* ── Live location pulse dot ── */
+@keyframes tj-pulse {
+  0%   { opacity: 1; transform: scale(1); }
+  50%  { opacity: 0.4; transform: scale(1.4); }
+  100% { opacity: 1; transform: scale(1); }
+}

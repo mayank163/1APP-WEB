@@ -29,7 +29,7 @@ const createTechnicianJob = async (req, res, next) => {
   try {
     const {
       title,
-      category,
+      categoryInfo,
       location,
       coordinates,
       budget,
@@ -51,7 +51,7 @@ const createTechnicianJob = async (req, res, next) => {
     // Create job
     const job = await TechnicianJob.create({
       title,
-      category: category || 'General Service',
+      categoryInfo: categoryInfo || {},
       location,
       budget: Number(budget),
       description,
@@ -317,7 +317,7 @@ const updateTechnicianRequest = async (req, res, next) => {
 const updateTechnicianJob = async (req, res, next) => {
   try {
     const { jobId } = req.params;
-    const { title, category, location, coordinates, budget, description, requirements, serviceDate, preferredSkills, estimatedTime } = req.body;
+    const { title, categoryInfo, location, coordinates, budget, description, requirements, serviceDate, preferredSkills, estimatedTime } = req.body;
 
     const job = await TechnicianJob.findById(jobId);
     if (!job) {
@@ -325,7 +325,7 @@ const updateTechnicianJob = async (req, res, next) => {
     }
 
     if (title) job.title = title;
-    if (category) job.category = category;
+    if (categoryInfo !== undefined) job.categoryInfo = categoryInfo || {};
     if (location) job.location = location;
     if (coordinates) job.coordinates = coordinates;
     if (budget !== undefined) job.budget = Number(budget || 0);

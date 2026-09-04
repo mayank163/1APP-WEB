@@ -189,6 +189,31 @@ io.on("connection", (socket) => {
         }
     });
 
+    // ── Technician live location ──────────────────────────────────────────────
+    // Technician emits their GPS coords; backend forwards to the job room
+    socket.on('technician:location', ({ jobId, technicianId, lat, lng }) => {
+        if (!jobId || lat == null || lng == null) return;
+        const payload = { jobId, technicianId, lat, lng, ts: Date.now() };
+        // Forward to the job-specific room so admin receives it
+        io.to(`job:${jobId}`).emit('technician:location', payload);
+        console.log(`[Socket] technician:location → job:${jobId} lat=${lat} lng=${lng}`);
+    });
+
+    // Admin joins a job room to watch live technician location
+    socket.on('job:watch', (jobId) => {
+        if (jobId) {
+            socket.join(`job:${jobId}`);
+            console.log(`[Socket] ${socket.id} watching job: ${jobId}`);
+        }
+    });
+
+    socket.on('job:unwatch', (jobId) => {
+        if (jobId) {
+            socket.leave(`job:${jobId}`);
+            console.log(`[Socket] ${socket.id} stopped watching job: ${jobId}`);
+        }
+    });
+
     // Admin joins a global room to receive job-level broadcasts
     socket.on('admin:join', () => {
         socket.join('admin');

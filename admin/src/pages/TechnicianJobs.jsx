@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import LocationPicker from '../components/LocationPicker';
+import CategoryServicePicker from '../components/CategoryServicePicker';
+import TechnicianTrackingMap from '../components/TechnicianTrackingMap';
 import { toast } from 'react-toastify';
 import adminApi from '../services/adminApi';
 import socket from '../services/socket';
@@ -16,9 +18,12 @@ import {
 
 const emptyForm = {
   title: '',
-  category: 'General Service',
+  categoryInfo: {
+    _id: '', name: '',
+    subcategory: { _id: '', name: '', service: { _id: '', name: '' } },
+  },
   location: '',
-  coordinates: null,   // { address, lat, lng }
+  coordinates: null,
   budget: '',
   description: '',
   preferredSkills: '',
@@ -706,11 +711,8 @@ const JobForm = ({ form, setForm, onSubmit, onCancel, isEditing, saving }) => (
         onChange={(e) => setForm({ ...form, title: e.target.value })}
         placeholder="e.g. AC Service Repair" required />
     </div>
-    <div className="col-md-6">
-      <label className="tj-label">Category</label>
-      <input className="form-control tj-input" value={form.category}
-        onChange={(e) => setForm({ ...form, category: e.target.value })}
-        placeholder="General Service" />
+    <div className="col-12">
+      <CategoryServicePicker form={form} setForm={setForm} />
     </div>
     <div className="col-md-6">
       <label className="tj-label">Budget ($) <span className="text-danger">*</span></label>
@@ -996,7 +998,7 @@ const TechnicianJobs = () => {
     setEditingJobId(job._id);
     setForm({
       title:           job.title || '',
-      category:        job.category || 'General Service',
+      categoryInfo:    job.categoryInfo || { _id: '', name: '', subcategory: { _id: '', name: '', service: { _id: '', name: '' } } },
       location:        job.location || '',
       coordinates:     job.coordinates?.lat ? job.coordinates : null,
       budget:          job.budget || '',
@@ -1596,6 +1598,17 @@ const TechnicianJobs = () => {
                       <div className="text-muted small">{selectedJob.assignedTechnician.phone}</div>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* Live Technician Tracking */}
+              {selectedJob.assignedTechnician?.name && ['assigned','visited','inprogress'].includes(selectedJob.status) && (
+                <div className="tj-view-block">
+                  <div className="tj-view-block-title">
+                    <FaMapMarkerAlt className="me-1" style={{ color: '#16a34a' }} />
+                    Live Technician Location
+                  </div>
+                  <TechnicianTrackingMap job={selectedJob} />
                 </div>
               )}
 

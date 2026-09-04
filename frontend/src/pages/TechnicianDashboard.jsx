@@ -1303,6 +1303,33 @@ const TechnicianDashboard = () => {
     return () => socket.emit('technician:leave', profile._id);
   }, [socket, profile?._id]);
 
+  // ── Live GPS location — emit every 5s for active assigned jobs ───────────────
+  useEffect(() => {
+    if (!socket || myJobs.length === 0) return;
+    const activeJobs = myJobs.filter((j) => !j.jobCompletedAt);
+    if (activeJobs.length === 0) return;
+    const emit = () => {
+      if (!navigator.geolocation) return;
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }) => {
+          activeJobs.forEach((job) => {
+            socket.emit('technician:location', {
+              jobId:        job._id,
+              technicianId: profile?._id,
+              lat:          coords.latitude,
+              lng:          coords.longitude,
+            });
+          });
+        },
+        (err) => console.warn('[GPS]', err.message),
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    };
+    emit();
+    const interval = setInterval(emit, 5000);
+    return () => clearInterval(interval);
+  }, [socket, myJobs, profile?._id]);
+
   // ── profile image ────────────────────────────────────────────────────────────
   const handleImageChange = (e) => {
     const file = e.target.files[0];

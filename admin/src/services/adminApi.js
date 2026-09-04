@@ -89,6 +89,8 @@ const adminApi = {
         const url = categoryId ? `/services/subcategories?category=${categoryId}` : '/services/subcategories';
         return (await API.get(url)).data;
     },
+    getSubCategoriesByCategory: async (categoryId) => (await API.get(`/services/categories/${categoryId}/subcategories`)).data,
+    getServicesBySubCategory: async (subcategoryId) => (await API.get(`/services/subcategories/${subcategoryId}/services`)).data,
     createSubCategory: async (fd) => (await API.post('/services/subcategories', fd, multipart)).data,
     updateSubCategory: async (id, fd) => (await API.put(`/services/subcategories/${id}`, fd, multipart)).data,
     deleteSubCategory: async (id) => (await API.delete(`/services/subcategories/${id}`)).data,
