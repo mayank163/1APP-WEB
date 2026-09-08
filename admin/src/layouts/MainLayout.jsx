@@ -29,6 +29,7 @@ const MainLayout = () => {
         { to: "/users", icon: <FaUsers size={14} />, label: "Users", resource: 'users' },
         { to: "/offers", icon: <FaTag size={14} />, label: "Offers & Coupons", resource: 'offers' },
         { to: "/technician-jobs", icon: <FaHardHat size={14} />, label: "Technician Jobs", resource: 'technician_jobs' },
+        { to: "/technician-overview", icon: <FaUsers size={14} />, label: "Technicians", resource: 'technician_jobs' },
         { to: "/technician-verification", icon: <FaCheckCircle size={14} />, label: "Verification", resource: 'technician_verification' },
         { to: "/blogs", icon: <FaBlog size={14} />, label: "Blogs", resource: 'blogs' },
         { to: "/sub-admins", icon: <FaUserShield size={14} />, label: "Sub-Admins", resource: 'sub_admins' },

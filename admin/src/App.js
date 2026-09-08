@@ -18,6 +18,7 @@ import OfferManagement from './pages/OfferManagement';
 import BlogManagement from './pages/BlogManagement';
 import TechnicianJobs from './pages/TechnicianJobs';
 import TechnicianVerification from './pages/TechnicianVerification';
+import TechnicianOverview from './pages/TechnicianOverview';
 import SubAdminManagement from './pages/SubAdminManagement';
 
 const AdminPrivateRoute = ({ children }) => {
@@ -62,6 +63,7 @@ function AppRoutes() {
           <Route path="users" element={<PermRoute resource="users" access="read"><UserManagement /></PermRoute>} />
           <Route path="offers" element={<PermRoute resource="offers" access="read"><OfferManagement /></PermRoute>} />
           <Route path="technician-jobs" element={<PermRoute resource="technician_jobs" access="read"><TechnicianJobs /></PermRoute>} />
+          <Route path="technician-overview" element={<PermRoute resource="technician_jobs" access="read"><TechnicianOverview /></PermRoute>} />
           <Route path="technician-verification" element={<PermRoute resource="technician_verification" access="read"><TechnicianVerification /></PermRoute>} />
           <Route path="blogs" element={<PermRoute resource="blogs" access="read"><BlogManagement /></PermRoute>} />
           <Route path="sub-admins" element={<PermRoute resource="sub_admins" access="read"><SubAdminManagement /></PermRoute>} />

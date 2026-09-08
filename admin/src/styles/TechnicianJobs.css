@@ -1897,3 +1897,73 @@
   50%  { opacity: 0.4; transform: scale(1.4); }
   100% { opacity: 1; transform: scale(1); }
 }
+
+/* ── Task Builder ────────────────────────────────────────────────────────── */
+.tj-task-builder { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.tj-task-group { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.25rem; }
+
+.tj-task-group-label {
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.07em; color: #A5732F;
+  padding: 0.2rem 0; border-bottom: 1px solid #f0e8dc; margin-bottom: 0.2rem;
+}
+
+.tj-task-row {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.35rem 0.6rem; background: #fdf9f5;
+  border: 1px solid #f0e8dc; border-radius: 7px; font-size: 0.85rem;
+  transition: background 0.12s;
+}
+.tj-task-row.done {
+  background: rgba(22, 163, 74, 0.05);
+  border-color: rgba(22, 163, 74, 0.2);
+}
+
+.tj-task-circle {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid #d1d5db; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.tj-task-circle.checked {
+  background: #16a34a; border-color: #16a34a;
+}
+
+.tj-task-title { flex: 1; color: #1a1208; font-size: 0.85rem; }
+.tj-task-row.done .tj-task-title { text-decoration: line-through; color: #6c757d; }
+
+.tj-task-meta { font-size: 0.7rem; color: #6c757d; white-space: nowrap; }
+
+.tj-task-dist { font-size: 0.7rem; font-weight: 700; color: #2563eb; white-space: nowrap; }
+
+.tj-task-remove {
+  background: none; border: none; color: #adb5bd;
+  cursor: pointer; padding: 0; font-size: 0.75rem; line-height: 1; flex-shrink: 0;
+  transition: color 0.12s;
+}
+.tj-task-remove:hover { color: #dc3545; }
+
+.tj-task-add-row { display: flex; gap: 0.4rem; align-items: center; margin-top: 0.25rem; }
+
+.tj-task-group-select {
+  border: 1.5px solid #e9e0d5; border-radius: 7px;
+  padding: 0.38rem 0.5rem; font-size: 0.8rem;
+  background: #fdf9f5; color: #1a1208; outline: none; width: 90px; flex-shrink: 0;
+}
+.tj-task-group-select:focus { border-color: #A5732F; box-shadow: 0 0 0 3px rgba(165,115,47,0.12); }
+
+.tj-task-input {
+  flex: 1; border: 1.5px solid #e9e0d5; border-radius: 7px;
+  padding: 0.38rem 0.7rem; font-size: 0.85rem; background: #fdf9f5; outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.tj-task-input:focus { border-color: #A5732F; box-shadow: 0 0 0 3px rgba(165,115,47,0.12); background: #fff; }
+
+.tj-task-add-btn {
+  width: 34px; height: 34px; border-radius: 7px; border: none;
+  background: #A5732F; color: #fff; display: flex; align-items: center;
+  justify-content: center; font-size: 0.8rem; cursor: pointer; flex-shrink: 0;
+  transition: background 0.15s;
+}
+.tj-task-add-btn:hover:not(:disabled) { background: #8c5f25; }
+.tj-task-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }

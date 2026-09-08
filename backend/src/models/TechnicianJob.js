@@ -48,9 +48,15 @@ const technicianJobSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['open', 'assigned', 'visited', 'inprogress', 'completed', 'closed'],
+    enum: ['open', 'assigned', 'visited', 'inprogress', 'completed', 'cancelled'],
     default: 'open',
   },
+  // Full audit trail of every status change with optional admin note
+  statusHistory: [{
+    status:    { type: String, trim: true },
+    note:      { type: String, default: '', trim: true },
+    changedAt: { type: Date, default: Date.now },
+  }],
   assignedTechnician: {
     _id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     name: { type: String, default: '' },
@@ -71,6 +77,13 @@ const technicianJobSchema = new mongoose.Schema({
     type: Date,
     default: null,
   },
+  // All reached-event data in one object
+  reachedStatus: {
+    at:             { type: Date,   default: null },
+    lat:            { type: Number, default: null },
+    lng:            { type: Number, default: null },
+    distanceMeters: { type: Number, default: null },
+  },
   jobStartedAt: {
     type: Date,
     default: null,
@@ -78,6 +91,13 @@ const technicianJobSchema = new mongoose.Schema({
   jobCompletedAt: {
     type: Date,
     default: null,
+  },
+  // All completed-event data in one object
+  completedStatus: {
+    at:             { type: Date,   default: null },
+    lat:            { type: Number, default: null },
+    lng:            { type: Number, default: null },
+    distanceMeters: { type: Number, default: null },
   },
   jobDurationMinutes: {
     type: Number,
@@ -124,6 +144,16 @@ const technicianJobSchema = new mongoose.Schema({
     sender: { type: String, enum: ['admin', 'technician', 'system'], default: 'system' },
     message: { type: String, default: '' },
     createdAt: { type: Date, default: Date.now },
+  }],
+  tasks: [{
+    title:          { type: String, required: true, trim: true },
+    group:          { type: String, default: '', trim: true },
+    order:          { type: Number, default: 0 },
+    isDone:         { type: Boolean, default: false },
+    checkedAt:      { type: Date, default: null },
+    technicianLat:  { type: Number, default: null },
+    technicianLng:  { type: Number, default: null },
+    distanceMeters: { type: Number, default: null },
   }],
 }, {
   timestamps: true,

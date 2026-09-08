@@ -296,14 +296,17 @@ exports.cancelBooking = async (req, res, next) => {
         }
 
         // Access check
-        if (booking.user.toString() !== req.user.id && req.user.role !== 'admin') {
+        if (
+            booking.user.toString() !== req.user.id &&
+            req.user.role !== 'admin'
+        ) {
             return res.status(403).json({
                 success: false,
                 message: 'You do not have permission to cancel this booking'
             });
         }
 
-        // Only allow cancel if not In Progress/Completed/already Cancelled
+        // Only allow cancellation if not In Progress/Completed/already Cancelled
         if (['In Progress', 'Completed', 'Cancelled'].includes(booking.status)) {
             return res.status(400).json({
                 success: false,
@@ -311,24 +314,45 @@ exports.cancelBooking = async (req, res, next) => {
             });
         }
 
+        // Cancellation note entered by admin
+        const { statusNote } = req.body;
+
+        // Cancel booking
         booking.status = 'Cancelled';
         await booking.save();
 
-        // Send cancellation email with invoice summary (non-blocking)
-        // Re-fetch with populated relations for the email template
+        // Update Job status and status note
+        if (booking.job) {
+            await Job.findByIdAndUpdate(
+                booking.job,
+                {
+                    $set: {
+                        status: 'Cancelled',
+                        statusNote: statusNote || 'Booking cancelled'
+                    }
+                },
+                { new: true }
+            );
+        }
+
+        // Send cancellation email with invoice summary
         const populatedBooking = await Booking.findById(booking._id)
             .populate('user')
             .populate('services.service');
 
         sendBookingCancelled(populatedBooking).catch(err =>
-            console.error('Booking cancelled email failed:', err.message)
+            console.error(
+                'Booking cancelled email failed:',
+                err.message
+            )
         );
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: 'Booking cancelled successfully',
             data: { booking }
         });
+
     } catch (err) {
         next(err);
     }

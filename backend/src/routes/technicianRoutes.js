@@ -36,6 +36,7 @@ router.get('/metrics',   protect, restrictTo('technician'), technicianController
 // ── Job progress ──────────────────────────────────────────────────────────────
 router.patch('/jobs/:jobId/reached',  protect, restrictTo('technician'), technicianController.markReached);
 router.patch('/jobs/:jobId/complete', protect, restrictTo('technician'), technicianController.markJobCompleted);
+router.patch('/jobs/:jobId/tasks/:taskIndex/complete', protect, restrictTo('technician'), technicianController.completeTask);
 
 // ── Detail pages ─────────────────────────────────────────────────────────────
 router.get('/details/:jobId', protect, restrictTo('technician'), technicianController.getDetailsByJobId);

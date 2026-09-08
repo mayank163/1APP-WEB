@@ -37,7 +37,8 @@ const createTechnicianJob = async (req, res, next) => {
       requirements,
       serviceDate,
       preferredSkills,
-      estimatedTime
+      estimatedTime,
+    tasks
     } = req.body;
 
     // Validate required fields
@@ -63,6 +64,12 @@ const createTechnicianJob = async (req, res, next) => {
         ? preferredSkills
         : [],
       estimatedTime: estimatedTime || '',
+      tasks: Array.isArray(tasks) ? tasks.map((t, i) => ({
+        title:  t.title?.trim() || '',
+        group:  t.group?.trim() || '',
+        order:  t.order ?? i,
+        isDone: false,
+      })) : [],
     });
 
     // --------------------------------------------------
@@ -317,7 +324,7 @@ const updateTechnicianRequest = async (req, res, next) => {
 const updateTechnicianJob = async (req, res, next) => {
   try {
     const { jobId } = req.params;
-    const { title, categoryInfo, location, coordinates, budget, description, requirements, serviceDate, preferredSkills, estimatedTime } = req.body;
+    const { title, categoryInfo, location, coordinates, budget, description, requirements, serviceDate, preferredSkills, estimatedTime, tasks } = req.body;
 
     const job = await TechnicianJob.findById(jobId);
     if (!job) {
@@ -334,6 +341,18 @@ const updateTechnicianJob = async (req, res, next) => {
     if (Array.isArray(requirements)) job.requirements = requirements;
     if (Array.isArray(preferredSkills)) job.preferredSkills = preferredSkills;
     if (estimatedTime !== undefined) job.estimatedTime = estimatedTime || '';
+    if (Array.isArray(tasks)) {
+      job.tasks = tasks.map((t, i) => ({
+        title:          t.title?.trim() || '',
+        group:          t.group?.trim() || '',
+        order:          t.order ?? i,
+        isDone:         t.isDone || false,
+        checkedAt:      t.checkedAt      || null,
+        technicianLat:  t.technicianLat  || null,
+        technicianLng:  t.technicianLng  || null,
+        distanceMeters: t.distanceMeters || null,
+      }));
+    }
 
     await job.save();
     res.status(200).json({ success: true, message: 'Job updated successfully', data: { job } });
@@ -364,7 +383,7 @@ const updateTechnicianJobStatus = async (req, res, next) => {
     const { jobId } = req.params;
     const { status, finalPrice, note } = req.body;
 
-    const validStatuses = ['open', 'assigned', 'visited', 'inprogress', 'completed', 'closed'];
+    const validStatuses = ['open', 'assigned', 'visited', 'inprogress', 'completed', 'cancelled'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ success: false, message: 'Invalid job status' });
     }
@@ -375,9 +394,20 @@ const updateTechnicianJobStatus = async (req, res, next) => {
     }
 
     job.status = status;
-    if (note) {
+
+    // Push to audit trail — always, even if note is empty
+    const now = new Date();
+    job.statusHistory = job.statusHistory || [];
+    job.statusHistory.push({
+      status,
+      note:      note ? note.trim() : '',
+      changedAt: now,
+    });
+
+    // Also write to conversation so technician sees the update
+    if (note && note.trim()) {
       job.conversation = job.conversation || [];
-      job.conversation.push({ sender: 'admin', message: note, createdAt: new Date() });
+      job.conversation.push({ sender: 'admin', message: note.trim(), createdAt: now });
     }
 
     if (finalPrice !== undefined) {

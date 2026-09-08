@@ -30,6 +30,7 @@ const emptyForm = {
   requirements: '',
   serviceDate: '',
   estimatedTime: '',
+  tasks: [],
 };
 
 // ─── Helper: format duration ───────────────────────────────────────────────────
@@ -702,6 +703,74 @@ const PayWalletModal = ({ show, job, onClose, onPay, paying }) => {
 };
 
 
+// ─── TaskBuilder ───────────────────────────────────────────────────────────────
+const TASK_GROUPS = ['Prep', 'On Site', 'Post'];
+
+const TaskBuilder = ({ tasks, onChange }) => {
+  const [newTitle, setNewTitle] = useState('');
+  const [newGroup, setNewGroup] = useState('Prep');
+
+  const addTask = () => {
+    const title = newTitle.trim();
+    if (!title) return;
+    onChange([...tasks, { title, group: newGroup, order: tasks.length, isDone: false }]);
+    setNewTitle('');
+  };
+
+  const removeTask = (idx) => onChange(tasks.filter((_, i) => i !== idx));
+
+  return (
+    <div className="tj-task-builder">
+      <label className="tj-label">
+        <FaTools className="me-1" style={{ color: '#A5732F' }} /> Tasks for Technician
+      </label>
+
+      {TASK_GROUPS.map((g) => {
+        const gTasks = tasks.filter((t) => t.group === g);
+        if (!gTasks.length) return null;
+        return (
+          <div key={g} className="tj-task-group">
+            <div className="tj-task-group-label">{g}</div>
+            {gTasks.map((t) => {
+              const globalIdx = tasks.indexOf(t);
+              return (
+                <div key={globalIdx} className="tj-task-row">
+                  <span className="tj-task-circle" />
+                  <span className="tj-task-title">{t.title}</span>
+                  <button type="button" className="tj-task-remove" onClick={() => removeTask(globalIdx)}>
+                    <FaTimes />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+
+      <div className="tj-task-add-row">
+        <select
+          className="tj-task-group-select"
+          value={newGroup}
+          onChange={(e) => setNewGroup(e.target.value)}
+        >
+          {TASK_GROUPS.map((g) => <option key={g}>{g}</option>)}
+        </select>
+        <input
+          className="tj-task-input"
+          placeholder="Task title…"
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTask(); } }}
+        />
+        <button type="button" className="tj-task-add-btn" onClick={addTask} disabled={!newTitle.trim()}>
+          <FaPlus />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+
 // ─── Job Form (shared by Add + Edit) ──────────────────────────────────────────
 const JobForm = ({ form, setForm, onSubmit, onCancel, isEditing, saving }) => (
   <form onSubmit={onSubmit} className="row g-3">
@@ -761,6 +830,12 @@ const JobForm = ({ form, setForm, onSubmit, onCancel, isEditing, saving }) => (
         onChange={(e) => setForm({ ...form, requirements: e.target.value })}
         placeholder="Tools, safety gear (comma separated)" />
     </div>
+    <div className="col-12">
+      <TaskBuilder
+        tasks={form.tasks || []}
+        onChange={(tasks) => setForm({ ...form, tasks })}
+      />
+    </div>
     <div className="col-12 d-flex justify-content-end gap-2 pt-2">
       <button type="button" className="btn tj-btn-ghost" onClick={onCancel} disabled={saving}>Cancel</button>
       <button type="submit" className="btn tj-btn-primary" disabled={saving}>
@@ -773,6 +848,78 @@ const JobForm = ({ form, setForm, onSubmit, onCancel, isEditing, saving }) => (
 );
 
 
+// ─── StatusUpdateModal ─────────────────────────────────────────────────────────
+const StatusUpdateModal = ({ show, targetStatus, job, onClose, onConfirm, saving }) => {
+  const [note, setNote]   = useState('');
+  const [price, setPrice] = useState('');
+
+  // Reset fields every time modal opens for a new status
+  useEffect(() => {
+    if (show) { setNote(''); setPrice(''); }
+  }, [show, targetStatus]);
+
+  if (!show) return null;
+  const needsPrice = targetStatus === 'completed';
+
+  return (
+    <div className="tj-modal-backdrop" onClick={onClose}>
+      <div className="tj-modal-box" onClick={(e) => e.stopPropagation()}>
+        <div className="tj-modal-header">
+          <h5 className="tj-modal-title">
+            Set Status — <span style={{ color: '#A5732F' }}>{targetStatus}</span>
+          </h5>
+          <button className="tj-modal-close" onClick={onClose}><FaTimes /></button>
+        </div>
+        <div className="tj-modal-body">
+          <p className="text-muted small mb-3">
+            Job: <strong>{job?.title}</strong>
+          </p>
+
+          {needsPrice && (
+            <>
+              <label className="tj-label">Final Price ($) <span className="text-danger">*</span></label>
+              <div className="tj-counter-input-wrap mb-3">
+                <span className="tj-counter-prefix">$</span>
+                <input
+                  className="tj-counter-input"
+                  type="number" min="0"
+                  placeholder="0"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  autoFocus
+                />
+              </div>
+            </>
+          )}
+
+          <label className="tj-label">Note (optional)</label>
+          <textarea
+            className="form-control tj-input mb-3"
+            rows={3}
+            placeholder={`Why is the status changing to "${targetStatus}"? Any context for your future self…`}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            autoFocus={!needsPrice}
+          />
+
+          <div className="d-flex gap-2 justify-content-end">
+            <button className="btn tj-btn-ghost" onClick={onClose} disabled={saving}>Cancel</button>
+            <button
+              className="btn tj-btn-primary"
+              disabled={saving || (needsPrice && (!price || Number(price) < 0))}
+              onClick={() => onConfirm(targetStatus, note.trim(), needsPrice ? Number(price) : undefined)}
+            >
+              {saving
+                ? <><span className="spinner-border spinner-border-sm me-2" />Saving…</>
+                : 'Confirm Status Update'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 const TechnicianJobs = () => {
   const [jobs, setJobs]         = useState([]);
@@ -783,6 +930,10 @@ const TechnicianJobs = () => {
   const [rescheduling, setRescheduling] = useState(false);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [rescheduleJob, setRescheduleJob]             = useState(null);
+
+  // Status-update modal
+  const [statusModal, setStatusModal]         = useState({ show: false, targetStatus: '' });
+  const [updatingStatus, setUpdatingStatus]   = useState(false);
 
   const [activeTab, setActiveTab]   = useState('all');
   const [search, setSearch]         = useState('');
@@ -894,6 +1045,21 @@ const TechnicianJobs = () => {
       console.log('[Socket] ← invoice:paid', { requestId, amount });
       loadData();
     };
+    const handleTaskCompleted = ({ jobId, taskIndex, task }) => {
+      console.log('[Socket] ← job:task:completed', { jobId, taskIndex });
+      setJobs((prev) => prev.map((j) => {
+        if (j._id !== jobId) return j;
+        const tasks = [...(j.tasks || [])];
+        tasks[taskIndex] = task;
+        return { ...j, tasks };
+      }));
+      setSelectedJob((prev) => {
+        if (!prev || prev._id !== jobId) return prev;
+        const tasks = [...(prev.tasks || [])];
+        tasks[taskIndex] = task;
+        return { ...prev, tasks };
+      });
+    };
 
     socket.on('request:message',     handleMsg);
     socket.on('request:status',      handleStatus);
@@ -905,6 +1071,7 @@ const TechnicianJobs = () => {
     socket.on('charge:reviewed',     handleChargeReviewed);
     socket.on('invoice:generated',   handleInvoiceGenerated);
     socket.on('invoice:paid',        handleInvoicePaid);
+    socket.on('job:task:completed',  handleTaskCompleted);
     return () => {
       socket.off('request:message',   handleMsg);
       socket.off('request:status',    handleStatus);
@@ -917,6 +1084,7 @@ const TechnicianJobs = () => {
       socket.off('charge:responded',  handleChargeResponded);
       socket.off('invoice:generated', handleInvoiceGenerated);
       socket.off('invoice:paid',      handleInvoicePaid);
+      socket.off('job:task:completed', handleTaskCompleted);
     };
   }, [selectedJob]);
 
@@ -981,6 +1149,7 @@ const TechnicianJobs = () => {
     serviceDate:     f.serviceDate || undefined,
     estimatedTime:   f.estimatedTime || '',
     coordinates:     f.coordinates || undefined,
+    tasks:           (f.tasks || []).map((t, i) => ({ ...t, order: i })),
   });
 
   const handleAdd = async (e) => {
@@ -1007,6 +1176,10 @@ const TechnicianJobs = () => {
       requirements:    (job.requirements || []).join(', '),
       serviceDate:     job.serviceDate ? new Date(job.serviceDate).toISOString().slice(0, 16) : '',
       estimatedTime:   job.estimatedTime || '',
+      tasks:           (job.tasks || []).map((t) => ({
+        title: t.title, group: t.group || 'Prep',
+        order: t.order || 0, isDone: t.isDone || false,
+      })),
     });
     setShowEditModal(true);
   };
@@ -1052,9 +1225,36 @@ const TechnicianJobs = () => {
     } finally { setRescheduling(false); }
   };
 
+  // ── Status update via modal ──────────────────────────────────────────────────
+  const handleStatusUpdate = async (status, note, finalPrice) => {
+    setUpdatingStatus(true);
+    try {
+      await adminApi.updateTechnicianJobStatus(selectedJob._id, {
+        status,
+        note:       note || '',
+        finalPrice: finalPrice !== undefined ? finalPrice : undefined,
+      });
+      toast.success('Status updated!');
+      setStatusModal({ show: false, targetStatus: '' });
+      setSelectedJob((prev) => ({
+        ...prev,
+        status,
+        ...(finalPrice !== undefined && { finalPrice }),
+        statusHistory: [
+          ...(prev.statusHistory || []),
+          { status, note: note || '', changedAt: new Date().toISOString() },
+        ],
+      }));
+      await loadData();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Update failed');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
   // ── Pay wallet ──────────────────────────────────────────────────────────────
   const openPayModal = (job) => { setPayModalJob(job); setShowPayModal(true); };
-
   const handlePayWallet = async (jobId, finalPrice, note) => {
     setPaying(true);
     try {
@@ -1433,6 +1633,16 @@ const TechnicianJobs = () => {
         rescheduling={rescheduling}
       />
 
+      {/* ── STATUS UPDATE MODAL ──────────────────────────────────────────────── */}
+      <StatusUpdateModal
+        show={statusModal.show}
+        targetStatus={statusModal.targetStatus}
+        job={selectedJob}
+        onClose={() => setStatusModal({ show: false, targetStatus: '' })}
+        onConfirm={handleStatusUpdate}
+        saving={updatingStatus}
+      />
+
       {/* ── PAY WALLET MODAL ─────────────────────────────────────────────────── */}
       <PayWalletModal
         show={showPayModal}
@@ -1537,6 +1747,39 @@ const TechnicianJobs = () => {
                         <div>
                           <div className="tj-timeline-label">Technician Reached</div>
                           <div className="tj-timeline-time">{fmtDT(selectedJob.reachedAt)}</div>
+                          {selectedJob.reachedStatus?.lat != null && (
+                            <>
+                              <a
+                                href={`https://www.google.com/maps?q=${selectedJob.reachedStatus.lat},${selectedJob.reachedStatus.lng}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                                  fontSize: '0.75rem', color: '#2563eb', fontWeight: 600,
+                                  marginTop: 3, textDecoration: 'none',
+                                }}
+                              >
+                                <FaMapMarkerAlt style={{ color: '#2563eb', flexShrink: 0 }} />
+                                {Number(selectedJob.reachedStatus.lat).toFixed(5)}, {Number(selectedJob.reachedStatus.lng).toFixed(5)}
+                                &nbsp;↗
+                              </a>
+                              {selectedJob.reachedStatus.distanceMeters != null && (
+                                <div style={{
+                                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                                  marginTop: 4, marginLeft: 2,
+                                  fontSize: '0.72rem', fontWeight: 700,
+                                  color: selectedJob.reachedStatus.distanceMeters <= 200 ? '#16a34a' : selectedJob.reachedStatus.distanceMeters <= 1000 ? '#b45309' : '#dc3545',
+                                  background: selectedJob.reachedStatus.distanceMeters <= 200 ? 'rgba(22,163,74,0.1)' : selectedJob.reachedStatus.distanceMeters <= 1000 ? 'rgba(180,83,9,0.1)' : 'rgba(220,53,69,0.1)',
+                                  border: `1px solid ${selectedJob.reachedStatus.distanceMeters <= 200 ? 'rgba(22,163,74,0.25)' : selectedJob.reachedStatus.distanceMeters <= 1000 ? 'rgba(180,83,9,0.25)' : 'rgba(220,53,69,0.25)'}`,
+                                  borderRadius: 6, padding: '2px 7px',
+                                }}>
+                                  📏 {selectedJob.reachedStatus.distanceMeters >= 1000
+                                    ? `${(selectedJob.reachedStatus.distanceMeters / 1000).toFixed(2)} km from job site`
+                                    : `${selectedJob.reachedStatus.distanceMeters} m from job site`}
+                                </div>
+                              )}
+                            </>
+                          )}
                         </div>
                       </div>
                     )}
@@ -1546,6 +1789,39 @@ const TechnicianJobs = () => {
                         <div>
                           <div className="tj-timeline-label">Job Completed By Tech</div>
                           <div className="tj-timeline-time">{fmtDT(selectedJob.jobCompletedAt)}</div>
+                          {selectedJob.completedStatus?.lat != null && (
+                            <>
+                              <a
+                                href={`https://www.google.com/maps?q=${selectedJob.completedStatus.lat},${selectedJob.completedStatus.lng}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                                  fontSize: '0.75rem', color: '#16a34a', fontWeight: 600,
+                                  marginTop: 3, textDecoration: 'none',
+                                }}
+                              >
+                                <FaMapMarkerAlt style={{ color: '#16a34a', flexShrink: 0 }} />
+                                {Number(selectedJob.completedStatus.lat).toFixed(5)}, {Number(selectedJob.completedStatus.lng).toFixed(5)}
+                                &nbsp;↗
+                              </a>
+                              {selectedJob.completedStatus.distanceMeters != null && (
+                                <div style={{
+                                  display: 'inline-flex', alignItems: 'center', gap: 4,
+                                  marginTop: 4, marginLeft: 2,
+                                  fontSize: '0.72rem', fontWeight: 700,
+                                  color: selectedJob.completedStatus.distanceMeters <= 200 ? '#16a34a' : selectedJob.completedStatus.distanceMeters <= 1000 ? '#b45309' : '#dc3545',
+                                  background: selectedJob.completedStatus.distanceMeters <= 200 ? 'rgba(22,163,74,0.1)' : selectedJob.completedStatus.distanceMeters <= 1000 ? 'rgba(180,83,9,0.1)' : 'rgba(220,53,69,0.1)',
+                                  border: `1px solid ${selectedJob.completedStatus.distanceMeters <= 200 ? 'rgba(22,163,74,0.25)' : selectedJob.completedStatus.distanceMeters <= 1000 ? 'rgba(180,83,9,0.25)' : 'rgba(220,53,69,0.25)'}`,
+                                  borderRadius: 6, padding: '2px 7px',
+                                }}>
+                                  📏 {selectedJob.completedStatus.distanceMeters >= 1000
+                                    ? `${(selectedJob.completedStatus.distanceMeters / 1000).toFixed(2)} km from job site`
+                                    : `${selectedJob.completedStatus.distanceMeters} m from job site`}
+                                </div>
+                              )}
+                            </>
+                          )}
                         </div>
                       </div>
                     )}
@@ -1588,6 +1864,42 @@ const TechnicianJobs = () => {
                 </div>
               )}
 
+              {selectedJob.tasks?.length > 0 && (
+                <div className="tj-view-block">
+                  <div className="tj-view-block-title">
+                    <FaTools className="me-1" style={{ color: '#A5732F' }} />
+                    Tasks ({selectedJob.tasks.filter((t) => t.isDone).length}/{selectedJob.tasks.length} done)
+                  </div>
+                  {['Prep', 'On Site', 'Post'].map((g) => {
+                    const gTasks = selectedJob.tasks.filter((t) => t.group === g);
+                    if (!gTasks.length) return null;
+                    return (
+                      <div key={g} className="tj-task-group" style={{ marginTop: 6 }}>
+                        <div className="tj-task-group-label">{g}</div>
+                        {gTasks.map((t, i) => (
+                          <div key={i} className={`tj-task-row${t.isDone ? ' done' : ''}`}>
+                            <span className={`tj-task-circle${t.isDone ? ' checked' : ''}`}>
+                              {t.isDone && <FaCheck style={{ fontSize: '0.55rem', color: '#fff' }} />}
+                            </span>
+                            <span className="tj-task-title">{t.title}</span>
+                            {t.isDone && t.checkedAt && (
+                              <span className="tj-task-meta">{fmtDT(t.checkedAt)}</span>
+                            )}
+                            {t.isDone && t.distanceMeters != null && (
+                              <span className="tj-task-dist">
+                                📏 {t.distanceMeters >= 1000
+                                  ? `${(t.distanceMeters / 1000).toFixed(1)} km`
+                                  : `${t.distanceMeters} m`}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
               {selectedJob.assignedTechnician?.name && (
                 <div className="tj-view-block">
                   <div className="tj-view-block-title">Assigned Technician</div>
@@ -1620,27 +1932,61 @@ const TechnicianJobs = () => {
                   {JOB_STATUS_OPTIONS.map((s) => (
                     <button key={s}
                       className={`tj-status-update-btn${selectedJob.status === s ? ' current' : ''}`}
-                      onClick={async () => {
-                        try {
-                          const note = window.prompt('Add a note (optional)', '');
-                          const fp   = s === 'completed'
-                            ? Number(window.prompt('Enter final price ($)', '0')) || 0
-                            : undefined;
-                          await adminApi.updateTechnicianJobStatus(selectedJob._id, {
-                            status: s, note: note || '', finalPrice: fp,
-                          });
-                          toast.success('Status updated!');
-                          setSelectedJob({ ...selectedJob, status: s, ...(fp !== undefined && { finalPrice: fp }) });
-                          await loadData();
-                        } catch (err) {
-                          toast.error(err.response?.data?.message || 'Update failed');
-                        }
-                      }}>
+                      onClick={() => setStatusModal({ show: true, targetStatus: s })}>
                       {getJobStatusLabel(s)}
                     </button>
                   ))}
                 </div>
               </div>
+
+              {/* Status History */}
+              {selectedJob.statusHistory?.length > 0 && (
+                <div className="tj-view-block">
+                  <div className="tj-view-block-title">
+                    <FaClock className="me-1" style={{ color: '#A5732F' }} />
+                    Status History
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {[...selectedJob.statusHistory].reverse().map((h, i) => {
+                      const tone =
+                        h.status === 'completed'  ? { dot: '#16a34a', bg: 'rgba(22,163,74,0.08)',  border: 'rgba(22,163,74,0.2)'  } :
+                        h.status === 'cancelled'  ? { dot: '#dc3545', bg: 'rgba(220,53,69,0.07)', border: 'rgba(220,53,69,0.2)'  } :
+                        h.status === 'inprogress' ? { dot: '#2563eb', bg: 'rgba(37,99,235,0.07)', border: 'rgba(37,99,235,0.2)'  } :
+                        h.status === 'assigned'   ? { dot: '#0891b2', bg: 'rgba(8,145,178,0.07)', border: 'rgba(8,145,178,0.2)'  } :
+                                                    { dot: '#A5732F', bg: 'rgba(165,115,47,0.07)', border: 'rgba(165,115,47,0.2)' };
+                      return (
+                        <div key={i} style={{
+                          background: tone.bg, border: `1px solid ${tone.border}`,
+                          borderRadius: 8, padding: '8px 12px',
+                          display: 'flex', gap: 10, alignItems: 'flex-start',
+                        }}>
+                          <span style={{
+                            width: 8, height: 8, borderRadius: '50%',
+                            background: tone.dot, flexShrink: 0, marginTop: 5,
+                          }} />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                              <span style={{ fontWeight: 700, fontSize: '0.82rem', color: tone.dot, textTransform: 'capitalize' }}>
+                                {getJobStatusLabel(h.status)}
+                              </span>
+                              <span style={{ fontSize: '0.7rem', color: '#adb5bd', whiteSpace: 'nowrap' }}>
+                                {h.changedAt ? fmtDT(h.changedAt) : '—'}
+                              </span>
+                            </div>
+                            {h.note ? (
+                              <div style={{ marginTop: 3, fontSize: '0.78rem', color: '#495057', fontStyle: 'italic' }}>
+                                "{h.note}"
+                              </div>
+                            ) : (
+                              <div style={{ marginTop: 3, fontSize: '0.72rem', color: '#adb5bd' }}>No note added</div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Quick actions */}
               <div className="d-flex gap-2 pt-2 flex-wrap">

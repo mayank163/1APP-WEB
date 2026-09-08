@@ -3,6 +3,22 @@ const TechnicianJob = require('../models/TechnicianJob');
 const TechnicianJobRequest = require('../models/TechnicianJobRequest');
 const TechnicianWithdrawal = require('../models/TechnicianWithdrawal');
 
+/**
+ * Haversine formula — returns distance in metres between two GPS coordinates.
+ * Returns null if any coordinate is missing or invalid.
+ */
+const haversineMeters = (lat1, lng1, lat2, lng2) => {
+  if (lat1 == null || lng1 == null || lat2 == null || lng2 == null) return null;
+  const R = 6_371_000; // Earth radius in metres
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+};
+
 const getJobsForTechnicians = async (req, res, next) => {
   try {
     const {
@@ -70,95 +86,114 @@ const getJobsForTechnicians = async (req, res, next) => {
     // Date only - ignore time
     // --------------------------------
     else if (filter === 'today') {
-      const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0];
 
-      const startOfToday = new Date(`${today}T00:00:00.000Z`);
-      const endOfToday = new Date(`${today}T23:59:59.999Z`);
+    jobs = await TechnicianJob.find({
+      status: { $in: ['assigned', 'inprogress'] },
+      'assignedTechnician._id': techId,
 
-      jobs = await TechnicianJob.find({
-        status: 'assigned',
-        'assignedTechnician._id': techId,
-        scheduledDate: {
-          $gte: startOfToday,
-          $lte: endOfToday,
-        },
-      }).sort('scheduledDate');
-    }
+      $expr: {
+        $eq: [
+          {
+            $dateToString: {
+              format: '%Y-%m-%d',
+              date: '$serviceDate',
+            },
+          },
+          today,
+        ],
+      },
+    }).sort('serviceDate');
+  }
 
 
     // --------------------------------
     // TOMORROW
-    // Jobs assigned to this technician tomorrow
     // Date only - ignore time
     // --------------------------------
     else if (filter === 'tomorrow') {
-      const tomorrow = new Date();
 
-      tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+      const now = new Date();
 
-      const tomorrowDate = tomorrow
-        .toISOString()
-        .split('T')[0];
-
-      const startOfTomorrow = new Date(
-        `${tomorrowDate}T00:00:00.000Z`
+      const tomorrow = new Date(
+        now.toLocaleString('en-US', {
+          timeZone: 'Asia/Kolkata',
+        })
       );
 
-      const endOfTomorrow = new Date(
-        `${tomorrowDate}T23:59:59.999Z`
-      );
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const tomorrowDate = tomorrow.toLocaleDateString('en-CA');
 
       jobs = await TechnicianJob.find({
         status: 'assigned',
         'assignedTechnician._id': techId,
-        scheduledDate: {
-          $gte: startOfTomorrow,
-          $lte: endOfTomorrow,
+
+        $expr: {
+          $eq: [
+            {
+              $dateToString: {
+                format: '%Y-%m-%d',
+                date: '$serviceDate',
+                timezone: 'Asia/Kolkata',
+              },
+            },
+            tomorrowDate,
+          ],
         },
-      }).sort('scheduledDate');
+      }).sort({ serviceDate: 1 });
     }
 
 
     // --------------------------------
     // CUSTOM DATE RANGE
-    // Jobs assigned to this technician
     // Date only - ignore time
     // --------------------------------
     else if (filter === 'custom') {
+
       if (!fromDate || !toDate) {
         return res.status(400).json({
           success: false,
-          message:
-            'fromDate and toDate are required for custom filter',
+          message: 'fromDate and toDate are required for custom filter',
         });
       }
 
-      // Extract only YYYY-MM-DD
       const from = fromDate.split('T')[0];
       const to = toDate.split('T')[0];
-
-      // Validate dates
-      const startDate = new Date(`${from}T00:00:00.000Z`);
-      const endDate = new Date(`${to}T23:59:59.999Z`);
-
-      if (
-        isNaN(startDate.getTime()) ||
-        isNaN(endDate.getTime())
-      ) {
-        return res.status(400).json({
-          success: false,
-          message: 'Invalid fromDate or toDate',
-        });
-      }
 
       jobs = await TechnicianJob.find({
         status: 'assigned',
         'assignedTechnician._id': techId,
-        scheduledDate: {
-          $gte: startDate,
-          $lte: endDate,
+
+        $expr: {
+          $and: [
+            {
+              $gte: [
+                {
+                  $dateToString: {
+                    format: '%Y-%m-%d',
+                    date: '$serviceDate',
+                    timezone: 'Asia/Kolkata',
+                  },
+                },
+                from,
+              ],
+            },
+            {
+              $lte: [
+                {
+                  $dateToString: {
+                    format: '%Y-%m-%d',
+                    date: '$serviceDate',
+                    timezone: 'Asia/Kolkata',
+                  },
+                },
+                to,
+              ],
+            },
+          ],
         },
-      }).sort('scheduledDate');
+      }).sort({ serviceDate: 1 });
     }
 
     // --------------------------------
@@ -872,10 +907,12 @@ const getMetrics = async (req, res, next) => {
 /**
  * @desc  Technician presses "I have reached the location" button
  * @route PATCH /api/technician/jobs/:jobId/reached
+ * @body  { lat?: number, lng?: number }
  */
 const markReached = async (req, res, next) => {
   try {
     const { jobId } = req.params;
+    const { lat, lng } = req.body || {};
 
     const job = await TechnicianJob.findById(jobId);
     if (!job) {
@@ -896,10 +933,35 @@ const markReached = async (req, res, next) => {
     job.jobStartedAt = now;
     job.status = 'inprogress';
 
+    // Store GPS coordinates if provided
+    const hasLocation = lat != null && lng != null && !isNaN(Number(lat)) && !isNaN(Number(lng));
+
+    // Distance between technician's position and the job's pinned location
+    const distMeters = hasLocation
+      ? haversineMeters(Number(lat), Number(lng), job.coordinates?.lat, job.coordinates?.lng)
+      : null;
+
+    // Write everything into reachedStatus
+    if (hasLocation) {
+      job.reachedStatus = {
+        at:             now,
+        lat:            Number(lat),
+        lng:            Number(lng),
+        distanceMeters: distMeters,
+      };
+    }
+
+    const distNote = distMeters !== null
+      ? ` Distance from job site: ${distMeters >= 1000 ? (distMeters / 1000).toFixed(2) + ' km' : distMeters + ' m'}.`
+      : '';
+    const locationNote = hasLocation
+      ? ` (GPS: ${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)})${distNote}`
+      : '';
+
     job.conversation = job.conversation || [];
     job.conversation.push({
       sender: 'technician',
-      message: `Technician reached the location at ${now.toLocaleString('en-IN')}.`,
+      message: `Technician reached the location at ${now.toLocaleString('en-IN')}.${locationNote}`,
       createdAt: now,
     });
 
@@ -908,7 +970,12 @@ const markReached = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: 'Reached location recorded',
-      data: { reachedAt: job.reachedAt, jobStartedAt: job.jobStartedAt, status: job.status },
+      data: {
+        reachedAt:     job.reachedAt,
+        jobStartedAt:  job.jobStartedAt,
+        status:        job.status,
+        reachedStatus: job.reachedStatus,
+      },
     });
   } catch (error) {
     next(error);
@@ -918,10 +985,12 @@ const markReached = async (req, res, next) => {
 /**
  * @desc  Technician presses "Job Completed" button
  * @route PATCH /api/technician/jobs/:jobId/complete
+ * @body  { lat?: number, lng?: number }
  */
 const markJobCompleted = async (req, res, next) => {
   try {
     const { jobId } = req.params;
+    const { lat, lng } = req.body || {};
 
     const job = await TechnicianJob.findById(jobId);
     if (!job) {
@@ -947,10 +1016,35 @@ const markJobCompleted = async (req, res, next) => {
       job.jobDurationMinutes = Math.round(diffMs / 60000);
     }
 
+    // Store GPS coordinates if provided
+    const hasLocation = lat != null && lng != null && !isNaN(Number(lat)) && !isNaN(Number(lng));
+
+    // Distance between technician's position and the job's pinned location
+    const distMeters = hasLocation
+      ? haversineMeters(Number(lat), Number(lng), job.coordinates?.lat, job.coordinates?.lng)
+      : null;
+
+    // Write everything into completedStatus
+    if (hasLocation) {
+      job.completedStatus = {
+        at:             now,
+        lat:            Number(lat),
+        lng:            Number(lng),
+        distanceMeters: distMeters,
+      };
+    }
+
+    const distNote = distMeters !== null
+      ? ` Distance from job site: ${distMeters >= 1000 ? (distMeters / 1000).toFixed(2) + ' km' : distMeters + ' m'}.`
+      : '';
+    const locationNote = hasLocation
+      ? ` (GPS: ${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)})${distNote}`
+      : '';
+
     job.conversation = job.conversation || [];
     job.conversation.push({
       sender: 'technician',
-      message: `Technician marked job as completed at ${now.toLocaleString('en-IN')}.${job.jobDurationMinutes != null ? ` Duration: ${job.jobDurationMinutes} min.` : ''}`,
+      message: `Technician marked job as completed at ${now.toLocaleString('en-IN')}.${job.jobDurationMinutes != null ? ` Duration: ${job.jobDurationMinutes} min.` : ''}${locationNote}`,
       createdAt: now,
     });
 
@@ -960,9 +1054,10 @@ const markJobCompleted = async (req, res, next) => {
       success: true,
       message: 'Job completion recorded. Waiting for admin to close and process payment.',
       data: {
-        jobCompletedAt: job.jobCompletedAt,
+        jobCompletedAt:     job.jobCompletedAt,
         jobDurationMinutes: job.jobDurationMinutes,
-        reachedAt: job.reachedAt,
+        reachedAt:          job.reachedAt,
+        completedStatus:    job.completedStatus,
       },
     });
   } catch (error) {
@@ -1223,6 +1318,65 @@ const getWithdrawals = async (req, res, next) => {
 //   }
 // };
 
+/**
+ * PATCH /api/technician/jobs/:jobId/tasks/:taskIndex/complete
+ * Body: { lat?, lng? }
+ */
+const completeTask = async (req, res, next) => {
+  try {
+    const { jobId, taskIndex } = req.params;
+    const { lat, lng } = req.body || {};
+
+    const job = await TechnicianJob.findById(jobId);
+    if (!job) return res.status(404).json({ success: false, message: 'Job not found' });
+
+    if (!job.assignedTechnician?._id ||
+        job.assignedTechnician._id.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'You are not assigned to this job' });
+    }
+
+    const idx = Number(taskIndex);
+    if (isNaN(idx) || idx < 0 || idx >= job.tasks.length) {
+      return res.status(400).json({ success: false, message: 'Invalid task index' });
+    }
+
+    const task = job.tasks[idx];
+    if (task.isDone) {
+      return res.status(400).json({ success: false, message: 'Task already completed' });
+    }
+
+    const hasLocation = lat != null && lng != null &&
+                        !isNaN(Number(lat)) && !isNaN(Number(lng));
+    const distMeters  = hasLocation
+      ? haversineMeters(Number(lat), Number(lng), job.coordinates?.lat, job.coordinates?.lng)
+      : null;
+
+    task.isDone         = true;
+    task.checkedAt      = new Date();
+    task.technicianLat  = hasLocation ? Number(lat) : null;
+    task.technicianLng  = hasLocation ? Number(lng) : null;
+    task.distanceMeters = distMeters;
+
+    job.markModified('tasks');
+    await job.save();
+
+    try {
+      const { getIO } = require('../utils/socketInstance');
+      getIO().to('admin').emit('job:task:completed', { jobId, taskIndex: idx, task: job.tasks[idx] });
+    } catch (e) {
+      console.warn('[Socket] job:task:completed emit failed:', e.message);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Task marked as completed',
+      data: { task: job.tasks[idx] },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const getDetailsByJobId = async (req, res, next) => {
   try {
     const { jobId } = req.params;
@@ -1267,4 +1421,5 @@ module.exports = {
   getRequestConversation,
   // getMyJobs,
   getDetailsByJobId,
+  completeTask,
 };

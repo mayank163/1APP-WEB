@@ -1359,9 +1359,43 @@ const TechnicianDashboard = () => {
   };
 
   // ── job actions ──────────────────────────────────────────────────────────────
+  // ── Get current GPS position (returns { lat, lng } or null) ─────────────────
+  const getCurrentCoords = () =>
+    new Promise((resolve) => {
+      if (!navigator.geolocation) return resolve(null);
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }) => resolve({ lat: coords.latitude, lng: coords.longitude }),
+        ()           => resolve(null),
+        { enableHighAccuracy: true, timeout: 8000 },
+      );
+    });
+
+  // ── complete a task ────────────────────────────────────────────────────────
+  const completeTask = async (jobId, taskIndex) => {
+    try {
+      const coords = await getCurrentCoords();
+      const body   = coords ? { lat: coords.lat, lng: coords.lng } : {};
+      const { data } = await API.patch(`/technician/jobs/${jobId}/tasks/${taskIndex}/complete`, body);
+      if (data.success) {
+        setMyJobs((prev) => prev.map((j) => {
+          if (j._id !== jobId) return j;
+          const tasks = [...(j.tasks || [])];
+          tasks[taskIndex] = data.data.task;
+          return { ...j, tasks };
+        }));
+      } else {
+        alert(data.message || 'Failed');
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to complete task');
+    }
+  };
+
   const markReached = async (jobId) => {
     try {
-      const { data } = await API.patch(`/technician/jobs/${jobId}/reached`);
+      const coords = await getCurrentCoords();
+      const body   = coords ? { lat: coords.lat, lng: coords.lng } : {};
+      const { data } = await API.patch(`/technician/jobs/${jobId}/reached`, body);
       alert(data.message || (data.success ? 'Reached recorded!' : 'Failed'));
       if (data.success) refreshMyJobs();
     } catch (err) { alert(err.response?.data?.message || 'Failed to mark reached'); }
@@ -1370,7 +1404,9 @@ const TechnicianDashboard = () => {
   const markCompleted = async (jobId) => {
     if (!window.confirm('Mark this job as completed? Admin will be notified.')) return;
     try {
-      const { data } = await API.patch(`/technician/jobs/${jobId}/complete`);
+      const coords = await getCurrentCoords();
+      const body   = coords ? { lat: coords.lat, lng: coords.lng } : {};
+      const { data } = await API.patch(`/technician/jobs/${jobId}/complete`, body);
       alert(data.message || (data.success ? 'Job completion recorded!' : 'Failed'));
       if (data.success) refreshMyJobs();
     } catch (err) { alert(err.response?.data?.message || 'Failed to mark completed'); }
@@ -1750,6 +1786,112 @@ const TechnicianDashboard = () => {
                       )}
                     </div>
                   )}
+
+                  {/* ── Task Checklist ── */}
+                  {job.tasks?.length > 0 && (() => {
+                    const GROUPS = ['Prep', 'On Site', 'Post'];
+                    const doneCount = job.tasks.filter((t) => t.isDone).length;
+                    const pct = Math.round((doneCount / job.tasks.length) * 100);
+                    return (
+                      <div style={{ margin: '10px 0', border: '1px solid #f0e8dc', borderRadius: 10,
+                          background: '#fdf9f5', overflow: 'hidden' }}>
+                        {/* header + progress bar */}
+                        <div style={{ padding: '10px 14px', borderBottom: '1px solid #f0e8dc' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                            <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#1a1208' }}>
+                              🗂 Tasks
+                            </span>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 700,
+                                color: doneCount === job.tasks.length ? '#16a34a' : '#A5732F' }}>
+                              {doneCount}/{job.tasks.length} done
+                            </span>
+                          </div>
+                          <div style={{ height: 6, background: '#e9e0d5', borderRadius: 10, overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${pct}%`,
+                                background: doneCount === job.tasks.length ? '#16a34a' : '#A5732F',
+                                borderRadius: 10, transition: 'width 0.4s ease' }} />
+                          </div>
+                        </div>
+
+                        {/* grouped tasks */}
+                        <div style={{ padding: '8px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {GROUPS.map((g) => {
+                            const gTasks = job.tasks
+                              .map((t, idx) => ({ ...t, _idx: idx }))
+                              .filter((t) => t.group === g);
+                            if (!gTasks.length) return null;
+                            return (
+                              <div key={g}>
+                                <div style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase',
+                                    letterSpacing: '0.07em', color: '#A5732F',
+                                    borderBottom: '1px solid #f0e8dc', paddingBottom: 3, marginBottom: 4 }}>
+                                  {g}
+                                </div>
+                                {gTasks.map((t) => (
+                                  <div key={t._idx} style={{
+                                    display: 'flex', alignItems: 'center', gap: 10,
+                                    padding: '7px 0',
+                                    borderBottom: '1px solid #f8f3ed',
+                                    opacity: t.isDone ? 0.75 : 1,
+                                  }}>
+                                    {/* circle checkbox */}
+                                    <button
+                                      disabled={t.isDone || alreadyCompleted}
+                                      onClick={() => completeTask(job._id, t._idx)}
+                                      style={{
+                                        width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                                        border: t.isDone ? 'none' : '2px solid #d1d5db',
+                                        background: t.isDone ? '#16a34a' : '#fff',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        cursor: t.isDone || alreadyCompleted ? 'default' : 'pointer',
+                                        padding: 0, transition: 'background 0.2s',
+                                      }}
+                                    >
+                                      {t.isDone && (
+                                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                          <path d="M2 6l3 3 5-5" stroke="#fff" strokeWidth="2"
+                                            strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                      )}
+                                    </button>
+
+                                    {/* title */}
+                                    <span style={{ flex: 1, fontSize: '0.85rem', color: '#1a1208',
+                                        textDecoration: t.isDone ? 'line-through' : 'none',
+                                        color: t.isDone ? '#6c757d' : '#1a1208' }}>
+                                      {t.title}
+                                    </span>
+
+                                    {/* completion meta */}
+                                    {t.isDone && (
+                                      <div style={{ display: 'flex', flexDirection: 'column',
+                                          alignItems: 'flex-end', gap: 2, flexShrink: 0 }}>
+                                        {t.checkedAt && (
+                                          <span style={{ fontSize: '0.65rem', color: '#adb5bd' }}>
+                                            {new Date(t.checkedAt).toLocaleTimeString('en-IN',
+                                              { hour: '2-digit', minute: '2-digit' })}
+                                          </span>
+                                        )}
+                                        {t.distanceMeters != null && (
+                                          <span style={{ fontSize: '0.65rem', fontWeight: 700,
+                                              color: t.distanceMeters <= 200 ? '#16a34a'
+                                                : t.distanceMeters <= 1000 ? '#b45309' : '#dc3545' }}>
+                                            📏 {t.distanceMeters >= 1000
+                                              ? `${(t.distanceMeters / 1000).toFixed(1)} km`
+                                              : `${t.distanceMeters} m`}
+                                          </span>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap', alignItems: 'center' }}>
                     {!alreadyReached && job.status !== 'completed' && (

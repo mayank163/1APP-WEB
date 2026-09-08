@@ -6,10 +6,10 @@ const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
 let sdkPromise = null;
 const loadGoogleMaps = () => {
   if (sdkPromise) return sdkPromise;
-  if (window.google?.maps) return (sdkPromise = Promise.resolve());
+  if (window.google?.maps?.DirectionsService) return (sdkPromise = Promise.resolve());
   sdkPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=geometry`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=geometry,places`;
     script.async = true;
     script.onload = resolve;
     script.onerror = () => { sdkPromise = null; reject(); };
@@ -18,9 +18,9 @@ const loadGoogleMaps = () => {
   return sdkPromise;
 };
 
-// Haversine distance in km (fallback if geometry lib not ready)
-const haversine = (lat1, lng1, lat2, lng2) => {
-  const R = 6371;
+// Haversine — only used to check if tech moved >50m before re-calling Directions API
+const haversineM = (lat1, lng1, lat2, lng2) => {
+  const R = 6371000;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLng = ((lng2 - lng1) * Math.PI) / 180;
   const a =
@@ -31,34 +31,27 @@ const haversine = (lat1, lng1, lat2, lng2) => {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
-const fmtDist = (km) =>
-  km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(2)} km`;
-
-/**
- * TechnicianTrackingMap
- * Props:
- *   job – the selected job object (needs job._id, job.coordinates)
- */
 const TechnicianTrackingMap = ({ job }) => {
-  const mapRef      = useRef(null);
-  const mapObjRef   = useRef(null);
-  const techMarker  = useRef(null);
-  const jobMarker   = useRef(null);
-  const polylineRef = useRef(null);
+  const mapRef           = useRef(null);
+  const mapObjRef        = useRef(null);
+  const techMarkerRef    = useRef(null);
+  const jobMarkerRef     = useRef(null);
+  const directionsRenderer = useRef(null);
+  const directionsService  = useRef(null);
+  const lastRouteLocRef  = useRef(null); // { lat, lng } of last Directions API call
 
-  const [techLoc, setTechLoc]   = useState(null); // { lat, lng, ts }
-  const [distance, setDistance] = useState(null);
-  const [ready, setReady]       = useState(false);
-  const [watching, setWatching] = useState(false);
+  const [techLoc,   setTechLoc]   = useState(null);
+  const [routeInfo, setRouteInfo] = useState(null); // { distance, duration }
+  const [ready,     setReady]     = useState(false);
 
   const jobCoords = job?.coordinates?.lat ? job.coordinates : null;
 
-  // Load SDK
+  // ── Load Google Maps SDK ────────────────────────────────────────────────────
   useEffect(() => {
     loadGoogleMaps().then(() => setReady(true)).catch(() => {});
   }, []);
 
-  // Init map once SDK ready and div mounted
+  // ── Init map ────────────────────────────────────────────────────────────────
   const initMap = (div) => {
     if (!div || !window.google?.maps || mapObjRef.current) return;
 
@@ -75,42 +68,38 @@ const TechnicianTrackingMap = ({ job }) => {
     });
     mapObjRef.current = map;
 
-    // Job location marker (blue pin)
+    // Job marker — blue
     if (jobCoords) {
-      jobMarker.current = new window.google.maps.Marker({
+      jobMarkerRef.current = new window.google.maps.Marker({
         map,
         position: { lat: jobCoords.lat, lng: jobCoords.lng },
         title: 'Job Location',
-        icon: {
-          url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-        },
+        icon: { url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png' },
+        zIndex: 1,
       });
-
       new window.google.maps.InfoWindow({ content: '<b>📍 Job Location</b>' })
-        .open(map, jobMarker.current);
+        .open(map, jobMarkerRef.current);
     }
 
-    // Technician marker (red, animated)
-    techMarker.current = new window.google.maps.Marker({
+    // Technician marker — red
+    techMarkerRef.current = new window.google.maps.Marker({
       map,
       visible: false,
       title: 'Technician',
-      icon: {
-        url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
-      },
+      icon: { url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png' },
+      zIndex: 2,
     });
 
-    // Dashed polyline between tech and job
-    polylineRef.current = new window.google.maps.Polyline({
+    // DirectionsService + Renderer (renders the actual road route)
+    directionsService.current  = new window.google.maps.DirectionsService();
+    directionsRenderer.current = new window.google.maps.DirectionsRenderer({
       map,
-      strokeColor: '#A5732F',
-      strokeOpacity: 0,
-      strokeWeight: 2,
-      icons: [{
-        icon: { path: 'M 0,-1 0,1', strokeOpacity: 1, scale: 3 },
-        offset: '0',
-        repeat: '12px',
-      }],
+      suppressMarkers: true,          // we use our own markers
+      polylineOptions: {
+        strokeColor: '#A5732F',
+        strokeWeight: 4,
+        strokeOpacity: 0.85,
+      },
     });
   };
 
@@ -123,71 +112,100 @@ const TechnicianTrackingMap = ({ job }) => {
     if (ready && mapRef.current && !mapObjRef.current) initMap(mapRef.current);
   }, [ready]); // eslint-disable-line
 
-  // Update technician marker whenever techLoc changes
-  useEffect(() => {
-    if (!techLoc || !mapObjRef.current || !techMarker.current) return;
+  // ── Call Directions API whenever tech moves >50 m ──────────────────────────
+  const fetchRoute = (techPos) => {
+    if (!jobCoords || !directionsService.current) return;
 
-    const pos = { lat: techLoc.lat, lng: techLoc.lng };
-    techMarker.current.setPosition(pos);
-    techMarker.current.setVisible(true);
-
-    // Update dashed line
-    if (jobCoords && polylineRef.current) {
-      polylineRef.current.setPath([
-        pos,
-        { lat: jobCoords.lat, lng: jobCoords.lng },
-      ]);
+    // Throttle: skip if tech hasn't moved more than 50 m since last call
+    if (lastRouteLocRef.current) {
+      const moved = haversineM(
+        lastRouteLocRef.current.lat, lastRouteLocRef.current.lng,
+        techPos.lat, techPos.lng
+      );
+      if (moved < 50) return;
     }
 
-    // Distance
-    const dist = haversine(techLoc.lat, techLoc.lng, jobCoords?.lat, jobCoords?.lng);
-    if (jobCoords) setDistance(dist);
+    lastRouteLocRef.current = techPos;
+
+    directionsService.current.route(
+      {
+        origin:      new window.google.maps.LatLng(techPos.lat, techPos.lng),
+        destination: new window.google.maps.LatLng(jobCoords.lat, jobCoords.lng),
+        travelMode:  window.google.maps.TravelMode.DRIVING,
+      },
+      (result, status) => {
+        if (status === 'OK') {
+          directionsRenderer.current.setDirections(result);
+          const leg = result.routes[0].legs[0];
+          setRouteInfo({
+            distance: leg.distance.text,   // e.g. "3.2 km"
+            duration: leg.duration.text,   // e.g. "12 mins"
+          });
+        } else {
+          console.warn('[Directions API]', status);
+          // On failure keep showing last known route info
+        }
+      }
+    );
+  };
+
+  // ── Update tech marker + fetch route on every location update ──────────────
+  useEffect(() => {
+    if (!techLoc || !mapObjRef.current || !techMarkerRef.current) return;
+
+    const pos = { lat: techLoc.lat, lng: techLoc.lng };
+
+    techMarkerRef.current.setPosition(pos);
+    techMarkerRef.current.setVisible(true);
+
+    fetchRoute(pos);
 
     // Fit both markers in view
     if (jobCoords) {
       const bounds = new window.google.maps.LatLngBounds();
       bounds.extend(pos);
       bounds.extend({ lat: jobCoords.lat, lng: jobCoords.lng });
-      mapObjRef.current.fitBounds(bounds, 60);
+      mapObjRef.current.fitBounds(bounds, 80);
     } else {
       mapObjRef.current.setCenter(pos);
       mapObjRef.current.setZoom(15);
     }
   }, [techLoc]); // eslint-disable-line
 
-  // Socket: join job room and listen for location updates
+  // ── Socket: join job room, listen for location ──────────────────────────────
   useEffect(() => {
     if (!job?._id) return;
 
     socket.emit('job:watch', job._id);
-    setWatching(true);
 
-    const handler = ({ lat, lng, ts }) => {
-      setTechLoc({ lat, lng, ts });
-    };
-
+    const handler = ({ lat, lng, ts }) => setTechLoc({ lat, lng, ts });
     socket.on('technician:location', handler);
 
     return () => {
       socket.emit('job:unwatch', job._id);
       socket.off('technician:location', handler);
-      setWatching(false);
       setTechLoc(null);
-      setDistance(null);
+      setRouteInfo(null);
+      lastRouteLocRef.current = null;
+      // Clear route from map
+      directionsRenderer.current?.setDirections({ routes: [] });
     };
-  }, [job?._id]);
+  }, [job?._id]); // eslint-disable-line
 
   const lastSeen = techLoc
-    ? new Date(techLoc.ts).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    ? new Date(techLoc.ts).toLocaleTimeString('en-IN', {
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+      })
     : null;
 
   return (
     <div>
-      {/* Status bar */}
+      {/* ── Status bar ── */}
       <div style={{
-        display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
-        marginBottom: 8, fontSize: '0.82rem',
+        display: 'flex', alignItems: 'center', gap: 8,
+        flexWrap: 'wrap', marginBottom: 8, fontSize: '0.82rem',
       }}>
+        {/* Live / waiting badge */}
         <span style={{
           display: 'inline-flex', alignItems: 'center', gap: 5,
           padding: '3px 10px', borderRadius: 20, fontWeight: 600,
@@ -203,34 +221,49 @@ const TechnicianTrackingMap = ({ job }) => {
           {techLoc ? 'Live' : 'Waiting for technician…'}
         </span>
 
-        {distance != null && (
+        {/* Road distance */}
+        {routeInfo && (
           <span style={{
             padding: '3px 10px', borderRadius: 20, fontWeight: 700,
             background: 'rgba(165,115,47,0.1)', color: '#A5732F',
           }}>
-            📏 {fmtDist(distance)} from job
+            🛣️ {routeInfo.distance}
           </span>
         )}
 
+        {/* ETA */}
+        {routeInfo && (
+          <span style={{
+            padding: '3px 10px', borderRadius: 20, fontWeight: 700,
+            background: 'rgba(37,99,235,0.08)', color: '#2563eb',
+          }}>
+            🕐 ETA {routeInfo.duration}
+          </span>
+        )}
+
+        {/* Last updated */}
         {lastSeen && (
-          <span style={{ color: '#adb5bd', fontSize: '0.75rem' }}>
+          <span style={{ color: '#adb5bd', fontSize: '0.72rem' }}>
             Updated {lastSeen}
           </span>
         )}
       </div>
 
-      {/* Legend */}
-      <div style={{ display: 'flex', gap: 16, marginBottom: 6, fontSize: '0.75rem', color: '#6c757d' }}>
+      {/* ── Legend ── */}
+      <div style={{
+        display: 'flex', gap: 16, marginBottom: 6,
+        fontSize: '0.75rem', color: '#6c757d',
+      }}>
         <span>🔵 Job Location</span>
         <span>🔴 Technician</span>
-        <span style={{ color: '#A5732F' }}>— — Distance</span>
+        <span style={{ color: '#A5732F' }}>━━ Route</span>
       </div>
 
-      {/* Map */}
+      {/* ── Map ── */}
       <div
         ref={mapCallbackRef}
         style={{
-          width: '100%', height: 300,
+          width: '100%', height: 320,
           borderRadius: 10, border: '1.5px solid #e9e0d5',
           overflow: 'hidden', background: '#f0f0f0',
         }}
@@ -247,7 +280,7 @@ const TechnicianTrackingMap = ({ job }) => {
 
       {!jobCoords && (
         <div style={{ fontSize: '0.75rem', color: '#b45309', marginTop: 4 }}>
-          ⚠️ No job coordinates saved — distance cannot be calculated
+          ⚠️ No job coordinates — route cannot be calculated
         </div>
       )}
     </div>
