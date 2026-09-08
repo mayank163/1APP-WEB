@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import LocationPicker from '../components/LocationPicker';
-import CategoryServicePicker from '../components/CategoryServicePicker';
 import TechnicianTrackingMap from '../components/TechnicianTrackingMap';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 import { toast } from 'react-toastify';
 import adminApi from '../services/adminApi';
 import socket from '../services/socket';
@@ -13,24 +14,45 @@ import {
   FaTools, FaUserCheck, FaInbox, FaBell, FaPaperPlane,
   FaClock, FaCheckCircle, FaWallet, FaRedoAlt,
   FaFileInvoiceDollar, FaReceipt, FaMoneyCheckAlt,
-  FaCheck, FaBan, FaExchangeAlt,
+  FaCheck, FaBan, FaExchangeAlt, FaWrench,
 } from 'react-icons/fa';
+
+const emptyJobDate = { from: '', to: '' };
+
+const emptyPay = {
+  type: 'fixed',
+  // fixed
+  fixedAmount: '',
+  // hourly
+  hourlyRate: '', maxHours: '',
+  // perDevice
+  perDeviceRate: '', maxDevices: '',
+  // blended
+  blendedFixedAmount: '', blendedFixedHours: '',
+  blendedHourlyRate: '', blendedMaxAddlHours: '',
+  // shared
+  approxHours: '',
+};
 
 const emptyForm = {
   title: '',
-  categoryInfo: {
-    _id: '', name: '',
-    subcategory: { _id: '', name: '', service: { _id: '', name: '' } },
-  },
   location: '',
+  city: '',
+  state: '',
+  zipCode: '',
   coordinates: null,
-  budget: '',
+  pay: { ...emptyPay },
+  jobDate: { ...emptyJobDate },
   description: '',
   preferredSkills: '',
   requirements: '',
-  serviceDate: '',
-  estimatedTime: '',
   tasks: [],
+  // Work type fields
+  workTypeId: '',
+  workTypeSubId: '',
+  additionalWorkTypeId: '',
+  additionalWorkTypeSubId: '',
+  serviceTypeId: '',
 };
 
 // ─── Helper: format duration ───────────────────────────────────────────────────
@@ -40,6 +62,19 @@ const formatDuration = (minutes) => {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   return m > 0 ? `${h}h ${m}min` : `${h}h`;
+};
+
+// ─── Helper: summarise a pay object into one display string ────────────────────
+const formatPay = (pay) => {
+  if (!pay?.type) return '—';
+  const n = (v) => Number(v || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  switch (pay.type) {
+    case 'fixed':     return `$${n(pay.fixedAmount)} Fixed`;
+    case 'hourly':    return `$${n(pay.hourlyRate)}/hr${pay.maxHours ? ` · max ${pay.maxHours}h` : ''}`;
+    case 'perDevice': return `$${n(pay.perDeviceRate)}/device${pay.maxDevices ? ` · max ${pay.maxDevices}` : ''}`;
+    case 'blended':   return `$${n(pay.blendedFixedAmount)} + $${n(pay.blendedHourlyRate)}/hr`;
+    default:          return '—';
+  }
 };
 
 // ─── Helper: format datetime ───────────────────────────────────────────────────
@@ -772,7 +807,13 @@ const TaskBuilder = ({ tasks, onChange }) => {
 
 
 // ─── Job Form (shared by Add + Edit) ──────────────────────────────────────────
-const JobForm = ({ form, setForm, onSubmit, onCancel, isEditing, saving }) => (
+const JobForm = ({ form, setForm, onSubmit, onCancel, isEditing, saving, workTypes, serviceTypes }) => {
+  // Sub-types for the selected primary work type
+  const primarySubTypes = workTypes.find(w => w._id === form.workTypeId)?.subTypes?.filter(s => s.isActive) || [];
+  // Sub-types for the additional work type
+  const additionalSubTypes = workTypes.find(w => w._id === form.additionalWorkTypeId)?.subTypes?.filter(s => s.isActive) || [];
+
+  return (
   <form onSubmit={onSubmit} className="row g-3">
     <div className="col-12">
       <label className="tj-label">Job Title <span className="text-danger">*</span></label>
@@ -780,43 +821,358 @@ const JobForm = ({ form, setForm, onSubmit, onCancel, isEditing, saving }) => (
         onChange={(e) => setForm({ ...form, title: e.target.value })}
         placeholder="e.g. AC Service Repair" required />
     </div>
+
+    {/* ── Work Type fields ─────────────────────────────────────────── */}
     <div className="col-12">
-      <CategoryServicePicker form={form} setForm={setForm} />
+      <div className="p-3 rounded-3 mb-1" style={{ background: 'rgba(165,115,47,0.05)', border: '1px solid rgba(165,115,47,0.15)' }}>
+        <p className="tj-label mb-3" style={{ color: '#A5732F' }}>
+          <FaTools className="me-1" /> Work Type Information
+        </p>
+        <div className="row g-3">
+          {/* Primary work type */}
+          <div className="col-md-6">
+            <label className="tj-label">Type of Work</label>
+            <select
+              className="form-select tj-input"
+              value={form.workTypeId}
+              onChange={(e) => setForm({ ...form, workTypeId: e.target.value, workTypeSubId: '' })}
+            >
+              <option value="">— Select work type —</option>
+              {workTypes.filter(w => w.isActive).map(w => (
+                <option key={w._id} value={w._id}>{w.name}</option>
+              ))}
+            </select>
+          </div>
+          {/* Primary sub-type */}
+          <div className="col-md-6">
+            <label className="tj-label">Work Sub-Type</label>
+            <select
+              className="form-select tj-input"
+              value={form.workTypeSubId}
+              onChange={(e) => setForm({ ...form, workTypeSubId: e.target.value })}
+              disabled={!form.workTypeId}
+            >
+              <option value="">— Select sub-type —</option>
+              {primarySubTypes.map(s => (
+                <option key={s._id} value={s._id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+          {/* Additional work type */}
+          <div className="col-md-6">
+            <label className="tj-label">Additional Type of Work</label>
+            <select
+              className="form-select tj-input"
+              value={form.additionalWorkTypeId}
+              onChange={(e) => setForm({ ...form, additionalWorkTypeId: e.target.value, additionalWorkTypeSubId: '' })}
+            >
+              <option value="">— Select additional work type —</option>
+              {workTypes.filter(w => w.isActive).map(w => (
+                <option key={w._id} value={w._id}>{w.name}</option>
+              ))}
+            </select>
+          </div>
+          {/* Additional sub-type */}
+          <div className="col-md-6">
+            <label className="tj-label">Additional Work Sub-Type</label>
+            <select
+              className="form-select tj-input"
+              value={form.additionalWorkTypeSubId}
+              onChange={(e) => setForm({ ...form, additionalWorkTypeSubId: e.target.value })}
+              disabled={!form.additionalWorkTypeId}
+            >
+              <option value="">— Select sub-type —</option>
+              {additionalSubTypes.map(s => (
+                <option key={s._id} value={s._id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+          {/* Service type */}
+          <div className="col-md-6">
+            <label className="tj-label">Service Type</label>
+            <select
+              className="form-select tj-input"
+              value={form.serviceTypeId}
+              onChange={(e) => setForm({ ...form, serviceTypeId: e.target.value })}
+            >
+              <option value="">— Select service type —</option>
+              {serviceTypes.filter(s => s.isActive).map(s => (
+                <option key={s._id} value={s._id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
     </div>
-    <div className="col-md-6">
-      <label className="tj-label">Budget ($) <span className="text-danger">*</span></label>
-      <input className="form-control tj-input" type="number" min="0" value={form.budget}
-        onChange={(e) => setForm({ ...form, budget: e.target.value })}
-        placeholder="1500" required />
+
+    {/* ── Pay section ─────────────────────────────────────────────── */}
+    <div className="col-12">
+      <div className="p-3 rounded-3" style={{ background: 'rgba(37,99,235,0.04)', border: '1px solid rgba(37,99,235,0.15)' }}>
+        <p className="tj-label mb-3" style={{ color: '#2563eb' }}>
+          <FaRupeeSign className="me-1" /> Pay
+        </p>
+
+        {/* Tab buttons */}
+        <div className="d-flex gap-2 mb-3 flex-wrap">
+          {[
+            { key: 'hourly',    label: 'Hourly' },
+            { key: 'fixed',     label: 'Fixed' },
+            { key: 'perDevice', label: 'Per Device' },
+            { key: 'blended',   label: 'Blended' },
+          ].map(({ key, label }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setForm({ ...form, pay: { ...form.pay, type: key } })}
+              style={{
+                padding: '6px 20px',
+                borderRadius: 6,
+                border: form.pay.type === key ? '2px solid #2563eb' : '1.5px solid #ced4da',
+                background: form.pay.type === key ? '#fff' : 'transparent',
+                fontWeight: form.pay.type === key ? 700 : 500,
+                color: form.pay.type === key ? '#2563eb' : '#6c757d',
+                cursor: 'pointer',
+                fontSize: 14,
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Hourly ── */}
+        {form.pay.type === 'hourly' && (
+          <div className="row g-3">
+            <div className="col-md-6">
+              <label className="tj-label">Hourly Rate ($) <span className="text-danger">*</span></label>
+              <div className="input-group">
+                <span className="input-group-text bg-light border-0">$</span>
+                <input className="form-control tj-input border-start-0" type="number" min="0" step="0.01"
+                  value={form.pay.hourlyRate}
+                  onChange={e => setForm({ ...form, pay: { ...form.pay, hourlyRate: e.target.value } })}
+                  placeholder="0" required />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <label className="tj-label">Max Hours</label>
+              <input className="form-control tj-input" type="number" min="0" step="0.5"
+                value={form.pay.maxHours}
+                onChange={e => setForm({ ...form, pay: { ...form.pay, maxHours: e.target.value } })}
+                placeholder="0" />
+              <small className="text-muted">1 hour minimum, hours are not rounded</small>
+            </div>
+            <div className="col-md-6">
+              <label className="tj-label">Approximate Hours to Complete <span className="text-muted small">— Optional</span></label>
+              <input className="form-control tj-input" type="text"
+                value={form.pay.approxHours}
+                onChange={e => setForm({ ...form, pay: { ...form.pay, approxHours: e.target.value } })}
+                placeholder="e.g. 2–3 hours" />
+            </div>
+          </div>
+        )}
+
+        {/* ── Fixed ── */}
+        {form.pay.type === 'fixed' && (
+          <div className="row g-3">
+            <div className="col-md-6">
+              <label className="tj-label">Total Pay ($) <span className="text-danger">*</span></label>
+              <div className="input-group">
+                <span className="input-group-text bg-light border-0">$</span>
+                <input className="form-control tj-input border-start-0" type="number" min="0" step="0.01"
+                  value={form.pay.fixedAmount}
+                  onChange={e => setForm({ ...form, pay: { ...form.pay, fixedAmount: e.target.value } })}
+                  placeholder="0" required />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <label className="tj-label">Approximate Hours to Complete</label>
+              <input className="form-control tj-input" type="text"
+                value={form.pay.approxHours}
+                onChange={e => setForm({ ...form, pay: { ...form.pay, approxHours: e.target.value } })}
+                placeholder="e.g. 2–3 hours" />
+            </div>
+          </div>
+        )}
+
+        {/* ── Per Device ── */}
+        {form.pay.type === 'perDevice' && (
+          <div className="row g-3">
+            <div className="col-md-6">
+              <label className="tj-label">Per Device Rate ($) <span className="text-danger">*</span></label>
+              <div className="input-group">
+                <span className="input-group-text bg-light border-0">$</span>
+                <input className="form-control tj-input border-start-0" type="number" min="0" step="0.01"
+                  value={form.pay.perDeviceRate}
+                  onChange={e => setForm({ ...form, pay: { ...form.pay, perDeviceRate: e.target.value } })}
+                  placeholder="0" required />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <label className="tj-label">Max Devices</label>
+              <input className="form-control tj-input" type="number" min="0"
+                value={form.pay.maxDevices}
+                onChange={e => setForm({ ...form, pay: { ...form.pay, maxDevices: e.target.value } })}
+                placeholder="0" />
+              <small className="text-muted">1 device minimum</small>
+            </div>
+            <div className="col-md-6">
+              <label className="tj-label">Approximate Hours to Complete</label>
+              <input className="form-control tj-input" type="text"
+                value={form.pay.approxHours}
+                onChange={e => setForm({ ...form, pay: { ...form.pay, approxHours: e.target.value } })}
+                placeholder="e.g. 2–3 hours" />
+            </div>
+          </div>
+        )}
+
+        {/* ── Blended ── */}
+        {form.pay.type === 'blended' && (
+          <div className="row g-3">
+            <div className="col-md-6">
+              <label className="tj-label">Fixed Payment ($) <span className="text-danger">*</span></label>
+              <div className="input-group">
+                <span className="input-group-text bg-light border-0">$</span>
+                <input className="form-control tj-input border-start-0" type="number" min="0" step="0.01"
+                  value={form.pay.blendedFixedAmount}
+                  onChange={e => setForm({ ...form, pay: { ...form.pay, blendedFixedAmount: e.target.value } })}
+                  placeholder="0" required />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <label className="tj-label">Fixed Hours</label>
+              <input className="form-control tj-input" type="number" min="0" step="0.5"
+                value={form.pay.blendedFixedHours}
+                onChange={e => setForm({ ...form, pay: { ...form.pay, blendedFixedHours: e.target.value } })}
+                placeholder="0" />
+            </div>
+            <div className="col-md-6">
+              <label className="tj-label">Additional Hour Rate ($)</label>
+              <div className="input-group">
+                <span className="input-group-text bg-light border-0">$</span>
+                <input className="form-control tj-input border-start-0" type="number" min="0" step="0.01"
+                  value={form.pay.blendedHourlyRate}
+                  onChange={e => setForm({ ...form, pay: { ...form.pay, blendedHourlyRate: e.target.value } })}
+                  placeholder="0" />
+              </div>
+            </div>
+            <div className="col-md-6">
+              <label className="tj-label">Max Additional Hours</label>
+              <input className="form-control tj-input" type="number" min="0" step="0.5"
+                value={form.pay.blendedMaxAddlHours}
+                onChange={e => setForm({ ...form, pay: { ...form.pay, blendedMaxAddlHours: e.target.value } })}
+                placeholder="0" />
+              <small className="text-muted">1 hour minimum, hours are not rounded</small>
+            </div>
+            <div className="col-md-6">
+              <label className="tj-label">Approximate Hours to Complete <span className="text-muted small">— Optional</span></label>
+              <input className="form-control tj-input" type="text"
+                value={form.pay.approxHours}
+                onChange={e => setForm({ ...form, pay: { ...form.pay, approxHours: e.target.value } })}
+                placeholder="e.g. 2–3 hours" />
+            </div>
+          </div>
+        )}
+      </div>
     </div>
+
     <div className="col-12">
       <label className="tj-label">Location <span className="text-danger">*</span></label>
       <LocationPicker
         value={form.coordinates ? { address: form.location, ...form.coordinates } : null}
-        onChange={({ address, lat, lng }) =>
-          setForm({ ...form, location: address, coordinates: { lat, lng } })
+        onChange={({ address, lat, lng, city = '', state = '', zipCode = '' }) =>
+          setForm({ ...form, location: address, coordinates: { lat, lng }, city, state, zipCode })
         }
       />
     </div>
-    <div className="col-md-6">
-      <label className="tj-label">
-        <FaClock className="me-1" style={{ color: '#A5732F' }} />
-        Estimated Time
-      </label>
-      <input className="form-control tj-input" value={form.estimatedTime}
-        onChange={(e) => setForm({ ...form, estimatedTime: e.target.value })}
-        placeholder="e.g. 2-3 hours, 45 min" />
+
+    {/* Auto-filled address breakdown — editable as fallback */}
+    <div className="col-md-4">
+      <label className="tj-label">City</label>
+      <input
+        className="form-control tj-input"
+        type="text"
+        placeholder="Auto-filled from map"
+        value={form.city}
+        onChange={e => setForm({ ...form, city: e.target.value })}
+      />
     </div>
-    <div className="col-md-6">
-      <label className="tj-label">Service Date</label>
-      <input className="form-control tj-input" type="datetime-local" value={form.serviceDate}
-        onChange={(e) => setForm({ ...form, serviceDate: e.target.value })} />
+    <div className="col-md-4">
+      <label className="tj-label">State</label>
+      <input
+        className="form-control tj-input"
+        type="text"
+        placeholder="Auto-filled from map"
+        value={form.state}
+        onChange={e => setForm({ ...form, state: e.target.value })}
+      />
+    </div>
+    <div className="col-md-4">
+      <label className="tj-label">Zip Code</label>
+      <input
+        className="form-control tj-input"
+        type="text"
+        placeholder="Auto-filled from map"
+        value={form.zipCode}
+        onChange={e => setForm({ ...form, zipCode: e.target.value })}
+      />
+    </div>
+
+    {/* ── Job Date (arrival window) ─────────────────────────────── */}
+    <div className="col-12">
+      <div className="p-3 rounded-3" style={{ background: 'rgba(37,99,235,0.04)', border: '1px solid rgba(37,99,235,0.15)' }}>
+        <p className="tj-label mb-3" style={{ color: '#2563eb' }}>
+          <FaCalendarAlt className="me-1" /> Job Date &amp; Time Window
+        </p>
+        <div className="row g-3">
+          <div className="col-md-6">
+            <label className="tj-label">From (arrive after)</label>
+            <input
+              type="datetime-local"
+              className="form-control tj-input"
+              value={form.jobDate?.from || ''}
+              onChange={e => setForm({ ...form, jobDate: { ...form.jobDate, from: e.target.value } })}
+            />
+          </div>
+          <div className="col-md-6">
+            <label className="tj-label">To (arrive before)</label>
+            <input
+              type="datetime-local"
+              className="form-control tj-input"
+              value={form.jobDate?.to || ''}
+              onChange={e => setForm({ ...form, jobDate: { ...form.jobDate, to: e.target.value } })}
+            />
+          </div>
+        </div>
+      </div>
     </div>
     <div className="col-12">
       <label className="tj-label">Description <span className="text-danger">*</span></label>
-      <textarea className="form-control tj-input" rows={3} value={form.description}
-        onChange={(e) => setForm({ ...form, description: e.target.value })}
-        placeholder="Describe the work required…" required />
+      <ReactQuill
+        theme="snow"
+        value={form.description}
+        onChange={(html) => setForm({ ...form, description: html })}
+        placeholder="Describe the work required…"
+        modules={{
+          toolbar: [
+            [{ header: [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            ['link'],
+            ['clean'],
+          ],
+        }}
+        formats={['header', 'bold', 'italic', 'underline', 'strike', 'list', 'bullet', 'link']}
+        style={{ background: '#fff', borderRadius: 8 }}
+      />
+      {/* Hidden native input keeps "required" validation honoured */}
+      <input
+        type="text"
+        required
+        tabIndex={-1}
+        value={form.description.replace(/<[^>]+>/g, '').trim()}
+        onChange={() => {}}
+        style={{ opacity: 0, height: 0, padding: 0, border: 'none', position: 'absolute' }}
+      />
     </div>
     <div className="col-md-6">
       <label className="tj-label">Preferred Skills</label>
@@ -845,7 +1201,8 @@ const JobForm = ({ form, setForm, onSubmit, onCancel, isEditing, saving }) => (
       </button>
     </div>
   </form>
-);
+  );
+};
 
 
 // ─── StatusUpdateModal ─────────────────────────────────────────────────────────
@@ -926,6 +1283,9 @@ const TechnicianJobs = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [saving, setSaving]     = useState(false);
+  // Work type / service type lookup data
+  const [workTypes, setWorkTypes]       = useState([]);
+  const [serviceTypes, setServiceTypes] = useState([]);
   const [paying, setPaying]           = useState(false);
   const [rescheduling, setRescheduling] = useState(false);
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
@@ -981,7 +1341,26 @@ const TechnicianJobs = () => {
     }
   };
 
-  useEffect(() => { loadData(); }, []);
+  // Fetch work types and service types separately so a jobs API failure
+  // does not prevent the dropdowns from being populated.
+  const loadDropdownData = async () => {
+    try {
+      const [wtRes, stRes] = await Promise.all([
+        adminApi.getWorkTypes(),
+        adminApi.getServiceTypes(),
+      ]);
+      setWorkTypes(wtRes.data?.workTypes || []);
+      setServiceTypes(stRes.data?.serviceTypes || []);
+    } catch (err) {
+      console.error('Failed to load work/service types for dropdowns:', err);
+      // Non-critical — don't show a blocking toast, just log
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+    loadDropdownData();
+  }, []);
 
   // ── Socket ──────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -1124,7 +1503,9 @@ const TechnicianJobs = () => {
 
       let dateOk = true;
       if (dateFilter !== 'all') {
-        const jobDay = toLocalDay(job.serviceDate);
+        // Use the hard start date from the schedule as the reference date
+        const refDate = job.jobDate?.from;
+        const jobDay = toLocalDay(refDate);
         if (!jobDay) {
           dateOk = false;
         } else if (dateFilter === 'today') {
@@ -1141,16 +1522,52 @@ const TechnicianJobs = () => {
   }, [jobs, activeTab, filterStatus, search, dateFilter, customDate]);
 
   // ── Form helpers ────────────────────────────────────────────────────────────
-  const buildPayload = (f) => ({
-    ...f,
-    budget:          Number(f.budget || 0),
-    preferredSkills: f.preferredSkills.split(',').map((s) => s.trim()).filter(Boolean),
-    requirements:    f.requirements.split(',').map((s) => s.trim()).filter(Boolean),
-    serviceDate:     f.serviceDate || undefined,
-    estimatedTime:   f.estimatedTime || '',
-    coordinates:     f.coordinates || undefined,
-    tasks:           (f.tasks || []).map((t, i) => ({ ...t, order: i })),
-  });
+  const buildPayload = (f) => {
+    // Resolve work type objects from selected IDs
+    const wt    = workTypes.find(w => w._id === f.workTypeId);
+    const wtSub = wt?.subTypes?.find(s => s._id === f.workTypeSubId);
+    const awt    = workTypes.find(w => w._id === f.additionalWorkTypeId);
+    const awtSub = awt?.subTypes?.find(s => s._id === f.additionalWorkTypeSubId);
+    const st    = serviceTypes.find(s => s._id === f.serviceTypeId);
+
+    // Coerce numeric pay fields
+    const p = f.pay || {};
+    const pay = {
+      type:                p.type || 'fixed',
+      fixedAmount:         Number(p.fixedAmount         || 0),
+      hourlyRate:          Number(p.hourlyRate           || 0),
+      maxHours:            Number(p.maxHours             || 0),
+      perDeviceRate:       Number(p.perDeviceRate        || 0),
+      maxDevices:          Number(p.maxDevices           || 0),
+      blendedFixedAmount:  Number(p.blendedFixedAmount   || 0),
+      blendedFixedHours:   Number(p.blendedFixedHours    || 0),
+      blendedHourlyRate:   Number(p.blendedHourlyRate    || 0),
+      blendedMaxAddlHours: Number(p.blendedMaxAddlHours  || 0),
+      approxHours:         p.approxHours || '',
+    };
+
+    // Sanitize jobDate — convert empty strings to undefined
+    const jobDate = {
+      from: f.jobDate?.from || undefined,
+      to:   f.jobDate?.to   || undefined,
+    };
+
+    return {
+      ...f,
+      pay,
+      jobDate,
+      preferredSkills: f.preferredSkills.split(',').map(s => s.trim()).filter(Boolean),
+      requirements:    f.requirements.split(',').map(s => s.trim()).filter(Boolean),
+      coordinates:     f.coordinates || undefined,
+      city:            f.city    || '',
+      state:           f.state   || '',
+      zipCode:         f.zipCode || '',
+      tasks:           (f.tasks || []).map((t, i) => ({ ...t, order: i })),
+      workType:           wt  ? { _id: wt._id,  name: wt.name,  subType: wtSub  ? { _id: wtSub._id,  name: wtSub.name  } : {} } : {},
+      additionalWorkType: awt ? { _id: awt._id, name: awt.name, subType: awtSub ? { _id: awtSub._id, name: awtSub.name } : {} } : {},
+      serviceType:        st  ? { _id: st._id,  name: st.name  } : {},
+    };
+  };
 
   const handleAdd = async (e) => {
     e.preventDefault(); setSaving(true);
@@ -1167,19 +1584,48 @@ const TechnicianJobs = () => {
     setEditingJobId(job._id);
     setForm({
       title:           job.title || '',
-      categoryInfo:    job.categoryInfo || { _id: '', name: '', subcategory: { _id: '', name: '', service: { _id: '', name: '' } } },
       location:        job.location || '',
+      city:            job.city    || '',
+      state:           job.state   || '',
+      zipCode:         job.zipCode || '',
       coordinates:     job.coordinates?.lat ? job.coordinates : null,
-      budget:          job.budget || '',
+      pay: {
+        type:                job.pay?.type                || 'fixed',
+        fixedAmount:         job.pay?.fixedAmount         ?? '',
+        hourlyRate:          job.pay?.hourlyRate           ?? '',
+        maxHours:            job.pay?.maxHours             ?? '',
+        perDeviceRate:       job.pay?.perDeviceRate        ?? '',
+        maxDevices:          job.pay?.maxDevices           ?? '',
+        blendedFixedAmount:  job.pay?.blendedFixedAmount   ?? '',
+        blendedFixedHours:   job.pay?.blendedFixedHours    ?? '',
+        blendedHourlyRate:   job.pay?.blendedHourlyRate    ?? '',
+        blendedMaxAddlHours: job.pay?.blendedMaxAddlHours  ?? '',
+        approxHours:         job.pay?.approxHours          || '',
+      },
       description:     job.description || '',
       preferredSkills: (job.preferredSkills || []).join(', '),
       requirements:    (job.requirements || []).join(', '),
-      serviceDate:     job.serviceDate ? new Date(job.serviceDate).toISOString().slice(0, 16) : '',
-      estimatedTime:   job.estimatedTime || '',
-      tasks:           (job.tasks || []).map((t) => ({
-        title: t.title, group: t.group || 'Prep',
-        order: t.order || 0, isDone: t.isDone || false,
+      tasks: (job.tasks || []).map((t) => ({
+        _id:            t._id,
+        title:          t.title          || '',
+        group:          t.group          || 'Prep',
+        order:          t.order          || 0,
+        isDone:         t.isDone         || false,
+        checkedAt:      t.checkedAt      || null,
+        technicianLat:  t.technicianLat  || null,
+        technicianLng:  t.technicianLng  || null,
+        distanceMeters: t.distanceMeters || null,
       })),
+      // Work type fields — restore from saved snapshot IDs
+      workTypeId:              job.workType?._id               || '',
+      workTypeSubId:           job.workType?.subType?._id      || '',
+      additionalWorkTypeId:    job.additionalWorkType?._id     || '',
+      additionalWorkTypeSubId: job.additionalWorkType?.subType?._id || '',
+      serviceTypeId:           job.serviceType?._id            || '',
+      jobDate: {
+        from: job.jobDate?.from ? new Date(job.jobDate.from).toISOString().slice(0, 16) : '',
+        to:   job.jobDate?.to   ? new Date(job.jobDate.to).toISOString().slice(0, 16)   : '',
+      },
     });
     setShowEditModal(true);
   };
@@ -1437,11 +1883,9 @@ const TechnicianJobs = () => {
                       <th>#</th>
                       <th>Job</th>
                       <th>Location</th>
-                      <th>Budget</th>
-                      <th>Est. Time</th>
+                      <th>Pay</th>
                       <th>Assigned To</th>
                       <th>Status</th>
-                      <th>Service Date</th>
                       <th className="text-center">Actions</th>
                     </tr>
                   </thead>
@@ -1467,12 +1911,7 @@ const TechnicianJobs = () => {
                               {job.location || '—'}
                             </span>
                           </td>
-                          <td><span className="tj-budget">${Number(job.budget || 0).toLocaleString()}</span></td>
-                          <td>
-                            <span className="tj-est-time">
-                              {job.estimatedTime || '—'}
-                            </span>
-                          </td>
+                          <td><span className="tj-budget">{formatPay(job.pay)}</span></td>
                           <td>
                             {job.assignedTechnician?.name ? (
                               <div className="tj-tech-name">
@@ -1486,13 +1925,6 @@ const TechnicianJobs = () => {
                           <td>
                             <span className={`badge text-bg-${getJobStatusTone(job.status)} tj-status-badge`}>
                               {getJobStatusLabel(job.status)}
-                            </span>
-                          </td>
-                          <td>
-                            <span className="tj-deadline">
-                              {job.serviceDate
-                                ? new Date(job.serviceDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
-                                : '—'}
                             </span>
                           </td>
                           <td>
@@ -1616,12 +2048,14 @@ const TechnicianJobs = () => {
       {/* ── ADD / EDIT MODALS ────────────────────────────────────────────────── */}
       <Modal show={showAddModal} onClose={() => setShowAddModal(false)} title="Create New Job" size="lg">
         <JobForm form={form} setForm={setForm} onSubmit={handleAdd}
-          onCancel={() => setShowAddModal(false)} isEditing={false} saving={saving} />
+          onCancel={() => setShowAddModal(false)} isEditing={false} saving={saving}
+          workTypes={workTypes} serviceTypes={serviceTypes} />
       </Modal>
 
       <Modal show={showEditModal} onClose={() => setShowEditModal(false)} title="Edit Job" size="lg">
         <JobForm form={form} setForm={setForm} onSubmit={handleEdit}
-          onCancel={() => setShowEditModal(false)} isEditing={true} saving={saving} />
+          onCancel={() => setShowEditModal(false)} isEditing={true} saving={saving}
+          workTypes={workTypes} serviceTypes={serviceTypes} />
       </Modal>
 
       {/* ── RESCHEDULE MODAL ─────────────────────────────────────────────────── */}
@@ -1696,29 +2130,78 @@ const TechnicianJobs = () => {
                   <div>
                     <div className="tj-detail-label">Location</div>
                     <div className="tj-detail-value">{selectedJob.location || '—'}</div>
+                    {(selectedJob.city || selectedJob.state || selectedJob.zipCode) && (
+                      <div className="text-muted small mt-1">
+                        {[selectedJob.city, selectedJob.state, selectedJob.zipCode].filter(Boolean).join(', ')}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="tj-detail-item">
                   <FaRupeeSign style={{ color: '#A5732F' }} />
                   <div>
-                    <div className="tj-detail-label">Budget</div>
-                    <div className="tj-detail-value">${Number(selectedJob.budget || 0).toLocaleString()}</div>
-                  </div>
-                </div>
-                <div className="tj-detail-item">
-                  <FaClock style={{ color: '#A5732F' }} />
-                  <div>
-                    <div className="tj-detail-label">Estimated Time</div>
-                    <div className="tj-detail-value">{selectedJob.estimatedTime || '—'}</div>
+                    <div className="tj-detail-label">Pay</div>
+                    <div className="tj-detail-value">
+                      {formatPay(selectedJob.pay)}
+                      {selectedJob.pay?.approxHours && (
+                        <div className="text-muted" style={{ fontSize: '0.78rem', marginTop: 2 }}>
+                          Approx: {selectedJob.pay.approxHours}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="tj-detail-item">
                   <FaCalendarAlt style={{ color: '#A5732F' }} />
                   <div>
-                    <div className="tj-detail-label">Service Date</div>
-                    <div className="tj-detail-value">{selectedJob.serviceDate ? fmtDT(selectedJob.serviceDate) : 'No service date'}</div>
+                    <div className="tj-detail-label">Job Date Window</div>
+                    <div className="tj-detail-value">
+                      {selectedJob.jobDate?.from
+                        ? fmtDT(selectedJob.jobDate.from)
+                        : '—'}
+                      {selectedJob.jobDate?.to && (
+                        <span className="text-muted"> → {fmtDT(selectedJob.jobDate.to)}</span>
+                      )}
+                    </div>
                   </div>
                 </div>
+                {selectedJob.workType?._id && (
+                  <div className="tj-detail-item">
+                    <FaTools style={{ color: '#A5732F' }} />
+                    <div>
+                      <div className="tj-detail-label">Work Type</div>
+                      <div className="tj-detail-value">
+                        {selectedJob.workType.name}
+                        {selectedJob.workType.subType?.name && (
+                          <span className="text-muted ms-1">— {selectedJob.workType.subType.name}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {selectedJob.additionalWorkType?._id && (
+                  <div className="tj-detail-item">
+                    <FaTools style={{ color: '#6c757d' }} />
+                    <div>
+                      <div className="tj-detail-label">Additional Work Type</div>
+                      <div className="tj-detail-value">
+                        {selectedJob.additionalWorkType.name}
+                        {selectedJob.additionalWorkType.subType?.name && (
+                          <span className="text-muted ms-1">— {selectedJob.additionalWorkType.subType.name}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {selectedJob.serviceType?._id && (
+                  <div className="tj-detail-item">
+                    <FaWrench style={{ color: '#A5732F' }} />
+                    <div>
+                      <div className="tj-detail-label">Service Type</div>
+                      <div className="tj-detail-value">{selectedJob.serviceType.name}</div>
+                    </div>
+                  </div>
+                )}
                 {selectedJob.finalPrice > 0 && (
                   <div className="tj-detail-item">
                     <FaRupeeSign style={{ color: '#16a34a' }} />
@@ -1843,7 +2326,15 @@ const TechnicianJobs = () => {
               {/* Description */}
               <div className="tj-view-block">
                 <div className="tj-view-block-title">Description</div>
-                <p className="tj-view-block-text">{selectedJob.description || '—'}</p>
+                {selectedJob.description ? (
+                  <div
+                    className="tj-view-block-text"
+                    dangerouslySetInnerHTML={{ __html: selectedJob.description }}
+                    style={{ lineHeight: 1.7 }}
+                  />
+                ) : (
+                  <p className="tj-view-block-text text-muted">—</p>
+                )}
               </div>
 
               {selectedJob.preferredSkills?.length > 0 && (

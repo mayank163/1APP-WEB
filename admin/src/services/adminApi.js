@@ -122,6 +122,23 @@ const adminApi = {
     createBlog: async (fd) => (await API.post('/blogs', fd, multipart)).data,
     updateBlog: async (id, fd) => (await API.put(`/blogs/${id}`, fd, multipart)).data,
     deleteBlog: async (id) => (await API.delete(`/blogs/${id}`)).data,
+
+    // ─── Work Types ────────────────────────────────────────────────────────────
+    getWorkTypes: async () => (await API.get('/work-types?includeInactive=true')).data,
+    createWorkType: async (data) => (await API.post('/work-types', data)).data,
+    updateWorkType: async (id, data) => (await API.put(`/work-types/${id}`, data)).data,
+    deleteWorkType: async (id) => (await API.delete(`/work-types/${id}`)).data,
+    // Sub-types
+    addWorkSubType: async (workTypeId, data) => (await API.post(`/work-types/${workTypeId}/sub-types`, data)).data,
+    updateWorkSubType: async (workTypeId, subId, data) => (await API.put(`/work-types/${workTypeId}/sub-types/${subId}`, data)).data,
+    deleteWorkSubType: async (workTypeId, subId) => (await API.delete(`/work-types/${workTypeId}/sub-types/${subId}`)).data,
+
+    // ─── Service Types ─────────────────────────────────────────────────────────
+    getServiceTypes: async () => (await API.get('/service-types?includeInactive=true')).data,
+    createServiceType: async (data) => (await API.post('/service-types', data)).data,
+    updateServiceType: async (id, data) => (await API.put(`/service-types/${id}`, data)).data,
+    deleteServiceType: async (id) => (await API.delete(`/service-types/${id}`)).data,
+    toggleServiceTypeStatus: async (id, isActive) => (await API.patch(`/service-types/${id}/status`, { isActive })).data,
 };
 
 export default adminApi;

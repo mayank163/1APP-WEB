@@ -26,7 +26,10 @@ const technicianRoutes = require('./routes/technicianRoutes');
 const technicianAuthRoutes = require('./routes/technicianAuthRoutes');
 const blogRoutes = require('./routes/blogRoutes');
 const cartRoutes = require('./routes/cartRoutes');
+const workTypeRoutes = require('./routes/workTypeRoutes');
+const serviceTypeRoutes = require('./routes/serviceTypeRoutes');
 const Service = require('./models/Service');
+const TechnicianJob = require('./models/TechnicianJob');
 
 // Import middleware
 const { xssProtection } = require('./middleware/security');
@@ -39,12 +42,26 @@ dns.setServers(['1.1.1.1', '8.8.8.8']);
 mongoose.connect(process.env.MONGODB_URI)
     .then(async () => {
         console.log('✅ MongoDB connected successfully');
+
+        // Drop stale unique service name index
         try {
             await Service.collection.dropIndex('name_1');
             console.log('Removed old unique service name index');
         } catch (err) {
             if (err.codeName !== 'IndexNotFound') {
                 console.warn('Could not remove old service name index:', err.message);
+            }
+        }
+
+        // Drop stale 2dsphere geo index on TechnicianJob.coordinates.
+        // The stored format is { lat, lng } which is NOT valid GeoJSON, so
+        // MongoDB throws "Can't extract geo keys" on every save when this index exists.
+        try {
+            await TechnicianJob.collection.dropIndex('coordinates_2dsphere');
+            console.log('Removed stale TechnicianJob coordinates_2dsphere index');
+        } catch (err) {
+            if (err.codeName !== 'IndexNotFound') {
+                console.warn('Could not remove TechnicianJob geo index:', err.message);
             }
         }
     })
@@ -121,6 +138,8 @@ app.use('/api/technician', technicianRoutes);
 app.use('/api/technician-auth', technicianAuthRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/cart', cartRoutes);
+app.use('/api/work-types', workTypeRoutes);
+app.use('/api/service-types', serviceTypeRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

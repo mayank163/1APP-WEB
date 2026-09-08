@@ -6,6 +6,7 @@ const { protect, checkPermission } = require('../middleware/auth');
 // Public
 router.post('/login', adminController.login);
 
+
 // All routes below require a valid admin token
 router.use(protect);
 

@@ -6,7 +6,7 @@ import {
     FaChartBar, FaTasks, FaWrench, FaFolderOpen,
     FaUsers, FaTag, FaSignOutAlt, FaTools,
     FaLayerGroup, FaBlog, FaHardHat, FaCheckCircle,
-    FaBars, FaChevronLeft, FaUserShield
+    FaBars, FaChevronLeft, FaUserShield, FaSitemap, FaCogs
 } from 'react-icons/fa';
 
 const MainLayout = () => {
@@ -33,6 +33,8 @@ const MainLayout = () => {
         { to: "/technician-verification", icon: <FaCheckCircle size={14} />, label: "Verification", resource: 'technician_verification' },
         { to: "/blogs", icon: <FaBlog size={14} />, label: "Blogs", resource: 'blogs' },
         { to: "/sub-admins", icon: <FaUserShield size={14} />, label: "Sub-Admins", resource: 'sub_admins' },
+        { to: "/work-types", icon: <FaSitemap size={14} />, label: "Work Types", resource: 'work_types' },
+        { to: "/service-types", icon: <FaCogs size={14} />, label: "Service Types", resource: 'service_types' },
     ];
 
     // Show nav item if super admin OR has at least read permission

@@ -29,20 +29,24 @@ const createTechnicianJob = async (req, res, next) => {
   try {
     const {
       title,
-      categoryInfo,
       location,
+      city,
+      state,
+      zipCode,
       coordinates,
-      budget,
+      pay,
       description,
       requirements,
-      serviceDate,
       preferredSkills,
-      estimatedTime,
-    tasks
+      tasks,
+      workType,
+      additionalWorkType,
+      serviceType,
+      jobDate,
     } = req.body;
 
     // Validate required fields
-    if (!title || !location || !budget || !description) {
+    if (!title || !location || !description) {
       return res.status(400).json({
         success: false,
         message: 'Please provide all required job fields'
@@ -52,24 +56,29 @@ const createTechnicianJob = async (req, res, next) => {
     // Create job
     const job = await TechnicianJob.create({
       title,
-      categoryInfo: categoryInfo || {},
       location,
-      budget: Number(budget),
+      city:    city    || '',
+      state:   state   || '',
+      zipCode: zipCode || '',
+      pay: pay || { type: 'fixed', fixedAmount: 0 },
       description,
       requirements: Array.isArray(requirements) ? requirements : [],
       coordinates: coordinates || { lat: null, lng: null },
       postedBy: req.user._id,
-      serviceDate: serviceDate ? new Date(serviceDate) : null,
-      preferredSkills: Array.isArray(preferredSkills)
-        ? preferredSkills
-        : [],
-      estimatedTime: estimatedTime || '',
+      preferredSkills: Array.isArray(preferredSkills) ? preferredSkills : [],
       tasks: Array.isArray(tasks) ? tasks.map((t, i) => ({
         title:  t.title?.trim() || '',
         group:  t.group?.trim() || '',
         order:  t.order ?? i,
         isDone: false,
       })) : [],
+      workType: workType || {},
+      additionalWorkType: additionalWorkType || {},
+      serviceType: serviceType || {},
+      jobDate: {
+        from: jobDate?.from ? new Date(jobDate.from) : null,
+        to:   jobDate?.to   ? new Date(jobDate.to)   : null,
+      },
     });
 
     // --------------------------------------------------
@@ -256,9 +265,25 @@ const updateTechnicianRequest = async (req, res, next) => {
       request.amountEarned  = 0;
 
       // ── Calculate final job amount once the request is accepted ──────
-      // Fixed charge: use the agreed counter-offer bid if any, else job budget
-      const jobBudget = job?.budget || 0;
-      const fixedCharge = request.counterOffer > 0 ? request.counterOffer : jobBudget;
+      // Derive the base fixed charge from the structured pay object.
+      // For hourly/perDevice/blended, use the counter-offer if set, otherwise
+      // derive a best-estimate from the pay fields so invoicing has a value.
+      const p = job?.pay || {};
+      let derivedBase = 0;
+      switch (p.type) {
+        case 'fixed':
+          derivedBase = p.fixedAmount || 0; break;
+        case 'hourly':
+          derivedBase = (p.hourlyRate || 0) * (p.maxHours || 0); break;
+        case 'perDevice':
+          derivedBase = (p.perDeviceRate || 0) * (p.maxDevices || 0); break;
+        case 'blended':
+          derivedBase = (p.blendedFixedAmount || 0) +
+            (p.blendedHourlyRate || 0) * (p.blendedMaxAddlHours || 0); break;
+        default:
+          derivedBase = 0;
+      }
+      const fixedCharge = request.counterOffer > 0 ? request.counterOffer : derivedBase;
 
       // Sum all *already accepted* additional charges for this request
       const acceptedCharges = await AdditionalCharge.find({
@@ -324,7 +349,7 @@ const updateTechnicianRequest = async (req, res, next) => {
 const updateTechnicianJob = async (req, res, next) => {
   try {
     const { jobId } = req.params;
-    const { title, categoryInfo, location, coordinates, budget, description, requirements, serviceDate, preferredSkills, estimatedTime, tasks } = req.body;
+    const { title, location, city, state, zipCode, coordinates, pay, description, requirements, preferredSkills, tasks, workType, additionalWorkType, serviceType, jobDate } = req.body;
 
     const job = await TechnicianJob.findById(jobId);
     if (!job) {
@@ -332,21 +357,32 @@ const updateTechnicianJob = async (req, res, next) => {
     }
 
     if (title) job.title = title;
-    if (categoryInfo !== undefined) job.categoryInfo = categoryInfo || {};
     if (location) job.location = location;
+    if (city    !== undefined) job.city    = city    || '';
+    if (state   !== undefined) job.state   = state   || '';
+    if (zipCode !== undefined) job.zipCode = zipCode || '';
     if (coordinates) job.coordinates = coordinates;
-    if (budget !== undefined) job.budget = Number(budget || 0);
+    if (pay !== undefined) job.pay = pay || { type: 'fixed', fixedAmount: 0 };
     if (description) job.description = description;
-    if (serviceDate !== undefined) job.serviceDate = serviceDate ? new Date(serviceDate) : null;
     if (Array.isArray(requirements)) job.requirements = requirements;
     if (Array.isArray(preferredSkills)) job.preferredSkills = preferredSkills;
-    if (estimatedTime !== undefined) job.estimatedTime = estimatedTime || '';
+    if (workType !== undefined) job.workType = workType || {};
+    if (additionalWorkType !== undefined) job.additionalWorkType = additionalWorkType || {};
+    if (serviceType !== undefined) job.serviceType = serviceType || {};
+    if (jobDate !== undefined) {
+      job.jobDate = {
+        from: jobDate?.from ? new Date(jobDate.from) : null,
+        to:   jobDate?.to   ? new Date(jobDate.to)   : null,
+      };
+    }
     if (Array.isArray(tasks)) {
       job.tasks = tasks.map((t, i) => ({
-        title:          t.title?.trim() || '',
-        group:          t.group?.trim() || '',
-        order:          t.order ?? i,
-        isDone:         t.isDone || false,
+        // Preserve existing subdocument _id so Mongoose doesn't regenerate it
+        ...(t._id && { _id: t._id }),
+        title:          t.title?.trim()  || '',
+        group:          t.group?.trim()  || '',
+        order:          t.order          ?? i,
+        isDone:         t.isDone         || false,
         checkedAt:      t.checkedAt      || null,
         technicianLat:  t.technicianLat  || null,
         technicianLng:  t.technicianLng  || null,
@@ -600,14 +636,14 @@ const rescheduleJob = async (req, res, next) => {
 
     job.rescheduleHistory = job.rescheduleHistory || [];
     job.rescheduleHistory.push({
-      previousDate: job.scheduledDate || null,
+      previousDate: job.jobDate?.from || job.scheduledDate || null,
       newDate,
       reason: reason || '',
       rescheduledAt: new Date(),
     });
 
-    job.scheduledDate = newDate;
-    job.serviceDate = newDate;
+    job.scheduledDate   = newDate;
+    job.jobDate         = { from: newDate, to: job.jobDate?.to || null };
     job.conversation = job.conversation || [];
     job.conversation.push({
       sender: 'admin',
@@ -659,7 +695,7 @@ const getRequestConversation = async (req, res, next) => {
     const { requestId } = req.params;
 
     const request = await TechnicianJobRequest.findById(requestId)
-      .populate('job',        'title location budget category status')
+      .populate('job',        'title location pay category status')
       .populate('technician', 'name phone email')
       .select('conversation status chargesStatus finalJobAmount agreedTotal agreedFixedCharge agreedAdditionalTotal job technician');
 

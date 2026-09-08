@@ -18,10 +18,26 @@ const loadGoogleMaps = () => {
 };
 
 /**
+ * Parse address_components from a Google Places/Geocoder result into
+ * { city, state, zipCode }.
+ */
+const parseAddressComponents = (components = []) => {
+  const get = (...types) => {
+    const c = components.find(c => types.some(t => c.types.includes(t)));
+    return c?.long_name || '';
+  };
+  return {
+    city:    get('locality', 'postal_town', 'sublocality_level_1', 'administrative_area_level_3'),
+    state:   get('administrative_area_level_1'),
+    zipCode: get('postal_code'),
+  };
+};
+
+/**
  * LocationPicker
  * Props:
- *   value    – { address, lat, lng } | null
- *   onChange – ({ address, lat, lng }) => void
+ *   value    – { address, lat, lng, city?, state?, zipCode? } | null
+ *   onChange – ({ address, lat, lng, city, state, zipCode }) => void
  */
 const LocationPicker = ({ value, onChange }) => {
   const inputRef  = useRef(null);
@@ -70,11 +86,11 @@ const LocationPicker = ({ value, onChange }) => {
       const lat = pos.lat();
       const lng = pos.lng();
       new window.google.maps.Geocoder().geocode({ location: { lat, lng } }, (results, status) => {
-        const address = status === 'OK' && results[0]
-          ? results[0].formatted_address
-          : `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        const result  = status === 'OK' && results[0] ? results[0] : null;
+        const address = result ? result.formatted_address : `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        const { city, state, zipCode } = parseAddressComponents(result?.address_components);
         if (inputRef.current) inputRef.current.value = address;
-        onChangeRef.current({ address, lat, lng });
+        onChangeRef.current({ address, lat, lng, city, state, zipCode });
       });
     });
   };
@@ -85,7 +101,7 @@ const LocationPicker = ({ value, onChange }) => {
     if (acRef.current) return; // already initialised
 
     const ac = new window.google.maps.places.Autocomplete(inputEl, {
-      fields: ['formatted_address', 'geometry'],
+      fields: ['formatted_address', 'geometry', 'address_components'],
     });
     acRef.current = ac;
 
@@ -95,6 +111,7 @@ const LocationPicker = ({ value, onChange }) => {
       const lat = place.geometry.location.lat();
       const lng = place.geometry.location.lng();
       const address = place.formatted_address || inputEl.value;
+      const { city, state, zipCode } = parseAddressComponents(place.address_components);
 
       // Update map + marker
       if (mapObjRef.current) {
@@ -105,7 +122,7 @@ const LocationPicker = ({ value, onChange }) => {
         markerRef.current.setPosition({ lat, lng });
         markerRef.current.setVisible(true);
       }
-      onChangeRef.current({ address, lat, lng });
+      onChangeRef.current({ address, lat, lng, city, state, zipCode });
     });
   };
 
