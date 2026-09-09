@@ -2,14 +2,15 @@
  * Shared job-status utilities for the admin portal.
  */
 
-export const JOB_STATUS_OPTIONS = ['open', 'assigned', 'inprogress', 'completed', 'cancelled'];
+export const JOB_STATUS_OPTIONS = ['open', 'assigned', 'ontheway', 'inprogress', 'completed', 'cancelled'];
 
 const STATUS_META = {
-  'open':        { label: 'Open',        tone: 'primary'   },
-  'assigned':    { label: 'Assigned',    tone: 'info'      },
-  'inprogress': { label: 'In Progress', tone: 'warning'   },
-  'completed':   { label: 'Completed',   tone: 'success'   },
-  'cancelled':   { label: 'Cancelled',   tone: 'danger'    },
+  'open':       { label: 'Open',        tone: 'primary'  },
+  'assigned':   { label: 'Assigned',    tone: 'info'     },
+  'ontheway':   { label: 'On The Way',  tone: 'warning'  },
+  'inprogress': { label: 'In Progress', tone: 'warning'  },
+  'completed':  { label: 'Completed',   tone: 'success'  },
+  'cancelled':  { label: 'Cancelled',   tone: 'danger'   },
 };
 
 /**

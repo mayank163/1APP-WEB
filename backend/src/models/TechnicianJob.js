@@ -58,7 +58,7 @@ const technicianJobSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['open', 'assigned', 'visited', 'inprogress', 'completed', 'cancelled'],
+    enum: ['open', 'assigned', 'ontheway', 'visited', 'inprogress', 'completed', 'cancelled'],
     default: 'open',
   },
   // Full audit trail of every status change with optional admin note

@@ -419,7 +419,7 @@ const updateTechnicianJobStatus = async (req, res, next) => {
     const { jobId } = req.params;
     const { status, finalPrice, note } = req.body;
 
-    const validStatuses = ['open', 'assigned', 'visited', 'inprogress', 'completed', 'cancelled'];
+    const validStatuses = ['open', 'assigned', 'ontheway', 'visited', 'inprogress', 'completed', 'cancelled'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ success: false, message: 'Invalid job status' });
     }
@@ -618,10 +618,10 @@ const payTechnicianWallet = async (req, res, next) => {
 const rescheduleJob = async (req, res, next) => {
   try {
     const { jobId } = req.params;
-    const { scheduledDate, reason } = req.body;
+    const { jobDateFrom, jobDateTo, reason } = req.body;
 
-    if (!scheduledDate) {
-      return res.status(400).json({ success: false, message: 'Please provide a new scheduled date' });
+    if (!jobDateFrom || !jobDateTo) {
+      return res.status(400).json({ success: false, message: 'Please provide both jobDateFrom and jobDateTo' });
     }
 
     const job = await TechnicianJob.findById(jobId);
@@ -629,25 +629,32 @@ const rescheduleJob = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Job not found' });
     }
 
-    const newDate = new Date(scheduledDate);
-    if (isNaN(newDate)) {
+    const newFrom = new Date(jobDateFrom);
+    const newTo   = new Date(jobDateTo);
+
+    if (isNaN(newFrom.getTime()) || isNaN(newTo.getTime())) {
       return res.status(400).json({ success: false, message: 'Invalid date format' });
+    }
+
+    if (newFrom >= newTo) {
+      return res.status(400).json({ success: false, message: '"From" must be before "To"' });
     }
 
     job.rescheduleHistory = job.rescheduleHistory || [];
     job.rescheduleHistory.push({
-      previousDate: job.jobDate?.from || job.scheduledDate || null,
-      newDate,
-      reason: reason || '',
+      previousDate:  job.jobDate?.from || job.scheduledDate || null,
+      newDate:       newFrom,
+      reason:        reason || '',
       rescheduledAt: new Date(),
     });
 
-    job.scheduledDate   = newDate;
-    job.jobDate         = { from: newDate, to: job.jobDate?.to || null };
+    job.jobDate       = { from: newFrom, to: newTo };
+    job.scheduledDate = newFrom;
+
     job.conversation = job.conversation || [];
     job.conversation.push({
-      sender: 'admin',
-      message: `Job rescheduled to ${newDate.toLocaleString('en-IN')}${reason ? `. Reason: ${reason}` : ''}.`,
+      sender:    'admin',
+      message:   `Job rescheduled to ${newFrom.toLocaleString('en-IN')} → ${newTo.toLocaleString('en-IN')}${reason ? `. Reason: ${reason}` : ''}.`,
       createdAt: new Date(),
     });
 

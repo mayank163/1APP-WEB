@@ -34,6 +34,7 @@ router.get('/dashboard', protect, restrictTo('technician'), technicianController
 router.get('/metrics',   protect, restrictTo('technician'), technicianController.getMetrics);
 
 // ── Job progress ──────────────────────────────────────────────────────────────
+router.patch('/jobs/:jobId/start-navigation', protect, restrictTo('technician'), technicianController.startNavigation);
 router.patch('/jobs/:jobId/reached',  protect, restrictTo('technician'), technicianController.markReached);
 router.patch('/jobs/:jobId/complete', protect, restrictTo('technician'), technicianController.markJobCompleted);
 router.patch('/jobs/:jobId/tasks/:taskIndex/complete', protect, restrictTo('technician'), technicianController.completeTask);

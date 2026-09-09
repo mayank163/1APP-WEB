@@ -619,9 +619,23 @@ const Modal = ({ show, onClose, title, children, size = '' }) => {
 
 // ─── Reschedule Modal ─────────────────────────────────────────────────────────
 const RescheduleModal = ({ show, job, onClose, onReschedule, rescheduling }) => {
-  const [scheduledDate, setScheduledDate] = useState('');
-  const [reason, setReason] = useState('');
+  const [jobDateFrom, setJobDateFrom] = useState('');
+  const [jobDateTo,   setJobDateTo]   = useState('');
+  const [reason,      setReason]      = useState('');
+
+  // Pre-fill with existing jobDate when modal opens
+  useEffect(() => {
+    if (show && job) {
+      setJobDateFrom(job.jobDate?.from ? new Date(job.jobDate.from).toISOString().slice(0, 16) : '');
+      setJobDateTo  (job.jobDate?.to   ? new Date(job.jobDate.to  ).toISOString().slice(0, 16) : '');
+      setReason('');
+    }
+  }, [show, job]);
+
   if (!show) return null;
+
+  const isValid = jobDateFrom && jobDateTo && new Date(jobDateFrom) < new Date(jobDateTo);
+
   return (
     <div className="tj-modal-backdrop" onClick={onClose}>
       <div className="tj-modal-box" onClick={(e) => e.stopPropagation()}>
@@ -634,18 +648,41 @@ const RescheduleModal = ({ show, job, onClose, onReschedule, rescheduling }) => 
         </div>
         <div className="tj-modal-body">
           <p className="text-muted small mb-3">Job: <strong>{job?.title}</strong></p>
-          {job?.scheduledDate && (
-            <p className="text-muted small mb-3">
-              Current date: <strong>{new Date(job.scheduledDate).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</strong>
-            </p>
+
+          {/* Current window */}
+          {(job?.jobDate?.from || job?.jobDate?.to) && (
+            <div className="p-2 rounded-2 mb-3" style={{ background: 'rgba(165,115,47,0.06)', border: '1px solid rgba(165,115,47,0.15)', fontSize: '0.82rem', color: '#6c757d' }}>
+              Current window:&nbsp;
+              <strong>{job.jobDate?.from ? new Date(job.jobDate.from).toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—'}</strong>
+              &nbsp;→&nbsp;
+              <strong>{job.jobDate?.to ? new Date(job.jobDate.to).toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—'}</strong>
+            </div>
           )}
-          <label className="tj-label">New Scheduled Date <span className="text-danger">*</span></label>
-          <input
-            className="form-control tj-input mb-3"
-            type="datetime-local"
-            value={scheduledDate}
-            onChange={(e) => setScheduledDate(e.target.value)}
-          />
+
+          <div className="row g-3 mb-3">
+            <div className="col-md-6">
+              <label className="tj-label">New From (arrive after) <span className="text-danger">*</span></label>
+              <input
+                className="form-control tj-input"
+                type="datetime-local"
+                value={jobDateFrom}
+                onChange={(e) => setJobDateFrom(e.target.value)}
+              />
+            </div>
+            <div className="col-md-6">
+              <label className="tj-label">New To (arrive before) <span className="text-danger">*</span></label>
+              <input
+                className="form-control tj-input"
+                type="datetime-local"
+                value={jobDateTo}
+                onChange={(e) => setJobDateTo(e.target.value)}
+              />
+            </div>
+          </div>
+          {jobDateFrom && jobDateTo && !isValid && (
+            <p className="text-danger small mb-2">"From" must be before "To".</p>
+          )}
+
           <label className="tj-label">Reason (optional)</label>
           <textarea
             className="form-control tj-input mb-3"
@@ -654,12 +691,13 @@ const RescheduleModal = ({ show, job, onClose, onReschedule, rescheduling }) => 
             value={reason}
             onChange={(e) => setReason(e.target.value)}
           />
+
           <div className="d-flex gap-2 justify-content-end">
             <button className="btn tj-btn-ghost" onClick={onClose} disabled={rescheduling}>Cancel</button>
             <button
               className="btn tj-btn-primary"
-              disabled={rescheduling || !scheduledDate}
-              onClick={() => onReschedule(job._id, scheduledDate, reason)}
+              disabled={rescheduling || !isValid}
+              onClick={() => onReschedule(job._id, jobDateFrom, jobDateTo, reason)}
             >
               {rescheduling
                 ? <><span className="spinner-border spinner-border-sm me-2" />Saving…</>
@@ -1656,15 +1694,15 @@ const TechnicianJobs = () => {
   // ── Reschedule ──────────────────────────────────────────────────────────────
   const openRescheduleModal = (job) => { setRescheduleJob(job); setShowRescheduleModal(true); };
 
-  const handleReschedule = async (jobId, scheduledDate, reason) => {
+  const handleReschedule = async (jobId, jobDateFrom, jobDateTo, reason) => {
     setRescheduling(true);
     try {
-      await adminApi.rescheduleJob(jobId, { scheduledDate, reason });
+      await adminApi.rescheduleJob(jobId, { jobDateFrom, jobDateTo, reason });
       toast.success('Job rescheduled successfully!');
       setShowRescheduleModal(false); setRescheduleJob(null);
       await loadData();
       if (selectedJob?._id === jobId) {
-        setSelectedJob((prev) => prev ? { ...prev, scheduledDate } : prev);
+        setSelectedJob((prev) => prev ? { ...prev, jobDate: { from: jobDateFrom, to: jobDateTo }, scheduledDate: jobDateFrom } : prev);
       }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Reschedule failed');

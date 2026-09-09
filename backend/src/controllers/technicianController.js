@@ -174,7 +174,7 @@ const getJobsForTechnicians = async (req, res, next) => {
     else if (filter === 'requested') {
       jobs = await TechnicianJob.find({
         requestedBy: techId,
-      }).sort('-createdAt');
+      }).sort('-updatedAt');
     }
 
     // --------------------------------
@@ -1875,6 +1875,74 @@ const getMetrics = async (
 };
 
 
+// ─── START NAVIGATION ─────────────────────────────────────────────────────────
+
+/**
+ * PATCH /api/technician/jobs/:jobId/start-navigation
+ * Technician taps "Start Navigation" — sets job status to 'ontheway'.
+ * Body: { lat?, lng? }
+ */
+const startNavigation = async (req, res, next) => {
+  try {
+    const { jobId } = req.params;
+    const { lat, lng } = req.body || {};
+
+    const job = await TechnicianJob.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ success: false, message: 'Job not found' });
+    }
+
+    if (
+      !job.assignedTechnician?._id ||
+      job.assignedTechnician._id.toString() !== req.user._id.toString()
+    ) {
+      return res.status(403).json({ success: false, message: 'You are not assigned to this job' });
+    }
+
+    if (!['assigned'].includes(job.status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot start navigation when job status is "${job.status}"`,
+      });
+    }
+
+    const now = new Date();
+    job.status = 'ontheway';
+
+    job.statusHistory = job.statusHistory || [];
+    job.statusHistory.push({ status: 'ontheway', note: 'Technician started navigation', changedAt: now });
+
+    job.conversation = job.conversation || [];
+    job.conversation.push({
+      sender: 'technician',
+      message: `Technician is on the way${
+        lat != null && lng != null
+          ? ` (GPS: ${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)})`
+          : ''
+      } at ${now.toLocaleString('en-IN')}.`,
+      createdAt: now,
+    });
+
+    await job.save();
+
+    try {
+      const { getIO } = require('../utils/socketInstance');
+      getIO().to('admin').emit('job:updated', { job });
+    } catch (e) {
+      console.warn('[Socket] job:updated emit failed in startNavigation:', e.message);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Navigation started. Job status set to On The Way.',
+      data: { status: job.status, jobId: job._id },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 // ─── MARK REACHED ─────────────────────────────────────────────────────────────
 
 const markReached = async (
@@ -1922,6 +1990,14 @@ const markReached = async (
         success: false,
         message:
           'Location already marked as reached',
+      });
+    }
+
+    // Accept 'assigned', 'ontheway' (navigation started) or 'inprogress' as valid prior states
+    if (!['assigned', 'ontheway', 'inprogress'].includes(job.status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot mark reached when job status is "${job.status}"`,
       });
     }
 
@@ -2016,7 +2092,35 @@ const markReached = async (
         now,
     });
 
+    // ── Auto-complete the first incomplete "On Site" task ────────────────────
+    const firstOnSiteIdx = job.tasks.findIndex(
+      (t) => t.group === 'On Site' && !t.isDone
+    );
+    if (firstOnSiteIdx !== -1) {
+      const t = job.tasks[firstOnSiteIdx];
+      t.isDone         = true;
+      t.checkedAt      = now;
+      t.technicianLat  = hasLocation ? Number(lat) : null;
+      t.technicianLng  = hasLocation ? Number(lng) : null;
+      t.distanceMeters = distMeters;
+      job.markModified('tasks');
+    }
+
     await job.save();
+
+    // Notify admin about the auto-completed On Site task
+    if (firstOnSiteIdx !== -1) {
+      try {
+        const { getIO } = require('../utils/socketInstance');
+        getIO().to('admin').emit('job:task:completed', {
+          jobId,
+          taskIndex: firstOnSiteIdx,
+          task: job.tasks[firstOnSiteIdx],
+        });
+      } catch (e) {
+        console.warn('[Socket] job:task:completed emit failed:', e.message);
+      }
+    }
 
     res.status(200).json({
       success: true,
@@ -2036,6 +2140,9 @@ const markReached = async (
 
         reachedStatus:
           job.reachedStatus,
+
+        autoCompletedTaskIndex: firstOnSiteIdx !== -1 ? firstOnSiteIdx : null,
+        autoCompletedTask:      firstOnSiteIdx !== -1 ? job.tasks[firstOnSiteIdx] : null,
       },
     });
 
@@ -2443,34 +2550,20 @@ const getDetailsByJobId = async (
 
 module.exports = {
   getJobsForTechnicians,
-
   requestJob,
-
   cancelJobRequest,
-
   getMyRequests,
-
   getTechnicianDashboard,
-
   createWithdrawalRequest,
-
   getWithdrawals,
-
   updateRequestStatus,
-
   getMetrics,
-
+  startNavigation,
   markReached,
-
   markJobCompleted,
-
   sendMessageOnRequest,
-
   getRequestMessages,
-
   getRequestConversation,
-
   getDetailsByJobId,
-
   completeTask,
 };
