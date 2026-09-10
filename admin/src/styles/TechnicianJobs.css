@@ -1967,3 +1967,1014 @@
 }
 .tj-task-add-btn:hover:not(:disabled) { background: #8c5f25; }
 .tj-task-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FULL-SCREEN JOB DETAIL MODAL
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Backdrop — covers the entire viewport */
+.tj-fullscreen-overlay {
+  position: fixed;
+  /* Start after the sidebar — the admin sidebar is typically 220px wide.
+     This keeps the left nav fully accessible when the detail view is open. */
+  top: 0;
+  left: var(--sidebar-width, 220px);
+  right: 0;
+  bottom: 0;
+  background: transparent;
+  z-index: 1060;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  animation: tj-fade-in 0.18s ease;
+  /* No backdrop — sidebar stays interactive */
+}
+
+/* The modal box itself — full screen (content area only) */
+.tj-fullscreen-modal {
+  background: #f9f5f0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: tj-slide-up 0.22s ease;
+  box-shadow: -4px 0 20px rgba(0,0,0,0.08);
+  border-left: 1px solid #f0e8dc;
+}
+
+/* ── Sticky header ────────────────────────────────────────────────────────── */
+.tj-fullscreen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.75rem;
+  background: #fff;
+  border-bottom: 1px solid #f0e8dc;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.tj-fullscreen-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #1a1208;
+  margin: 0;
+}
+
+/* ── Two-column body ─────────────────────────────────────────────────────── */
+.tj-fullscreen-body {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Left: scrollable main content */
+.tj-fullscreen-left {
+  overflow-y: auto;
+  padding: 0;
+  border-right: 1px solid #f0e8dc;
+}
+
+.tj-fullscreen-left .tj-view-panel-body {
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 900px;
+}
+
+/* Right: sticky sidebar */
+.tj-fullscreen-right {
+  overflow-y: auto;
+  padding: 1.25rem 1.25rem;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ── Scrollbars ──────────────────────────────────────────────────────────── */
+.tj-fullscreen-left::-webkit-scrollbar,
+.tj-fullscreen-right::-webkit-scrollbar { width: 6px; }
+.tj-fullscreen-left::-webkit-scrollbar-track,
+.tj-fullscreen-right::-webkit-scrollbar-track { background: #f8f3ed; }
+.tj-fullscreen-left::-webkit-scrollbar-thumb,
+.tj-fullscreen-right::-webkit-scrollbar-thumb { background: #d4a050; border-radius: 10px; }
+.tj-fullscreen-left::-webkit-scrollbar-thumb:hover,
+.tj-fullscreen-right::-webkit-scrollbar-thumb:hover { background: #A5732F; }
+
+/* ── Small outline buttons in the header ─────────────────────────────────── */
+.tj-btn-outline-sm {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 7px;
+  border: 1.5px solid #A5732F;
+  color: #A5732F;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.14s;
+  white-space: nowrap;
+}
+.tj-btn-outline-sm:hover { background: rgba(165,115,47,0.08); }
+.tj-btn-outline-sm.danger { border-color: #dc3545; color: #dc3545; }
+.tj-btn-outline-sm.danger:hover { background: rgba(220,53,69,0.07); }
+
+/* ── Pay small button inside hero ────────────────────────────────────────── */
+.tj-btn-pay-sm {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.38rem 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 7px;
+  border: none;
+  background: #16a34a;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.tj-btn-pay-sm:hover { background: #15803d; }
+
+/* ── Sidebar timeline ────────────────────────────────────────────────────── */
+.tj-sidebar-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 0.5rem;
+  padding-left: 4px;
+}
+
+.tj-stl-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #1a1208;
+  font-weight: 500;
+  position: relative;
+}
+.tj-stl-row.muted { color: #adb5bd; }
+
+.tj-stl-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #A5732F;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.tj-stl-dot.assigned   { background: #0891b2; }
+.tj-stl-dot.reached    { background: #2563eb; }
+.tj-stl-dot.inprogress { background: #f59e0b; }
+.tj-stl-dot.completed  { background: #16a34a; }
+.tj-stl-dot.muted      { background: #dee2e6; }
+
+.tj-stl-time {
+  font-size: 0.72rem;
+  color: #adb5bd;
+  margin-left: auto;
+  white-space: nowrap;
+  padding-left: 8px;
+}
+.tj-stl-note {
+  font-size: 0.72rem;
+  color: #adb5bd;
+  margin-left: auto;
+}
+
+/* ── Full-width CTA button (sidebar) ─────────────────────────────────────── */
+.tj-cta-full-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  border-radius: 9px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+.tj-cta-full-btn.gold {
+  background: #A5732F;
+  color: #fff;
+}
+.tj-cta-full-btn.gold:hover {
+  background: #8c5f25;
+  box-shadow: 0 4px 14px rgba(165,115,47,0.35);
+}
+
+/* ── Responsive: collapse to single column on small screens ──────────────── */
+@media (max-width: 768px) {
+  .tj-fullscreen-body {
+    grid-template-columns: 1fr;
+  }
+  .tj-fullscreen-right {
+    border-top: 1px solid #f0e8dc;
+    border-right: none;
+  }
+  .tj-fullscreen-left .tj-view-panel-body {
+    padding: 1rem;
+  }
+  .tj-fullscreen-header {
+    padding: 0.75rem 1rem;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   NEW DESIGN SYSTEM — Jobs Management Dashboard
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Breadcrumb ──────────────────────────────────────────────────────────── */
+.tj-breadcrumb {
+  font-size: 0.78rem;
+  color: #adb5bd;
+  margin-bottom: 0.25rem;
+}
+
+/* ── Primary gold button ─────────────────────────────────────────────────── */
+.tj-btn-primary-gold {
+  background: #A5732F;
+  border: none;
+  color: #fff;
+  font-weight: 700;
+  padding: 0.55rem 1.25rem;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.18s, box-shadow 0.18s;
+  white-space: nowrap;
+}
+.tj-btn-primary-gold:hover, .tj-btn-primary-gold:focus {
+  background: #8c5f25;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(165,115,47,0.35);
+}
+.tj-btn-primary-gold:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── NEW Stats cards (coloured top-border design) ────────────────────────── */
+.tj-stat-card {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  border: 1px solid rgba(0,0,0,0.05);
+  transition: box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+}
+.tj-stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+
+.tj-stat-top-bar {
+  height: 4px;
+  width: 100%;
+}
+.tj-stat-active  .tj-stat-top-bar { background: #16a34a; }
+.tj-stat-unassigned .tj-stat-top-bar { background: #2563eb; }
+.tj-stat-delayed .tj-stat-top-bar { background: #dc3545; }
+.tj-stat-completion .tj-stat-top-bar { background: #A5732F; }
+
+.tj-stat-inner {
+  padding: 1.1rem 1.4rem;
+  flex: 1;
+}
+
+.tj-stat-label-top {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 0.4rem;
+}
+
+.tj-stat-big {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #1a1208;
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tj-stat-delta   { font-size: 0.78rem; font-weight: 600; color: #16a34a; }
+.tj-stat-needs   { font-size: 0.78rem; font-weight: 600; color: #2563eb; }
+.tj-stat-avg     { font-size: 0.78rem; font-weight: 600; color: #dc3545; }
+.tj-stat-awaiting { font-size: 0.78rem; font-weight: 600; color: #A5732F; }
+
+.tj-stat-dot-live {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #2563eb;
+}
+.tj-stat-dot-live.red { background: #dc3545; }
+
+/* ── Tab bar ─────────────────────────────────────────────────────────────── */
+.tj-tab-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #f0e8dc;
+  background: #fff;
+  border-radius: 12px 12px 0 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tj-tab-bar::-webkit-scrollbar { display: none; }
+
+.tj-tab-btn {
+  background: transparent;
+  border: none;
+  padding: 0.7rem 1.2rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6c757d;
+  border-bottom: 2.5px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.14s, border-color 0.14s;
+}
+.tj-tab-btn:hover { color: #A5732F; }
+.tj-tab-btn.active {
+  color: #1a1208;
+  font-weight: 700;
+  border-bottom-color: #1a1208;
+}
+
+.tj-tab-count {
+  background: #f0e8dc;
+  color: #A5732F;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.1em 0.5em;
+  border-radius: 20px;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* ── Search bar wrap ─────────────────────────────────────────────────────── */
+.tj-search-bar-wrap {
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid #f3ede5;
+}
+
+/* ── Filter rows ─────────────────────────────────────────────────────────── */
+.tj-filter-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.25rem;
+  padding: 0.75rem 1.25rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #f3ede5;
+}
+.tj-filter-row-more { background: #fffbf7; }
+
+.tj-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+}
+
+.tj-filter-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: #adb5bd;
+}
+
+/* ── More Filters button ─────────────────────────────────────────────────── */
+.tj-more-filters-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1.5px solid #e9e0d5;
+  border-radius: 8px;
+  background: #fff;
+  color: #495057;
+  cursor: pointer;
+  margin-top: auto;
+  transition: background 0.14s, border-color 0.14s;
+  white-space: nowrap;
+}
+.tj-more-filters-btn:hover, .tj-more-filters-btn.active {
+  border-color: #A5732F;
+  color: #A5732F;
+  background: rgba(165,115,47,0.04);
+}
+.tj-filter-caret {
+  font-size: 0.65rem;
+  transition: transform 0.2s;
+}
+.tj-filter-caret.up { transform: rotate(180deg); }
+
+/* ── Filter Dropdown component ───────────────────────────────────────────── */
+.tj-filter-dropdown {
+  position: relative;
+}
+
+.tj-filter-dropdown-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0.42rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  border: 1.5px solid #e9e0d5;
+  border-radius: 8px;
+  background: #fdf9f5;
+  color: #1a1208;
+  cursor: pointer;
+  min-width: 140px;
+  transition: border-color 0.14s, box-shadow 0.14s;
+  white-space: nowrap;
+}
+.tj-filter-dropdown-btn:hover,
+.tj-filter-dropdown-btn.open {
+  border-color: #A5732F;
+  box-shadow: 0 0 0 3px rgba(165,115,47,0.1);
+}
+
+.tj-filter-dropdown-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 2000;
+  background: #fff;
+  border: 1.5px solid #e9e0d5;
+  border-radius: 10px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.14);
+  min-width: 200px;
+  overflow: hidden;
+  animation: tj-slide-up 0.15s ease;
+}
+
+.tj-filter-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+  background: #A5732F;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+.tj-filter-panel-header button {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0;
+  line-height: 1;
+  opacity: 0.8;
+}
+.tj-filter-panel-header button:hover { opacity: 1; }
+
+.tj-filter-panel-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+  font-size: 0.85rem;
+  color: #1a1208;
+  cursor: pointer;
+  border-bottom: 1px solid #f8f3ed;
+  transition: background 0.12s;
+}
+.tj-filter-panel-item:last-child { border-bottom: none; }
+.tj-filter-panel-item:hover { background: #fffbf7; }
+.tj-filter-panel-item.active {
+  background: #A5732F;
+  color: #fff;
+  font-weight: 700;
+}
+
+.tj-filter-check { font-size: 0.75rem; }
+
+/* ── Table new columns ───────────────────────────────────────────────────── */
+.tj-job-id {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1a1208;
+  white-space: nowrap;
+}
+
+.tj-tech-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tj-tech-avatar-sm {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #A5732F, #d4a050);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.78rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.tj-tech-unassigned-avatar {
+  background: #f0e8dc;
+  color: #adb5bd;
+  font-size: 0.7rem;
+}
+
+.tj-tech-name-cell {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #1a1208;
+}
+
+.tj-appointment {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.tj-appt-date {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #1a1208;
+}
+.tj-appt-time {
+  font-size: 0.73rem;
+  color: #6c757d;
+}
+
+.tj-location-cell {
+  font-size: 0.82rem;
+  color: #495057;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tj-amount-cell {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #A5732F;
+  white-space: nowrap;
+}
+
+/* ── Status pills ────────────────────────────────────────────────────────── */
+.tj-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.73rem;
+  font-weight: 700;
+  padding: 0.25em 0.7em;
+  border-radius: 20px;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+.tj-status-pill.sm { font-size: 0.68rem; padding: 0.18em 0.55em; }
+
+.tj-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+/* Status colour variants */
+.tj-status-pill.status-pending    { background: rgba(108,117,125,0.1); color: #495057; }
+.tj-status-pill.status-assigned   { background: rgba(8,145,178,0.12);  color: #0891b2; }
+.tj-status-pill.status-ontheway   { background: rgba(37,99,235,0.1);   color: #2563eb; }
+.tj-status-pill.status-arrived    { background: rgba(245,158,11,0.12); color: #b45309; }
+.tj-status-pill.status-inprogress { background: rgba(37,99,235,0.12);  color: #2563eb; }
+.tj-status-pill.status-completed  { background: rgba(22,163,74,0.12);  color: #16a34a; }
+.tj-status-pill.status-cancelled  { background: rgba(220,53,69,0.1);   color: #dc3545; }
+
+/* Urgency pill */
+.tj-urgency-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.73rem;
+  font-weight: 700;
+  padding: 0.25em 0.7em;
+  border-radius: 20px;
+}
+.tj-urgency-pill.normal   { background: rgba(108,117,125,0.1); color: #6c757d; }
+.tj-urgency-pill.emergency { background: rgba(220,53,69,0.1); color: #dc3545; }
+
+/* Table action buttons */
+.tj-action-btn.reschedule { background: rgba(165,115,47,0.1); color: #A5732F; }
+.tj-action-btn.reschedule:hover { background: rgba(165,115,47,0.2); }
+
+/* ── Job Overview Hero (full-screen) ─────────────────────────────────────── */
+.tj-job-overview-hero {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #f0e8dc;
+  padding: 1.25rem 1.5rem;
+}
+
+.tj-job-overview-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.tj-job-overview-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1a1208;
+  margin: 0 0 0.4rem;
+  line-height: 1.2;
+}
+
+.tj-job-overview-meta {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  font-size: 0.82rem;
+  color: #6c757d;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.tj-btn-reassign {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border-radius: 8px;
+  border: none;
+  background: #A5732F;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.tj-btn-reassign:hover { background: #8c5f25; }
+
+/* ── Overview cards (Job Detail) ─────────────────────────────────────────── */
+.tj-overview-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #f0e8dc;
+  padding: 1.1rem 1.25rem;
+}
+
+.tj-overview-card-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #6c757d;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+}
+
+.tj-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.tj-ov-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #adb5bd;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.tj-ov-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1a1208;
+}
+.tj-ov-value.gold { color: #A5732F; }
+
+.tj-ov-desc {
+  font-size: 0.82rem;
+  color: #495057;
+  line-height: 1.65;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f0e8dc;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Ensure rich-text content inside description doesn't overflow */
+.tj-ov-desc * {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* ── Pricing rows ────────────────────────────────────────────────────────── */
+.tj-pricing-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.tj-pricing-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: #495057;
+  padding: 0.2rem 0;
+}
+.tj-pricing-row.total {
+  font-weight: 800;
+  font-size: 1rem;
+  color: #1a1208;
+  border-top: 1px solid #f0e8dc;
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
+}
+.tj-pricing-total { color: #A5732F; }
+
+/* ── View panel breadcrumb + title ───────────────────────────────────────── */
+.tj-view-breadcrumb {
+  font-size: 0.72rem;
+  color: #adb5bd;
+  margin-bottom: 2px;
+}
+.tj-view-panel-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #1a1208;
+  margin: 0;
+}
+
+/* ── Admin actions card (sidebar) ────────────────────────────────────────── */
+.tj-admin-actions-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #f0e8dc;
+  padding: 1.1rem 1.25rem;
+}
+
+.tj-admin-action-link {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background: none;
+  border: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #1a1208;
+  cursor: pointer;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid #f8f3ed;
+  transition: color 0.13s;
+  text-align: left;
+}
+.tj-admin-action-link:last-child { border-bottom: none; }
+.tj-admin-action-link:hover { color: #A5732F; }
+.tj-admin-action-link.danger:hover { color: #dc3545; }
+
+/* ── CTA row ─────────────────────────────────────────────────────────────── */
+.tj-view-cta-row {
+  display: flex;
+  gap: 0.75rem;
+}
+.tj-cta-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  border-radius: 9px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.tj-cta-btn.gold { background: #A5732F; color: #fff; }
+.tj-cta-btn.gold:hover { background: #8c5f25; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   RESCHEDULE MODAL — Calendar + Time Slots
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.tj-reschedule-box {
+  max-width: 640px !important;
+}
+
+.tj-reschedule-body {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem !important;
+  align-items: flex-start;
+}
+
+.tj-reschedule-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.tj-reschedule-right {
+  width: 220px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tj-reschedule-subtitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1208;
+  margin-bottom: 0.75rem;
+}
+
+/* ── Calendar ────────────────────────────────────────────────────────────── */
+.tj-calendar {
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #f0e8dc;
+  padding: 0.75rem;
+  width: 100%;
+}
+
+.tj-cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.tj-cal-month {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1a1208;
+}
+
+.tj-cal-arrow {
+  background: none;
+  border: 1px solid #e9e0d5;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #495057;
+  transition: background 0.13s, border-color 0.13s;
+  line-height: 1;
+}
+.tj-cal-arrow:hover {
+  background: rgba(165,115,47,0.08);
+  border-color: #A5732F;
+  color: #A5732F;
+}
+
+/* 7-column grid for the calendar days */
+.tj-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.tj-cal-dayname {
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #adb5bd;
+  padding: 4px 0;
+  letter-spacing: 0.04em;
+}
+
+.tj-cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #1a1208;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  padding: 0;
+  min-width: 0;
+}
+.tj-cal-day:hover:not(:disabled) {
+  background: rgba(165,115,47,0.12);
+  color: #A5732F;
+}
+.tj-cal-day.selected {
+  background: #A5732F;
+  color: #fff;
+  font-weight: 700;
+}
+.tj-cal-day.past {
+  color: #dee2e6;
+  cursor: not-allowed;
+}
+
+/* ── Time slots ──────────────────────────────────────────────────────────── */
+.tj-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tj-slot-btn {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1.5px solid #e9e0d5;
+  border-radius: 8px;
+  background: #fff;
+  color: #1a1208;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.13s, background 0.13s, color 0.13s;
+  white-space: nowrap;
+}
+.tj-slot-btn:hover {
+  border-color: #A5732F;
+  color: #A5732F;
+  background: rgba(165,115,47,0.04);
+}
+.tj-slot-btn.selected {
+  border-color: #A5732F;
+  background: rgba(165,115,47,0.1);
+  color: #A5732F;
+  font-weight: 700;
+}
+
+/* ── Reschedule reason + footer ──────────────────────────────────────────── */
+.tj-reschedule-reason {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tj-reschedule-footer {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
+}
+.tj-reschedule-footer .tj-btn-ghost {
+  flex: 1;
+}
+.tj-reschedule-footer .tj-btn-primary-gold {
+  flex: 1;
+}
+
+/* Responsive: stack on small screens */
+@media (max-width: 520px) {
+  .tj-reschedule-body {
+    flex-direction: column;
+  }
+  .tj-reschedule-right {
+    width: 100%;
+  }
+}

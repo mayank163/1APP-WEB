@@ -224,6 +224,7 @@ const getJobsForTechnicians = async (req, res, next) => {
           $in: [
             'assigned',
             'inprogress',
+            'ontheway'
           ],
         },
 
