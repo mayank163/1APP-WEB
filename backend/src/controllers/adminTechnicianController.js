@@ -5,6 +5,52 @@ const User = require('../models/User');
 const { getIO } = require('../utils/socketInstance');
 const sendNotification = require('../services/notificationService');
 
+// ── Helper: keep only the fields that belong to the selected pay type ────────
+// This prevents the DB from storing zeros for fields that were never filled in.
+const sanitizePay = (raw = {}) => {
+  const type = raw.type || 'fixed';
+  const cleaned = { type };
+
+  // Helper — only add a numeric field when it has a real non-zero value
+  const addNum = (key) => {
+    const v = Number(raw[key]);
+    if (!isNaN(v) && v > 0) cleaned[key] = v;
+  };
+
+  // Shared optional text field (all types may include it)
+  if (raw.approxHours && String(raw.approxHours).trim()) {
+    cleaned.approxHours = String(raw.approxHours).trim();
+  }
+
+  switch (type) {
+    case 'fixed':
+      addNum('fixedAmount');
+      break;
+
+    case 'hourly':
+      addNum('hourlyRate');
+      addNum('maxHours');
+      break;
+
+    case 'perDevice':
+      addNum('perDeviceRate');
+      addNum('maxDevices');
+      break;
+
+    case 'blended':
+      addNum('blendedFixedAmount');
+      addNum('blendedFixedHours');
+      addNum('blendedHourlyRate');
+      addNum('blendedMaxAddlHours');
+      break;
+
+    default:
+      break;
+  }
+
+  return cleaned;
+};
+
 // Safely emit to a request-scoped room (never throws if io not ready)
 const emitToRequest = (requestId, event, payload) => {
   try {
@@ -60,7 +106,7 @@ const createTechnicianJob = async (req, res, next) => {
       city:    city    || '',
       state:   state   || '',
       zipCode: zipCode || '',
-      pay: pay || { type: 'fixed', fixedAmount: 0 },
+      pay: sanitizePay(pay),
       description,
       requirements: Array.isArray(requirements) ? requirements : [],
       coordinates: coordinates || { lat: null, lng: null },
@@ -266,8 +312,8 @@ const updateTechnicianRequest = async (req, res, next) => {
 
       // ── Calculate final job amount once the request is accepted ──────
       // Derive the base fixed charge from the structured pay object.
-      // For hourly/perDevice/blended, use the counter-offer if set, otherwise
-      // derive a best-estimate from the pay fields so invoicing has a value.
+      // Fields not relevant to the chosen type may be undefined now that
+      // we no longer persist zeros — guard with || 0 throughout.
       const p = job?.pay || {};
       let derivedBase = 0;
       switch (p.type) {
@@ -362,7 +408,7 @@ const updateTechnicianJob = async (req, res, next) => {
     if (state   !== undefined) job.state   = state   || '';
     if (zipCode !== undefined) job.zipCode = zipCode || '';
     if (coordinates) job.coordinates = coordinates;
-    if (pay !== undefined) job.pay = pay || { type: 'fixed', fixedAmount: 0 };
+    if (pay !== undefined) job.pay = sanitizePay(pay);
     if (description) job.description = description;
     if (Array.isArray(requirements)) job.requirements = requirements;
     if (Array.isArray(preferredSkills)) job.preferredSkills = preferredSkills;

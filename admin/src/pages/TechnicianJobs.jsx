@@ -2443,7 +2443,7 @@ const TechnicianJobs = () => {
               )}
 
               {/* Live Technician Tracking */}
-              {selectedJob.assignedTechnician?.name && ['assigned','visited','inprogress'].includes(selectedJob.status) && (
+              {selectedJob.assignedTechnician?.name && ['assigned','inprogress','ontheway'].includes(selectedJob.status) && (
                 <div className="tj-view-block">
                   <div className="tj-view-block-title">
                     <FaMapMarkerAlt className="me-1" style={{ color: '#16a34a' }} />

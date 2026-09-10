@@ -20,6 +20,7 @@ const technicianJobSchema = new mongoose.Schema({
   },
   // ── Structured pay ────────────────────────────────────────────────────────
   // type: 'hourly' | 'fixed' | 'perDevice' | 'blended'
+  // Only the fields relevant to the selected type are stored — no zero-padding.
   pay: {
     type: {
       type: String,
@@ -27,20 +28,20 @@ const technicianJobSchema = new mongoose.Schema({
       default: 'fixed',
     },
     // ── Fixed ──────────────────────────────────────────────────────────────
-    fixedAmount:          { type: Number, default: 0, min: 0 },
+    fixedAmount:          { type: Number, min: 0 },
     // ── Hourly ─────────────────────────────────────────────────────────────
-    hourlyRate:           { type: Number, default: 0, min: 0 },
-    maxHours:             { type: Number, default: 0, min: 0 },
+    hourlyRate:           { type: Number, min: 0 },
+    maxHours:             { type: Number, min: 0 },
     // ── Per Device ─────────────────────────────────────────────────────────
-    perDeviceRate:        { type: Number, default: 0, min: 0 },
-    maxDevices:           { type: Number, default: 0, min: 0 },
+    perDeviceRate:        { type: Number, min: 0 },
+    maxDevices:           { type: Number, min: 0 },
     // ── Blended ────────────────────────────────────────────────────────────
-    blendedFixedAmount:   { type: Number, default: 0, min: 0 },
-    blendedFixedHours:    { type: Number, default: 0, min: 0 },
-    blendedHourlyRate:    { type: Number, default: 0, min: 0 },
-    blendedMaxAddlHours:  { type: Number, default: 0, min: 0 },
+    blendedFixedAmount:   { type: Number, min: 0 },
+    blendedFixedHours:    { type: Number, min: 0 },
+    blendedHourlyRate:    { type: Number, min: 0 },
+    blendedMaxAddlHours:  { type: Number, min: 0 },
     // ── Shared optional ────────────────────────────────────────────────────
-    approxHours:          { type: String, default: '', trim: true },
+    approxHours:          { type: String, trim: true },
   },
   description: {
     type: String,
