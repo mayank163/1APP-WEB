@@ -1,6 +1,7 @@
 const express = require('express');
 const router  = express.Router();
 const { protect, restrictTo } = require('../middleware/auth');
+const { uploadTaskCompletion } = require('../middleware/upload');
 const technicianController = require('../controllers/technicianController');
 const chargesController    = require('../controllers/chargesController');
 
@@ -37,7 +38,7 @@ router.get('/metrics',   protect, restrictTo('technician'), technicianController
 router.patch('/jobs/:jobId/start-navigation', protect, restrictTo('technician'), technicianController.startNavigation);
 router.patch('/jobs/:jobId/reached',  protect, restrictTo('technician'), technicianController.markReached);
 router.patch('/jobs/:jobId/complete', protect, restrictTo('technician'), technicianController.markJobCompleted);
-router.patch('/jobs/:jobId/tasks/:taskIndex/complete', protect, restrictTo('technician'), technicianController.completeTask);
+router.patch('/jobs/:jobId/tasks/:taskIndex/complete', protect, restrictTo('technician'), uploadTaskCompletion, technicianController.completeTask);
 
 // ── Detail pages ─────────────────────────────────────────────────────────────
 router.get('/details/:jobId', protect, restrictTo('technician'), technicianController.getDetailsByJobId);

@@ -136,6 +136,15 @@ const technicianJobSchema = new mongoose.Schema({
     order:          { type: Number, default: 0 },
     isDone:         { type: Boolean, default: false },
     checkedAt:      { type: Date, default: null },
+    // Completion evidence requested by the admin for this individual task.
+    requiresNote:      { type: Boolean, default: undefined },
+    requiresImage:     { type: Boolean, default: undefined },
+    requiresSignature: { type: Boolean, default: undefined },
+    requirementReason: { type: String, default: undefined, trim: true },
+    // Keep these absent until the technician actually submits that evidence.
+    completionNote:      { type: String, default: undefined },
+    completionImage:     { type: String, default: undefined },
+    completionSignature: { type: String, default: undefined },
     technicianLat:  { type: Number, default: null },
     technicianLng:  { type: Number, default: null },
     distanceMeters: { type: Number, default: null },

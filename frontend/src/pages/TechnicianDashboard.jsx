@@ -1082,6 +1082,44 @@ const ChargesInvoicePanel = ({ requestId, onUpdate, refreshKey = 0 }) => {
   );
 };
 
+// ─── Task completion evidence ──────────────────────────────────────────────────
+const TaskCompletionModal = ({ task, onClose, onSubmit, saving }) => {
+  const [note, setNote] = useState('');
+  const [image, setImage] = useState(null);
+  const canvasRef = useRef(null);
+  const drawingRef = useRef(false);
+  const signedRef = useRef(false);
+
+  const point = (event) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const source = event.touches?.[0] || event;
+    return { x: (source.clientX - rect.left) * (canvas.width / rect.width), y: (source.clientY - rect.top) * (canvas.height / rect.height) };
+  };
+  const start = (event) => { event.preventDefault(); const ctx = canvasRef.current.getContext('2d'); const p = point(event); ctx.beginPath(); ctx.moveTo(p.x, p.y); drawingRef.current = true; signedRef.current = true; };
+  const draw = (event) => { if (!drawingRef.current) return; event.preventDefault(); const ctx = canvasRef.current.getContext('2d'); const p = point(event); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+  const stop = () => { drawingRef.current = false; };
+  const clearSignature = () => { const canvas = canvasRef.current; canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height); signedRef.current = false; };
+  const submit = () => {
+    if (task.requiresNote && !note.trim()) return alert('Please write the required completion note.');
+    if (task.requiresImage && !image) return alert('Please upload the required completion image.');
+    if (task.requiresSignature && !signedRef.current) return alert('Please capture the required signature.');
+    if (task.requiresSignature) canvasRef.current.toBlob((blob) => onSubmit({ note: note.trim(), image, signature: new File([blob], 'signature.png', { type: 'image/png' }) }), 'image/png');
+    else onSubmit({ note: note.trim(), image, signature: null });
+  };
+  return <div style={{ position:'fixed', inset:0, zIndex:3000, background:'rgba(0,0,0,.5)', display:'grid', placeItems:'center', padding:16 }} onClick={onClose}>
+    <div style={{ width:'100%', maxWidth:480, maxHeight:'90vh', overflowY:'auto', background:'#fff', borderRadius:16, padding:24 }} onClick={(e) => e.stopPropagation()}>
+      <div style={{ display:'flex', justifyContent:'space-between', gap:12, alignItems:'center', marginBottom:8 }}><h5 style={{ margin:0, color:'#1a1208', fontWeight:800 }}>Complete task</h5><button onClick={onClose} style={{ border:0, background:'none', fontSize:22, cursor:'pointer' }}>×</button></div>
+      <p style={{ margin:'0 0 18px', color:'#6c757d', fontSize:'.85rem' }}>{task.title}</p>
+      {task.requirementReason && <div style={{ margin:'-8px 0 16px', padding:'10px 12px', borderRadius:8, background:'#fdf9f5', border:'1px solid #e9e0d5', color:'#6c757d', fontSize:'.82rem' }}><strong style={{ color:'#1a1208' }}>Why this is required:</strong> {task.requirementReason}</div>}
+      {task.requiresNote && <><label style={{ display:'block', fontWeight:700, fontSize:'.82rem', marginBottom:5 }}>Completion note <span style={{ color:'#dc3545' }}>*</span></label><textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} placeholder="Describe the completed work…" style={{ width:'100%', boxSizing:'border-box', border:'1.5px solid #e9e0d5', borderRadius:8, padding:10, marginBottom:14, fontFamily:'inherit' }} /></>}
+      {task.requiresImage && <><label style={{ display:'block', fontWeight:700, fontSize:'.82rem', marginBottom:5 }}>Completion image <span style={{ color:'#dc3545' }}>*</span></label><input type="file" accept="image/*" capture="environment" onChange={(e) => setImage(e.target.files?.[0] || null)} style={{ marginBottom:14, fontSize:'.82rem' }} />{image && <div style={{ color:'#16a34a', fontSize:'.78rem', marginTop:-10, marginBottom:14 }}>✓ {image.name}</div>}</>}
+      {task.requiresSignature && <><div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:5 }}><label style={{ fontWeight:700, fontSize:'.82rem' }}>Customer signature <span style={{ color:'#dc3545' }}>*</span></label><button type="button" onClick={clearSignature} style={{ border:0, background:'none', color:'#A5732F', cursor:'pointer', fontWeight:700, fontSize:'.78rem' }}>Clear</button></div><canvas ref={canvasRef} width="820" height="260" onPointerDown={start} onPointerMove={draw} onPointerUp={stop} onPointerLeave={stop} style={{ width:'100%', height:130, touchAction:'none', border:'1.5px dashed #A5732F', borderRadius:8, background:'#fdf9f5', marginBottom:16 }} /></>}
+      <div style={{ display:'flex', justifyContent:'flex-end', gap:10 }}><button onClick={onClose} style={S.ghost}>Cancel</button><button onClick={submit} disabled={saving} style={S.btn('#1a1208', saving)}>{saving ? 'Saving…' : 'Complete task'}</button></div>
+    </div>
+  </div>;
+};
+
 // ─── Main Component ────────────────────────────────────────────────────────────
 const TechnicianDashboard = () => {
   const [jobs, setJobs] = useState([]);
@@ -1096,6 +1134,8 @@ const TechnicianDashboard = () => {
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [completionTask, setCompletionTask] = useState(null);
+  const [completingTask, setCompletingTask] = useState(false);
   const [activeTab, setActiveTab] = useState('open');
 
   // modals / panels
@@ -1371,11 +1411,16 @@ const TechnicianDashboard = () => {
     });
 
   // ── complete a task ────────────────────────────────────────────────────────
-  const completeTask = async (jobId, taskIndex) => {
+  const completeTask = async (jobId, taskIndex, evidence = {}) => {
     try {
       const coords = await getCurrentCoords();
-      const body   = coords ? { lat: coords.lat, lng: coords.lng } : {};
-      const { data } = await API.patch(`/technician/jobs/${jobId}/tasks/${taskIndex}/complete`, body);
+      const body = new FormData();
+      if (coords) { body.append('lat', coords.lat); body.append('lng', coords.lng); }
+      if (evidence.note) body.append('completionNote', evidence.note);
+      if (evidence.image) body.append('completionImage', evidence.image);
+      if (evidence.signature) body.append('signature', evidence.signature);
+      setCompletingTask(true);
+      const { data } = await API.patch(`/technician/jobs/${jobId}/tasks/${taskIndex}/complete`, body, { headers: { 'Content-Type': 'multipart/form-data' } });
       if (data.success) {
         setMyJobs((prev) => prev.map((j) => {
           if (j._id !== jobId) return j;
@@ -1383,12 +1428,13 @@ const TechnicianDashboard = () => {
           tasks[taskIndex] = data.data.task;
           return { ...j, tasks };
         }));
+        setCompletionTask(null);
       } else {
         alert(data.message || 'Failed');
       }
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to complete task');
-    }
+    } finally { setCompletingTask(false); }
   };
 
   const markReached = async (jobId) => {
@@ -1555,6 +1601,14 @@ const TechnicianDashboard = () => {
       <h2 style={{ fontWeight: 800, color: '#1a1208', marginBottom: 4 }}>Technician Dashboard</h2>
 
       {/* ── modals ── */}
+      {completionTask && (
+        <TaskCompletionModal
+          task={completionTask.task}
+          saving={completingTask}
+          onClose={() => !completingTask && setCompletionTask(null)}
+          onSubmit={(evidence) => completeTask(completionTask.jobId, completionTask.taskIndex, evidence)}
+        />
+      )}
       {requestModal && (
         <RequestJobModal
           job={requestModal}
@@ -1837,7 +1891,13 @@ const TechnicianDashboard = () => {
                                     {/* circle checkbox */}
                                     <button
                                       disabled={t.isDone || alreadyCompleted}
-                                      onClick={() => completeTask(job._id, t._idx)}
+                                      onClick={() => {
+                                        if (t.requiresNote || t.requiresImage || t.requiresSignature) {
+                                          setCompletionTask({ jobId: job._id, taskIndex: t._idx, task: t });
+                                        } else {
+                                          completeTask(job._id, t._idx);
+                                        }
+                                      }}
                                       style={{
                                         width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
                                         border: t.isDone ? 'none' : '2px solid #d1d5db',

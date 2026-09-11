@@ -420,10 +420,11 @@ const TaskBuilder = ({ tasks, onChange }) => {
   const [newGroup, setNewGroup] = useState('Prep');
   const addTask = () => { const t = newTitle.trim(); if (!t) return; onChange([...tasks, { title: t, group: newGroup, order: tasks.length, isDone: false }]); setNewTitle(''); };
   const removeTask = (idx) => onChange(tasks.filter((_, i) => i !== idx));
+  const updateTask = (idx, field, value) => onChange(tasks.map((task, i) => i === idx ? { ...task, [field]: value } : task));
   return (
     <div className="tj-task-builder">
       <label className="tj-label"><FaTools className="me-1" style={{ color: '#A5732F' }} /> Tasks for Technician</label>
-      {TASK_GROUPS.map(g => { const gTasks = tasks.filter(t => t.group === g); if (!gTasks.length) return null; return (<div key={g} className="tj-task-group"><div className="tj-task-group-label">{g}</div>{gTasks.map(t => { const gi = tasks.indexOf(t); return (<div key={gi} className="tj-task-row"><span className="tj-task-circle" /><span className="tj-task-title">{t.title}</span><button type="button" className="tj-task-remove" onClick={() => removeTask(gi)}><FaTimes /></button></div>); })}</div>); })}
+      {TASK_GROUPS.map(g => { const gTasks = tasks.filter(t => t.group === g); if (!gTasks.length) return null; return (<div key={g} className="tj-task-group"><div className="tj-task-group-label">{g}</div>{gTasks.map(t => { const gi = tasks.indexOf(t); const requiresEvidence = t.requiresNote || t.requiresImage || t.requiresSignature; return (<div key={gi} className="tj-task-row" style={{ alignItems: 'flex-start' }}><span className="tj-task-circle" style={{ marginTop: 4 }} /><div style={{ flex: 1 }}><span className="tj-task-title">{t.title}</span><div className="d-flex gap-3 flex-wrap mt-1"><label className="small text-muted"><input type="checkbox" className="me-1" checked={Boolean(t.requiresNote)} onChange={(e) => updateTask(gi, 'requiresNote', e.target.checked)} />Require note</label><label className="small text-muted"><input type="checkbox" className="me-1" checked={Boolean(t.requiresImage)} onChange={(e) => updateTask(gi, 'requiresImage', e.target.checked)} />Require image</label><label className="small text-muted"><input type="checkbox" className="me-1" checked={Boolean(t.requiresSignature)} onChange={(e) => updateTask(gi, 'requiresSignature', e.target.checked)} />Require signature</label></div>{requiresEvidence && <input className="form-control tj-input mt-2" value={t.requirementReason || ''} onChange={(e) => updateTask(gi, 'requirementReason', e.target.value)} placeholder="Why is this evidence required?" required />}</div><button type="button" className="tj-task-remove" onClick={() => removeTask(gi)}><FaTimes /></button></div>); })}</div>); })}
       <div className="tj-task-add-row">
         <select className="tj-task-group-select" value={newGroup} onChange={(e) => setNewGroup(e.target.value)}>{TASK_GROUPS.map(g => <option key={g}>{g}</option>)}</select>
         <input className="tj-task-input" placeholder="Task title…" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTask(); } }} />
@@ -557,7 +558,7 @@ const TechnicianJobs = () => {
   const [filterPayment, setFilterPayment] = useState('all');
   const [filterAssignment, setFilterAssignment] = useState('all');
   const [showMoreFilters, setShowMoreFilters] = useState(false);
-  const [filterDate, setFilterDate] = useState('today');
+  const [filterDate, setFilterDate] = useState('all');
   const [customDate, setCustomDate] = useState('');
 
   const [showAddModal, setShowAddModal]   = useState(false);
@@ -632,6 +633,36 @@ const TechnicianJobs = () => {
       socket.off('job:task:completed', handleTaskCompleted);
     };
   }, [selectedJob]);
+
+  // ── Live rider locations (no DB — pure socket, emitted by Flutter app) ────────
+  // liveLocations: { [jobId]: { lat, lng, technicianId, ts } }
+  // Populated by the admin room broadcast so the admin sees ALL active riders
+  // without having to open each job individually.
+  const [liveLocations, setLiveLocations] = useState({});
+
+  useEffect(() => {
+    const handleTechnicianLocation = ({ jobId, technicianId, lat, lng, ts }) => {
+      if (!jobId || lat == null || lng == null) return;
+
+      // 1. Keep a page-level map of the latest position for every active job.
+      setLiveLocations(prev => ({
+        ...prev,
+        [jobId]: { lat, lng, technicianId, ts },
+      }));
+
+      // 2. If this is the job currently open in the detail panel, also update
+      //    selectedJob.coordinates so TechnicianTrackingMap gets the fresh pin.
+      //    (TechnicianTrackingMap already subscribes to the job room directly,
+      //    so this is a belt-and-braces fallback for the route-draw logic.)
+      setSelectedJob(prev => {
+        if (!prev || prev._id !== jobId) return prev;
+        return { ...prev, _liveCoords: { lat, lng } };
+      });
+    };
+
+    socket.on('technician:location', handleTechnicianLocation);
+    return () => socket.off('technician:location', handleTechnicianLocation);
+  }, []); // intentionally empty — this listener is page-level, not job-scoped
 
   const [socketConnected, setSocketConnected] = useState(socket.connected);
   useEffect(() => {
@@ -712,7 +743,7 @@ const TechnicianJobs = () => {
   const handleAdd = async (e) => { e.preventDefault(); setSaving(true); try { await adminApi.createTechnicianJob(buildPayload(form)); toast.success('Job created!'); setShowAddModal(false); setForm(emptyForm); await loadData(); } catch (err) { toast.error(err.response?.data?.message || 'Failed to create job'); } finally { setSaving(false); } };
   const openEditModal = (job) => {
     setEditingJobId(job._id);
-    setForm({ title: job.title || '', location: job.location || '', city: job.city || '', state: job.state || '', zipCode: job.zipCode || '', coordinates: job.coordinates?.lat ? job.coordinates : null, pay: { type: job.pay?.type || 'fixed', fixedAmount: job.pay?.fixedAmount ?? '', hourlyRate: job.pay?.hourlyRate ?? '', maxHours: job.pay?.maxHours ?? '', perDeviceRate: job.pay?.perDeviceRate ?? '', maxDevices: job.pay?.maxDevices ?? '', blendedFixedAmount: job.pay?.blendedFixedAmount ?? '', blendedFixedHours: job.pay?.blendedFixedHours ?? '', blendedHourlyRate: job.pay?.blendedHourlyRate ?? '', blendedMaxAddlHours: job.pay?.blendedMaxAddlHours ?? '', approxHours: job.pay?.approxHours || '' }, description: job.description || '', preferredSkills: (job.preferredSkills || []).join(', '), requirements: (job.requirements || []).join(', '), tasks: (job.tasks || []).map(t => ({ _id: t._id, title: t.title || '', group: t.group || 'Prep', order: t.order || 0, isDone: t.isDone || false, checkedAt: t.checkedAt || null, technicianLat: t.technicianLat || null, technicianLng: t.technicianLng || null, distanceMeters: t.distanceMeters || null })), workTypeId: job.workType?._id || '', workTypeSubId: job.workType?.subType?._id || '', additionalWorkTypeId: job.additionalWorkType?._id || '', additionalWorkTypeSubId: job.additionalWorkType?.subType?._id || '', serviceTypeId: job.serviceType?._id || '', jobDate: { from: job.jobDate?.from ? new Date(job.jobDate.from).toISOString().slice(0,16) : '', to: job.jobDate?.to ? new Date(job.jobDate.to).toISOString().slice(0,16) : '' } });
+    setForm({ title: job.title || '', location: job.location || '', city: job.city || '', state: job.state || '', zipCode: job.zipCode || '', coordinates: job.coordinates?.lat ? job.coordinates : null, pay: { type: job.pay?.type || 'fixed', fixedAmount: job.pay?.fixedAmount ?? '', hourlyRate: job.pay?.hourlyRate ?? '', maxHours: job.pay?.maxHours ?? '', perDeviceRate: job.pay?.perDeviceRate ?? '', maxDevices: job.pay?.maxDevices ?? '', blendedFixedAmount: job.pay?.blendedFixedAmount ?? '', blendedFixedHours: job.pay?.blendedFixedHours ?? '', blendedHourlyRate: job.pay?.blendedHourlyRate ?? '', blendedMaxAddlHours: job.pay?.blendedMaxAddlHours ?? '', approxHours: job.pay?.approxHours || '' }, description: job.description || '', preferredSkills: (job.preferredSkills || []).join(', '), requirements: (job.requirements || []).join(', '), tasks: (job.tasks || []).map(t => ({ _id: t._id, title: t.title || '', group: t.group || 'Prep', order: t.order || 0, isDone: t.isDone || false, requiresNote: Boolean(t.requiresNote), requiresImage: Boolean(t.requiresImage), requiresSignature: Boolean(t.requiresSignature), requirementReason: t.requirementReason || '', completionNote: t.completionNote, completionImage: t.completionImage, completionSignature: t.completionSignature, checkedAt: t.checkedAt || null, technicianLat: t.technicianLat || null, technicianLng: t.technicianLng || null, distanceMeters: t.distanceMeters || null })), workTypeId: job.workType?._id || '', workTypeSubId: job.workType?.subType?._id || '', additionalWorkTypeId: job.additionalWorkType?._id || '', additionalWorkTypeSubId: job.additionalWorkType?.subType?._id || '', serviceTypeId: job.serviceType?._id || '', jobDate: { from: job.jobDate?.from ? new Date(job.jobDate.from).toISOString().slice(0,16) : '', to: job.jobDate?.to ? new Date(job.jobDate.to).toISOString().slice(0,16) : '' } });
     setShowEditModal(true);
   };
   const handleEdit = async (e) => { e.preventDefault(); setSaving(true); try { await adminApi.updateTechnicianJob(editingJobId, buildPayload(form)); toast.success('Job updated!'); setShowEditModal(false); setForm(emptyForm); setEditingJobId(null); await loadData(); } catch (err) { toast.error(err.response?.data?.message || 'Failed to update job'); } finally { setSaving(false); } };
@@ -1091,7 +1122,7 @@ const TechnicianJobs = () => {
               )}
 
               {/* Live map */}
-              {selectedJob.assignedTechnician?.name && ['assigned','inprogress','ontheway'].includes(selectedJob.status) && (
+              {selectedJob.assignedTechnician?.name && ['assigned','ontheway','visited','inprogress'].includes(selectedJob.status) && (
                 <div className="tj-overview-card">
                   <div className="tj-overview-card-title"><FaMapMarkerAlt style={{ color: '#16a34a', marginRight: 6 }} />Live Technician Location</div>
                   <TechnicianTrackingMap job={selectedJob} />

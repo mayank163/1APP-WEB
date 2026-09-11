@@ -61,6 +61,12 @@ const uploadProfileImage = multer({
     limits,
 }).single('profileImage');
 
+// Evidence submitted by a technician while completing a task.
+const uploadTaskCompletion = multer({ storage, fileFilter: imageOnly, limits }).fields([
+    { name: 'completionImage', maxCount: 1 },
+    { name: 'signature', maxCount: 1 },
+]);
+
 // Complete profile: certificates (multi), portfolio photos (multi)
 const uploadCompleteProfile = multer({
     storage,
@@ -90,6 +96,7 @@ module.exports.uploadServiceMedia = uploadServiceMedia;
 module.exports.uploadCategoryMedia = uploadCategoryMedia;
 module.exports.uploadTechnicianDocuments = uploadTechnicianDocuments;
 module.exports.uploadProfileImage = uploadProfileImage;
+module.exports.uploadTaskCompletion = uploadTaskCompletion;
 module.exports.uploadCompleteProfile = uploadCompleteProfile;
 module.exports.uploadBankDetails = uploadBankDetails;
 module.exports.uploadSingleDocument = uploadSingleDocument;

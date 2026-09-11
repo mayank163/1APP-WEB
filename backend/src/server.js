@@ -8,6 +8,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
+const routeRoutes = require("./routes/route.routes");
 const fs = require('fs');
 
 const http = require('http');
@@ -140,6 +141,10 @@ app.use('/api/blogs', blogRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/work-types', workTypeRoutes);
 app.use('/api/service-types', serviceTypeRoutes);
+app.use(
+  "/api/routes",
+  routeRoutes
+);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -209,13 +214,44 @@ io.on("connection", (socket) => {
     });
 
     // ── Technician live location ──────────────────────────────────────────────
-    // Technician emits their GPS coords; backend forwards to the job room
+    //
+    // Flutter developer: emit this event with the payload below.
+    // The server will NOT write to MongoDB — it only relays in real-time.
+    //
+    // Event name : 'technician:location'
+    // Payload    : {
+    //   jobId        : String   — the TechnicianJob._id this technician is working
+    //   technicianId : String   — the User._id of the technician (req.user._id)
+    //   lat          : Number   — current latitude  (e.g. 28.6139)
+    //   lng          : Number   — current longitude (e.g. 77.2090)
+    // }
+    //
+    // Example (Dart / socket_io_client):
+    //   socket.emit('technician:location', {
+    //     'jobId':        job.id,
+    //     'technicianId': user.id,
+    //     'lat':          position.latitude,
+    //     'lng':          position.longitude,
+    //   });
+    //
+    // Admin receives the same event on:
+    //   • room  job:{jobId}  — when the admin has called job:watch(jobId)
+    //   • room  admin        — always (all admin portal sockets)
+    // Both carry the same payload plus a server-generated `ts` (epoch ms).
+    //
     socket.on('technician:location', ({ jobId, technicianId, lat, lng }) => {
         if (!jobId || lat == null || lng == null) return;
+
         const payload = { jobId, technicianId, lat, lng, ts: Date.now() };
-        // Forward to the job-specific room so admin receives it
+
+        // 1. Forward to the job-specific room (admin watching this exact job)
         io.to(`job:${jobId}`).emit('technician:location', payload);
-        console.log(`[Socket] technician:location → job:${jobId} lat=${lat} lng=${lng}`);
+
+        // 2. Also forward to the global admin room so the admin sees ALL
+        //    riders without having to join per-job rooms first.
+        io.to('admin').emit('technician:location', payload);
+
+        console.log(`[Socket] technician:location → job:${jobId}, admin | lat=${lat} lng=${lng} technicianId=${technicianId}`);
     });
 
     // Admin joins a job room to watch live technician location

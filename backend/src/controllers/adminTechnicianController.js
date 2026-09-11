@@ -98,6 +98,13 @@ const createTechnicianJob = async (req, res, next) => {
         message: 'Please provide all required job fields'
       });
     }
+    const missingRequirementReason = Array.isArray(tasks) && tasks.findIndex((task) =>
+      (task.requiresNote || task.requiresImage || task.requiresSignature) &&
+      !String(task.requirementReason || '').trim()
+    );
+    if (missingRequirementReason >= 0) {
+      return res.status(400).json({ success: false, message: `Enter a reason for the completion requirement on task ${missingRequirementReason + 1}` });
+    }
 
     // Create job
     const job = await TechnicianJob.create({
@@ -117,6 +124,10 @@ const createTechnicianJob = async (req, res, next) => {
         group:  t.group?.trim() || '',
         order:  t.order ?? i,
         isDone: false,
+        ...(t.requiresNote && { requiresNote: true }),
+        ...(t.requiresImage && { requiresImage: true }),
+        ...(t.requiresSignature && { requiresSignature: true }),
+        ...((t.requiresNote || t.requiresImage || t.requiresSignature) && { requirementReason: String(t.requirementReason || '').trim() }),
       })) : [],
       workType: workType || {},
       additionalWorkType: additionalWorkType || {},
@@ -422,6 +433,13 @@ const updateTechnicianJob = async (req, res, next) => {
       };
     }
     if (Array.isArray(tasks)) {
+      const missingRequirementReason = tasks.findIndex((task) =>
+        (task.requiresNote || task.requiresImage || task.requiresSignature) &&
+        !String(task.requirementReason || '').trim()
+      );
+      if (missingRequirementReason >= 0) {
+        return res.status(400).json({ success: false, message: `Enter a reason for the completion requirement on task ${missingRequirementReason + 1}` });
+      }
       job.tasks = tasks.map((t, i) => ({
         // Preserve existing subdocument _id so Mongoose doesn't regenerate it
         ...(t._id && { _id: t._id }),
@@ -429,6 +447,13 @@ const updateTechnicianJob = async (req, res, next) => {
         group:          t.group?.trim()  || '',
         order:          t.order          ?? i,
         isDone:         t.isDone         || false,
+        ...(t.requiresNote && { requiresNote: true }),
+        ...(t.requiresImage && { requiresImage: true }),
+        ...(t.requiresSignature && { requiresSignature: true }),
+        ...((t.requiresNote || t.requiresImage || t.requiresSignature) && { requirementReason: String(t.requirementReason || '').trim() }),
+        completionNote:      t.completionNote      || undefined,
+        completionImage:     t.completionImage     || undefined,
+        completionSignature: t.completionSignature || undefined,
         checkedAt:      t.checkedAt      || null,
         technicianLat:  t.technicianLat  || null,
         technicianLng:  t.technicianLng  || null,

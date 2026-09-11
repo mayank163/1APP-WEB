@@ -249,6 +249,12 @@ const TechnicianVerification = () => {
     return matchesSearch && matchesStatus;
   });
 
+  const statusCount = (status) =>
+    requests.filter(
+      (request) =>
+        (request.verificationStatus || 'pending').toLowerCase() === status
+    ).length;
+
   if (loading) {
     return (
       <div className="tv-loading">
@@ -264,15 +270,28 @@ const TechnicianVerification = () => {
       <div className="tv-page-header">
         <div className="tv-header-top">
           <div>
-            <h4 className="tv-title">
-              Technician Verification
-            </h4>
+            <h2 className="tv-title">Technician Verification</h2>
 
             <p className="tv-subtitle">
               {filteredRequests.length} of {requests.length}{' '}
               request
               {requests.length !== 1 ? 's' : ''} awaiting review
             </p>
+          </div>
+        </div>
+
+        <div className="tv-summary-grid" aria-label="Verification summary">
+          <div className="tv-summary-card">
+            <strong>{requests.length}</strong>
+            <span>Total requests</span>
+          </div>
+          <div className="tv-summary-card tv-summary-pending">
+            <strong>{statusCount('pending')}</strong>
+            <span>Pending review</span>
+          </div>
+          <div className="tv-summary-card tv-summary-approved">
+            <strong>{statusCount('approved')}</strong>
+            <span>Approved</span>
           </div>
         </div>
 

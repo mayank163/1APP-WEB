@@ -2,6 +2,7 @@ const User = require('../models/User');
 const TechnicianJob = require('../models/TechnicianJob');
 const TechnicianJobRequest = require('../models/TechnicianJobRequest');
 const TechnicianWithdrawal = require('../models/TechnicianWithdrawal');
+const { uploadFile } = require('../utils/s3Upload');
 
 /**
  * Haversine formula — returns distance in metres between two GPS coordinates.
@@ -1956,10 +1957,7 @@ const markReached = async (
       jobId,
     } = req.params;
 
-    const {
-      lat,
-      lng,
-    } = req.body || {};
+    const { lat, lng } = req.body || {};
 
     const job =
       await TechnicianJob.findById(
@@ -2095,7 +2093,8 @@ const markReached = async (
 
     // ── Auto-complete the first incomplete "On Site" task ────────────────────
     const firstOnSiteIdx = job.tasks.findIndex(
-      (t) => t.group === 'On Site' && !t.isDone
+      (t) => t.group === 'On Site' && !t.isDone &&
+        !t.requiresNote && !t.requiresImage && !t.requiresSignature
     );
     if (firstOnSiteIdx !== -1) {
       const t = job.tasks[firstOnSiteIdx];
@@ -2356,6 +2355,7 @@ const completeTask = async (
     const {
       lat,
       lng,
+      completionNote = '',
     } = req.body || {};
 
     const job =
@@ -2408,6 +2408,27 @@ const completeTask = async (
           'Task already completed',
       });
     }
+
+    const note = String(completionNote || '').trim();
+    if (task.requiresNote && !note) {
+      return res.status(400).json({ success: false, message: 'A completion note is required for this task' });
+    }
+    if (task.requiresImage && !req.files?.completionImage?.[0]) {
+      return res.status(400).json({ success: false, message: 'A completion image is required for this task' });
+    }
+    if (task.requiresSignature && !req.files?.signature?.[0]) {
+      return res.status(400).json({ success: false, message: 'A signature is required for this task' });
+    }
+
+    if (req.files?.completionImage?.[0]) {
+      const { key } = await uploadFile(req.files.completionImage[0], 'technician-task-completions/images');
+      task.completionImage = key;
+    }
+    if (req.files?.signature?.[0]) {
+      const { key } = await uploadFile(req.files.signature[0], 'technician-task-completions/signatures');
+      task.completionSignature = key;
+    }
+    if (note) task.completionNote = note;
 
     // --------------------------------
     // LOCATION
