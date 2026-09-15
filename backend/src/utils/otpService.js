@@ -1,126 +1,56 @@
+const crypto = require('crypto');
 const twilio = require('twilio');
+const { normalizePhone } = require('./phone');
 
-// In-memory store for OTPs when simulating (for development/testing)
 const otpStore = new Map();
+const simulationEnabled = () => process.env.NODE_ENV !== 'production' && process.env.OTP_SIMULATION_ENABLED === 'true';
 
-const getTwilioClient = () => {
-    const sid = process.env.TWILIO_ACCOUNT_SID;
-    const token = process.env.TWILIO_AUTH_TOKEN;
-
-    if (sid && token && sid !== 'your_twilio_account_sid') {
-        return twilio(sid, token);
+const sendSMS = async (phone, body) => {
+    const to = normalizePhone(phone);
+    const { TWILIO_ACCOUNT_SID: sid, TWILIO_AUTH_TOKEN: token, TWILIO_PHONE_NUMBER: from, TWILIO_MESSAGING_SERVICE_SID: messagingServiceSid } = process.env;
+    if (process.env.TWILIO_SMS_ENABLED !== 'true' || !sid || !token || (!from && !messagingServiceSid)) {
+        const error = new Error('SMS delivery is not configured. Please contact the administrator.');
+        error.statusCode = 503;
+        throw error;
     }
-
-    return null;
+    await twilio(sid, token).messages.create({ to, body, ...(messagingServiceSid ? { messagingServiceSid } : { from }) });
 };
 
-const isTwilioSmsEnabled = () => {
-    return process.env.TWILIO_SMS_ENABLED === 'true';
-};
-
-const getTwilioMessageConfig = (otp, phone) => {
-    const from = process.env.TWILIO_PHONE_NUMBER;
-    const messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_SID;
-    const baseConfig = {
-        body: `Your 1APP verification OTP is: ${otp}. Valid for 5 minutes.`,
-        to: phone
-    };
-
-    if (messagingServiceSid && messagingServiceSid.startsWith('MG')) {
-        return { ...baseConfig, messagingServiceSid };
+const sendOTP = async (value, purpose = 'phone') => {
+    const phone = normalizePhone(value);
+    const key = `${purpose}:${phone}`;
+    const previous = otpStore.get(key);
+    if (previous && Date.now() - previous.sentAt < 60000) {
+        const error = new Error('Please wait 60 seconds before requesting another OTP.');
+        error.statusCode = 429;
+        throw error;
     }
-
-    if (from && from !== '+1234567890' && /^\+\d{8,15}$/.test(from)) {
-        return { ...baseConfig, from };
-    }
-
-    return null;
-};
-
-/**
- * Generate a random 6-digit OTP
- */
-const generateOTP = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-};
-
-/**
- * Send OTP via SMS
- * @param {string} phone - User phone number
- * @returns {Promise<string>} - The sent OTP (for simulation/logging)
- */
-const sendOTP = async (phone) => {
-    const otp = generateOTP();
-    const expires = Date.now() + 5 * 60 * 1000;
-    otpStore.set(phone, { otp, expires });
-
-    console.log('\n--- OTP SIMULATION ---');
-    console.log(`To Phone: ${phone}`);
-    console.log(`Your OTP: ${otp}`);
-    console.log('----------------------\n');
-
-    const client = isTwilioSmsEnabled() ? getTwilioClient() : null;
-
-    if (!client) {
-        console.log('Twilio SMS not enabled or client not configured. Simulated OTP sent to console.');
-        return otp;
-    }
-
-    const messageConfig = getTwilioMessageConfig(otp, phone);
-    if (!messageConfig) {
-        console.log('Twilio SMS enabled, but no valid TWILIO_PHONE_NUMBER or TWILIO_MESSAGING_SERVICE_SID is configured.');
-        console.log(`Falling back to simulated verification using code: ${otp}`);
-        return otp;
-    }
-
+    for (const [entryKey, entry] of otpStore) if (entry.expires < Date.now()) otpStore.delete(entryKey);
+    const otp = crypto.randomInt(100000, 1000000).toString();
+    otpStore.set(key, { otp, expires: Date.now() + 5 * 60000, sentAt: Date.now(), attempts: 0 });
     try {
-        await client.messages.create(messageConfig);
-        console.log(`SMS sent successfully via Twilio to ${phone}`);
+        if (simulationEnabled()) console.log(`[Development OTP] ${phone}: ${otp}`);
+        else await sendSMS(phone, `Your 1APP verification OTP is: ${otp}. Valid for 5 minutes.`);
     } catch (error) {
-        console.error(`Failed to send SMS via Twilio to ${phone}: ${error.message}`);
-        console.log(`Falling back to simulated verification using code: ${otp}`);
+        otpStore.delete(key);
+        error.statusCode = error.statusCode || 502;
+        throw error;
     }
-
     return otp;
 };
 
-/**
- * Verify OTP code
- * @param {string} phone - User phone number
- * @param {string} code - OTP code to verify
- * @returns {boolean} - True if OTP is valid
- */
-const verifyOTP = (phone, code) => {
-    // Development bypass option
-    if (code === '999999') {
-        return true;
-    }
-
-    const data = otpStore.get(phone);
+const verifyOTP = (value, code, purpose = 'phone') => {
+    const key = `${purpose}:${normalizePhone(value)}`;
+    const data = otpStore.get(key);
     if (!data) return false;
-
-    const { otp, expires } = data;
-
-    if (Date.now() > expires) {
-        otpStore.delete(phone);
+    if (Date.now() > data.expires || ++data.attempts > 5) {
+        otpStore.delete(key);
         return false;
     }
-
-    if (otp === code) {
-        otpStore.delete(phone);
-        return true;
-    }
-
-    return false;
+    if (data.otp !== String(code)) return false;
+    otpStore.delete(key);
+    return true;
 };
 
-const getLastOTP = (phone) => {
-    const data = otpStore.get(phone);
-    return data ? data.otp : null;
-};
-
-module.exports = {
-    sendOTP,
-    verifyOTP,
-    getLastOTP
-};
+const getLastOTP = (value, purpose = 'phone') => otpStore.get(`${purpose}:${normalizePhone(value)}`)?.otp || null;
+module.exports = { sendSMS, sendOTP, verifyOTP, getLastOTP, simulationEnabled };

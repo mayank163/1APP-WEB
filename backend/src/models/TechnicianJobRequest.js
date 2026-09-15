@@ -120,6 +120,10 @@ const technicianJobRequestSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    initiatedBy: { type: String, enum: ['technician', 'admin'], default: 'technician' },
+    invitedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
+    offeredPay: require('./TechnicianJob').schema.obj.pay,
+    respondedAt: Date,
     note: {
       type: String,
       default: '',
@@ -208,5 +212,7 @@ const technicianJobRequestSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+technicianJobRequestSchema.index({ job: 1, technician: 1 }, { unique: true, partialFilterExpression: { initiatedBy: 'admin' }, name: 'unique_admin_job_invitation' });
 
 module.exports = mongoose.model('TechnicianJobRequest', technicianJobRequestSchema);

@@ -33,10 +33,11 @@ import AboutUs from './pages/AboutUs';
 import Blogs from './pages/Blogs';
 import BlogDetail from './pages/BlogDetail';
 import TechnicianDashboard from './pages/TechnicianDashboard';
+import TechnicianActivation from './pages/TechnicianActivation';
 
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
 
-const AUTH_PATHS = ['/login', '/signup'];
+const AUTH_PATHS = ['/login', '/signup', '/technician-activate'];
 
 const AppShell = () => {
   const { pathname } = useLocation();
@@ -52,6 +53,7 @@ const AppShell = () => {
           <Route path="/services" element={<Services />} />
           <Route path="/service/:id" element={<ServiceDetail />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/technician-activate" element={<TechnicianActivation />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

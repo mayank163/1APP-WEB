@@ -33,6 +33,7 @@ const signRefreshToken = (id, role) => {
 };
 
 const sendTokenResponse = (user, statusCode, res) => {
+    if (user.role === 'technician' && ['invited', 'suspended', 'blocked'].includes(user.accountStatus)) return res.status(403).json({ success: false, message: 'Account is pending activation or suspended.' });
     const accessToken = signAccessToken(user._id, user.role);
     const refreshToken = signRefreshToken(user._id, user.role);
 
@@ -87,7 +88,7 @@ exports.startRegister = async (req, res, next) => {
             success: true,
             message: `OTP sent to ${phone}`,
             phone,
-            ...(otp && { devOtp: otp }),
+            ...(otpService.simulationEnabled() && otp && { devOtp: otp }),
         });
     } catch (err) {
         next(err);
@@ -399,14 +400,14 @@ exports.forgotPassword = async (req, res, next) => {
             }
         }
 
-        // Always expose the OTP in the response so the frontend can display it on screen.
+        // Only expose simulated codes in explicitly enabled local development.
         const devOtp = otpService.getLastOTP ? otpService.getLastOTP(user.phone) : null;
 
         res.status(200).json({
             success: true,
             message: `OTP sent to registered phone ${user.phone}`,
             phone: user.phone,
-            ...(devOtp && { devOtp }),
+            ...(otpService.simulationEnabled() && devOtp && { devOtp }),
         });
     } catch (err) {
         next(err);
@@ -619,6 +620,8 @@ exports.refreshToken = async (req, res, next) => {
                 message: 'User no longer exists'
             });
         }
+
+        if (user.role === 'technician' && ['invited', 'suspended', 'blocked'].includes(user.accountStatus)) return res.status(403).json({ success: false, message: 'Account is pending activation or suspended.' });
 
         // Generate new access token
         const accessToken = signAccessToken(

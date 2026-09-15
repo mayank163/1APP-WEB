@@ -11,6 +11,7 @@ router.post('/jobs/:jobId/request',   protect, restrictTo('technician'),        
 router.patch('/job-requests/:requestId/cancel', protect, restrictTo('technician'), technicianController.cancelJobRequest);
 
 // ── Requests ──────────────────────────────────────────────────────────────────
+router.patch('/job-invitations/:requestId/respond', protect, restrictTo('technician'), require('../controllers/jobInvitationController').respondToInvitation);
 router.get('/requests',                protect, restrictTo('technician'), technicianController.getMyRequests);
 
 // ── Conversation (typed timeline — charges + messages) ────────────────────────

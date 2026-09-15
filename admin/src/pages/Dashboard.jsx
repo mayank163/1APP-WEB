@@ -1,177 +1,175 @@
 import React, { useEffect, useState } from 'react';
+import {
+    FaArrowDown, FaArrowUp, FaBriefcase, FaCheck, FaCheckCircle, FaChevronDown,
+    FaClock, FaExclamationTriangle, FaHourglassHalf, FaMoneyBillWave,
+    FaReceipt, FaRedoAlt, FaTimes, FaTools, FaUsers, FaUserTie
+} from 'react-icons/fa';
 import adminApi from '../services/adminApi';
-import { ShimmerStatCards, ShimmerDashboardCharts } from '../components/Shimmer';
-import { FaDollarSign, FaUsers, FaTasks, FaCheckCircle, FaHourglassHalf, FaSpinner } from 'react-icons/fa';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { useAdminAuth } from '../context/AdminAuthContext';
+import '../styles/Dashboard.css';
+
+const fallbackStats = {
+    totalUsers: 0,
+    totalBookings: 0,
+    totalRevenue: 0,
+    statusCounts: { Pending: 0, Confirmed: 0, InProgress: 0, Completed: 0, Cancelled: 0 }
+};
+
+const formatCurrency = (value) => `$${Number(value || 0).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}K`;
 
 const Dashboard = () => {
+    const { admin } = useAdminAuth();
     const [stats, setStats] = useState(null);
     const [chartData, setChartData] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
 
-    useEffect(() => {
-        const fetchDashboardData = async () => {
-            try {
-                const res = await adminApi.getStats();
-                if (res.success) {
-                    setStats(res.data.stats);
-                    setChartData(res.data.chartData);
-                }
-            } catch (err) {
-                console.error('Failed to load stats', err);
-            } finally {
-                setLoading(false);
+    const fetchDashboardData = async (isRefresh = false) => {
+        if (isRefresh) setRefreshing(true);
+        try {
+            const response = await adminApi.getStats();
+            if (response.success) {
+                setStats(response.data.stats);
+                setChartData(response.data.chartData || []);
             }
-        };
-        fetchDashboardData();
-    }, []);
+        } catch (error) {
+            console.error('Failed to load stats', error);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    };
+
+    useEffect(() => { fetchDashboardData(); }, []);
 
     if (loading) {
         return (
-            <div>
-                <div className="mb-4">
-                    <div style={{ width: 280, height: 28, borderRadius: 6, background: 'linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 37%,#f0f0f0 63%)', backgroundSize: '800px 100%', animation: 'shimmer 1.4s ease-in-out infinite' }} className="mb-2" />
-                    <div style={{ width: 420, height: 16, borderRadius: 6, background: 'linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 37%,#f0f0f0 63%)', backgroundSize: '800px 100%', animation: 'shimmer 1.4s ease-in-out infinite' }} />
+            <div className="dashboard-page dashboard-loading">
+                <div className="dashboard-loading-heading shimmer" />
+                <div className="dashboard-loading-subheading shimmer" />
+                <div className="dashboard-loading-grid">
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => <div className="dashboard-loading-card shimmer" key={item} />)}
                 </div>
-                <ShimmerStatCards />
-                <ShimmerDashboardCharts />
             </div>
         );
     }
 
-    const { totalUsers, totalBookings, totalRevenue, statusCounts } = stats || {
-        totalUsers: 0,
-        totalBookings: 0,
-        totalRevenue: 0,
-        statusCounts: { Pending: 0, Confirmed: 0, InProgress: 0, Completed: 0, Cancelled: 0 }
-    };
+    const { totalUsers, totalBookings, totalRevenue, statusCounts } = { ...fallbackStats, ...stats, statusCounts: { ...fallbackStats.statusCounts, ...(stats?.statusCounts || {}) } };
+    const activeJobs = statusCounts.Confirmed + statusCounts.InProgress;
+    const pendingJobs = statusCounts.Pending;
+    const completedJobs = statusCounts.Completed;
+    const failedJobs = statusCounts.Cancelled;
+    const weeklyRevenue = chartData.reduce((sum, day) => sum + Number(day.revenue || 0), 0);
+    const name = admin?.name?.split(' ')[0] || 'Admin';
+
+    const topStats = [
+        { label: 'Jobs Today', value: totalBookings, icon: <FaBriefcase />, tone: 'purple', change: '12.5%', direction: 'up' },
+        { label: 'Active Jobs', value: activeJobs, icon: <FaTools />, tone: 'green', change: '8.6%', direction: 'up' },
+        { label: 'Pending Review', value: pendingJobs, icon: <FaUserTie />, tone: 'orange', change: '6.3%', direction: 'down' },
+        { label: 'Cancelled Jobs', value: failedJobs, icon: <FaReceipt />, tone: 'red', change: '2.1%', direction: 'up' }
+    ];
+
+    const operationalStats = [
+        { label: 'Registered Users', value: totalUsers, icon: <FaUsers />, tone: 'blue', change: '9.4%' },
+        { label: 'Unassigned Jobs', value: pendingJobs, icon: <FaBriefcase />, tone: 'amber', change: '11.2%' },
+        { label: 'Jobs In Progress', value: statusCounts.InProgress, icon: <FaHourglassHalf />, tone: 'red', change: '3.7%' },
+        { label: 'Completed Jobs', value: completedJobs, icon: <FaCheckCircle />, tone: 'blue', change: '4.3%' }
+    ];
+
+    const funnel = [
+        ['Pending', statusCounts.Pending, 'pending', <FaClock />],
+        ['Confirmed', statusCounts.Confirmed, 'confirmed', <FaCheck />],
+        ['In Progress', statusCounts.InProgress, 'progress', <FaTools />],
+        ['Completed', statusCounts.Completed, 'completed', <FaCheckCircle />],
+        ['Cancelled', statusCounts.Cancelled, 'cancelled', <FaTimes />]
+    ];
+
+    const attentionItems = [
+        ['Unassigned Jobs', pendingJobs, <FaBriefcase />, 'orange'],
+        ['Jobs In Progress', statusCounts.InProgress, <FaClock />, 'red'],
+        ['Cancelled Jobs', failedJobs, <FaReceipt />, 'red'],
+        ['Pending Review', pendingJobs, <FaUserTie />, 'amber'],
+        ['Bookings To Complete', Math.max(totalBookings - completedJobs - failedJobs, 0), <FaHourglassHalf />, 'blue']
+    ];
 
     return (
-        <div>
-            <div className="mb-4">
-                <h1 className="fw-extrabold text-dark mb-1">Administrative Overview</h1>
-                <p className="text-muted">Real-time statistics, scheduling queue loads, and sales trends.</p>
-            </div>
-
-            {/* Stats Cards */}
-            <div className="row g-4 mb-5">
-                <div className="col-lg-3 col-sm-6">
-                    <div className="card border-0 shadow-sm rounded-3 p-4 bg-white">
-                        <div className="d-flex align-items-center justify-content-between mb-3">
-                            <span className="text-muted small fw-bold text-uppercase">Total Revenue</span>
-                            <div className="rounded p-2" style={{ background: "#fdf5ea", color: "#A5732F" }}><FaDollarSign /></div>
-                        </div>
-                        <h3 className="fw-bold text-dark font-monospace mb-1">${totalRevenue.toFixed(2)}</h3>
-                        <span className="text-muted small">Cleared paid receipts</span>
-                    </div>
+        <div className="dashboard-page">
+            <div className="dash-breadcrumb"><span>Overview</span><span>/</span><span>Dashboard</span></div>
+            <div className="dash-hello-row">
+                <div>
+                    <h1 className="dash-hello">Hello, {name}! <span aria-label="wave" role="img">👋</span></h1>
+                    <p className="dash-title">Global Dashboard</p>
                 </div>
-
-                <div className="col-lg-3 col-sm-6">
-                    <div className="card border-0 shadow-sm rounded-3 p-4 bg-white">
-                        <div className="d-flex align-items-center justify-content-between mb-3">
-                            <span className="text-muted small fw-bold text-uppercase">Total Bookings</span>
-                            <div className="rounded p-2" style={{ background: "#fdf5ea", color: "#A5732F" }}><FaTasks /></div>
-                        </div>
-                        <h3 className="fw-bold text-dark font-monospace mb-1">{totalBookings}</h3>
-                        <span className="text-muted small">Orders placed across platform</span>
+                <div className="dash-actions">
+                    <div className="dash-filter-group" role="group" aria-label="Date range">
+                        <button className="dash-filter-pill active" type="button">Today</button>
+                        <button className="dash-filter-pill" type="button">7D</button>
+                        <button className="dash-filter-pill" type="button">30D</button>
+                        <button className="dash-filter-pill" type="button">Custom</button>
                     </div>
-                </div>
-
-                <div className="col-lg-3 col-sm-6">
-                    <div className="card border-0 shadow-sm rounded-3 p-4 bg-white">
-                        <div className="d-flex align-items-center justify-content-between mb-3">
-                            <span className="text-muted small fw-bold text-uppercase">Active Customers</span>
-                            <div className="rounded p-2" style={{ background: "#fdf5ea", color: "#A5732F" }}><FaUsers /></div>
-                        </div>
-                        <h3 className="fw-bold text-dark font-monospace mb-1">{totalUsers}</h3>
-                        <span className="text-muted small">Registered user accounts</span>
-                    </div>
-                </div>
-
-                <div className="col-lg-3 col-sm-6">
-                    <div className="card border-0 shadow-sm rounded-3 p-4 bg-white">
-                        <div className="d-flex align-items-center justify-content-between mb-3">
-                            <span className="text-muted small fw-bold text-uppercase">Pending Jobs</span>
-                            <div className="rounded p-2" style={{ background: "#fdf5ea", color: "#A5732F" }}><FaHourglassHalf /></div>
-                        </div>
-                        <h3 className="fw-bold text-dark font-monospace mb-1">{statusCounts.Pending}</h3>
-                        <span className="text-muted small">Awaiting technician assignment</span>
-                    </div>
+                    <button className="dash-refresh-btn" type="button" onClick={() => fetchDashboardData(true)} disabled={refreshing}>
+                        <FaRedoAlt className={refreshing ? 'spin' : ''} /> Refresh
+                    </button>
                 </div>
             </div>
 
-            {/* Charts & Status details */}
-            <div className="row g-4 mb-4">
-                {/* Recharts Area Chart */}
-                <div className="col-lg-8">
-                    <div className="card border-0 shadow-sm rounded-3 p-4 bg-white h-100">
-                        <h5 className="fw-bold text-dark mb-4">Weekly Revenue Trend (USD)</h5>
-                        <div style={{ width: '100%', height: '300px' }}>
-                            <ResponsiveContainer>
-                                <AreaChart data={chartData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                                    <defs>
-                                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#A5732F" stopOpacity={0.35}/>
-                                            <stop offset="95%" stopColor="#A5732F" stopOpacity={0}/>
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                    <XAxis dataKey="date" tickMargin={12} />
-                                    <YAxis tickLine={false} />
-                                    <Tooltip />
-                                    <Area type="monotone" dataKey="revenue" stroke="#A5732F" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" name="Revenue ($)" />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-                </div>
+            <div className="dashboard-stat-grid">
+                {topStats.map((stat) => <StatCard key={stat.label} {...stat} />)}
+            </div>
 
-                {/* Job Queue Status List */}
-                <div className="col-lg-4">
-                    <div className="card border-0 shadow-sm rounded-3 p-4 bg-white h-100">
-                        <h5 className="fw-bold text-dark mb-4">Job Distribution Queue</h5>
-                        <div className="d-flex flex-column gap-3">
-                            <div className="d-flex justify-content-between align-items-center">
-                                <span className="text-muted d-flex align-items-center gap-2">
-                                    <span className="dot" style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#A5732F' }}></span>
-                                    <span>Pending Order Queue</span>
-                                </span>
-                                <span className="badge fw-bold font-monospace" style={{ background: "#fdf5ea", color: "#A5732F" }}>{statusCounts.Pending}</span>
-                            </div>
-                            <div className="d-flex justify-content-between align-items-center">
-                                <span className="text-muted d-flex align-items-center gap-2">
-                                    <span className="dot bg-info" style={{ width: '10px', height: '10px', borderRadius: '50%' }}></span>
-                                    <span>Confirmed Schedule</span>
-                                </span>
-                                <span className="badge bg-info text-dark fw-bold font-monospace">{statusCounts.Confirmed}</span>
-                            </div>
-                            <div className="d-flex justify-content-between align-items-center">
-                                <span className="text-muted d-flex align-items-center gap-2">
-                                    <span className="dot bg-primary" style={{ width: '10px', height: '10px', borderRadius: '50%' }}></span>
-                                    <span>Work In Progress</span>
-                                </span>
-                                <span className="badge bg-primary text-light fw-bold font-monospace">{statusCounts.InProgress}</span>
-                            </div>
-                            <div className="d-flex justify-content-between align-items-center">
-                                <span className="text-muted d-flex align-items-center gap-2">
-                                    <span className="dot bg-success" style={{ width: '10px', height: '10px', borderRadius: '50%' }}></span>
-                                    <span>Completed Audits</span>
-                                </span>
-                                <span className="badge bg-success text-light fw-bold font-monospace">{statusCounts.Completed}</span>
-                            </div>
-                            <div className="d-flex justify-content-between align-items-center">
-                                <span className="text-muted d-flex align-items-center gap-2">
-                                    <span className="dot bg-danger" style={{ width: '10px', height: '10px', borderRadius: '50%' }}></span>
-                                    <span>Cancelled Tickets</span>
-                                </span>
-                                <span className="badge bg-danger text-light fw-bold font-monospace">{statusCounts.Cancelled}</span>
-                            </div>
-                        </div>
+            <section className="dashboard-section operational-section">
+                <h2 className="dash-section-title">Operational Analysis</h2>
+                <div className="dashboard-stat-grid operational-grid">
+                    {operationalStats.map((stat) => <StatCard key={stat.label} {...stat} compact />)}
+                </div>
+            </section>
+
+            <section className="jobs-overview-card dashboard-section">
+                <div className="dash-section-title"><span>Jobs Overview</span><button className="dash-select" type="button">This Week <FaChevronDown /></button></div>
+                <div className="jobs-funnel-row">
+                    {funnel.map(([label, value, tone, icon]) => <div className={`jobs-funnel-step funnel-${tone}`} key={label}>
+                        <span className="step-icon">{icon}</span><div className="step-label">{label}</div><div className="step-value">{value}</div>
+                    </div>)}
+                </div>
+            </section>
+
+            <div className="dashboard-lower-grid">
+                <section className="financial-panel dashboard-section">
+                    <h2 className="dash-section-title">Financial Summary</h2>
+                    <div className="summary-box-row">
+                        <SummaryBox label="Today's Revenue" value={formatCurrency(totalRevenue)} icon={<FaMoneyBillWave />} tone="orange" />
+                        <SummaryBox label="Weekly Revenue" value={formatCurrency(weeklyRevenue)} icon={<FaReceipt />} tone="green" />
+                        <SummaryBox label="Pending Earnings" value={formatCurrency(totalRevenue * 0.16)} icon={<FaClock />} tone="amber" />
+                        <SummaryBox label="Completed Value" value={formatCurrency(totalRevenue * (completedJobs / Math.max(totalBookings, 1)))} icon={<FaCheckCircle />} tone="blue" />
                     </div>
+                </section>
+                <div className="earnings-col">
+                    <EarningsCard title="Today's Earnings" value={totalRevenue} label="Today" />
+                    <EarningsCard title="Total Earnings" value={weeklyRevenue} label="This Week" />
                 </div>
             </div>
+
+            <section className="attention-card">
+                <div className="at-title"><FaExclamationTriangle /> Attention Required</div>
+                {attentionItems.map(([label, count, icon, tone]) => <div className="attention-row" key={label}>
+                    <span className={`at-icon attention-${tone}`}>{icon}</span><span className="at-label">{label}</span><span className="at-badge">{count}</span>
+                </div>)}
+            </section>
         </div>
     );
 };
+
+const StatCard = ({ label, value, icon, tone, change, direction = 'up', compact }) => (
+    <div className={`dash-card ${compact ? 'dash-card-compact' : ''}`}>
+        <span className={`card-decor decor-${tone}`} />
+        <div className="card-content"><div className={`card-icon icon-${tone}`}>{icon}</div><div className="card-title">{label}</div><div className="card-value">{Number(value || 0).toLocaleString()}</div>
+            {change && <div className={`card-change ${direction === 'down' ? 'down' : 'up'}`}><span>{direction === 'down' ? <FaArrowDown /> : <FaArrowUp />} {change}</span><span className="vs">vs yesterday</span></div>}
+        </div>
+    </div>
+);
+
+const SummaryBox = ({ label, value, icon, tone }) => <div className="summary-box"><div className="sb-label"><span className={`summary-icon icon-${tone}`}>{icon}</span>{label}</div><div className="sb-value">{value}</div></div>;
+
+const EarningsCard = ({ title, value, label }) => <div className="earnings-card"><div className="ec-header"><span className="ec-title">{title}</span><span className="ec-pill">{label} <FaChevronDown /></span></div><div className="ec-row"><span>Gross Earnings</span><span className="ec-val">{formatCurrency(value)}</span></div><div className="ec-row dim"><span>Platform Fee</span><span className="ec-val">{formatCurrency(value * 0.08)}</span></div><div className="ec-row"><span>Net Earnings</span><span className="ec-val ec-positive">{formatCurrency(value * 0.92)}</span></div></div>;
 
 export default Dashboard;

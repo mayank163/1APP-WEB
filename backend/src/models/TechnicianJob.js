@@ -59,7 +59,7 @@ const technicianJobSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['open', 'assigned', 'ontheway', 'visited', 'inprogress', 'completed', 'cancelled'],
+    enum: ['open', 'assigned', 'ontheway', 'visited', 'inprogress', 'checkout', 'completed', 'cancelled'],
     default: 'open',
   },
   // Full audit trail of every status change with optional admin note
@@ -102,6 +102,14 @@ const technicianJobSchema = new mongoose.Schema({
     type: Number,
     default: 0,
     min: 0,
+  },
+  payment: {
+    status: { type: String, enum: ['unpaid', 'paid'], default: 'unpaid' },
+    basePrice: { type: Number, default: 0, min: 0 },
+    discount: { type: Number, default: 0, min: 0 },
+    note: { type: String, default: '', trim: true },
+    paidAt: { type: Date, default: null },
+    paidBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin', default: null },
   },
   completedAt:  { type: Date, default: null },
   scheduledDate:{ type: Date, default: null },

@@ -4,6 +4,12 @@ const technicianAuthController = require('../controllers/technicianAuthControlle
 const { protect } = require('../middleware/auth');
 const { uploadTechnicianDocuments, uploadProfileImage, uploadCompleteProfile, uploadBankDetails, uploadSingleDocument } = require('../middleware/upload');
 
+const rateLimit = require('express-rate-limit');
+const otpLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, standardHeaders: 'draft-8', legacyHeaders: false, message: { success: false, message: 'Too many attempts. Please try again later.' } });
+router.use(['/send-otp', '/verify-otp', '/complete-signup', '/activation/send-otp', '/activation/complete'], otpLimiter);
+router.post('/activation/send-otp', technicianAuthController.sendActivationOTP);
+router.post('/activation/complete', technicianAuthController.activateTechnician);
+
 // ── New 3-step signup ─────────────────────────────────────────────────────────
 router.post('/send-otp',        technicianAuthController.sendOTP);
 router.post('/verify-otp',      technicianAuthController.verifyOTP);

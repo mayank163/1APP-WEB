@@ -175,6 +175,7 @@ const getJobsForTechnicians = async (req, res, next) => {
     else if (filter === 'requested') {
       jobs = await TechnicianJob.find({
         requestedBy: techId,
+        status: 'open',
       }).sort('-updatedAt');
     }
 
@@ -203,7 +204,23 @@ const getJobsForTechnicians = async (req, res, next) => {
         'assignedTechnician._id': techId,
         $or: [
           {
-            status: 'completed',
+            status: { $in: ['completed'] },
+          },
+          {
+            completedAt: {
+              $ne: null,
+            },
+          },
+        ],
+      }).sort('-completedAt');
+    }
+
+    else if (filter === 'checkout') {
+      jobs = await TechnicianJob.find({
+        'assignedTechnician._id': techId,
+        $or: [
+          {
+            status: { $in: ['checkout'] },
           },
           {
             completedAt: {
@@ -1510,6 +1527,8 @@ const cancelJobRequest = async (
       });
     }
 
+    if (request.initiatedBy === 'admin') return res.status(400).json({ success: false, message: 'Use accept or reject to respond to an admin invitation.' });
+
     const jobId =
       request.job;
 
@@ -1610,6 +1629,8 @@ const updateRequestStatus = async (
           'Request not found',
       });
     }
+
+    if (request.initiatedBy === 'admin') return res.status(403).json({ success: false, message: 'Only the invited technician can respond to this invitation.' });
 
     const allowed = [
       'accepted',
@@ -2208,6 +2229,14 @@ const markJobCompleted = async (
     job.jobCompletedAt =
       now;
 
+    job.status = 'checkout';
+    job.statusHistory = job.statusHistory || [];
+    job.statusHistory.push({
+      status: 'checkout',
+      note: 'Technician completed the job. Awaiting admin approval.',
+      changedAt: now,
+    });
+
     // --------------------------------
     // JOB DURATION
     // --------------------------------
@@ -2310,13 +2339,19 @@ const markJobCompleted = async (
         now,
     });
 
+    job.conversation.push({
+      sender: 'system',
+      message: 'Estimated Time to Approval: 3 days',
+      createdAt: now,
+    });
+
     await job.save();
 
     res.status(200).json({
       success: true,
 
       message:
-        'Job completion recorded. Waiting for admin to close and process payment.',
+        'Job moved to checkout. Estimated Time to Approval: 3 days',
 
       data: {
         jobCompletedAt:
@@ -2330,6 +2365,10 @@ const markJobCompleted = async (
 
         completedStatus:
           job.completedStatus,
+
+        status: job.status,
+
+        approvalMessage: 'Estimated Time to Approval: 3 days',
       },
     });
 

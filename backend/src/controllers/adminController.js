@@ -1,7 +1,7 @@
 const Booking = require('../models/Booking');
 const User = require('../models/User');
 const Admin = require('../models/Admin');
-const { RESOURCES } = require('../models/Admin');
+const { RESOURCES, ADMIN_ROLES } = require('../models/Admin');
 const jwt = require('jsonwebtoken');
 const { sendBookingStatusUpdated } = require('../utils/emailService');
 
@@ -56,6 +56,7 @@ exports.login = async (req, res, next) => {
                     id: admin._id,
                     name: admin.name,
                     email: admin.email,
+                    role: admin.role,
                     isSuperAdmin: admin.isSuperAdmin,
                     isActive: admin.isActive,
                     permissions: admin.permissions
@@ -260,7 +261,7 @@ exports.getAllUsers = async (req, res, next) => {
  */
 exports.createSubAdmin = async (req, res, next) => {
     try {
-        const { name, email, password, permissions } = req.body;
+        const { name, email, password, role, permissions } = req.body;
 
         if (!name || !email || !password) {
             return res.status(400).json({ success: false, message: 'Name, email and password are required.' });
@@ -270,17 +271,17 @@ exports.createSubAdmin = async (req, res, next) => {
             return res.status(400).json({ success: false, message: 'Email already in use.' });
         }
 
-        // Validate permissions
+        const selectedRole = ADMIN_ROLES.includes(role) ? role : 'read_only_analyst';
         const validPerms = (permissions || []).filter(
             p => RESOURCES.includes(p.resource) && ['read', 'write', 'both'].includes(p.access)
         );
 
-        const admin = await Admin.create({ name, email, password, isSuperAdmin: false, permissions: validPerms });
+        const admin = await Admin.create({ name, email, password, role: selectedRole, isSuperAdmin: false, permissions: validPerms });
 
         res.status(201).json({
             success: true,
             message: 'Sub-admin created successfully.',
-            data: { admin: { id: admin._id, name: admin.name, email: admin.email, isActive: admin.isActive, permissions: admin.permissions } }
+            data: { admin: { id: admin._id, name: admin.name, email: admin.email, role: admin.role, isActive: admin.isActive, permissions: admin.permissions } }
         });
     } catch (err) { next(err); }
 };
@@ -292,7 +293,12 @@ exports.createSubAdmin = async (req, res, next) => {
 exports.getSubAdmins = async (req, res, next) => {
     try {
         const admins = await Admin.find({ isSuperAdmin: false }).sort('-createdAt');
-        res.status(200).json({ success: true, data: { admins } });
+        const normalizedAdmins = admins.map(admin => {
+            const data = admin.toObject();
+            if (data.role === 'verification') data.role = 'admin';
+            return data;
+        });
+        res.status(200).json({ success: true, data: { admins: normalizedAdmins } });
     } catch (err) { next(err); }
 };
 
@@ -302,13 +308,16 @@ exports.getSubAdmins = async (req, res, next) => {
  */
 exports.updateSubAdmin = async (req, res, next) => {
     try {
-        const { permissions, isActive, name } = req.body;
+        const { permissions, isActive, name, role, password } = req.body;
         const admin = await Admin.findById(req.params.id);
         if (!admin || admin.isSuperAdmin) {
             return res.status(404).json({ success: false, message: 'Sub-admin not found.' });
         }
 
+        if (admin.role === 'verification') admin.role = 'admin';
         if (name) admin.name = name;
+        if (role && ADMIN_ROLES.includes(role)) admin.role = role;
+        if (password) admin.password = password;
         if (typeof isActive === 'boolean') admin.isActive = isActive;
         if (permissions) {
             admin.permissions = permissions.filter(

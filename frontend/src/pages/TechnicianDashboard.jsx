@@ -1,6 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import API from '../services/api';
+import { toast } from 'react-toastify';
 import { useSocket } from '../context/SocketContext';
+
+const formatPay = (pay = {}) => {
+  const dollars = value => `$${Number(value || 0).toLocaleString()}`;
+  if (pay.type === 'hourly') return `${dollars(pay.hourlyRate)}/hour${pay.maxHours ? ` · up to ${pay.maxHours} hours` : ''}`;
+  if (pay.type === 'perDevice') return `${dollars(pay.perDeviceRate)}/device${pay.maxDevices ? ` · up to ${pay.maxDevices} devices` : ''}`;
+  if (pay.type === 'blended') return `${dollars(pay.blendedFixedAmount)} fixed (${pay.blendedFixedHours || 0} hours) + ${dollars(pay.blendedHourlyRate)}/additional hour`;
+  return `${dollars(pay.fixedAmount)} fixed`;
+};
 
 // ─── tiny helpers ──────────────────────────────────────────────────────────────
 const formatDuration = (minutes) => {
@@ -1125,6 +1134,7 @@ const TechnicianDashboard = () => {
   const [jobs, setJobs] = useState([]);
   const [myJobs, setMyJobs] = useState([]);
   const [requests, setRequests] = useState([]);
+  const [respondingInvitation, setRespondingInvitation] = useState(null);
   const [withdrawals, setWithdrawals] = useState([]);
   const [metrics, setMetrics] = useState(null);
 
@@ -1234,6 +1244,17 @@ const TechnicianDashboard = () => {
   }, []);
 
   // ── Use GET /technician/requests to independently refresh requests ─────────────
+  const respondToInvitation = async (requestId, action) => {
+    setRespondingInvitation(requestId);
+    try {
+      const { data } = await API.patch(`/technician/job-invitations/${requestId}/respond`, { action });
+      toast.success(data.message); await loadData();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Could not respond to the invitation.');
+      await loadData();
+    } finally { setRespondingInvitation(null); }
+  };
+
   const refreshRequests = useCallback(async () => {
     try {
       const { data } = await API.get('/technician/requests');
@@ -1315,6 +1336,8 @@ const TechnicianDashboard = () => {
       });
     };
 
+    socket.on('job:invitation', refreshRequests);
+    socket.on('job:availability', loadData);
     socket.on('job:new', onJobNew);
     socket.on('request:message', onRequestMessage);
     socket.on('request:status', onRequestStatus);
@@ -1325,6 +1348,8 @@ const TechnicianDashboard = () => {
     socket.on('technician:verificationUpdated', onVerificationUpdated);
 
     return () => {
+      socket.off('job:invitation', refreshRequests);
+      socket.off('job:availability', loadData);
       socket.off('job:new', onJobNew);
       socket.off('request:message', onRequestMessage);
       socket.off('request:status', onRequestStatus);
@@ -2104,6 +2129,17 @@ const TechnicianDashboard = () => {
                     </div>
                   )}
 
+                  {req.initiatedBy === 'admin' && <div style={{ background: '#fff7ed', border: '1px solid #ead2b0', borderRadius: 10, padding: 14, marginBottom: 12 }}>
+                    <strong>Job invitation from admin</strong>
+                    <p style={{ margin: '6px 0' }}>{req.adminMessage || 'You have been invited to this job.'}</p>
+                    {req.offeredPay && <p style={{ margin: '6px 0' }}>Offered pay: {formatPay(req.offeredPay)}</p>}
+                    <button style={S.ghost} onClick={() => setJobDetailModal(req.job?._id || req.job)}>View Job Details</button>
+                    {req.status === 'pending' && <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                      <button style={S.btn('#16a34a')} disabled={respondingInvitation !== null || req.job?.status !== 'open'} onClick={() => respondToInvitation(req._id, 'accept')}>{respondingInvitation === req._id ? 'Saving…' : 'Accept Job'}</button>
+                      <button style={S.btn('#dc3545')} disabled={respondingInvitation !== null} onClick={() => respondToInvitation(req._id, 'reject')}>Reject Request</button>
+                    </div>}
+                    {req.status === 'pending' && req.job?.status !== 'open' && <p>This job is no longer open for acceptance.</p>}
+                  </div>}
                   {/* action buttons */}
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     <button onClick={() => openChatFor(req._id)}
@@ -2124,7 +2160,7 @@ const TechnicianDashboard = () => {
                     )}
 
                     {/* Submit additional charges — available on accepted requests */}
-                    {['pending', 'counter-offer'].includes(req.status) && (
+                    {req.initiatedBy !== 'admin' && ['pending', 'counter-offer'].includes(req.status) && (
                       <button
                         onClick={() => cancelRequest(req._id)}
                         style={{ background: 'rgba(220,53,69,0.08)', color: '#dc3545',

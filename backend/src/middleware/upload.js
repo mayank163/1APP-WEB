@@ -100,3 +100,12 @@ module.exports.uploadTaskCompletion = uploadTaskCompletion;
 module.exports.uploadCompleteProfile = uploadCompleteProfile;
 module.exports.uploadBankDetails = uploadBankDetails;
 module.exports.uploadSingleDocument = uploadSingleDocument;
+
+module.exports.uploadAdminTechnicianDocuments = multer({
+    storage, limits: { fileSize: 5 * 1024 * 1024, files: 4 },
+    fileFilter: (req, file, cb) => {
+        const allowed = ['image/jpeg', 'image/png', 'image/webp', ...(file.fieldname === 'profilePhoto' ? [] : ['application/pdf'])];
+        if (allowed.includes(file.mimetype)) return cb(null, true);
+        cb(Object.assign(new Error('Use JPG, PNG, WebP or PDF documents (photos must be images).'), { statusCode: 400 }));
+    },
+}).fields(['profilePhoto', 'drivingLicenseFront', 'residentialProof', 'cvResume'].map(name => ({ name, maxCount: 1 })));

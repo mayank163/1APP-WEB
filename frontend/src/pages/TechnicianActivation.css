@@ -1,0 +1,99 @@
+.tech-activation {
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  padding:40px 20px;
+  background:#fff8ef;
+  color:#222
+}
+
+.tech-activation section {
+  width:100%;
+  max-width:480px;
+  padding:36px;
+  border:1px solid #eadac3;
+  background:white;
+  border-radius:24px;
+  box-shadow:0 12px 50px #78502110
+}
+
+.tech-activation-brand {
+  font-size:16px;
+  letter-spacing:3px;
+  color:#a7732c;
+  font-weight:700
+}
+
+.tech-activation h1 {
+  font-size:27px;
+  margin:20px 0 12px;
+  line-height:1.25
+}
+
+.tech-activation p {
+  color:#728096;
+  font-size:14px;
+  line-height:1.6
+}
+
+.tech-activation label {
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:18px;
+  font-size:14px
+}
+
+.tech-activation input {
+  border:1px solid #dfe3ea;
+  border-radius:999px;
+  padding:11px 15px;
+  background:#fff;
+  color:#222;
+  width:100%
+}
+
+.tech-activation input:focus-visible {
+  outline:2px solid #c89d5b;
+  outline-offset:2px
+}
+
+.tech-activation-submit {
+  width:100%;
+  background:#a7732c;
+  color:#fff;
+  border:none;
+  border-radius:999px;
+  padding:12px;
+  margin-top:24px
+}
+
+.tech-activation button:disabled {
+  opacity:.5;
+  cursor:wait
+}
+
+.tech-activation-error {
+  background:#fff0ee;
+  color:#b42318;
+  padding:12px;
+  border-radius:10px
+}
+
+.tech-activation-links {
+  display:flex;
+  justify-content:space-between;
+  gap:16px
+}
+
+.tech-activation-links button {
+  background:none;
+  border:0;
+  color:#916322;
+  padding:0;
+  font-size:13px
+}
+
+.tech-activation a {
+  color:#916322
+}

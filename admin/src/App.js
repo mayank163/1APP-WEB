@@ -17,6 +17,7 @@ import UserManagement from './pages/UserManagement';
 import OfferManagement from './pages/OfferManagement';
 import BlogManagement from './pages/BlogManagement';
 import TechnicianJobs from './pages/TechnicianJobs';
+import JobTemplates from './pages/JobTemplates';
 import TechnicianVerification from './pages/TechnicianVerification';
 import TechnicianOverview from './pages/TechnicianOverview';
 import SubAdminManagement from './pages/SubAdminManagement';
@@ -64,6 +65,7 @@ function AppRoutes() {
           <Route path="subcategories" element={<PermRoute resource="subcategories" access="read"><CategoryManagement /></PermRoute>} />
           <Route path="users" element={<PermRoute resource="users" access="read"><UserManagement /></PermRoute>} />
           <Route path="offers" element={<PermRoute resource="offers" access="read"><OfferManagement /></PermRoute>} />
+          <Route path="job-templates" element={<PermRoute resource="technician_jobs" access="read"><JobTemplates /></PermRoute>} />
           <Route path="technician-jobs" element={<PermRoute resource="technician_jobs" access="read"><TechnicianJobs /></PermRoute>} />
           <Route path="technician-overview" element={<PermRoute resource="technician_jobs" access="read"><TechnicianOverview /></PermRoute>} />
           <Route path="technician-verification" element={<PermRoute resource="technician_verification" access="read"><TechnicianVerification /></PermRoute>} />

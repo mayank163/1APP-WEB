@@ -9,11 +9,12 @@ const userSchema = new mongoose.Schema({
     },
     email: {
         type: String,
-        required: [true, 'Please provide your email'],
+        required: function () { return this.role !== 'technician'; },
+        sparse: true,
         unique: true,
         lowercase: true,
         trim: true,
-        match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email address']
+        match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please provide a valid email address']
     },
     password: {
         type: String,
@@ -36,6 +37,15 @@ const userSchema = new mongoose.Schema({
         enum: ['user', 'admin', 'technician'],
         default: 'user'
     },
+    technicianId: { type: String, unique: true, sparse: true },
+    createdByAdmin: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
+    accountStatus: { type: String, enum: ['active', 'invited', 'suspended', 'blocked'], default: 'active' },
+    dateOfBirth: Date,
+    primaryService: { type: String, default: '' },
+    serviceArea: { type: String, default: '' },
+    serviceRadius: { type: Number, min: 1, max: 500, default: 15 },
+    isOnline: { type: Boolean, default: false },
+    isEmailVerified: { type: Boolean, default: false },
     skills: [{
         type: String,
         trim: true

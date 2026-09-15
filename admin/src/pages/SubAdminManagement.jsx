@@ -1,337 +1,49 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import adminApi from '../services/adminApi';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { FaCheckCircle, FaEdit, FaKey, FaPlus, FaTimes, FaTrash, FaUserShield } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import { FaPlus, FaEdit, FaTrash, FaUserShield, FaTimes } from 'react-icons/fa';
+import adminApi from '../services/adminApi';
+import '../styles/SubAdminManagement.css';
 
-const RESOURCE_LABELS = {
-    dashboard: 'Dashboard',
-    bookings: 'Bookings',
-    categories: 'Categories',
-    subcategories: 'Sub-Categories',
-    services: 'Services',
-    users: 'Users',
-    offers: 'Offers & Coupons',
-    technician_jobs: 'Technician Jobs',
-    technician_verification: 'Technician Verification',
-    blogs: 'Blogs',
-    sub_admins: 'Sub-Admin Management',
+const RESOURCE_LABELS = { dashboard: 'Dashboard', bookings: 'Bookings', categories: 'Categories', subcategories: 'Sub-Categories', services: 'Services', users: 'Users', offers: 'Offers & Coupons', technician_jobs: 'Technician Jobs', technician_verification: 'Technician Verification', blogs: 'Blogs', sub_admins: 'Sub-Admin Management', work_types: 'Work Types', service_types: 'Service Types' };
+const ALL_RESOURCES = Object.keys(RESOURCE_LABELS);
+const ROLE_DEFINITIONS = {
+    admin: { label: 'Admin', description: 'Broad access to manage platform operations, users, services, and reports.', permissions: ALL_RESOURCES.map(resource => `${resource}:both`) },
+    operations_dispatch: { label: 'Operations / Dispatch', description: 'Technician and job operations, assignment, monitoring, exceptions.', permissions: ['technician_jobs:both', 'dashboard:read', 'users:read'] },
+    support_agents: { label: 'Support / Agents', description: 'Customer tickets, internal chats, and the support knowledge base.', permissions: ['users:both', 'bookings:both', 'dashboard:read'] },
+    read_only_analyst: { label: 'Read-only / Analyst', description: 'View-only access across metrics, job lists, and system reports.', permissions: ['dashboard:read', 'bookings:read', 'users:read', 'technician_jobs:read', 'technician_verification:read'] }
 };
+const ROLE_CARDS = [{ key: 'super', label: 'Super Admin', description: 'Full access to every module, including admin users and configuration.' }, ...Object.entries(ROLE_DEFINITIONS).map(([key, role]) => ({ key, ...role }))];
+const ACCESS_OPTIONS = [{ value: 'read', label: 'Read Only' }, { value: 'write', label: 'Write Only' }, { value: 'both', label: 'Read & Write' }];
+const EMPTY_FORM = { name: '', email: '', password: '', role: 'read_only_analyst', permissions: [] };
 
-const ACCESS_OPTIONS = [
-    { value: 'read', label: 'Read Only' },
-    { value: 'write', label: 'Write Only' },
-    { value: 'both', label: 'Read & Write' },
-];
+const roleLabel = role => role === 'super' ? 'Super Admin' : role === 'verification' ? 'Admin' : ROLE_DEFINITIONS[role]?.label || 'Read-only / Analyst';
+const rolePermissions = role => (ROLE_DEFINITIONS[role]?.permissions || []).map(value => { const [resource, access] = value.split(':'); return { resource, access }; });
 
-const EMPTY_FORM = { name: '', email: '', password: '', permissions: [] };
+function PermissionRow({ resource, perm, onChange, onRemove }) {
+    return <div className="sam-permission-row"><span>{RESOURCE_LABELS[resource] || resource}</span><select value={perm} onChange={event => onChange(resource, event.target.value)}>{ACCESS_OPTIONS.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select><button type="button" aria-label={`Remove ${resource}`} onClick={() => onRemove(resource)}><FaTimes /></button></div>;
+}
 
-const PermissionRow = ({ resource, perm, onChange, onRemove }) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: '#f8f9fa', borderRadius: 8, marginBottom: 6 }}>
-        <span style={{ flex: 1, fontWeight: 600, fontSize: '0.85rem', color: '#333' }}>
-            {RESOURCE_LABELS[resource] || resource}
-        </span>
-        <select
-            value={perm}
-            onChange={e => onChange(resource, e.target.value)}
-            style={{ border: '1.5px solid #ddd', borderRadius: 6, padding: '4px 8px', fontSize: '0.82rem', color: '#333' }}
-        >
-            {ACCESS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </select>
-        <button type="button" onClick={() => onRemove(resource)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc3545', padding: 4 }}>
-            <FaTimes size={12} />
-        </button>
-    </div>
-);
+function AdminModal({ modal, form, setForm, resources, saving, onClose, onSubmit }) {
+    const permissionMap = Object.fromEntries(form.permissions.map(permission => [permission.resource, permission.access]));
+    const unusedResources = resources.filter(resource => !permissionMap[resource]);
+    const changeRole = role => setForm(previous => ({ ...previous, role, permissions: rolePermissions(role) }));
+    const addResource = resource => setForm(previous => ({ ...previous, permissions: [...previous.permissions, { resource, access: 'read' }] }));
+    const changeAccess = (resource, access) => setForm(previous => ({ ...previous, permissions: previous.permissions.map(permission => permission.resource === resource ? { ...permission, access } : permission) }));
+    const removeResource = resource => setForm(previous => ({ ...previous, permissions: previous.permissions.filter(permission => permission.resource !== resource) }));
+    return <div className="sam-modal-backdrop"><div className="sam-modal" role="dialog" aria-modal="true"><div className="sam-modal-header"><div><span className="sam-eyebrow">{modal === 'create' ? 'New access profile' : 'Access profile'}</span><h2>{modal === 'create' ? 'Add admin' : 'Edit admin'}</h2></div><button className="sam-close" onClick={onClose} aria-label="Close"><FaTimes /></button></div><form onSubmit={onSubmit}><div className="sam-modal-body"><label className="sam-field"><span>Name</span><input required value={form.name} onChange={event => setForm(previous => ({ ...previous, name: event.target.value }))} placeholder="Full name" /></label><label className="sam-field"><span>Email</span><input required type="email" disabled={modal === 'edit'} value={form.email} onChange={event => setForm(previous => ({ ...previous, email: event.target.value }))} placeholder="admin@example.com" /></label><label className="sam-field"><span>Password {modal === 'edit' && <small>(leave blank to keep current)</small>}</span><input required={modal === 'create'} type="password" value={form.password} onChange={event => setForm(previous => ({ ...previous, password: event.target.value }))} placeholder="Enter a secure password" /></label><div className="sam-role-picker"><span className="sam-section-label">Assigned role</span><div className="sam-role-options">{Object.entries(ROLE_DEFINITIONS).map(([key, role]) => <button type="button" key={key} className={form.role === key ? 'selected' : ''} onClick={() => changeRole(key)}><strong>{role.label}</strong><small>{role.description}</small></button>)}</div></div><div className="sam-permissions"><div className="sam-permissions-heading"><span className="sam-section-label">Permissions</span>{unusedResources.length > 0 && <select aria-label="Add resource" value="" onChange={event => event.target.value && addResource(event.target.value)}><option value="">+ Add resource</option>{unusedResources.map(resource => <option key={resource} value={resource}>{RESOURCE_LABELS[resource] || resource}</option>)}</select>}</div>{form.permissions.length === 0 ? <p className="sam-muted">No permissions assigned.</p> : form.permissions.map(permission => <PermissionRow key={permission.resource} resource={permission.resource} perm={permission.access} onChange={changeAccess} onRemove={removeResource} />)}</div></div><div className="sam-modal-footer"><button type="button" className="sam-secondary" onClick={onClose}>Cancel</button><button className="sam-primary" disabled={saving}>{saving ? 'Saving...' : modal === 'create' ? 'Create admin' : 'Save changes'}</button></div></form></div></div>;
+}
 
-const Modal = ({ title, onClose, children }) => (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ background: '#fff', borderRadius: 12, width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px', borderBottom: '1px solid #f0e8dc' }}>
-                <h5 style={{ margin: 0, fontWeight: 700, color: '#1a1208' }}>{title}</h5>
-                <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#888', fontSize: 18 }}>×</button>
-            </div>
-            <div style={{ padding: '24px' }}>{children}</div>
-        </div>
-    </div>
-);
-
-const SubAdminManagement = () => {
-    const [subAdmins, setSubAdmins] = useState([]);
-    const [resources, setResources] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [modal, setModal] = useState(null); // null | 'create' | 'edit'
-    const [editing, setEditing] = useState(null);
-    const [form, setForm] = useState(EMPTY_FORM);
-    const [saving, setSaving] = useState(false);
-
-    const load = useCallback(async () => {
-        try {
-            const [adminsRes, resourcesRes] = await Promise.all([
-                adminApi.getSubAdmins(),
-                adminApi.getResources(),
-            ]);
-            setSubAdmins(adminsRes.data?.admins || []);
-            setResources(resourcesRes.data?.resources || []);
-        } catch {
-            toast.error('Failed to load sub-admins.');
-        } finally {
-            setLoading(false);
-        }
-    }, []);
-
+export default function SubAdminManagement() {
+    const [subAdmins, setSubAdmins] = useState([]); const [resources, setResources] = useState([]); const [loading, setLoading] = useState(true); const [modal, setModal] = useState(null); const [editing, setEditing] = useState(null); const [form, setForm] = useState(EMPTY_FORM); const [saving, setSaving] = useState(false);
+    const load = useCallback(async () => { try { const [adminsResponse, resourcesResponse] = await Promise.all([adminApi.getSubAdmins(), adminApi.getResources()]); const adminsData = adminsResponse.data || adminsResponse; const resourcesData = resourcesResponse.data || resourcesResponse; setSubAdmins(adminsData.admins || []); setResources(resourcesData.resources || []); } catch { toast.error('Failed to load admins and roles.'); } finally { setLoading(false); } }, []);
     useEffect(() => { load(); }, [load]);
-
-    const openCreate = () => {
-        setForm(EMPTY_FORM);
-        setEditing(null);
-        setModal('create');
-    };
-
-    const openEdit = (admin) => {
-        const permsMap = {};
-        (admin.permissions || []).forEach(p => { permsMap[p.resource] = p.access; });
-        setForm({ name: admin.name, email: admin.email, password: '', permissions: admin.permissions || [] });
-        setEditing(admin);
-        setModal('edit');
-    };
-
+    const openCreate = () => { setForm({ ...EMPTY_FORM, permissions: rolePermissions(EMPTY_FORM.role) }); setEditing(null); setModal('create'); };
+    const openEdit = admin => { const role = admin.role === 'verification' ? 'admin' : admin.role || 'read_only_analyst'; setEditing(admin); setForm({ name: admin.name, email: admin.email, password: '', role, permissions: admin.permissions || rolePermissions(role) }); setModal('edit'); };
     const closeModal = () => { setModal(null); setEditing(null); setForm(EMPTY_FORM); };
-
-    // Permission helpers
-    const permMap = Object.fromEntries(form.permissions.map(p => [p.resource, p.access]));
-
-    const addResource = (resource) => {
-        if (permMap[resource]) return;
-        setForm(f => ({ ...f, permissions: [...f.permissions, { resource, access: 'read' }] }));
-    };
-
-    const changeAccess = (resource, access) => {
-        setForm(f => ({ ...f, permissions: f.permissions.map(p => p.resource === resource ? { ...p, access } : p) }));
-    };
-
-    const removeResource = (resource) => {
-        setForm(f => ({ ...f, permissions: f.permissions.filter(p => p.resource !== resource) }));
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setSaving(true);
-        try {
-            if (modal === 'create') {
-                await adminApi.createSubAdmin({ name: form.name, email: form.email, password: form.password, permissions: form.permissions });
-                toast.success('Sub-admin created.');
-            } else {
-                const payload = { name: form.name, permissions: form.permissions };
-                if (form.password) payload.password = form.password;
-                await adminApi.updateSubAdmin(editing._id, payload);
-                toast.success('Sub-admin updated.');
-            }
-            closeModal();
-            load();
-        } catch (err) {
-            toast.error(err.response?.data?.message || 'Operation failed.');
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    const handleDelete = async (id) => {
-        if (!window.confirm('Delete this sub-admin?')) return;
-        try {
-            await adminApi.deleteSubAdmin(id);
-            toast.success('Sub-admin deleted.');
-            load();
-        } catch (err) {
-            toast.error(err.response?.data?.message || 'Delete failed.');
-        }
-    };
-
-    const toggleActive = async (admin) => {
-        try {
-            await adminApi.updateSubAdmin(admin._id, { isActive: !admin.isActive });
-            toast.success(`Sub-admin ${admin.isActive ? 'deactivated' : 'activated'}.`);
-            load();
-        } catch {
-            toast.error('Failed to update status.');
-        }
-    };
-
-    const unusedResources = resources.filter(r => !permMap[r]);
-
-    if (loading) return <div className="d-flex align-items-center gap-2 p-4"><div className="spinner-border spinner-border-sm text-warning" /><span>Loading...</span></div>;
-
-    return (
-        <div>
-            {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-                <div>
-                    <h4 style={{ fontWeight: 800, margin: 0, color: '#1a1208' }}>Sub-Admin Management</h4>
-                    <p style={{ color: '#888', margin: '4px 0 0', fontSize: '0.88rem' }}>Create admins with granular RBAC permissions</p>
-                </div>
-                <button
-                    onClick={openCreate}
-                    style={{ background: '#A5732F', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 18px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}
-                >
-                    <FaPlus size={12} /> Add Sub-Admin
-                </button>
-            </div>
-
-            {/* Table */}
-            {subAdmins.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '60px 20px', color: '#aaa' }}>
-                    <FaUserShield size={40} style={{ marginBottom: 12, opacity: 0.3 }} />
-                    <p style={{ fontWeight: 600 }}>No sub-admins yet</p>
-                    <p style={{ fontSize: '0.85rem' }}>Create one to delegate access with specific permissions.</p>
-                </div>
-            ) : (
-                <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #f0e8dc', overflow: 'hidden' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                        <thead>
-                            <tr style={{ background: '#fdf6ee', borderBottom: '1px solid #f0e8dc' }}>
-                                {['Name', 'Email', 'Permissions', 'Status', 'Actions'].map(h => (
-                                    <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: '0.8rem', fontWeight: 700, color: '#A5732F', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {subAdmins.map((admin, i) => (
-                                <tr key={admin._id} style={{ borderBottom: i < subAdmins.length - 1 ? '1px solid #f5f5f5' : 'none' }}>
-                                    <td style={{ padding: '14px 16px', fontWeight: 600, color: '#1a1208' }}>{admin.name}</td>
-                                    <td style={{ padding: '14px 16px', color: '#555', fontSize: '0.88rem' }}>{admin.email}</td>
-                                    <td style={{ padding: '14px 16px' }}>
-                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                                            {(admin.permissions || []).length === 0 ? (
-                                                <span style={{ color: '#bbb', fontSize: '0.8rem' }}>No permissions</span>
-                                            ) : (
-                                                admin.permissions.map(p => (
-                                                    <span key={p.resource} style={{
-                                                        background: p.access === 'both' ? '#e8f5e9' : p.access === 'write' ? '#fff3e0' : '#e3f2fd',
-                                                        color: p.access === 'both' ? '#2e7d32' : p.access === 'write' ? '#e65100' : '#1565c0',
-                                                        borderRadius: 4, padding: '2px 7px', fontSize: '0.75rem', fontWeight: 600
-                                                    }}>
-                                                        {RESOURCE_LABELS[p.resource] || p.resource} · {p.access}
-                                                    </span>
-                                                ))
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td style={{ padding: '14px 16px' }}>
-                                        <button
-                                            onClick={() => toggleActive(admin)}
-                                            style={{
-                                                background: admin.isActive ? '#e8f5e9' : '#fce4ec',
-                                                color: admin.isActive ? '#2e7d32' : '#c62828',
-                                                border: 'none', borderRadius: 20, padding: '4px 12px',
-                                                fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer'
-                                            }}
-                                        >
-                                            {admin.isActive ? 'Active' : 'Inactive'}
-                                        </button>
-                                    </td>
-                                    <td style={{ padding: '14px 16px' }}>
-                                        <div style={{ display: 'flex', gap: 8 }}>
-                                            <button onClick={() => openEdit(admin)} style={{ background: '#fff3e0', color: '#e65100', border: 'none', borderRadius: 6, padding: '6px 10px', cursor: 'pointer' }}>
-                                                <FaEdit size={13} />
-                                            </button>
-                                            <button onClick={() => handleDelete(admin._id)} style={{ background: '#fce4ec', color: '#c62828', border: 'none', borderRadius: 6, padding: '6px 10px', cursor: 'pointer' }}>
-                                                <FaTrash size={13} />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-
-            {/* Create / Edit Modal */}
-            {modal && (
-                <Modal title={modal === 'create' ? 'Create Sub-Admin' : 'Edit Sub-Admin'} onClose={closeModal}>
-                    <form onSubmit={handleSubmit}>
-                        {/* Name */}
-                        <div style={{ marginBottom: 14 }}>
-                            <label style={{ fontWeight: 700, fontSize: '0.83rem', display: 'block', marginBottom: 5 }}>Name</label>
-                            <input
-                                required
-                                value={form.name}
-                                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                                style={{ width: '100%', border: '1.5px solid #ddd', borderRadius: 8, padding: '9px 12px', fontSize: '0.9rem', boxSizing: 'border-box' }}
-                                placeholder="Full name"
-                            />
-                        </div>
-
-                        {/* Email */}
-                        <div style={{ marginBottom: 14 }}>
-                            <label style={{ fontWeight: 700, fontSize: '0.83rem', display: 'block', marginBottom: 5 }}>Email</label>
-                            <input
-                                required
-                                type="email"
-                                value={form.email}
-                                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                                disabled={modal === 'edit'}
-                                style={{ width: '100%', border: '1.5px solid #ddd', borderRadius: 8, padding: '9px 12px', fontSize: '0.9rem', boxSizing: 'border-box', background: modal === 'edit' ? '#f5f5f5' : '#fff' }}
-                                placeholder="admin@example.com"
-                            />
-                        </div>
-
-                        {/* Password */}
-                        <div style={{ marginBottom: 20 }}>
-                            <label style={{ fontWeight: 700, fontSize: '0.83rem', display: 'block', marginBottom: 5 }}>
-                                Password {modal === 'edit' && <span style={{ color: '#aaa', fontWeight: 400 }}>(leave blank to keep current)</span>}
-                            </label>
-                            <input
-                                required={modal === 'create'}
-                                type="password"
-                                value={form.password}
-                                onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                                style={{ width: '100%', border: '1.5px solid #ddd', borderRadius: 8, padding: '9px 12px', fontSize: '0.9rem', boxSizing: 'border-box' }}
-                                placeholder="••••••••"
-                            />
-                        </div>
-
-                        {/* Permissions */}
-                        <div style={{ marginBottom: 20 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                                <label style={{ fontWeight: 700, fontSize: '0.83rem' }}>Permissions</label>
-                                {unusedResources.length > 0 && (
-                                    <select
-                                        value=""
-                                        onChange={e => { if (e.target.value) addResource(e.target.value); }}
-                                        style={{ border: '1.5px solid #A5732F', borderRadius: 6, padding: '4px 8px', fontSize: '0.8rem', color: '#A5732F', cursor: 'pointer' }}
-                                    >
-                                        <option value="">+ Add resource</option>
-                                        {unusedResources.map(r => <option key={r} value={r}>{RESOURCE_LABELS[r] || r}</option>)}
-                                    </select>
-                                )}
-                            </div>
-
-                            {form.permissions.length === 0 ? (
-                                <p style={{ color: '#bbb', fontSize: '0.83rem', textAlign: 'center', padding: '16px 0' }}>No permissions assigned. Use "+ Add resource" above.</p>
-                            ) : (
-                                form.permissions.map(p => (
-                                    <PermissionRow
-                                        key={p.resource}
-                                        resource={p.resource}
-                                        perm={p.access}
-                                        onChange={changeAccess}
-                                        onRemove={removeResource}
-                                    />
-                                ))
-                            )}
-                        </div>
-
-                        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-                            <button type="button" onClick={closeModal} style={{ background: '#f5f5f5', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
-                            <button type="submit" disabled={saving} style={{ background: '#A5732F', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 20px', fontWeight: 700, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
-                                {saving ? 'Saving...' : modal === 'create' ? 'Create Sub-Admin' : 'Save Changes'}
-                            </button>
-                        </div>
-                    </form>
-                </Modal>
-            )}
-        </div>
-    );
-};
-
-export default SubAdminManagement;
+    const handleSubmit = async event => { event.preventDefault(); setSaving(true); try { const payload = { name: form.name, role: form.role, permissions: form.permissions }; if (modal === 'create') { await adminApi.createSubAdmin({ ...payload, email: form.email, password: form.password }); toast.success('Admin created.'); } else { if (form.password) payload.password = form.password; await adminApi.updateSubAdmin(editing._id, payload); toast.success('Admin updated.'); } closeModal(); await load(); } catch (error) { toast.error(error.response?.data?.message || 'Operation failed.'); } finally { setSaving(false); } };
+    const toggleActive = async admin => { try { await adminApi.updateSubAdmin(admin._id, { isActive: !admin.isActive }); toast.success(`Admin ${admin.isActive ? 'deactivated' : 'activated'}.`); load(); } catch (error) { toast.error(error.response?.data?.message || 'Failed to update status.'); } };
+    const handleDelete = async id => { if (!window.confirm('Delete this admin?')) return; try { await adminApi.deleteSubAdmin(id); toast.success('Admin deleted.'); load(); } catch (error) { toast.error(error.response?.data?.message || 'Delete failed.'); } };
+    const counts = useMemo(() => Object.fromEntries(Object.keys(ROLE_DEFINITIONS).map(role => [role, subAdmins.filter(admin => admin.role === role).length])), [subAdmins]);
+    if (loading) return <div className="sam-loading"><div className="spinner-border spinner-border-sm text-warning" /> Loading...</div>;
+    return <div className="sam-page"><div className="sam-breadcrumb">People &amp; Support <span>/</span> <b>Configuration</b></div><header className="sam-header"><div><h1>Manage Admins and Roles</h1><p>Manage who can access the admin panel and what they can do</p></div><button className="sam-add-button" onClick={openCreate}><FaPlus /> Add admin</button></header><section className="sam-role-cards" aria-label="Admin roles">{ROLE_CARDS.map(role => <article className={`sam-role-card sam-role-${role.key}`} key={role.key}><h2>{role.label}</h2><p>{role.description}</p>{role.key !== 'super' && <span>{counts[role.key] || 0} assigned</span>}</article>)}</section>{subAdmins.length === 0 ? <div className="sam-empty"><FaUserShield /><strong>No admins yet</strong><span>Create an admin to delegate access.</span></div> : <div className="sam-table-wrap"><table className="sam-table"><thead><tr>{['Name', 'Email', 'Role', 'Status', 'Last Active', 'Created', 'Actions'].map(label => <th key={label}>{label}</th>)}</tr></thead><tbody>{subAdmins.map(admin => <tr key={admin._id}><td><div className="sam-name"><span>{(admin.name || '?').split(/\s+/).map(word => word[0]).slice(0, 2).join('').toUpperCase()}</span><strong>{admin.name}</strong></div></td><td className="sam-email">{admin.email}</td><td><span className="sam-role-pill">{admin.isSuperAdmin ? 'Super Admin' : roleLabel(admin.role)}</span></td><td><button className={`sam-status ${admin.isActive ? 'active' : 'inactive'}`} onClick={() => toggleActive(admin)}>{admin.isActive ? <><FaCheckCircle /> Active</> : 'Inactive'}</button></td><td className="sam-muted">{admin.lastActive ? new Date(admin.lastActive).toLocaleString() : 'Not available'}</td><td className="sam-muted">{admin.createdAt ? new Date(admin.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-'}</td><td><div className="sam-actions"><button title="Edit admin" onClick={() => openEdit(admin)}><FaEdit /></button><button title="Delete admin" onClick={() => handleDelete(admin._id)}><FaTrash /></button></div></td></tr>)}</tbody></table></div>}{modal && <AdminModal modal={modal} form={form} setForm={setForm} resources={resources} saving={saving} onClose={closeModal} onSubmit={handleSubmit} />}</div>;
+}

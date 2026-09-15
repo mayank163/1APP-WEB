@@ -8,6 +8,13 @@ const RESOURCES = [
     'work_types', 'service_types'
 ];
 
+const ADMIN_ROLES = [
+    'admin',
+    'operations_dispatch',
+    'support_agents',
+    'read_only_analyst'
+];
+
 const permissionSchema = new mongoose.Schema({
     resource: { type: String, enum: RESOURCES, required: true },
     access: { type: String, enum: ['read', 'write', 'both'], required: true }
@@ -17,9 +24,18 @@ const adminSchema = new mongoose.Schema({
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true, select: false },
+    role: { type: String, enum: ADMIN_ROLES, default: 'read_only_analyst' },
     isSuperAdmin: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
-    permissions: [permissionSchema]
+    permissions: [permissionSchema],
+    walletBalance: { type: Number, default: 0, min: 0 },
+    walletTransactions: [{
+        type: { type: String, enum: ['technician_payment'], required: true },
+        job: { type: mongoose.Schema.Types.ObjectId, ref: 'TechnicianJob', required: true },
+        amount: { type: Number, required: true, min: 0 },
+        note: { type: String, default: '', trim: true },
+        createdAt: { type: Date, default: Date.now },
+    }]
 }, { timestamps: true });
 
 // Hash password before saving
@@ -36,3 +52,4 @@ adminSchema.methods.comparePassword = async function(candidatePassword) {
 const Admin = mongoose.model('Admin', adminSchema);
 module.exports = Admin;
 module.exports.RESOURCES = RESOURCES;
+module.exports.ADMIN_ROLES = ADMIN_ROLES;

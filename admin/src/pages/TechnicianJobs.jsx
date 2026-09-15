@@ -1,10 +1,12 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import LocationPicker from '../components/LocationPicker';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import JobInvitationModal from '../components/JobInvitationModal';
+import JobForm from '../components/TechnicianJobForm';
+import { emptyForm, buildJobPayload } from '../utils/jobTemplates';
 import TechnicianTrackingMap from '../components/TechnicianTrackingMap';
-import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.snow.css';
 import { toast } from 'react-toastify';
 import adminApi from '../services/adminApi';
+import { useAdminAuth } from '../context/AdminAuthContext';
+import { templateToJobForm } from '../utils/jobTemplates';
 import socket from '../services/socket';
 import { JOB_STATUS_OPTIONS, getJobStatusLabel, getJobStatusTone } from '../utils/jobStatus';
 import '../styles/TechnicianJobs.css';
@@ -20,24 +22,12 @@ import {
 } from 'react-icons/fa';
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
-const emptyJobDate = { from: '', to: '' };
-const emptyPay = {
-  type: 'fixed',
-  fixedAmount: '', hourlyRate: '', maxHours: '',
-  perDeviceRate: '', maxDevices: '',
-  blendedFixedAmount: '', blendedFixedHours: '',
-  blendedHourlyRate: '', blendedMaxAddlHours: '',
-  approxHours: '',
-};
-const emptyForm = {
-  title: '', location: '', city: '', state: '', zipCode: '',
-  coordinates: null, pay: { ...emptyPay }, jobDate: { ...emptyJobDate },
-  description: '', preferredSkills: '', requirements: '', tasks: [],
-  workTypeId: '', workTypeSubId: '', additionalWorkTypeId: '',
-  additionalWorkTypeSubId: '', serviceTypeId: '',
+// ─── Helpers ───────────────────────────────────────────────────────────────────
+const TimelineDistance = ({ meters }) => {
+  const recorded = typeof meters === 'number' && Number.isFinite(meters) && meters >= 0;
+  return <span className="tj-timeline-distance">Distance from job site: {recorded ? `${meters.toLocaleString('en-IN', { maximumFractionDigits: 1 })} m` : 'Not recorded'}</span>;
 };
 
-// ─── Helpers ───────────────────────────────────────────────────────────────────
 const formatDuration = (minutes) => {
   if (minutes == null) return '—';
   if (minutes < 60) return `${minutes} min`;
@@ -78,6 +68,7 @@ const STATUS_CONFIG = {
   visited:     { label: 'Arrived',     cls: 'status-arrived'    },
   inprogress:  { label: 'In Progress', cls: 'status-inprogress' },
   completed:   { label: 'Completed',   cls: 'status-completed'  },
+  checkout:    { label: 'Checkout',    cls: 'status-assigned'   },
   cancelled:   { label: 'Cancelled',   cls: 'status-cancelled'  },
 };
 
@@ -213,7 +204,6 @@ const InvoicePanel = ({ requestId, request, onInvoiceAction }) => {
   const [invoice, setInvoice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const [paying, setPaying] = useState(false);
   const [adminNotes, setAdminNotes] = useState('');
 
   const load = async () => {
@@ -229,13 +219,6 @@ const InvoicePanel = ({ requestId, request, onInvoiceAction }) => {
     try { const res = await adminApi.generateInvoice(requestId, { adminNotes }); toast.success(res.message || 'Invoice generated!'); setInvoice(res.data?.invoice || null); onInvoiceAction?.(); }
     catch (err) { toast.error(err.response?.data?.message || 'Failed to generate invoice'); }
     finally { setGenerating(false); }
-  };
-  const markPaid = async () => {
-    if (!window.confirm('Mark this invoice as paid and credit the technician wallet?')) return;
-    setPaying(true);
-    try { const res = await adminApi.markInvoicePaid(requestId); toast.success(res.message || 'Paid!'); await load(); onInvoiceAction?.(); }
-    catch (err) { toast.error(err.response?.data?.message || 'Payment failed'); }
-    finally { setPaying(false); }
   };
 
   if (loading) return <div className="tj-loading" style={{ padding: '2rem' }}><div className="spinner-border spinner-border-sm" style={{ color: '#A5732F' }} /><span>Loading invoice…</span></div>;
@@ -256,7 +239,6 @@ const InvoicePanel = ({ requestId, request, onInvoiceAction }) => {
       <div className="tj-invoice-totals"><div className="tj-invoice-row"><span>Fixed Charge</span><span>${Number(invoice.fixedJobCharge).toLocaleString()}</span></div>{invoice.subtotalAdditional > 0 && <div className="tj-invoice-row"><span>Additional Charges</span><span>${Number(invoice.subtotalAdditional).toLocaleString()}</span></div>}<div className="tj-invoice-row total"><span>Total</span><span className="tj-inv-total-val">${Number(invoice.totalAmount).toLocaleString()}</span></div></div>
       {invoice.adminNotes && <div className="tj-charge-admin-note">Notes: {invoice.adminNotes}</div>}
       {invoice.paidAt && <div style={{ fontSize: '0.78rem', color: '#16a34a', fontWeight: 600 }}><FaCheckCircle style={{ marginRight: 4 }} />Paid on {fmtDT(invoice.paidAt)}</div>}
-      {invoice.status === 'finalised' && <button className="tj-btn-mark-paid" disabled={paying} onClick={markPaid}>{paying ? <><span className="spinner-border spinner-border-sm" /> Processing…</> : <><FaWallet /> Mark as Paid & Credit Technician Wallet</>}</button>}
     </div>
   );
 };
@@ -386,118 +368,59 @@ const RescheduleModal = ({ show, job, onClose, onReschedule, rescheduling }) => 
 
 // ─── PayWalletModal ────────────────────────────────────────────────────────────
 const PayWalletModal = ({ show, job, onClose, onPay, paying }) => {
-  const [price, setPrice] = useState('');
+  const [discount, setDiscount] = useState('0');
   const [note, setNote] = useState('');
+  useEffect(() => {
+    if (show) {
+      setDiscount('0');
+      setNote('');
+    }
+  }, [show, job]);
   if (!show) return null;
+  const basePrice = Number(job?.finalPrice || job?.pay?.fixedAmount || job?.pay?.blendedFixedAmount || 0);
+  const discountAmount = Math.max(0, Math.min(basePrice, Number(discount || 0)));
+  const finalPrice = basePrice - discountAmount;
   return (
     <div className="tj-modal-backdrop" onClick={onClose}>
       <div className="tj-modal-box" onClick={(e) => e.stopPropagation()}>
         <div className="tj-modal-header">
-          <h5 className="tj-modal-title"><FaWallet className="me-2" style={{ color: '#16a34a' }} />Pay Technician Wallet</h5>
+          <h5 className="tj-modal-title"><FaWallet className="me-2" style={{ color: '#16a34a' }} />Approve Technician Payment</h5>
           <button className="tj-modal-close" onClick={onClose}><FaTimes /></button>
         </div>
         <div className="tj-modal-body">
           <p className="text-muted small mb-3">Job: <strong>{job?.title}</strong> &nbsp;|&nbsp; Tech: <strong>{job?.assignedTechnician?.name || '—'}</strong></p>
           {job?.jobDurationMinutes != null && <div className="tj-pay-info-row mb-3"><FaClock style={{ color: '#A5732F' }} /><span>Job duration: <strong>{formatDuration(job.jobDurationMinutes)}</strong></span></div>}
-          <label className="tj-label">Final Price ($) <span className="text-danger">*</span></label>
-          <div className="tj-counter-input-wrap mb-3"><span className="tj-counter-prefix">$</span><input className="tj-counter-input" type="number" min="1" placeholder="Enter amount" value={price} onChange={(e) => setPrice(e.target.value)} /></div>
+          <div className="tj-pay-info-row mb-3"><FaReceipt style={{ color: '#A5732F' }} /><span>Job price: <strong>${basePrice.toLocaleString()}</strong></span></div>
+          <label className="tj-label">Discount ($)</label>
+          <div className="tj-counter-input-wrap mb-3"><span className="tj-counter-prefix">$</span><input className="tj-counter-input" type="number" min="0" max={basePrice} placeholder="0" value={discount} onChange={(e) => setDiscount(e.target.value)} /></div>
+          <div className="tj-pay-info-row mb-3"><FaCheckCircle style={{ color: '#16a34a' }} /><span>Final price: <strong>${finalPrice.toLocaleString()}</strong></span></div>
           <label className="tj-label">Note (optional)</label>
-          <textarea className="form-control tj-input mb-3" rows={2} placeholder="Payment note…" value={note} onChange={(e) => setNote(e.target.value)} />
+          <textarea className="form-control tj-input mb-3" rows={2} placeholder="Approval note…" value={note} onChange={(e) => setNote(e.target.value)} />
           <div className="d-flex gap-2 justify-content-end">
             <button className="btn tj-btn-ghost" onClick={onClose} disabled={paying}>Cancel</button>
-            <button className="btn tj-btn-pay" disabled={paying || !price || Number(price) <= 0} onClick={() => onPay(job._id, Number(price), note)}>{paying ? <><span className="spinner-border spinner-border-sm me-2" />Processing…</> : <><FaWallet className="me-2" />Credit to Wallet</>}</button>
+            <button className="btn tj-btn-pay" disabled={paying || basePrice <= 0 || discountAmount > basePrice} onClick={() => onPay(job._id, discountAmount, note)}>{paying ? <><span className="spinner-border spinner-border-sm me-2" />Processing…</> : <><FaWallet className="me-2" />Approve Payment</>}</button>
           </div>
         </div>
       </div>
     </div>
-  );
-};
-
-// ─── TaskBuilder ───────────────────────────────────────────────────────────────
-const TASK_GROUPS = ['Prep', 'On Site', 'Post'];
-const TaskBuilder = ({ tasks, onChange }) => {
-  const [newTitle, setNewTitle] = useState('');
-  const [newGroup, setNewGroup] = useState('Prep');
-  const addTask = () => { const t = newTitle.trim(); if (!t) return; onChange([...tasks, { title: t, group: newGroup, order: tasks.length, isDone: false }]); setNewTitle(''); };
-  const removeTask = (idx) => onChange(tasks.filter((_, i) => i !== idx));
-  const updateTask = (idx, field, value) => onChange(tasks.map((task, i) => i === idx ? { ...task, [field]: value } : task));
-  return (
-    <div className="tj-task-builder">
-      <label className="tj-label"><FaTools className="me-1" style={{ color: '#A5732F' }} /> Tasks for Technician</label>
-      {TASK_GROUPS.map(g => { const gTasks = tasks.filter(t => t.group === g); if (!gTasks.length) return null; return (<div key={g} className="tj-task-group"><div className="tj-task-group-label">{g}</div>{gTasks.map(t => { const gi = tasks.indexOf(t); const requiresEvidence = t.requiresNote || t.requiresImage || t.requiresSignature; return (<div key={gi} className="tj-task-row" style={{ alignItems: 'flex-start' }}><span className="tj-task-circle" style={{ marginTop: 4 }} /><div style={{ flex: 1 }}><span className="tj-task-title">{t.title}</span><div className="d-flex gap-3 flex-wrap mt-1"><label className="small text-muted"><input type="checkbox" className="me-1" checked={Boolean(t.requiresNote)} onChange={(e) => updateTask(gi, 'requiresNote', e.target.checked)} />Require note</label><label className="small text-muted"><input type="checkbox" className="me-1" checked={Boolean(t.requiresImage)} onChange={(e) => updateTask(gi, 'requiresImage', e.target.checked)} />Require image</label><label className="small text-muted"><input type="checkbox" className="me-1" checked={Boolean(t.requiresSignature)} onChange={(e) => updateTask(gi, 'requiresSignature', e.target.checked)} />Require signature</label></div>{requiresEvidence && <input className="form-control tj-input mt-2" value={t.requirementReason || ''} onChange={(e) => updateTask(gi, 'requirementReason', e.target.value)} placeholder="Why is this evidence required?" required />}</div><button type="button" className="tj-task-remove" onClick={() => removeTask(gi)}><FaTimes /></button></div>); })}</div>); })}
-      <div className="tj-task-add-row">
-        <select className="tj-task-group-select" value={newGroup} onChange={(e) => setNewGroup(e.target.value)}>{TASK_GROUPS.map(g => <option key={g}>{g}</option>)}</select>
-        <input className="tj-task-input" placeholder="Task title…" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTask(); } }} />
-        <button type="button" className="tj-task-add-btn" onClick={addTask} disabled={!newTitle.trim()}><FaPlus /></button>
-      </div>
-    </div>
-  );
-};
-
-// ─── JobForm ───────────────────────────────────────────────────────────────────
-const JobForm = ({ form, setForm, onSubmit, onCancel, isEditing, saving, workTypes, serviceTypes }) => {
-  const primarySubTypes = workTypes.find(w => w._id === form.workTypeId)?.subTypes?.filter(s => s.isActive) || [];
-  const additionalSubTypes = workTypes.find(w => w._id === form.additionalWorkTypeId)?.subTypes?.filter(s => s.isActive) || [];
-  return (
-    <form onSubmit={onSubmit} className="row g-3">
-      <div className="col-12"><label className="tj-label">Job Title <span className="text-danger">*</span></label><input className="form-control tj-input" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. AC Service Repair" required /></div>
-      <div className="col-12">
-        <div className="p-3 rounded-3 mb-1" style={{ background: 'rgba(165,115,47,0.05)', border: '1px solid rgba(165,115,47,0.15)' }}>
-          <p className="tj-label mb-3" style={{ color: '#A5732F' }}><FaTools className="me-1" /> Work Type Information</p>
-          <div className="row g-3">
-            <div className="col-md-6"><label className="tj-label">Type of Work</label><select className="form-select tj-input" value={form.workTypeId} onChange={(e) => setForm({ ...form, workTypeId: e.target.value, workTypeSubId: '' })}><option value="">— Select work type —</option>{workTypes.filter(w => w.isActive).map(w => <option key={w._id} value={w._id}>{w.name}</option>)}</select></div>
-            <div className="col-md-6"><label className="tj-label">Work Sub-Type</label><select className="form-select tj-input" value={form.workTypeSubId} onChange={(e) => setForm({ ...form, workTypeSubId: e.target.value })} disabled={!form.workTypeId}><option value="">— Select sub-type —</option>{primarySubTypes.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}</select></div>
-            <div className="col-md-6"><label className="tj-label">Additional Type of Work</label><select className="form-select tj-input" value={form.additionalWorkTypeId} onChange={(e) => setForm({ ...form, additionalWorkTypeId: e.target.value, additionalWorkTypeSubId: '' })}><option value="">— Select additional work type —</option>{workTypes.filter(w => w.isActive).map(w => <option key={w._id} value={w._id}>{w.name}</option>)}</select></div>
-            <div className="col-md-6"><label className="tj-label">Additional Work Sub-Type</label><select className="form-select tj-input" value={form.additionalWorkTypeSubId} onChange={(e) => setForm({ ...form, additionalWorkTypeSubId: e.target.value })} disabled={!form.additionalWorkTypeId}><option value="">— Select sub-type —</option>{additionalSubTypes.map(s => <option key={s._id} value={s._id}>{s.name}</option>)}</select></div>
-            <div className="col-md-6"><label className="tj-label">Service Type</label><select className="form-select tj-input" value={form.serviceTypeId} onChange={(e) => setForm({ ...form, serviceTypeId: e.target.value })}><option value="">— Select service type —</option>{serviceTypes.filter(s => s.isActive).map(s => <option key={s._id} value={s._id}>{s.name}</option>)}</select></div>
-          </div>
-        </div>
-      </div>
-      <div className="col-12">
-        <div className="p-3 rounded-3" style={{ background: 'rgba(37,99,235,0.04)', border: '1px solid rgba(37,99,235,0.15)' }}>
-          <p className="tj-label mb-3" style={{ color: '#2563eb' }}><FaRupeeSign className="me-1" /> Pay</p>
-          <div className="d-flex gap-2 mb-3 flex-wrap">
-            {[{ key: 'hourly', label: 'Hourly' },{ key: 'fixed', label: 'Fixed' },{ key: 'perDevice', label: 'Per Device' },{ key: 'blended', label: 'Blended' }].map(({ key, label }) => (
-              <button key={key} type="button" onClick={() => setForm({ ...form, pay: { ...form.pay, type: key } })} style={{ padding: '6px 20px', borderRadius: 6, border: form.pay.type === key ? '2px solid #2563eb' : '1.5px solid #ced4da', background: form.pay.type === key ? '#fff' : 'transparent', fontWeight: form.pay.type === key ? 700 : 500, color: form.pay.type === key ? '#2563eb' : '#6c757d', cursor: 'pointer', fontSize: 14 }}>{label}</button>
-            ))}
-          </div>
-          {form.pay.type === 'hourly' && <div className="row g-3"><div className="col-md-6"><label className="tj-label">Hourly Rate ($) <span className="text-danger">*</span></label><div className="input-group"><span className="input-group-text bg-light border-0">$</span><input className="form-control tj-input border-start-0" type="number" min="0" step="0.01" value={form.pay.hourlyRate} onChange={e => setForm({ ...form, pay: { ...form.pay, hourlyRate: e.target.value } })} placeholder="0" required /></div></div><div className="col-md-6"><label className="tj-label">Max Hours</label><input className="form-control tj-input" type="number" min="0" step="0.5" value={form.pay.maxHours} onChange={e => setForm({ ...form, pay: { ...form.pay, maxHours: e.target.value } })} placeholder="0" /><small className="text-muted">1 hour minimum</small></div><div className="col-md-6"><label className="tj-label">Approx. Hours <span className="text-muted small">— Optional</span></label><input className="form-control tj-input" type="text" value={form.pay.approxHours} onChange={e => setForm({ ...form, pay: { ...form.pay, approxHours: e.target.value } })} placeholder="e.g. 2–3 hours" /></div></div>}
-          {form.pay.type === 'fixed' && <div className="row g-3"><div className="col-md-6"><label className="tj-label">Total Pay ($) <span className="text-danger">*</span></label><div className="input-group"><span className="input-group-text bg-light border-0">$</span><input className="form-control tj-input border-start-0" type="number" min="0" step="0.01" value={form.pay.fixedAmount} onChange={e => setForm({ ...form, pay: { ...form.pay, fixedAmount: e.target.value } })} placeholder="0" required /></div></div><div className="col-md-6"><label className="tj-label">Approx. Hours to Complete</label><input className="form-control tj-input" type="text" value={form.pay.approxHours} onChange={e => setForm({ ...form, pay: { ...form.pay, approxHours: e.target.value } })} placeholder="e.g. 2–3 hours" /></div></div>}
-          {form.pay.type === 'perDevice' && <div className="row g-3"><div className="col-md-6"><label className="tj-label">Per Device Rate ($) <span className="text-danger">*</span></label><div className="input-group"><span className="input-group-text bg-light border-0">$</span><input className="form-control tj-input border-start-0" type="number" min="0" step="0.01" value={form.pay.perDeviceRate} onChange={e => setForm({ ...form, pay: { ...form.pay, perDeviceRate: e.target.value } })} placeholder="0" required /></div></div><div className="col-md-6"><label className="tj-label">Max Devices</label><input className="form-control tj-input" type="number" min="0" value={form.pay.maxDevices} onChange={e => setForm({ ...form, pay: { ...form.pay, maxDevices: e.target.value } })} placeholder="0" /></div></div>}
-          {form.pay.type === 'blended' && <div className="row g-3"><div className="col-md-6"><label className="tj-label">Fixed Payment ($) <span className="text-danger">*</span></label><div className="input-group"><span className="input-group-text bg-light border-0">$</span><input className="form-control tj-input border-start-0" type="number" min="0" step="0.01" value={form.pay.blendedFixedAmount} onChange={e => setForm({ ...form, pay: { ...form.pay, blendedFixedAmount: e.target.value } })} placeholder="0" required /></div></div><div className="col-md-6"><label className="tj-label">Fixed Hours</label><input className="form-control tj-input" type="number" min="0" step="0.5" value={form.pay.blendedFixedHours} onChange={e => setForm({ ...form, pay: { ...form.pay, blendedFixedHours: e.target.value } })} placeholder="0" /></div><div className="col-md-6"><label className="tj-label">Additional Hour Rate ($)</label><div className="input-group"><span className="input-group-text bg-light border-0">$</span><input className="form-control tj-input border-start-0" type="number" min="0" step="0.01" value={form.pay.blendedHourlyRate} onChange={e => setForm({ ...form, pay: { ...form.pay, blendedHourlyRate: e.target.value } })} placeholder="0" /></div></div><div className="col-md-6"><label className="tj-label">Max Additional Hours</label><input className="form-control tj-input" type="number" min="0" step="0.5" value={form.pay.blendedMaxAddlHours} onChange={e => setForm({ ...form, pay: { ...form.pay, blendedMaxAddlHours: e.target.value } })} placeholder="0" /></div></div>}
-        </div>
-      </div>
-      <div className="col-12"><label className="tj-label">Location <span className="text-danger">*</span></label><LocationPicker value={form.coordinates ? { address: form.location, ...form.coordinates } : null} onChange={({ address, lat, lng, city = '', state = '', zipCode = '' }) => setForm({ ...form, location: address, coordinates: { lat, lng }, city, state, zipCode })} /></div>
-      <div className="col-md-4"><label className="tj-label">City</label><input className="form-control tj-input" type="text" placeholder="Auto-filled from map" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} /></div>
-      <div className="col-md-4"><label className="tj-label">State</label><input className="form-control tj-input" type="text" placeholder="Auto-filled from map" value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} /></div>
-      <div className="col-md-4"><label className="tj-label">Zip Code</label><input className="form-control tj-input" type="text" placeholder="Auto-filled from map" value={form.zipCode} onChange={e => setForm({ ...form, zipCode: e.target.value })} /></div>
-      <div className="col-12"><div className="p-3 rounded-3" style={{ background: 'rgba(37,99,235,0.04)', border: '1px solid rgba(37,99,235,0.15)' }}><p className="tj-label mb-3" style={{ color: '#2563eb' }}><FaCalendarAlt className="me-1" /> Job Date &amp; Time Window</p><div className="row g-3"><div className="col-md-6"><label className="tj-label">From (arrive after)</label><input type="datetime-local" className="form-control tj-input" value={form.jobDate?.from || ''} onChange={e => setForm({ ...form, jobDate: { ...form.jobDate, from: e.target.value } })} /></div><div className="col-md-6"><label className="tj-label">To (arrive before)</label><input type="datetime-local" className="form-control tj-input" value={form.jobDate?.to || ''} onChange={e => setForm({ ...form, jobDate: { ...form.jobDate, to: e.target.value } })} /></div></div></div></div>
-      <div className="col-12"><label className="tj-label">Description <span className="text-danger">*</span></label><ReactQuill theme="snow" value={form.description} onChange={(html) => setForm({ ...form, description: html })} placeholder="Describe the work required…" modules={{ toolbar: [[{ header: [1,2,3,false] }],['bold','italic','underline','strike'],[{ list: 'ordered' },{ list: 'bullet' }],['link'],['clean']] }} formats={['header','bold','italic','underline','strike','list','bullet','link']} style={{ background: '#fff', borderRadius: 8 }} /><input type="text" required tabIndex={-1} value={form.description.replace(/<[^>]+>/g, '').trim()} onChange={() => {}} style={{ opacity: 0, height: 0, padding: 0, border: 'none', position: 'absolute' }} /></div>
-      <div className="col-md-6"><label className="tj-label">Preferred Skills</label><input className="form-control tj-input" value={form.preferredSkills} onChange={(e) => setForm({ ...form, preferredSkills: e.target.value })} placeholder="AC, electrical, repair (comma separated)" /></div>
-      <div className="col-md-6"><label className="tj-label">Requirements</label><input className="form-control tj-input" value={form.requirements} onChange={(e) => setForm({ ...form, requirements: e.target.value })} placeholder="Tools, safety gear (comma separated)" /></div>
-      <div className="col-12"><TaskBuilder tasks={form.tasks || []} onChange={(tasks) => setForm({ ...form, tasks })} /></div>
-      <div className="col-12 d-flex justify-content-end gap-2 pt-2"><button type="button" className="btn tj-btn-ghost" onClick={onCancel} disabled={saving}>Cancel</button><button type="submit" className="btn tj-btn-primary-gold" disabled={saving}>{saving ? <><span className="spinner-border spinner-border-sm me-2" />Saving…</> : isEditing ? 'Update Job' : 'Create Job'}</button></div>
-    </form>
   );
 };
 
 // ─── StatusUpdateModal ─────────────────────────────────────────────────────────
 const StatusUpdateModal = ({ show, targetStatus, job, onClose, onConfirm, saving }) => {
   const [note, setNote] = useState('');
-  const [price, setPrice] = useState('');
-  useEffect(() => { if (show) { setNote(''); setPrice(''); } }, [show, targetStatus]);
+  useEffect(() => { if (show) setNote(''); }, [show, targetStatus]);
   if (!show) return null;
-  const needsPrice = targetStatus === 'completed';
+  const needsPrice = false;
   return (
-    <div className="tj-modal-backdrop" onClick={onClose}>
+    <div className="tj-modal-backdrop tj-status-modal-backdrop" onClick={onClose}>
       <div className="tj-modal-box" onClick={(e) => e.stopPropagation()}>
         <div className="tj-modal-header"><h5 className="tj-modal-title">Set Status — <span style={{ color: '#A5732F' }}>{targetStatus}</span></h5><button className="tj-modal-close" onClick={onClose}><FaTimes /></button></div>
         <div className="tj-modal-body">
           <p className="text-muted small mb-3">Job: <strong>{job?.title}</strong></p>
-          {needsPrice && (<><label className="tj-label">Final Price ($) <span className="text-danger">*</span></label><div className="tj-counter-input-wrap mb-3"><span className="tj-counter-prefix">$</span><input className="tj-counter-input" type="number" min="0" placeholder="0" value={price} onChange={(e) => setPrice(e.target.value)} autoFocus /></div></>)}
           <label className="tj-label">Note (optional)</label>
           <textarea className="form-control tj-input mb-3" rows={3} placeholder={`Why is the status changing to "${targetStatus}"?`} value={note} onChange={(e) => setNote(e.target.value)} autoFocus={!needsPrice} />
-          <div className="d-flex gap-2 justify-content-end"><button className="btn tj-btn-ghost" onClick={onClose} disabled={saving}>Cancel</button><button className="btn tj-btn-primary-gold" disabled={saving || (needsPrice && (!price || Number(price) < 0))} onClick={() => onConfirm(targetStatus, note.trim(), needsPrice ? Number(price) : undefined)}>{saving ? <><span className="spinner-border spinner-border-sm me-2" />Saving…</> : 'Confirm Status Update'}</button></div>
+          <div className="d-flex gap-2 justify-content-end"><button className="btn tj-btn-ghost" onClick={onClose} disabled={saving}>Cancel</button><button className="btn tj-btn-primary-gold" disabled={saving} onClick={() => onConfirm(targetStatus, note.trim())}>{saving ? <><span className="spinner-border spinner-border-sm me-2" />Saving…</> : 'Confirm Status Update'}</button></div>
         </div>
       </div>
     </div>
@@ -537,6 +460,19 @@ const FilterDropdown = ({ label, options, value, onChange }) => {
 
 // ─── Main TechnicianJobs Page ──────────────────────────────────────────────────
 const TechnicianJobs = () => {
+  const { can } = useAdminAuth();
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [templates, setTemplates] = useState([]);
+  const [templatesLoading, setTemplatesLoading] = useState(false);
+  const [templatesError, setTemplatesError] = useState('');
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
+  const loadTemplates = useCallback(async () => {
+    setTemplatesLoading(true); setTemplatesError('');
+    try { const res = await adminApi.getTechnicianJobTemplates(); setTemplates(res.data?.templates || []); }
+    catch (error) { setTemplatesError(error.response?.data?.message || 'Could not load job templates.'); }
+    finally { setTemplatesLoading(false); }
+  }, []);
+  useEffect(() => { loadTemplates(); }, [loadTemplates]);
   const [jobs, setJobs]         = useState([]);
   const [requests, setRequests] = useState([]);
   const [loading, setLoading]   = useState(true);
@@ -561,6 +497,7 @@ const TechnicianJobs = () => {
   const [filterDate, setFilterDate] = useState('all');
   const [customDate, setCustomDate] = useState('');
 
+  const [invitationJob, setInvitationJob] = useState(null);
   const [showAddModal, setShowAddModal]   = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewPanel, setShowViewPanel] = useState(false);
@@ -608,7 +545,7 @@ const TechnicianJobs = () => {
     const handleJobCreated = ({ job }) => setJobs(p => [job, ...p]);
     const handleJobUpdated = ({ job }) => { setJobs(p => p.map(j => j._id === job._id ? job : j)); setSelectedJob(p => p?._id === job._id ? job : p); };
     const handleJobDeleted = ({ jobId }) => { setJobs(p => p.filter(j => j._id !== jobId)); setSelectedJob(p => p?._id === jobId ? null : p); setShowViewPanel(p => p && selectedJob?._id === jobId ? false : p); };
-    const handleRequestUpdated = ({ request }) => setRequests(p => p.map(r => r._id === request._id ? request : r));
+    const handleRequestUpdated = ({ request }) => setRequests(p => p.some(r => r._id === request._id) ? p.map(r => r._id === request._id ? request : r) : [request, ...p]);
     const handleChargesSubmitted = ({ requestId }) => { if (activeReqIdRef.current === requestId) setLiveChargesStatus('pending'); setRequests(p => p.map(r => r._id === requestId ? { ...r, chargesStatus: 'pending' } : r)); loadData(); };
     const handleChargeReviewed = ({ requestId, requestChargesStatus }) => { if (activeReqIdRef.current === requestId && requestChargesStatus) setLiveChargesStatus(requestChargesStatus); loadData(); };
     const handleChargeResponded = ({ requestId }) => { if (activeReqIdRef.current === requestId) loadData(); };
@@ -619,6 +556,7 @@ const TechnicianJobs = () => {
       setJobs(p => p.map(upd)); setSelectedJob(p => p ? upd(p) : p);
     };
     socket.on('request:message', handleMsg); socket.on('request:status', handleStatus);
+    socket.on('job:availability', loadData);
     socket.on('job:created', handleJobCreated); socket.on('job:updated', handleJobUpdated); socket.on('job:deleted', handleJobDeleted);
     socket.on('request:updated', handleRequestUpdated); socket.on('charges:submitted', handleChargesSubmitted);
     socket.on('charge:reviewed', handleChargeReviewed); socket.on('charge:responded', handleChargeResponded);
@@ -626,6 +564,7 @@ const TechnicianJobs = () => {
     socket.on('job:task:completed', handleTaskCompleted);
     return () => {
       socket.off('request:message', handleMsg); socket.off('request:status', handleStatus);
+      socket.off('job:availability', loadData);
       socket.off('job:created', handleJobCreated); socket.off('job:updated', handleJobUpdated); socket.off('job:deleted', handleJobDeleted);
       socket.off('request:updated', handleRequestUpdated); socket.off('charges:submitted', handleChargesSubmitted);
       socket.off('charge:reviewed', handleChargeReviewed); socket.off('charge:responded', handleChargeResponded);
@@ -675,31 +614,34 @@ const TechnicianJobs = () => {
   const stats = useMemo(() => ({
     active:    jobs.filter(j => ['assigned','ontheway','visited','inprogress'].includes(j.status)).length,
     unassigned: jobs.filter(j => j.status === 'open').length,
-    delayed:   0, // placeholder — no delay field in current model
-    completion: jobs.filter(j => j.status === 'inprogress').length,
+    checkout:  jobs.filter(j => j.status === 'checkout').length,
     total:     jobs.length,
   }), [jobs]);
 
   // ── Tab counts ────────────────────────────────────────────────────────────────
   const tabCounts = useMemo(() => ({
-    all:        jobs.length,
-    active:     jobs.filter(j => ['assigned','ontheway','visited','inprogress'].includes(j.status)).length,
-    unassigned: jobs.filter(j => j.status === 'open').length,
-    delayed:    0,
-    completion: jobs.filter(j => j.status === 'inprogress').length,
+    all:        jobs.filter(j => ['assigned','open', 'ontheway', 'inprogress', 'checkout', 'cancelled', 'completed'].includes(j.status)).length,
+    alljobs:    jobs.length,
+    pending:    jobs.filter(j => j.status === 'open').length,
+    assigned:   jobs.filter(j => j.status === 'assigned').length,
+    ontheway:   jobs.filter(j => j.status === 'ontheway').length,
+    inprogress: jobs.filter(j => j.status === 'inprogress').length,
+    checkout:   jobs.filter(j => j.status === 'checkout').length,
+    completed:  jobs.filter(j => j.status === 'completed').length,
     cancelled:  jobs.filter(j => j.status === 'cancelled').length,
-    disputed:   0,
   }), [jobs]);
 
   // ── Tab-to-status mapping ─────────────────────────────────────────────────────
   const TAB_STATUS_MAP = {
-    all:        null,
-    active:     ['assigned','ontheway','visited','inprogress'],
-    unassigned: ['open'],
-    delayed:    [],
-    completion: ['inprogress'],
+    all:        ['assigned','open', 'ontheway', 'inprogress', 'checkout', 'cancelled','completed'],
+    alljobs:    null,
+    pending:    ['open'],
+    assigned:   ['assigned'],
+    ontheway:   ['ontheway'],
+    inprogress: ['inprogress'],
+    checkout:   ['checkout'],
+    completed:  ['completed'],
     cancelled:  ['cancelled'],
-    disputed:   [],
   };
 
   // ── Filtered jobs ─────────────────────────────────────────────────────────────
@@ -729,21 +671,26 @@ const TechnicianJobs = () => {
   }, [jobs, activeTab, filterStatus, filterAssignment, search, filterDate, customDate]);
 
   // ── Form helpers ──────────────────────────────────────────────────────────────
-  const buildPayload = (f) => {
-    const wt = workTypes.find(w => w._id === f.workTypeId);
-    const wtSub = wt?.subTypes?.find(s => s._id === f.workTypeSubId);
-    const awt = workTypes.find(w => w._id === f.additionalWorkTypeId);
-    const awtSub = awt?.subTypes?.find(s => s._id === f.additionalWorkTypeSubId);
-    const st = serviceTypes.find(s => s._id === f.serviceTypeId);
-    const p = f.pay || {};
-    const pay = { type: p.type || 'fixed', fixedAmount: Number(p.fixedAmount || 0), hourlyRate: Number(p.hourlyRate || 0), maxHours: Number(p.maxHours || 0), perDeviceRate: Number(p.perDeviceRate || 0), maxDevices: Number(p.maxDevices || 0), blendedFixedAmount: Number(p.blendedFixedAmount || 0), blendedFixedHours: Number(p.blendedFixedHours || 0), blendedHourlyRate: Number(p.blendedHourlyRate || 0), blendedMaxAddlHours: Number(p.blendedMaxAddlHours || 0), approxHours: p.approxHours || '' };
-    return { ...f, pay, jobDate: { from: f.jobDate?.from || undefined, to: f.jobDate?.to || undefined }, preferredSkills: f.preferredSkills.split(',').map(s => s.trim()).filter(Boolean), requirements: f.requirements.split(',').map(s => s.trim()).filter(Boolean), coordinates: f.coordinates || undefined, city: f.city || '', state: f.state || '', zipCode: f.zipCode || '', tasks: (f.tasks || []).map((t, i) => ({ ...t, order: i })), workType: wt ? { _id: wt._id, name: wt.name, subType: wtSub ? { _id: wtSub._id, name: wtSub.name } : {} } : {}, additionalWorkType: awt ? { _id: awt._id, name: awt.name, subType: awtSub ? { _id: awtSub._id, name: awtSub.name } : {} } : {}, serviceType: st ? { _id: st._id, name: st.name } : {} };
-  };
+  const buildPayload = f => buildJobPayload(f, workTypes, serviceTypes);
 
+  const handleSaveTemplate = async (e) => {
+    e.preventDefault(); setSaving(true);
+    try {
+      const res = await adminApi.createTechnicianJobTemplate({ ...buildPayload(form), templateName: form.templateName });
+      setTemplates(previous => [res.data.template, ...previous]);
+      toast.success('Job template saved!'); setShowTemplateModal(false); setForm(emptyForm);
+    } catch (error) { toast.error(error.response?.data?.message || 'Failed to save template'); }
+    finally { setSaving(false); }
+  };
+  const applyTemplate = (id) => {
+    setSelectedTemplateId(id);
+    const template = templates.find(item => item._id === id);
+    setForm(template ? templateToJobForm(template, emptyForm) : emptyForm);
+  };
   const handleAdd = async (e) => { e.preventDefault(); setSaving(true); try { await adminApi.createTechnicianJob(buildPayload(form)); toast.success('Job created!'); setShowAddModal(false); setForm(emptyForm); await loadData(); } catch (err) { toast.error(err.response?.data?.message || 'Failed to create job'); } finally { setSaving(false); } };
   const openEditModal = (job) => {
     setEditingJobId(job._id);
-    setForm({ title: job.title || '', location: job.location || '', city: job.city || '', state: job.state || '', zipCode: job.zipCode || '', coordinates: job.coordinates?.lat ? job.coordinates : null, pay: { type: job.pay?.type || 'fixed', fixedAmount: job.pay?.fixedAmount ?? '', hourlyRate: job.pay?.hourlyRate ?? '', maxHours: job.pay?.maxHours ?? '', perDeviceRate: job.pay?.perDeviceRate ?? '', maxDevices: job.pay?.maxDevices ?? '', blendedFixedAmount: job.pay?.blendedFixedAmount ?? '', blendedFixedHours: job.pay?.blendedFixedHours ?? '', blendedHourlyRate: job.pay?.blendedHourlyRate ?? '', blendedMaxAddlHours: job.pay?.blendedMaxAddlHours ?? '', approxHours: job.pay?.approxHours || '' }, description: job.description || '', preferredSkills: (job.preferredSkills || []).join(', '), requirements: (job.requirements || []).join(', '), tasks: (job.tasks || []).map(t => ({ _id: t._id, title: t.title || '', group: t.group || 'Prep', order: t.order || 0, isDone: t.isDone || false, requiresNote: Boolean(t.requiresNote), requiresImage: Boolean(t.requiresImage), requiresSignature: Boolean(t.requiresSignature), requirementReason: t.requirementReason || '', completionNote: t.completionNote, completionImage: t.completionImage, completionSignature: t.completionSignature, checkedAt: t.checkedAt || null, technicianLat: t.technicianLat || null, technicianLng: t.technicianLng || null, distanceMeters: t.distanceMeters || null })), workTypeId: job.workType?._id || '', workTypeSubId: job.workType?.subType?._id || '', additionalWorkTypeId: job.additionalWorkType?._id || '', additionalWorkTypeSubId: job.additionalWorkType?.subType?._id || '', serviceTypeId: job.serviceType?._id || '', jobDate: { from: job.jobDate?.from ? new Date(job.jobDate.from).toISOString().slice(0,16) : '', to: job.jobDate?.to ? new Date(job.jobDate.to).toISOString().slice(0,16) : '' } });
+    setForm({ scheduledDate: templateToJobForm(job, emptyForm).scheduledDate, visibleTo: job.visibleTo || 'technicians', title: job.title || '', location: job.location || '', city: job.city || '', state: job.state || '', zipCode: job.zipCode || '', coordinates: job.coordinates?.lat ? job.coordinates : null, pay: { type: job.pay?.type || 'fixed', fixedAmount: job.pay?.fixedAmount ?? '', hourlyRate: job.pay?.hourlyRate ?? '', maxHours: job.pay?.maxHours ?? '', perDeviceRate: job.pay?.perDeviceRate ?? '', maxDevices: job.pay?.maxDevices ?? '', blendedFixedAmount: job.pay?.blendedFixedAmount ?? '', blendedFixedHours: job.pay?.blendedFixedHours ?? '', blendedHourlyRate: job.pay?.blendedHourlyRate ?? '', blendedMaxAddlHours: job.pay?.blendedMaxAddlHours ?? '', approxHours: job.pay?.approxHours || '' }, description: job.description || '', preferredSkills: (job.preferredSkills || []).join(', '), requirements: (job.requirements || []).join(', '), tasks: (job.tasks || []).map(t => ({ _id: t._id, title: t.title || '', group: t.group || 'Prep', order: t.order || 0, isDone: t.isDone || false, requiresNote: Boolean(t.requiresNote), requiresImage: Boolean(t.requiresImage), requiresSignature: Boolean(t.requiresSignature), requirementReason: t.requirementReason || '', completionNote: t.completionNote, completionImage: t.completionImage, completionSignature: t.completionSignature, checkedAt: t.checkedAt || null, technicianLat: t.technicianLat || null, technicianLng: t.technicianLng || null, distanceMeters: t.distanceMeters || null })), workTypeId: job.workType?._id || '', workTypeSubId: job.workType?.subType?._id || '', additionalWorkTypeId: job.additionalWorkType?._id || '', additionalWorkTypeSubId: job.additionalWorkType?.subType?._id || '', serviceTypeId: job.serviceType?._id || '', jobDate: templateToJobForm(job, emptyForm).jobDate });
     setShowEditModal(true);
   };
   const handleEdit = async (e) => { e.preventDefault(); setSaving(true); try { await adminApi.updateTechnicianJob(editingJobId, buildPayload(form)); toast.success('Job updated!'); setShowEditModal(false); setForm(emptyForm); setEditingJobId(null); await loadData(); } catch (err) { toast.error(err.response?.data?.message || 'Failed to update job'); } finally { setSaving(false); } };
@@ -751,9 +698,9 @@ const TechnicianJobs = () => {
   const openViewPanel = (job) => { setSelectedJob(job); setShowViewPanel(true); };
   const openRescheduleModal = (job) => { setRescheduleJob(job); setShowRescheduleModal(true); };
   const handleReschedule = async (jobId, jobDateFrom, jobDateTo, reason) => { setRescheduling(true); try { await adminApi.rescheduleJob(jobId, { jobDateFrom, jobDateTo, reason }); toast.success('Job rescheduled!'); setShowRescheduleModal(false); setRescheduleJob(null); await loadData(); if (selectedJob?._id === jobId) setSelectedJob(p => p ? { ...p, jobDate: { from: jobDateFrom, to: jobDateTo }, scheduledDate: jobDateFrom } : p); } catch (err) { toast.error(err.response?.data?.message || 'Reschedule failed'); } finally { setRescheduling(false); } };
-  const handleStatusUpdate = async (status, note, finalPrice) => { setUpdatingStatus(true); try { await adminApi.updateTechnicianJobStatus(selectedJob._id, { status, note: note || '', finalPrice: finalPrice !== undefined ? finalPrice : undefined }); toast.success('Status updated!'); setStatusModal({ show: false, targetStatus: '' }); setSelectedJob(p => ({ ...p, status, ...(finalPrice !== undefined && { finalPrice }), statusHistory: [...(p.statusHistory || []), { status, note: note || '', changedAt: new Date().toISOString() }] })); await loadData(); } catch (err) { toast.error(err.response?.data?.message || 'Update failed'); } finally { setUpdatingStatus(false); } };
+  const handleStatusUpdate = async (status, note) => { setUpdatingStatus(true); try { await adminApi.updateTechnicianJobStatus(selectedJob._id, { status, note: note || '' }); toast.success('Status updated!'); setStatusModal({ show: false, targetStatus: '' }); setSelectedJob(p => ({ ...p, status, statusHistory: [...(p.statusHistory || []), { status, note: note || '', changedAt: new Date().toISOString() }] })); await loadData(); } catch (err) { toast.error(err.response?.data?.message || 'Update failed'); } finally { setUpdatingStatus(false); } };
   const openPayModal = (job) => { setPayModalJob(job); setShowPayModal(true); };
-  const handlePayWallet = async (jobId, finalPrice, note) => { setPaying(true); try { await adminApi.payTechnicianWallet(jobId, { finalPrice, note }); toast.success(`$${finalPrice} credited!`); setShowPayModal(false); setPayModalJob(null); await loadData(); if (selectedJob?._id === jobId) setSelectedJob(p => p ? { ...p, finalPrice } : p); } catch (err) { toast.error(err.response?.data?.message || 'Payment failed'); } finally { setPaying(false); } };
+  const handlePayWallet = async (jobId, discount, note) => { setPaying(true); try { const res = await adminApi.payTechnician(jobId, { discount, note }); toast.success(res.message || 'Payment approved!'); setShowPayModal(false); setPayModalJob(null); await loadData(); if (selectedJob?._id === jobId && res.data?.job) setSelectedJob(res.data.job); } catch (err) { toast.error(err.response?.data?.message || 'Payment failed'); } finally { setPaying(false); } };
 
   // ── Socket room helpers ───────────────────────────────────────────────────────
   const openConversation = (req) => { setActiveConvReq(req); setAdminReply(''); setLiveConversation(req.conversation || []); setConvTab('chat'); setLiveChargesStatus(req.chargesStatus || 'none'); activeReqIdRef.current = req._id; socket.emit('request:join', req._id); };
@@ -769,13 +716,14 @@ const TechnicianJobs = () => {
   const dateOptions = [{ value: 'all', label: 'All Dates' }, { value: 'today', label: 'Today' }, { value: 'yesterday', label: 'Yesterday' }, { value: 'last7', label: 'Last 7 days' }, { value: 'custom', label: 'Custom Date' }];
 
   const TABS = [
-    { key: 'all',        label: 'All Jobs' },
-    { key: 'active',     label: 'Active' },
-    { key: 'unassigned', label: 'Unassigned' },
-    { key: 'delayed',    label: 'Delayed' },
-    { key: 'completion', label: 'Completion Pending' },
+    { key: 'all',        label: 'All' },
+    { key: 'pending',    label: 'Unassigned' },
+    { key: 'assigned',   label: 'Assigned' },
+    { key: 'ontheway',   label: 'On the Way' },
+    { key: 'inprogress', label: 'In Progress' },
+    { key: 'checkout',   label: 'Checkout' },
+    { key: 'completed',  label: 'Completed' },
     { key: 'cancelled',  label: 'Cancelled' },
-    { key: 'disputed',   label: 'Disputed' },
   ];
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -795,9 +743,9 @@ const TechnicianJobs = () => {
             </span>
           </p>
         </div>
-        <button className="tj-btn-primary-gold" onClick={() => { setForm(emptyForm); setShowAddModal(true); }}>
-          <FaPlus className="me-2" />Add Job
-        </button>
+        <div className="d-flex gap-2 flex-wrap">
+          <button className="tj-btn-primary-gold" onClick={() => { setForm(emptyForm); setSelectedTemplateId(''); setShowAddModal(true); loadTemplates(); }}><FaPlus className="me-2" />Add Job</button>
+        </div>
       </div>
 
       {/* ── Stats Cards ─────────────────────────────────────────────────────── */}
@@ -816,18 +764,18 @@ const TechnicianJobs = () => {
             <div className="tj-stat-big">{stats.unassigned} <span className="tj-stat-needs">Needs action</span></div>
           </div>
         </div>
-        <div className="tj-stat-card tj-stat-delayed">
+        <div className="tj-stat-card tj-stat-checkout">
           <div className="tj-stat-top-bar" />
           <div className="tj-stat-inner">
-            <div className="tj-stat-label-top">DELAYED <span className="tj-stat-dot-live red" /></div>
-            <div className="tj-stat-big">{stats.delayed} <span className="tj-stat-avg">Avg. 32 min</span></div>
+            <div className="tj-stat-label-top">CHECKOUT <span className="tj-stat-dot-live" /></div>
+            <div className="tj-stat-big">{stats.checkout} <span className="tj-stat-needs">Awaiting payment</span></div>
           </div>
         </div>
         <div className="tj-stat-card tj-stat-completion">
           <div className="tj-stat-top-bar" />
           <div className="tj-stat-inner">
-            <div className="tj-stat-label-top">COMPLETION REVIEW</div>
-            <div className="tj-stat-big">{stats.completion} <span className="tj-stat-awaiting">Awaiting review</span></div>
+            <div className="tj-stat-label-top">COMPLETED JOBS</div>
+            <div className="tj-stat-big">{jobs.filter(j => j.status === 'completed').length} <span className="tj-stat-awaiting">Paid and closed</span></div>
           </div>
         </div>
       </div>
@@ -979,7 +927,7 @@ const TechnicianJobs = () => {
                               {pendingReqCount > 0 && <span className="tj-action-badge">{pendingReqCount}</span>}
                             </button>
                             <button className="tj-action-btn reschedule" title="Reschedule" onClick={() => openRescheduleModal(job)}><FaRedoAlt /></button>
-                            {job.status === 'completed' && <button className="tj-action-btn pay" title="Pay Wallet" onClick={() => openPayModal(job)}><FaWallet /></button>}
+                            {job.status === 'checkout' && <button className="tj-action-btn pay" title="Approve Payment" onClick={() => openPayModal(job)}><FaWallet /></button>}
                           </div>
                         </td>
                       </tr>
@@ -993,7 +941,16 @@ const TechnicianJobs = () => {
       </div>
 
       {/* ── ADD / EDIT MODALS ────────────────────────────────────────────────── */}
-      <Modal show={showAddModal} onClose={() => setShowAddModal(false)} title="Create New Job" size="lg">
+      {invitationJob && <JobInvitationModal job={invitationJob} onClose={() => setInvitationJob(null)} onSent={loadData} />}
+      <Modal show={showTemplateModal} onClose={() => !saving && setShowTemplateModal(false)} title="Create Job Template" size="lg">
+        <JobForm form={form} setForm={setForm} onSubmit={handleSaveTemplate} onCancel={() => setShowTemplateModal(false)} saving={saving} isTemplate workTypes={workTypes} serviceTypes={serviceTypes} />
+      </Modal>
+      <Modal show={showAddModal} onClose={() => !saving && setShowAddModal(false)} title="Create New Job" size="lg">
+        <div className="p-3 rounded-3 mb-3" style={{ background: '#fff7ed', border: '1px solid #ead2b0' }}>
+          <label className="tj-label" htmlFor="tj-use-template">Use a Saved Template</label>
+          <select id="tj-use-template" className="form-select tj-input" disabled={templatesLoading || saving} value={selectedTemplateId} onChange={e => applyTemplate(e.target.value)}><option value="">{templatesLoading ? 'Loading templates…' : 'Start with a blank job'}</option>{templates.map(template => <option key={template._id} value={template._id}>{template.templateName}</option>)}</select>
+          {templatesError ? <div role="alert" className="text-danger mt-2">{templatesError} <button type="button" className="btn btn-link btn-sm" onClick={loadTemplates}>Retry</button></div> : <small className="text-muted">{selectedTemplateId ? 'Template applied. Review the location, dates and pay before creating the job.' : 'Selecting a template replaces the current form. Create a template to save frequently used job details.'}</small>}
+        </div>
         <JobForm form={form} setForm={setForm} onSubmit={handleAdd} onCancel={() => setShowAddModal(false)} isEditing={false} saving={saving} workTypes={workTypes} serviceTypes={serviceTypes} />
       </Modal>
       <Modal show={showEditModal} onClose={() => setShowEditModal(false)} title="Edit Job" size="lg">
@@ -1055,7 +1012,7 @@ const TechnicianJobs = () => {
                   <button className="tj-btn-reassign" onClick={() => setJobRequestsModal({ show: true, job: selectedJob })}>
                     <FaBell style={{ marginRight: 6 }} />View Requests
                   </button>
-                  {selectedJob.status === 'completed' && (
+                  {selectedJob.status === 'checkout' && (
                     <button className="tj-btn-pay-sm" onClick={() => openPayModal(selectedJob)}>
                       <FaWallet style={{ marginRight: 6 }} />Pay Wallet
                     </button>
@@ -1076,6 +1033,7 @@ const TechnicianJobs = () => {
                 <div className="tj-overview-card">
                   <div className="tj-overview-card-title"><FaTools style={{ color: '#A5732F', marginRight: 6 }} />Technician</div>
                   <div className="tj-ov-value" style={{ color: '#adb5bd', fontStyle: 'italic' }}>No technician assigned yet</div>
+                  {selectedJob.status === 'open' && <button className="tj-btn-reassign mt-2" disabled={!can('technician_jobs', 'write')} onClick={() => { setShowViewPanel(false); setInvitationJob(selectedJob); }}><FaUserCheck className="me-2" />Assign Technician</button>}
                 </div>
               )}
 
@@ -1114,8 +1072,8 @@ const TechnicianJobs = () => {
                 <div className="tj-overview-card">
                   <div className="tj-overview-card-title"><FaClock style={{ color: '#A5732F', marginRight: 6 }} />Job Timeline</div>
                   <div className="tj-timeline">
-                    {selectedJob.reachedAt && <div className="tj-timeline-row"><span className="tj-timeline-dot reached" /><div><div className="tj-timeline-label">Technician Reached</div><div className="tj-timeline-time">{fmtDT(selectedJob.reachedAt)}</div></div></div>}
-                    {selectedJob.jobCompletedAt && <div className="tj-timeline-row"><span className="tj-timeline-dot completed" /><div><div className="tj-timeline-label">Job Completed</div><div className="tj-timeline-time">{fmtDT(selectedJob.jobCompletedAt)}</div></div></div>}
+                    {selectedJob.reachedAt && <div className="tj-timeline-row"><span className="tj-timeline-dot reached" /><div><div className="tj-timeline-label">Technician Reached</div><div className="tj-timeline-time">{fmtDT(selectedJob.reachedAt)}</div><TimelineDistance meters={selectedJob.reachedStatus?.distanceMeters} /></div></div>}
+                    {selectedJob.jobCompletedAt && <div className="tj-timeline-row"><span className="tj-timeline-dot completed" /><div><div className="tj-timeline-label">Job Completed</div><div className="tj-timeline-time">{fmtDT(selectedJob.jobCompletedAt)}</div><TimelineDistance meters={selectedJob.completedStatus?.distanceMeters} /></div></div>}
                     {selectedJob.jobDurationMinutes != null && <div className="tj-timeline-row"><span className="tj-timeline-dot duration" /><div><div className="tj-timeline-label">Total Duration</div><div className="tj-timeline-time tj-duration-value">{formatDuration(selectedJob.jobDurationMinutes)}</div></div></div>}
                   </div>
                 </div>
@@ -1167,7 +1125,7 @@ const TechnicianJobs = () => {
                 <div className="tj-overview-card-title">Admin actions</div>
                 <button className="tj-admin-action-link" onClick={() => { setShowViewPanel(false); openRescheduleModal(selectedJob); }}><FaRedoAlt style={{ marginRight: 8 }} />Reschedule</button>
                 <button className="tj-admin-action-link" onClick={() => { setShowViewPanel(false); openEditModal(selectedJob); }}><FaEdit style={{ marginRight: 8 }} />Edit job</button>
-                {selectedJob.status === 'completed' && <button className="tj-admin-action-link" onClick={() => openPayModal(selectedJob)}><FaWallet style={{ marginRight: 8 }} />Pay wallet</button>}
+                {selectedJob.status === 'checkout' && <button className="tj-admin-action-link" onClick={() => openPayModal(selectedJob)}><FaWallet style={{ marginRight: 8 }} />Approve payment</button>}
                 <button className="tj-admin-action-link danger" onClick={() => handleDelete(selectedJob._id)}><FaTrash style={{ marginRight: 8 }} />Cancel job</button>
               </div>
 
@@ -1188,7 +1146,7 @@ const TechnicianJobs = () => {
                 <div className="tj-overview-card">
                   <div className="tj-overview-card-title" style={{ color: '#A5732F' }}>⚡ Admin actions</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 4 }}>
-                    <button className="tj-admin-action-link" onClick={() => { setShowViewPanel(false); setJobRequestsModal({ show: true, job: selectedJob }); }}>
+                    <button className="tj-admin-action-link" disabled={selectedJob.status !== 'open' || !can('technician_jobs', 'write')} onClick={() => { setShowViewPanel(false); setInvitationJob(selectedJob); }}>
                       <FaUserCheck style={{ marginRight: 8, color: '#A5732F' }} />Assign technician
                     </button>
                     <button className="tj-admin-action-link" onClick={() => { setShowViewPanel(false); openRescheduleModal(selectedJob); }}>
@@ -1197,9 +1155,9 @@ const TechnicianJobs = () => {
                     <button className="tj-admin-action-link" onClick={() => { setShowViewPanel(false); openEditModal(selectedJob); }}>
                       <FaEdit style={{ marginRight: 8, color: '#A5732F' }} />Edit job
                     </button>
-                    {selectedJob.status === 'completed' && (
+                    {selectedJob.status === 'checkout' && (
                       <button className="tj-admin-action-link" onClick={() => openPayModal(selectedJob)}>
-                        <FaWallet style={{ marginRight: 8, color: '#16a34a' }} />Pay wallet
+                        <FaWallet style={{ marginRight: 8, color: '#16a34a' }} />Approve payment
                       </button>
                     )}
                     <button className="tj-admin-action-link danger" onClick={() => handleDelete(selectedJob._id)}>
@@ -1218,9 +1176,9 @@ const TechnicianJobs = () => {
                         <span>Tech <span style={{ color: '#A5732F', fontWeight: 600 }}>{selectedJob.assignedTechnician.name}</span> assigned</span>
                       </div>
                     )}
-                    {selectedJob.reachedAt && <div className="tj-stl-row"><span className="tj-stl-dot reached" />Arrived<span className="tj-stl-time">{fmtDT(selectedJob.reachedAt)}</span></div>}
+                    {selectedJob.reachedAt && <div className="tj-stl-row"><span className="tj-stl-dot reached" />Arrived<span className="tj-stl-time">{fmtDT(selectedJob.reachedAt)}<TimelineDistance meters={selectedJob.reachedStatus?.distanceMeters} /></span></div>}
                     {selectedJob.jobStartedAt && <div className="tj-stl-row"><span className="tj-stl-dot inprogress" />Service started<span className="tj-stl-time">{fmtDT(selectedJob.jobStartedAt)}</span></div>}
-                    {selectedJob.jobCompletedAt && <div className="tj-stl-row"><span className="tj-stl-dot completed" />Completed<span className="tj-stl-time">{fmtDT(selectedJob.jobCompletedAt)}</span></div>}
+                    {selectedJob.jobCompletedAt && <div className="tj-stl-row"><span className="tj-stl-dot completed" />Completed<span className="tj-stl-time">{fmtDT(selectedJob.jobCompletedAt)}<TimelineDistance meters={selectedJob.completedStatus?.distanceMeters} /></span></div>}
                     {!selectedJob.reachedAt && !selectedJob.jobCompletedAt && (
                       <>
                         <div className="tj-stl-row muted"><span className="tj-stl-dot muted" />On the Way<span className="tj-stl-note">NA</span></div>
@@ -1329,8 +1287,9 @@ const TechnicianJobs = () => {
                                 <button className="tj-send-btn" disabled={!adminReply.trim() || sending} onClick={() => handleSendMessage(req._id)}>{sending ? <span className="spinner-border spinner-border-sm" /> : <FaPaperPlane />}</button>
                               </div>
                               <div className="tj-chat-action-row">
-                                <button className="tj-chat-btn accept" disabled={decidingId === req._id} onClick={() => handleDecision(req._id, 'accepted')}>{decidingId === req._id ? <span className="spinner-border spinner-border-sm me-1" /> : '✓ '}Accept Request</button>
-                                <button className="tj-chat-btn reject" disabled={decidingId === req._id} onClick={() => handleDecision(req._id, 'rejected')}>{decidingId === req._id ? <span className="spinner-border spinner-border-sm me-1" /> : '✕ '}Reject Request</button>
+                                {req.initiatedBy === 'admin' && <span className="text-muted">Waiting for the invited technician to accept or reject.</span>}
+                                <button className="tj-chat-btn accept" disabled={decidingId === req._id || req.initiatedBy === 'admin'} onClick={() => handleDecision(req._id, 'accepted')}>{decidingId === req._id ? <span className="spinner-border spinner-border-sm me-1" /> : '✓ '}Accept Request</button>
+                                <button className="tj-chat-btn reject" disabled={decidingId === req._id || req.initiatedBy === 'admin'} onClick={() => handleDecision(req._id, 'rejected')}>{decidingId === req._id ? <span className="spinner-border spinner-border-sm me-1" /> : '✕ '}Reject Request</button>
                               </div>
                             </>
                           ) : <div className="tj-chat-decided-note">This request has already been <strong>{req.status}</strong>. No further action needed.</div>}

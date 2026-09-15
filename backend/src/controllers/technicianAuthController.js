@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const otpService = require('../utils/otpService');
-const { sendEmail } = require('../utils/emailService');
+const { normalizePhone, phoneQuery } = require('../utils/phone');
 const { uploadFile, deleteFile } = require('../utils/s3Upload');
 
 const pendingRegistrations = new Map();
@@ -36,6 +36,7 @@ const signRefreshToken = (id, role) => {
 };
 
 const sendTokenResponse = (user, statusCode, res) => {
+    if (['invited', 'suspended', 'blocked'].includes(user.accountStatus)) return res.status(403).json({ success: false, message: 'Account is pending activation or suspended. Please contact support.' });
     const accessToken = signAccessToken(user._id, user.role);
     const refreshToken = signRefreshToken(user._id, user.role);
 
@@ -53,165 +54,79 @@ const sendTokenResponse = (user, statusCode, res) => {
     });
 };
 
-const sendEmailOTP = async (email, otp) => {
-  await sendEmail({
-    to: email,
-    subject: '1APP — Your Signup OTP',
-    html: `<div style="font-family:sans-serif;max-width:480px;margin:auto;padding:32px;border-radius:12px;border:1px solid #eee;">
-      <h2 style="color:#1a1208;">Your OTP Code</h2>
-      <p style="color:#555;">Use the code below to verify your email for 1APP technician signup. Valid for <strong>10 minutes</strong>.</p>
-      <div style="text-align:center;margin:28px 0;">
-        <span style="display:inline-block;background:#A5732F;color:#fff;font-size:32px;font-weight:800;letter-spacing:10px;padding:16px 32px;border-radius:10px;font-family:monospace;">${otp}</span>
-      </div>
-      <p style="color:#aaa;font-size:12px;">Do not share this OTP with anyone.</p>
-    </div>`,
-  });
-};
-
-// ── STEP 1: Send OTP ──────────────────────────────────────────────────────────
-// POST /api/technician-auth/send-otp
-// Body: { "email": "test@test.com" }  OR  { "phone": "+911111111111" }
+// Public registration always verifies the mobile number. No request flag can bypass it.
 exports.sendOTP = async (req, res, next) => {
   try {
-    const { email, phone } = req.body;
-
-    if (!email && !phone) {
-      return res.status(400).json({ success: false, message: 'Please provide an email or phone number' });
-    }
-    if (email && phone) {
-      return res.status(400).json({ success: false, message: 'Provide either email or phone, not both' });
-    }
-
-    const type = email ? 'email' : 'phone';
-    const key  = email ? email.toLowerCase() : phone;
-
-    const existing = await User.findOne(email ? { email: key } : { phone });
-    if (existing) {
-      return res.status(400).json({ success: false, message: `This ${type} is already registered` });
-    }
-
-    const otp     = Math.floor(100000 + Math.random() * 900000).toString();
-    const expires = Date.now() + TTL;
-    pendingRegistrations.set(key, { type, otp, verified: false, expires });
-
-    if (type === 'email') {
-      await sendEmailOTP(key, otp);
-    } else {
-      await otpService.sendOTP(phone);
-      const stored = pendingRegistrations.get(key);
-      stored.otp = (otpService.getLastOTP ? otpService.getLastOTP(phone) : null) || otp;
-      pendingRegistrations.set(key, stored);
-    }
-
-    console.log(`\n--- OTP (${type}) ---\nTo: ${key}\nOTP: ${otp}\n--------------------\n`);
-
-    res.status(200).json({
-      success: true,
-      message: `OTP sent to your ${type}`,
-      type,
-      ...(process.env.NODE_ENV !== 'production' && { devOtp: otp }),
-    });
-  } catch (error) {
-    next(error);
-  }
+    const phone = normalizePhone(req.body.phone);
+    if (await User.findOne(phoneQuery(phone))) return res.status(409).json({ success: false, message: 'This number is already registered. Use account activation if an admin added you.' });
+    pendingRegistrations.delete(phone);
+    await otpService.sendOTP(phone, 'technician-signup');
+    res.json({ success: true, message: 'OTP sent to your mobile number.', type: 'phone' });
+  } catch (error) { next(error); }
 };
 
-// ── STEP 2: Verify OTP ────────────────────────────────────────────────────────
-// POST /api/technician-auth/verify-otp
-// Body: { "email": "test@test.com", "otp": "123456" }  OR  { "phone": "+91...", "otp": "123456" }
 exports.verifyOTP = async (req, res, next) => {
   try {
-    const { email, phone, otp } = req.body;
-
-    if ((!email && !phone) || !otp) {
-      return res.status(400).json({ success: false, message: 'Email or phone, and OTP are required' });
-    }
-
-    const key     = email ? email.toLowerCase() : phone;
-    const pending = pendingRegistrations.get(key);
-
-    if (!pending) {
-      return res.status(400).json({ success: false, message: 'No pending registration found. Please request OTP again.' });
-    }
-
-    if (Date.now() > pending.expires) {
-      pendingRegistrations.delete(key);
-      return res.status(400).json({ success: false, message: 'OTP expired. Please request a new one.' });
-    }
-
-    const isValid = otp === '999999' || pending.otp === otp;
-    if (!isValid) {
-      return res.status(400).json({ success: false, message: 'Invalid OTP. Please try again.' });
-    }
-
-    pending.verified = true;
-    pending.expires  = Date.now() + TTL;
-    pendingRegistrations.set(key, pending);
-
-    res.status(200).json({
-      success: true,
-      message: 'OTP verified successfully',
-      type: pending.type,
-    });
-  } catch (error) {
-    next(error);
-  }
+    const phone = normalizePhone(req.body.phone);
+    if (!otpService.verifyOTP(phone, req.body.otp, 'technician-signup')) return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
+    for (const [key, value] of pendingRegistrations) if (value.expires < Date.now()) pendingRegistrations.delete(key);
+    pendingRegistrations.set(phone, { verified: true, expires: Date.now() + TTL });
+    res.json({ success: true, message: 'Mobile number verified.', type: 'phone' });
+  } catch (error) { next(error); }
 };
 
-// ── STEP 3: Complete Signup ───────────────────────────────────────────────────
-// POST /api/technician-auth/complete-signup
-// Body (signed up with email): { "email": "test@test.com", "phone": "+91...", "name": "...", "password": "...", "confirmPassword": "..." }
-// Body (signed up with phone): { "phone": "+91...", "email": "test@test.com", "name": "...", "password": "...", "confirmPassword": "..." }
 exports.completeSignup = async (req, res, next) => {
   try {
-    const { email, phone, name, password, confirmPassword } = req.body;
-
-    if (!email || !phone || !name || !password || !confirmPassword) {
-      return res.status(400).json({ success: false, message: 'All fields are required' });
-    }
-
-    if (password !== confirmPassword) {
-      return res.status(400).json({ success: false, message: 'Passwords do not match' });
-    }
-
-    const emailKey = email.toLowerCase();
-
-    // Find which one was OTP-verified (email key or phone key)
-    const pending = pendingRegistrations.get(emailKey) || pendingRegistrations.get(phone);
-    const key     = pendingRegistrations.has(emailKey) ? emailKey : phone;
-
-    if (!pending || !pending.verified) {
-      return res.status(400).json({ success: false, message: 'OTP not verified. Please verify OTP first.' });
-    }
-
-    if (Date.now() > pending.expires) {
-      pendingRegistrations.delete(key);
-      return res.status(400).json({ success: false, message: 'Session expired. Please start again.' });
-    }
-
-    const [emailExists, phoneExists] = await Promise.all([
-      User.findOne({ email: emailKey }),
-      User.findOne({ phone }),
-    ]);
-    if (emailExists) return res.status(400).json({ success: false, message: 'Email is already registered' });
-    if (phoneExists) return res.status(400).json({ success: false, message: 'Phone number is already registered' });
-
-    const technician = await User.create({
-      name,
-      email: emailKey,
-      phone,
-      password,
-      role: 'technician',
-      isPhoneVerified: pending.type === 'phone',
-      isEmailVerified: pending.type === 'email',
-      profileCompleted: false,
-    });
-
-    pendingRegistrations.delete(key);
+    const phone = normalizePhone(req.body.phone);
+    const { password, confirmPassword } = req.body;
+    const name = String(req.body.name || '').trim();
+    const email = String(req.body.email || '').trim().toLowerCase();
+    if (!name || typeof password !== 'string' || password.length < 8 || password !== confirmPassword) return res.status(400).json({ success: false, message: 'Name and matching passwords of at least 8 characters are required.' });
+    const pending = pendingRegistrations.get(phone);
+    if (!pending?.verified || pending.expires < Date.now()) return res.status(400).json({ success: false, message: 'Verify this mobile number before creating your account.' });
+    const alternatives = [phoneQuery(phone), ...(email ? [{ email }] : [])];
+    if (await User.findOne({ $or: alternatives })) return res.status(409).json({ success: false, message: 'Mobile number or email already registered.' });
+    const technician = new User({ name, phone, ...(email && { email }), password, role: 'technician', isPhoneVerified: true, isEmailVerified: false, profileCompleted: false });
+    await technician.validate();
+    pendingRegistrations.delete(phone);
+    await technician.save();
     sendTokenResponse(technician, 201, res);
-  } catch (error) {
-    next(error);
-  }
+  } catch (error) { next(error); }
+};
+
+// Invitations lead here. Existing admin-created accounts retain their saved mobile number.
+exports.sendActivationOTP = async (req, res, next) => {
+  try {
+    const phone = normalizePhone(req.body.phone);
+    const user = await User.findOne(phoneQuery(phone));
+    if (user && (user.role !== 'technician' || user.accountStatus !== 'invited')) return res.status(409).json({ success: false, message: 'This account cannot be activated. Please sign in or contact support.' });
+    await otpService.sendOTP(user?.phone || phone, 'technician-activation');
+    res.json({ success: true, message: 'OTP sent to your mobile number.' });
+  } catch (error) { next(error); }
+};
+
+exports.activateTechnician = async (req, res, next) => {
+  try {
+    const phone = normalizePhone(req.body.phone);
+    const { password, confirmPassword } = req.body;
+    if (typeof password !== 'string' || password.length < 8 || password !== confirmPassword) return res.status(400).json({ success: false, message: 'Matching passwords of at least 8 characters are required.' });
+    let user = await User.findOne(phoneQuery(phone));
+    if (user && (user.role !== 'technician' || user.accountStatus !== 'invited')) return res.status(409).json({ success: false, message: 'This account cannot be activated.' });
+    if (!user) {
+      const name = String(req.body.name || '').trim();
+      const email = String(req.body.email || '').trim().toLowerCase();
+      if (!name) return res.status(400).json({ success: false, message: 'Full name is required.' });
+      if (email && await User.findOne({ email })) return res.status(409).json({ success: false, message: 'Email is already registered.' });
+      user = new User({ name, phone, ...(email && { email }), role: 'technician', password });
+    }
+    user.password = password;
+    await user.validate();
+    if (!otpService.verifyOTP(user.phone, req.body.otp, 'technician-activation')) return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
+    user.accountStatus = 'active';
+    user.isPhoneVerified = true;
+    await user.save();
+    res.json({ success: true, message: 'Your technician account is activated. You can now sign in.' });
+  } catch (error) { next(error); }
 };
 
 // ── Login ─────────────────────────────────────────────────────────────────────
@@ -226,7 +141,7 @@ exports.login = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Please provide email or phone, and password' });
     }
 
-    const query = email ? { email: email.toLowerCase() } : { phone };
+    const query = email ? { email: String(email).trim().toLowerCase() } : phoneQuery(normalizePhone(phone));
     const technician = await User.findOne({ ...query, role: 'technician' }).select('+password');
 
     if (!technician) {
@@ -572,6 +487,8 @@ exports.refreshToken = async (req, res, next) => {
                 message: 'Technician account not found'
             });
         }
+
+        if (['invited', 'suspended', 'blocked'].includes(technician.accountStatus)) return res.status(403).json({ success: false, message: 'Account is pending activation or suspended.' });
 
         // Generate new access token
         const accessToken = signAccessToken(

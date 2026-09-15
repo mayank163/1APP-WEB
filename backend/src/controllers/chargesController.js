@@ -20,14 +20,12 @@
  *   PATCH  /api/admin/charges/:chargeId/review                        → reviewCharge
  *   POST   /api/admin/technician-requests/:requestId/invoice          → generateInvoice
  *   GET    /api/admin/technician-requests/:requestId/invoice          → getInvoice
- *   PATCH  /api/admin/technician-requests/:requestId/invoice/pay      → markInvoicePaid
  */
 
 const AdditionalCharge     = require('../models/AdditionalCharge');
 const TechnicianJobRequest = require('../models/TechnicianJobRequest');
 const TechnicianJob        = require('../models/TechnicianJob');
 const JobInvoice           = require('../models/JobInvoice');
-const User                 = require('../models/User');
 
 const { getIO } = require('../utils/socketInstance');
 
@@ -990,71 +988,3 @@ exports.getInvoice = async (req, res, next) => {
   }
 };
 
-// =============================================================================
-// ADMIN — Mark invoice as paid → credit technician wallet
-// PATCH /api/admin/technician-requests/:requestId/invoice/pay
-// Body: { note? }
-// =============================================================================
-exports.markInvoicePaid = async (req, res, next) => {
-  try {
-    const { requestId } = req.params;
-    const note          = req.body?.note;
-
-    const request = await TechnicianJobRequest.findById(requestId).populate('job');
-    if (!request) return res.status(404).json({ success: false, message: 'Request not found' });
-
-    if (!request.invoice) {
-      return res.status(400).json({ success: false, message: 'No invoice found — generate invoice first' });
-    }
-
-    const invoice = await JobInvoice.findById(request.invoice);
-    if (!invoice) return res.status(404).json({ success: false, message: 'Invoice not found' });
-
-    if (invoice.status === 'paid') {
-      return res.status(400).json({ success: false, message: 'Invoice already marked as paid' });
-    }
-
-    const amount = invoice.totalAmount;
-    const now    = new Date();
-
-    invoice.status = 'paid';
-    invoice.paidAt = now;
-    await invoice.save();
-
-    request.paymentStatus = 'paid';
-    request.amountEarned  = amount;
-    request.completedAt   = now;
-    await request.save();
-
-    // Credit technician wallet
-    const technician = await User.findById(request.technician);
-    if (technician) {
-      technician.totalEarnings = (technician.totalEarnings || 0) + amount;
-      technician.totalJobsDone = (technician.totalJobsDone || 0) + 1;
-      await technician.save();
-    }
-
-    // Update job to completed
-    const job = request.job;
-    if (job) {
-      await TechnicianJob.findByIdAndUpdate(job._id || job, {
-        status:      'completed',
-        finalPrice:  amount,
-        completedAt: now,
-      });
-    }
-
-    const payNote = note || `Invoice ${invoice.invoiceNumber} paid. ₹${amount} credited to technician wallet.`;
-
-    emitToRequest(requestId, 'invoice:paid', { requestId, amount, invoiceNumber: invoice.invoiceNumber });
-    emitToAdmin('invoice:paid', { requestId, amount, invoiceNumber: invoice.invoiceNumber });
-
-    return res.status(200).json({
-      success: true,
-      message: payNote,
-      data: { invoice, amountCredited: amount },
-    });
-  } catch (err) {
-    next(err);
-  }
-};

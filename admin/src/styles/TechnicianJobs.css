@@ -439,6 +439,10 @@
   animation: tj-fade-in 0.18s ease;
 }
 
+.tj-status-modal-backdrop {
+  z-index: 1080;
+}
+
 @keyframes tj-fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -2242,7 +2246,7 @@
 }
 .tj-stat-active  .tj-stat-top-bar { background: #16a34a; }
 .tj-stat-unassigned .tj-stat-top-bar { background: #2563eb; }
-.tj-stat-delayed .tj-stat-top-bar { background: #dc3545; }
+.tj-stat-checkout .tj-stat-top-bar { background: #A5732F; }
 .tj-stat-completion .tj-stat-top-bar { background: #A5732F; }
 
 .tj-stat-inner {
@@ -2977,4 +2981,15 @@
   .tj-reschedule-right {
     width: 100%;
   }
+}
+
+/* Recorded proximity at arrival/completion, always expressed in meters. */
+.tj-timeline-distance {
+  display: block;
+  margin-top: 4px;
+  color: #795629;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
