@@ -30,6 +30,7 @@ router.get('/requests/:requestId/invoice',   protect, restrictTo('technician'), 
 
 // ── Admin status update on request ───────────────────────────────────────────
 router.patch('/requests/:requestId/status',  protect, restrictTo('admin'),      technicianController.updateRequestStatus);
+router.patch('/requests/:requestId/respond', protect, restrictTo('technician'), technicianController.respondToRequestCounter);
 
 // ── Dashboard / metrics ───────────────────────────────────────────────────────
 router.get('/dashboard', protect, restrictTo('technician'), technicianController.getTechnicianDashboard);

@@ -122,7 +122,9 @@ const technicianJobRequestSchema = new mongoose.Schema(
     },
     initiatedBy: { type: String, enum: ['technician', 'admin'], default: 'technician' },
     invitedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
-    offeredPay: require('./TechnicianJob').schema.obj.pay,
+    // Keep the pay snapshot flexible for older invitations and the current
+    // job model, which stores the base amount in `pay`.
+    offeredPay: { type: mongoose.Schema.Types.Mixed, default: null },
     respondedAt: Date,
     note: {
       type: String,
@@ -134,6 +136,9 @@ const technicianJobRequestSchema = new mongoose.Schema(
       enum: ['pending', 'accepted', 'rejected', 'counter-offer'],
       default: 'pending',
     },
+    // Admin has approved the request; assignment waits for charge negotiation
+    // to finish when the technician submitted additional charges.
+    adminApproved: { type: Boolean, default: false },
     adminMessage: {
       type: String,
       default: '',

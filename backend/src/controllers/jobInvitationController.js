@@ -7,6 +7,8 @@ const error = (message, statusCode = 409) => Object.assign(new Error(message), {
 const activeTechnician = user => user?.role === 'technician' && !['invited', 'suspended', 'blocked'].includes(user.accountStatus);
 const openJob = job => job && job.status === 'open' && !job.assignedTechnician?._id && !job.assignedRequest;
 const baseAmount = (pay = {}) => {
+  if (typeof pay === 'number') return pay;
+  if (!pay || typeof pay !== 'object') return 0;
   switch (pay.type) {
     case 'hourly': return (pay.hourlyRate || 0) * (pay.maxHours || 0);
     case 'perDevice': return (pay.perDeviceRate || 0) * (pay.maxDevices || 0);
@@ -47,7 +49,9 @@ exports.sendInvitation = async (req, res, next) => {
       if (!available.matchedCount) throw error('This job is no longer available.');
       [invitation] = await Request.create([{
         job: jobId, technician: technicianId, initiatedBy: 'admin', invitedBy: req.user._id,
-        status: 'pending', offeredPay: job.pay, adminMessage: message.trim(),
+        status: 'pending',
+        offeredPay: job.pay || { type: 'fixed', fixedAmount: 0 },
+        adminMessage: message.trim(),
         conversation: [{ sender: 'admin', message: message.trim() || 'You are invited to this job. Please accept or reject the invitation.' }],
       }], { session });
     });

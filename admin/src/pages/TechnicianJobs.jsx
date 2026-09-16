@@ -507,6 +507,7 @@ const TechnicianJobs = () => {
   const [jobRequestsModal, setJobRequestsModal] = useState({ show: false, job: null });
   const [activeConvReq, setActiveConvReq]       = useState(null);
   const [adminReply, setAdminReply]             = useState('');
+  const [adminCounterAmount, setAdminCounterAmount] = useState('');
   const [decidingId, setDecidingId]             = useState(null);
   const [sending, setSending]                   = useState(false);
   const [liveConversation, setLiveConversation] = useState([]);
@@ -546,6 +547,7 @@ const TechnicianJobs = () => {
     const handleJobUpdated = ({ job }) => { setJobs(p => p.map(j => j._id === job._id ? job : j)); setSelectedJob(p => p?._id === job._id ? job : p); };
     const handleJobDeleted = ({ jobId }) => { setJobs(p => p.filter(j => j._id !== jobId)); setSelectedJob(p => p?._id === jobId ? null : p); setShowViewPanel(p => p && selectedJob?._id === jobId ? false : p); };
     const handleRequestUpdated = ({ request }) => setRequests(p => p.some(r => r._id === request._id) ? p.map(r => r._id === request._id ? request : r) : [request, ...p]);
+    const handleRequestAssigned = ({ request }) => { if (request) setRequests(p => p.map(r => r._id === request._id ? request : r)); loadData(); };
     const handleChargesSubmitted = ({ requestId }) => { if (activeReqIdRef.current === requestId) setLiveChargesStatus('pending'); setRequests(p => p.map(r => r._id === requestId ? { ...r, chargesStatus: 'pending' } : r)); loadData(); };
     const handleChargeReviewed = ({ requestId, requestChargesStatus }) => { if (activeReqIdRef.current === requestId && requestChargesStatus) setLiveChargesStatus(requestChargesStatus); loadData(); };
     const handleChargeResponded = ({ requestId }) => { if (activeReqIdRef.current === requestId) loadData(); };
@@ -559,6 +561,7 @@ const TechnicianJobs = () => {
     socket.on('job:availability', loadData);
     socket.on('job:created', handleJobCreated); socket.on('job:updated', handleJobUpdated); socket.on('job:deleted', handleJobDeleted);
     socket.on('request:updated', handleRequestUpdated); socket.on('charges:submitted', handleChargesSubmitted);
+    socket.on('request:assigned', handleRequestAssigned);
     socket.on('charge:reviewed', handleChargeReviewed); socket.on('charge:responded', handleChargeResponded);
     socket.on('invoice:generated', handleInvoiceGenerated); socket.on('invoice:paid', handleInvoicePaid);
     socket.on('job:task:completed', handleTaskCompleted);
@@ -567,6 +570,7 @@ const TechnicianJobs = () => {
       socket.off('job:availability', loadData);
       socket.off('job:created', handleJobCreated); socket.off('job:updated', handleJobUpdated); socket.off('job:deleted', handleJobDeleted);
       socket.off('request:updated', handleRequestUpdated); socket.off('charges:submitted', handleChargesSubmitted);
+      socket.off('request:assigned', handleRequestAssigned);
       socket.off('charge:reviewed', handleChargeReviewed); socket.off('charge:responded', handleChargeResponded);
       socket.off('invoice:generated', handleInvoiceGenerated); socket.off('invoice:paid', handleInvoicePaid);
       socket.off('job:task:completed', handleTaskCompleted);
@@ -703,9 +707,10 @@ const TechnicianJobs = () => {
   const handlePayWallet = async (jobId, discount, note) => { setPaying(true); try { const res = await adminApi.payTechnician(jobId, { discount, note }); toast.success(res.message || 'Payment approved!'); setShowPayModal(false); setPayModalJob(null); await loadData(); if (selectedJob?._id === jobId && res.data?.job) setSelectedJob(res.data.job); } catch (err) { toast.error(err.response?.data?.message || 'Payment failed'); } finally { setPaying(false); } };
 
   // ── Socket room helpers ───────────────────────────────────────────────────────
-  const openConversation = (req) => { setActiveConvReq(req); setAdminReply(''); setLiveConversation(req.conversation || []); setConvTab('chat'); setLiveChargesStatus(req.chargesStatus || 'none'); activeReqIdRef.current = req._id; socket.emit('request:join', req._id); };
-  const closeConversation = () => { if (activeReqIdRef.current) { socket.emit('request:leave', activeReqIdRef.current); activeReqIdRef.current = null; } setActiveConvReq(null); setAdminReply(''); setLiveConversation([]); setConvTab('chat'); setLiveChargesStatus('none'); };
+  const openConversation = (req) => { setActiveConvReq(req); setAdminReply(''); setAdminCounterAmount(''); setLiveConversation(req.conversation || []); setConvTab('chat'); setLiveChargesStatus(req.chargesStatus || 'none'); activeReqIdRef.current = req._id; socket.emit('request:join', req._id); };
+  const closeConversation = () => { if (activeReqIdRef.current) { socket.emit('request:leave', activeReqIdRef.current); activeReqIdRef.current = null; } setActiveConvReq(null); setAdminReply(''); setAdminCounterAmount(''); setLiveConversation([]); setConvTab('chat'); setLiveChargesStatus('none'); };
   const handleDecision = async (requestId, status) => { setDecidingId(requestId); try { await adminApi.updateTechnicianRequest(requestId, { status, adminMessage: adminReply }); toast.success(status === 'accepted' ? 'Request accepted!' : 'Request rejected.'); setAdminReply(''); await loadData(); } catch (err) { toast.error(err.response?.data?.message || 'Action failed'); } finally { setDecidingId(null); } };
+  const handleCounter = async requestId => { if (!adminCounterAmount || Number(adminCounterAmount) <= 0) return toast.error('Enter a valid counter-offer amount.'); setDecidingId(requestId); try { await adminApi.updateTechnicianRequest(requestId, { status: 'counter-offer', counterOffer: Number(adminCounterAmount), adminMessage: adminReply }); toast.success('Counter-offer sent to technician.'); setAdminCounterAmount(''); setAdminReply(''); await loadData(); } catch (err) { toast.error(err.response?.data?.message || 'Counter-offer failed'); } finally { setDecidingId(null); } };
   const handleSendMessage = async (requestId) => { if (!adminReply.trim()) return; setSending(true); try { await adminApi.sendTechnicianRequestMessage(requestId, adminReply.trim()); setAdminReply(''); } catch (err) { toast.error(err.response?.data?.message || 'Failed to send'); } finally { setSending(false); } };
 
   // ── Filter option lists ───────────────────────────────────────────────────────
@@ -1249,6 +1254,7 @@ const TechnicianJobs = () => {
                 const techPhone = req.technician?.phone || '';
                 const isDecided = req.status === 'accepted' || req.status === 'rejected';
                 const hasPendingCharges = liveChargesStatus === 'pending' || liveChargesStatus === 'reviewing';
+                const waitingForAssignment = req.status === 'accepted' && req.adminApproved && hasPendingCharges && !req.job?.assignedTechnician;
                 return (
                   <div className="tj-chat-shell">
                     <div className="tj-chat-info-bar">
@@ -1256,6 +1262,7 @@ const TechnicianJobs = () => {
                       <div><div className="fw-semibold" style={{ fontSize: '0.9rem' }}>{techName}</div>{techPhone && <div className="text-muted" style={{ fontSize: '0.75rem' }}>{techPhone}</div>}</div>
                       {req.bidAmount && <div className="tj-chat-bid ms-auto"><span className="tj-chat-bid-label">Bid</span><span className="tj-chat-bid-value">${Number(req.bidAmount).toLocaleString()}</span></div>}
                       {liveChargesStatus !== 'none' && <div className="ms-auto"><ChargesBadge status={liveChargesStatus} /></div>}
+                      {waitingForAssignment && <span className="ms-auto text-warning small fw-semibold">Approved — waiting for charge resolution</span>}
                     </div>
                     {req.status === 'accepted' && (
                       <div className="tj-charges-tabs">
@@ -1266,7 +1273,7 @@ const TechnicianJobs = () => {
                     )}
                     {convTab === 'chat' && (
                       <>
-                        {hasPendingCharges && <div className="tj-charges-alert"><FaReceipt />Technician has submitted additional charges awaiting your review<button className="btn btn-sm ms-auto" style={{ background: 'rgba(180,83,9,0.12)', color: '#b45309', fontWeight: 700, fontSize: '0.75rem', padding: '0.2rem 0.6rem', borderRadius: 6 }} onClick={() => setConvTab('charges')}>Review Charges →</button></div>}
+                        {hasPendingCharges && <div className="tj-charges-alert"><FaReceipt />{waitingForAssignment ? 'Request approved; resolve all charges before assignment.' : 'Technician has submitted additional charges awaiting your review.'}<button className="btn btn-sm ms-auto" style={{ background: 'rgba(180,83,9,0.12)', color: '#b45309', fontWeight: 700, fontSize: '0.75rem', padding: '0.2rem 0.6rem', borderRadius: 6 }} onClick={() => setConvTab('charges')}>Review Charges →</button></div>}
                         <div className="tj-chat-messages" ref={(el) => { if (el) el.scrollTop = el.scrollHeight; }}>
                           <div className="tj-chat-row tech">
                             <div className="tj-tech-avatar" style={{ width: 32, height: 32, fontSize: '0.8rem', flexShrink: 0, alignSelf: 'flex-end' }}>{techName.charAt(0).toUpperCase()}</div>
@@ -1277,7 +1284,7 @@ const TechnicianJobs = () => {
                           ) : (
                             <div key={i} className="tj-chat-row tech"><div className="tj-tech-avatar" style={{ width: 32, height: 32, fontSize: '0.8rem', flexShrink: 0, alignSelf: 'flex-end' }}>{techName.charAt(0).toUpperCase()}</div><div className="tj-bubble tech"><p className="mb-0">{msg.message}</p>{msg.createdAt && <div className="tj-bubble-time">{fmtDT(msg.createdAt)}</div>}</div></div>
                           ))}
-                          {isDecided && <div className="tj-chat-decision-bar"><span className={`badge ${req.status === 'accepted' ? 'text-bg-success' : 'text-bg-danger'}`} style={{ fontSize: '0.8rem', padding: '0.45em 1em' }}>{req.status === 'accepted' ? '✓ Request Accepted' : '✕ Request Rejected'}</span></div>}
+                          {isDecided && <div className="tj-chat-decision-bar"><span className={`badge ${req.status === 'accepted' ? 'text-bg-success' : 'text-bg-danger'}`} style={{ fontSize: '0.8rem', padding: '0.45em 1em' }}>{req.status === 'accepted' ? (waitingForAssignment ? '✓ Approved — assignment pending charges' : '✓ Job Assigned') : '✕ Request Rejected'}</span></div>}
                         </div>
                         <div className="tj-chat-footer">
                           {!isDecided ? (
@@ -1289,6 +1296,8 @@ const TechnicianJobs = () => {
                               <div className="tj-chat-action-row">
                                 {req.initiatedBy === 'admin' && <span className="text-muted">Waiting for the invited technician to accept or reject.</span>}
                                 <button className="tj-chat-btn accept" disabled={decidingId === req._id || req.initiatedBy === 'admin'} onClick={() => handleDecision(req._id, 'accepted')}>{decidingId === req._id ? <span className="spinner-border spinner-border-sm me-1" /> : '✓ '}Accept Request</button>
+                                <input type="number" min="1" placeholder="Counter amount" value={adminCounterAmount} onChange={e => setAdminCounterAmount(e.target.value)} style={{ width: 120, border: '1px solid #ced4da', borderRadius: 6, padding: '6px 8px' }} disabled={req.initiatedBy === 'admin'} />
+                                <button className="tj-chat-btn" disabled={decidingId === req._id || req.initiatedBy === 'admin'} onClick={() => handleCounter(req._id)}>↔ Counter</button>
                                 <button className="tj-chat-btn reject" disabled={decidingId === req._id || req.initiatedBy === 'admin'} onClick={() => handleDecision(req._id, 'rejected')}>{decidingId === req._id ? <span className="spinner-border spinner-border-sm me-1" /> : '✕ '}Reject Request</button>
                               </div>
                             </>

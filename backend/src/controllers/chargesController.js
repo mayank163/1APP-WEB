@@ -28,6 +28,17 @@ const TechnicianJob        = require('../models/TechnicianJob');
 const JobInvoice           = require('../models/JobInvoice');
 
 const { getIO } = require('../utils/socketInstance');
+const { tryAssignApprovedRequest } = require('../services/technicianRequestWorkflow');
+
+const getPayAmount = (pay = {}) => {
+  if (pay.type === 'hourly') return (Number(pay.hourlyRate) || 0) * (Number(pay.maxHours) || 0);
+  if (pay.type === 'perDevice') return (Number(pay.perDeviceRate) || 0) * (Number(pay.maxDevices) || 0);
+  if (pay.type === 'blended') {
+    return (Number(pay.blendedFixedAmount) || 0) +
+      ((Number(pay.blendedHourlyRate) || 0) * (Number(pay.blendedMaxAddlHours) || 0));
+  }
+  return Number(pay.fixedAmount) || 0;
+};
 
 // ── Helpers: safe socket emitters ─────────────────────────────────────────────
 const emitToAdmin = (event, payload) => {
@@ -45,6 +56,14 @@ const emitToRequest = (requestId, event, payload) => {
     console.log(`[Socket] emitToRequest → room="request:${requestId}" event="${event}"`);
   } catch (e) {
     console.warn(`[Socket] emitToRequest failed for event "${event}":`, e.message);
+  }
+};
+
+const emitToTechnician = (technicianId, event, payload) => {
+  try {
+    if (technicianId) getIO().to(`technician:${technicianId}`).emit(event, payload);
+  } catch (e) {
+    console.warn(`[Socket] emitToTechnician failed for event "${event}":`, e.message);
   }
 };
 
@@ -178,13 +197,13 @@ const recalculateFinalAmount = async (request) => {
   const hasUnresolved = charges.some((c) => ['pending', 'countered'].includes(c.status));
   if (hasUnresolved) return null;
 
-  // Fixed charge = agreed counter offer OR original job budget
+  // Fixed charge = agreed counter offer OR the original amount in job.pay
   const job = request.job
     ? (request.job._id ? request.job : await TechnicianJob.findById(request.job))
     : await TechnicianJob.findById(request.job);
   const jobDoc = request.job?._id ? request.job : job;
 
-  const fixedCharge        = request.counterOffer > 0 ? request.counterOffer : (jobDoc?.budget || 0);
+  const fixedCharge        = request.counterOffer > 0 ? request.counterOffer : getPayAmount(jobDoc?.pay);
   const acceptedCharges    = charges.filter((c) => c.status === 'accepted');
   const additionalTotal    = acceptedCharges.reduce((sum, c) => sum + (c.agreedAmount || 0), 0);
   const total              = fixedCharge + additionalTotal;
@@ -292,6 +311,7 @@ exports.submitCharges = async (req, res, next) => {
     // Notify in real-time
     emitToAdmin('charges:submitted', { requestId, count: created.length, charges: created });
     emitToRequest(requestId, 'charges:submitted', { requestId, charges: created });
+    emitToTechnician(req.user._id, 'charges:submitted', { requestId, charges: created });
 
     return res.status(201).json({
       success: true,
@@ -423,6 +443,10 @@ exports.respondToCounter = async (req, res, next) => {
       }
     }
 
+    const assignment = request?.adminApproved
+      ? await tryAssignApprovedRequest(charge.request.toString())
+      : null;
+
     emitToAdmin('charge:responded', {
       chargeId,
       action,
@@ -436,6 +460,9 @@ exports.respondToCounter = async (req, res, next) => {
       amount:               action === 'counter' ? charge.technicianCounterAmount : charge.agreedAmount,
       requestChargesStatus: newChargesStatus,
     });
+    emitToTechnician(charge.technician, 'charge:responded', {
+      chargeId, action, requestId: charge.request, amount: action === 'counter' ? charge.technicianCounterAmount : charge.agreedAmount, requestChargesStatus: newChargesStatus,
+    });
 
     return res.status(200).json({
       success: true,
@@ -444,6 +471,7 @@ exports.respondToCounter = async (req, res, next) => {
         charge,
         requestChargesStatus: newChargesStatus,
         ...(finalAmountData && { finalJobAmount: finalAmountData.total }),
+        ...(assignment?.assigned && { assigned: true, job: assignment.job }),
       },
     });
   } catch (err) {
@@ -460,7 +488,7 @@ exports.getMyCharges = async (req, res, next) => {
     const { requestId } = req.params;
 
     const request = await TechnicianJobRequest.findById(requestId)
-      .populate('job', 'title location budget category')
+      .populate('job', 'title location pay category')
       .populate('invoice');
     if (!request) return res.status(404).json({ success: false, message: 'Request not found' });
 
@@ -544,7 +572,7 @@ exports.getMyRequestStatus = async (req, res, next) => {
     const { requestId } = req.params;
 
     const request = await TechnicianJobRequest.findById(requestId)
-      .populate('job', 'title location budget category status')
+      .populate('job', 'title location pay category status')
       .populate('invoice');
 
     if (!request) return res.status(404).json({ success: false, message: 'Request not found' });
@@ -835,8 +863,13 @@ exports.reviewCharge = async (req, res, next) => {
       }
     }
 
+    const assignment = request?.adminApproved
+      ? await tryAssignApprovedRequest(charge.request.toString())
+      : null;
+
     emitToRequest(charge.request.toString(), 'charge:reviewed', { chargeId, action, charge, requestChargesStatus: newChargesStatus });
     emitToAdmin('charge:reviewed', { chargeId, action, requestId: charge.request });
+    emitToTechnician(charge.technician, 'charge:reviewed', { chargeId, action, charge, requestChargesStatus: newChargesStatus });
 
     return res.status(200).json({
       success: true,
@@ -847,6 +880,7 @@ exports.reviewCharge = async (req, res, next) => {
       data: {
         charge,
         requestChargesStatus: newChargesStatus,
+        ...(assignment?.assigned && { assigned: true, job: assignment.job }),
         ...(finalAmountData && { finalJobAmount: finalAmountData.total }),
       },
     });
@@ -895,7 +929,7 @@ exports.generateInvoice = async (req, res, next) => {
     }
 
     const job        = request.job;
-    const fixedCharge = request.counterOffer > 0 ? request.counterOffer : (job.budget || 0);
+    const fixedCharge = request.counterOffer > 0 ? request.counterOffer : getPayAmount(job.pay);
 
     const acceptedCharges = charges
       .filter((c) => c.status === 'accepted')
@@ -979,7 +1013,7 @@ exports.getInvoice = async (req, res, next) => {
     }
 
     const invoice = await JobInvoice.findById(request.invoice)
-      .populate('job',        'title location category budget')
+      .populate('job',        'title location category pay')
       .populate('technician', 'name phone email');
 
     return res.status(200).json({ success: true, data: { invoice } });

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import adminApi from '../services/adminApi';
+import { connectAdminSocket } from '../services/socket';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import {
     FaChartBar, FaTasks, FaWrench, FaFolderOpen,
     FaUsers, FaTag, FaSignOutAlt, FaTools,
-    FaLayerGroup, FaBlog, FaHardHat, FaCheckCircle,
+    FaLayerGroup, FaBlog, FaHardHat, FaCheckCircle, FaComments,
     FaBars, FaChevronLeft, FaUserShield, FaSitemap, FaCogs
 } from 'react-icons/fa';
 
@@ -13,6 +14,10 @@ const MainLayout = () => {
     const navigate = useNavigate();
     const [collapsed, setCollapsed] = useState(false);
     const { admin, can, clearAdmin } = useAdminAuth();
+
+    React.useEffect(() => {
+        connectAdminSocket();
+    }, []);
 
     const handleLogout = () => {
         adminApi.logout();
@@ -31,6 +36,7 @@ const MainLayout = () => {
         { to: "/job-templates", icon: <FaFolderOpen size={14} />, label: "Job Templates", resource: 'technician_jobs' },
         { to: "/technician-jobs", icon: <FaHardHat size={14} />, label: "Technician Jobs", resource: 'technician_jobs' },
         { to: "/technician-overview", icon: <FaUsers size={14} />, label: "Technicians", resource: 'technician_jobs' },
+        { to: "/technician-chat", icon: <FaComments size={14} />, label: "Support Chat", resource: 'technician_jobs' },
         { to: "/technician-verification", icon: <FaCheckCircle size={14} />, label: "Verification", resource: 'technician_verification' },
         { to: "/blogs", icon: <FaBlog size={14} />, label: "Blogs", resource: 'blogs' },
         { to: "/sub-admins", icon: <FaUserShield size={14} />, label: "Sub-Admins", resource: 'sub_admins' },

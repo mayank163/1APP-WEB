@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
  * are resolved (all accepted or rejected) and the job is ready to be assigned.
  *
  * Structure:
- *   fixedJobCharge      — the original job budget / agreed bid amount
+ *   fixedJobCharge      — the original job pay amount / agreed bid amount
  *   additionalCharges   — snapshot of each accepted AdditionalCharge line item
  *   totalAmount         — fixedJobCharge + sum of accepted additionalCharges
  *   status              — draft → finalised → paid

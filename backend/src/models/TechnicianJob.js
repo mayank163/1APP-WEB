@@ -6,42 +6,51 @@ const technicianJobSchema = new mongoose.Schema({
     required: [true, 'Job title is required'],
     trim: true,
   },
+  category: {
+    type: String,
+    default: 'General Service',
+    trim: true,
+  },
   location: {
     type: String,
     required: [true, 'Job location is required'],
     trim: true,
   },
-  city:    { type: String, default: '', trim: true },
-  state:   { type: String, default: '', trim: true },
-  zipCode: { type: String, default: '', trim: true },
+  city: {
+    type: String,
+    default: '',
+    trim: true,
+  },
+  state: {
+    type: String,
+    default: '',
+    trim: true,
+  },
+  zipCode: {
+    type: String,
+    default: '',
+    trim: true,
+  },
   coordinates: {
     lat: { type: Number, default: null },
     lng: { type: Number, default: null },
   },
-  // ── Structured pay ────────────────────────────────────────────────────────
-  // type: 'hourly' | 'fixed' | 'perDevice' | 'blended'
-  // Only the fields relevant to the selected type are stored — no zero-padding.
   pay: {
     type: {
       type: String,
-      enum: ['hourly', 'fixed', 'perDevice', 'blended'],
+      enum: ['fixed', 'hourly', 'perDevice', 'blended'],
       default: 'fixed',
     },
-    // ── Fixed ──────────────────────────────────────────────────────────────
-    fixedAmount:          { type: Number, min: 0 },
-    // ── Hourly ─────────────────────────────────────────────────────────────
-    hourlyRate:           { type: Number, min: 0 },
-    maxHours:             { type: Number, min: 0 },
-    // ── Per Device ─────────────────────────────────────────────────────────
-    perDeviceRate:        { type: Number, min: 0 },
-    maxDevices:           { type: Number, min: 0 },
-    // ── Blended ────────────────────────────────────────────────────────────
-    blendedFixedAmount:   { type: Number, min: 0 },
-    blendedFixedHours:    { type: Number, min: 0 },
-    blendedHourlyRate:    { type: Number, min: 0 },
-    blendedMaxAddlHours:  { type: Number, min: 0 },
-    // ── Shared optional ────────────────────────────────────────────────────
-    approxHours:          { type: String, trim: true },
+    fixedAmount: { type: Number, min: 0, default: 0 },
+    hourlyRate: { type: Number, min: 0, default: 0 },
+    maxHours: { type: Number, min: 0, default: 0 },
+    perDeviceRate: { type: Number, min: 0, default: 0 },
+    maxDevices: { type: Number, min: 0, default: 0 },
+    blendedFixedAmount: { type: Number, min: 0, default: 0 },
+    blendedFixedHours: { type: Number, min: 0, default: 0 },
+    blendedHourlyRate: { type: Number, min: 0, default: 0 },
+    blendedMaxAddlHours: { type: Number, min: 0, default: 0 },
+    approxHours: { type: String, default: '', trim: true },
   },
   description: {
     type: String,
@@ -57,17 +66,15 @@ const technicianJobSchema = new mongoose.Schema({
     ref: 'Admin',
     required: true,
   },
+  requestedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  }],
   status: {
     type: String,
-    enum: ['open', 'assigned', 'ontheway', 'visited', 'inprogress', 'checkout', 'completed', 'cancelled'],
+    enum: ['open', 'assigned', 'ontheway', 'visited', 'inprogress', 'in-progress', 'completed', 'checkout', 'closed', 'cancelled'],
     default: 'open',
   },
-  // Full audit trail of every status change with optional admin note
-  statusHistory: [{
-    status:    { type: String, trim: true },
-    note:      { type: String, default: '', trim: true },
-    changedAt: { type: Date, default: Date.now },
-  }],
   assignedTechnician: {
     _id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
     name: { type: String, default: '' },
@@ -79,24 +86,34 @@ const technicianJobSchema = new mongoose.Schema({
     ref: 'TechnicianJobRequest',
     default: null,
   },
-  reachedAt: { type: Date, default: null },
+  reachedAt: {
+    type: Date,
+    default: null,
+  },
   reachedStatus: {
-    at:             { type: Date,   default: null },
-    lat:            { type: Number, default: null },
-    lng:            { type: Number, default: null },
+    at: { type: Date, default: null },
+    lat: { type: Number, default: null },
+    lng: { type: Number, default: null },
     distanceMeters: { type: Number, default: null },
   },
-  jobStartedAt:   { type: Date, default: null },
-  jobCompletedAt: { type: Date, default: null },
+  jobStartedAt: {
+    type: Date,
+    default: null,
+  },
+  jobCompletedAt: {
+    type: Date,
+    default: null,
+  },
   completedStatus: {
-    at:             { type: Date,   default: null },
-    lat:            { type: Number, default: null },
-    lng:            { type: Number, default: null },
+    at: { type: Date, default: null },
+    lat: { type: Number, default: null },
+    lng: { type: Number, default: null },
     distanceMeters: { type: Number, default: null },
   },
   jobDurationMinutes: {
     type: Number,
     default: null,
+    min: 0,
   },
   finalPrice: {
     type: Number,
@@ -104,93 +121,84 @@ const technicianJobSchema = new mongoose.Schema({
     min: 0,
   },
   payment: {
-    status: { type: String, enum: ['unpaid', 'paid'], default: 'unpaid' },
     basePrice: { type: Number, default: 0, min: 0 },
     discount: { type: Number, default: 0, min: 0 },
     note: { type: String, default: '', trim: true },
+    status: {
+      type: String,
+      enum: ['unpaid', 'paid', 'pending', 'refunded'],
+      default: 'unpaid',
+    },
     paidAt: { type: Date, default: null },
     paidBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin', default: null },
   },
-  completedAt:  { type: Date, default: null },
-  scheduledDate:{ type: Date, default: null },
+  completedAt: {
+    type: Date,
+    default: null,
+  },
   visibleTo: {
     type: String,
     enum: ['all', 'technicians'],
     default: 'technicians',
   },
+  deadline: {
+    type: Date,
+    default: null,
+  },
+  scheduledDate: {
+    type: Date,
+    default: null,
+  },
+  jobDate: {
+    from: { type: Date, default: null },
+    to: { type: Date, default: null },
+  },
+  workType: {
+    type: mongoose.Schema.Types.Mixed,
+    default: () => ({}),
+  },
+  additionalWorkType: {
+    type: mongoose.Schema.Types.Mixed,
+    default: () => ({}),
+  },
+  serviceType: {
+    type: mongoose.Schema.Types.Mixed,
+    default: () => ({}),
+  },
+  statusHistory: [{
+    status: { type: String, trim: true },
+    note: { type: String, default: '', trim: true },
+    changedAt: { type: Date, default: Date.now },
+  }],
   rescheduleHistory: [{
-    previousDate: { type: Date },
-    newDate: { type: Date },
-    reason: { type: String, default: '' },
+    previousDate: { type: Date, default: null },
+    newDate: { type: Date, default: null },
+    reason: { type: String, default: '', trim: true },
     rescheduledAt: { type: Date, default: Date.now },
   }],
   preferredSkills: [{
     type: String,
     trim: true,
   }],
-  // Technician IDs who have sent a request for this job
-  requestedBy: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+  tasks: [{
+    title: { type: String, default: '', trim: true },
+    group: { type: String, default: '', trim: true },
+    order: { type: Number, default: 0 },
+    isDone: { type: Boolean, default: false },
+    requiresNote: { type: Boolean, default: false },
+    requiresImage: { type: Boolean, default: false },
+    requiresSignature: { type: Boolean, default: false },
+    requirementReason: { type: String, default: '', trim: true },
+    checkedAt: { type: Date, default: null },
+    technicianLat: { type: Number, default: null },
+    technicianLng: { type: Number, default: null },
+    distanceMeters: { type: Number, default: null },
   }],
   conversation: [{
     sender: { type: String, enum: ['admin', 'technician', 'system'], default: 'system' },
     message: { type: String, default: '' },
     createdAt: { type: Date, default: Date.now },
   }],
-  tasks: [{
-    title:          { type: String, required: true, trim: true },
-    group:          { type: String, default: '', trim: true },
-    order:          { type: Number, default: 0 },
-    isDone:         { type: Boolean, default: false },
-    checkedAt:      { type: Date, default: null },
-    // Completion evidence requested by the admin for this individual task.
-    requiresNote:      { type: Boolean, default: undefined },
-    requiresImage:     { type: Boolean, default: undefined },
-    requiresSignature: { type: Boolean, default: undefined },
-    requirementReason: { type: String, default: undefined, trim: true },
-    // Keep these absent until the technician actually submits that evidence.
-    completionNote:      { type: String, default: undefined },
-    completionImage:     { type: String, default: undefined },
-    completionSignature: { type: String, default: undefined },
-    technicianLat:  { type: Number, default: null },
-    technicianLng:  { type: Number, default: null },
-    distanceMeters: { type: Number, default: null },
-  }],
-
-  // ── Work type (primary) ────────────────────────────────────────────────────
-  workType: {
-    _id:  { type: mongoose.Schema.Types.ObjectId, ref: 'WorkType', default: null },
-    name: { type: String, default: '', trim: true },
-    subType: {
-      _id:  { type: mongoose.Schema.Types.ObjectId, default: null },
-      name: { type: String, default: '', trim: true },
-    },
-  },
-
-  // ── Additional / secondary work type ──────────────────────────────────────
-  additionalWorkType: {
-    _id:  { type: mongoose.Schema.Types.ObjectId, ref: 'WorkType', default: null },
-    name: { type: String, default: '', trim: true },
-    subType: {
-      _id:  { type: mongoose.Schema.Types.ObjectId, default: null },
-      name: { type: String, default: '', trim: true },
-    },
-  },
-
-  // ── Service type (e.g. Installation, Maintenance, Diagnosis) ──────────────
-  serviceType: {
-    _id:  { type: mongoose.Schema.Types.ObjectId, ref: 'ServiceType', default: null },
-    name: { type: String, default: '', trim: true },
-  },
-
-  // ── Job Date window ────────────────────────────────────────────────────────
-  // Admin sets a date/time range during which the technician should arrive.
-  // e.g. from: 2026-09-10T09:00Z  to: 2026-09-10T17:00Z
-  jobDate: {
-    from: { type: Date, default: null },  // window start (arrive after)
-    to:   { type: Date, default: null },  // window end   (arrive before)
-  },
 }, {
   timestamps: true,
 });

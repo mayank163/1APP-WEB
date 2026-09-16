@@ -23,6 +23,7 @@ import TechnicianOverview from './pages/TechnicianOverview';
 import SubAdminManagement from './pages/SubAdminManagement';
 import WorkTypeManagement from './pages/WorkTypeManagement';
 import ServiceTypeManagement from './pages/ServiceTypeManagement';
+import TechnicianChat from './pages/TechnicianChat';
 
 const AdminPrivateRoute = ({ children }) => {
   const token = localStorage.getItem('1app_admin_token');
@@ -68,6 +69,7 @@ function AppRoutes() {
           <Route path="job-templates" element={<PermRoute resource="technician_jobs" access="read"><JobTemplates /></PermRoute>} />
           <Route path="technician-jobs" element={<PermRoute resource="technician_jobs" access="read"><TechnicianJobs /></PermRoute>} />
           <Route path="technician-overview" element={<PermRoute resource="technician_jobs" access="read"><TechnicianOverview /></PermRoute>} />
+          <Route path="technician-chat" element={<PermRoute resource="technician_jobs" access="read"><TechnicianChat /></PermRoute>} />
           <Route path="technician-verification" element={<PermRoute resource="technician_verification" access="read"><TechnicianVerification /></PermRoute>} />
           <Route path="blogs" element={<PermRoute resource="blogs" access="read"><BlogManagement /></PermRoute>} />
           <Route path="sub-admins" element={<PermRoute resource="sub_admins" access="read"><SubAdminManagement /></PermRoute>} />

@@ -34,6 +34,7 @@ import Blogs from './pages/Blogs';
 import BlogDetail from './pages/BlogDetail';
 import TechnicianDashboard from './pages/TechnicianDashboard';
 import TechnicianActivation from './pages/TechnicianActivation';
+import TechnicianChat from './pages/TechnicianChat';
 
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
 
@@ -62,6 +63,7 @@ const AppShell = () => {
           <Route path="/checkout" element={<PrivateRoute><Checkout /></PrivateRoute>} />
           <Route path="/bookings" element={<PrivateRoute><Bookings /></PrivateRoute>} />
           <Route path="/technician" element={<PrivateRoute><TechnicianDashboard /></PrivateRoute>} />
+          <Route path="/technician-chat" element={<PrivateRoute><TechnicianChat /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/terms" element={<TermsAndConditions />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
@@ -83,13 +85,13 @@ function App() {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <BrowserRouter>
-        <SocketProvider>
-          <AuthProvider>
+        <AuthProvider>
+          <SocketProvider>
             <CartProvider>
               <AppShell />
             </CartProvider>
-          </AuthProvider>
-        </SocketProvider>
+          </SocketProvider>
+        </AuthProvider>
       </BrowserRouter>
     </GoogleOAuthProvider>
   );

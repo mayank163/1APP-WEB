@@ -8,7 +8,9 @@ const imageOnly = (req, file, cb) => {
 };
 
 const imageOrVideo = (req, file, cb) => {
-    if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) return cb(null, true);
+    const fileName = String(file.originalname || '').toLowerCase();
+    const isHeic = fileName.endsWith('.heic') || fileName.endsWith('.heif');
+    if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/') || isHeic) return cb(null, true);
     cb(new Error('Only image or video files are allowed'), false);
 };
 
@@ -91,6 +93,12 @@ const uploadSingleDocument = multer({
     fileFilter: technicianDocumentFilter,
 }).single('file');
 
+const uploadChatMedia = multer({
+    storage,
+    limits: { fileSize: 50 * 1024 * 1024 },
+    fileFilter: imageOrVideo
+}).single('file');
+
 module.exports = upload;
 module.exports.uploadServiceMedia = uploadServiceMedia;
 module.exports.uploadCategoryMedia = uploadCategoryMedia;
@@ -100,6 +108,7 @@ module.exports.uploadTaskCompletion = uploadTaskCompletion;
 module.exports.uploadCompleteProfile = uploadCompleteProfile;
 module.exports.uploadBankDetails = uploadBankDetails;
 module.exports.uploadSingleDocument = uploadSingleDocument;
+module.exports.uploadChatMedia = uploadChatMedia;
 
 module.exports.uploadAdminTechnicianDocuments = multer({
     storage, limits: { fileSize: 5 * 1024 * 1024, files: 4 },

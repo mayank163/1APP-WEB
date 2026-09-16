@@ -54,6 +54,9 @@ const adminApi = {
     updateBooking: async (id, data) => (await API.put(`/admin/bookings/${id}`, data)).data,
 
     getTechnicians: async () => (await API.get('/admin/technicians')).data,
+    getChatMessages: async (technicianId, params = {}) => (await API.get(`/chat/conversations/${technicianId}/messages`, { params })).data,
+    markChatRead: async (technicianId) => (await API.patch(`/chat/conversations/${technicianId}/read`)).data,
+    sendChatMedia: async (technicianId, formData) => (await API.post(`/chat/conversations/${technicianId}/messages`, formData, multipart)).data,
     createTechnician: async (payload) => (await API.post('/admin/technicians', payload, multipart)).data,
     updateTechnician: async (id, payload) => (await API.patch(`/admin/technicians/${id}`, payload)).data,
     updateTechnicianAccount: async (id, status) => (await API.patch(`/admin/technicians/${id}/account`, { status })).data,

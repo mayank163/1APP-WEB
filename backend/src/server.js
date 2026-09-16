@@ -15,6 +15,10 @@ const http = require('http');
 const server = http.createServer(app);
 
 const {Server} = require('socket.io');
+const jwt = require('jsonwebtoken');
+const User = require('./models/User');
+const Admin = require('./models/Admin');
+const ChatMessage = require('./models/ChatMessage');
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
@@ -25,6 +29,7 @@ const adminTechnicianRoutes = require('./routes/adminTechnicianRoutes');
 const adminVerificationRoutes = require('./routes/adminVerificationRoutes');
 const technicianRoutes = require('./routes/technicianRoutes');
 const technicianAuthRoutes = require('./routes/technicianAuthRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 const blogRoutes = require('./routes/blogRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const workTypeRoutes = require('./routes/workTypeRoutes');
@@ -92,6 +97,28 @@ const io = new Server(server, {
     transports: ['websocket', 'polling']
 });
 
+io.use(async (socket, next) => {
+    try {
+        const rawToken = socket.handshake.auth?.token || socket.handshake.headers.authorization;
+        const token = rawToken?.startsWith('Bearer ') ? rawToken.slice(7) : rawToken;
+        if (!token) return next(new Error('Authentication required'));
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const account = decoded.role === 'admin'
+            ? await Admin.findById(decoded.id)
+            : await User.findById(decoded.id);
+        if (!account) return next(new Error('User no longer exists'));
+        if (account.role === 'technician' && ['invited', 'suspended', 'blocked'].includes(account.accountStatus)) {
+            return next(new Error('Technician account is not active'));
+        }
+        socket.user = account;
+        socket.userRole = decoded.role === 'admin' ? 'admin' : account.role;
+        next();
+    } catch (error) {
+        next(new Error('Invalid or expired token'));
+    }
+});
+
 // Make io accessible across the app without circular imports
 const { setIO } = require('./utils/socketInstance');
 setIO(io);
@@ -137,6 +164,7 @@ app.use('/api/admin', adminTechnicianRoutes);
 app.use('/api/admin', adminVerificationRoutes);
 app.use('/api/technician', technicianRoutes);
 app.use('/api/technician-auth', technicianAuthRoutes);
+app.use('/api/chat', chatRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/work-types', workTypeRoutes);
@@ -185,6 +213,50 @@ io.on("connection", (socket) => {
     // Send welcome message to this client
     socket.emit("welcome", {
         message: "Welcome from Backend"
+    });
+
+    const canAccessChat = (technicianId) =>
+        socket.userRole === 'admin' || String(socket.user._id) === String(technicianId);
+
+    socket.on('chat:join', (technicianId) => {
+        if (technicianId && canAccessChat(technicianId)) {
+            socket.join(`chat:technician:${technicianId}`);
+        }
+    });
+
+    socket.on('chat:leave', (technicianId) => {
+        if (technicianId) socket.leave(`chat:technician:${technicianId}`);
+    });
+
+    socket.on('chat:typing', ({ technicianId, isTyping } = {}) => {
+        if (!technicianId || !canAccessChat(technicianId)) return;
+        socket.to(`chat:technician:${technicianId}`).emit('chat:typing', {
+            technicianId,
+            userId: socket.user._id,
+            senderRole: socket.userRole,
+            isTyping: Boolean(isTyping)
+        });
+    });
+
+    socket.on('chat:send', async ({ technicianId, text, receiverId } = {}, acknowledge) => {
+        try {
+            const messageText = String(text || '').trim();
+            if (!technicianId || !canAccessChat(technicianId) || !messageText || messageText.length > 4000) {
+                throw new Error('Invalid chat message');
+            }
+            const message = await ChatMessage.create({
+                technicianId,
+                senderId: socket.user._id,
+                senderRole: socket.userRole,
+                receiverId: socket.userRole === 'technician' ? (receiverId || null) : technicianId,
+                messageType: 'text',
+                text: messageText
+            });
+            io.to(`chat:technician:${technicianId}`).emit('chat:message', { message });
+            if (typeof acknowledge === 'function') acknowledge({ success: true, message });
+        } catch (error) {
+            if (typeof acknowledge === 'function') acknowledge({ success: false, message: error.message });
+        }
     });
 
     // Listen for message from frontend

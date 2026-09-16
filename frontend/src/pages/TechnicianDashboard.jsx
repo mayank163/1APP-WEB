@@ -1135,6 +1135,8 @@ const TechnicianDashboard = () => {
   const [myJobs, setMyJobs] = useState([]);
   const [requests, setRequests] = useState([]);
   const [respondingInvitation, setRespondingInvitation] = useState(null);
+  const [respondingCounter, setRespondingCounter] = useState(null);
+  const [fixedCounterAmounts, setFixedCounterAmounts] = useState({});
   const [withdrawals, setWithdrawals] = useState([]);
   const [metrics, setMetrics] = useState(null);
 
@@ -1255,6 +1257,18 @@ const TechnicianDashboard = () => {
     } finally { setRespondingInvitation(null); }
   };
 
+  const respondToFixedCounter = async (requestId, action) => {
+    setRespondingCounter(requestId);
+    try {
+      const counterOffer = fixedCounterAmounts[requestId];
+      if (action === 'counter' && (!counterOffer || Number(counterOffer) <= 0)) return alert('Enter a valid counter-offer amount.');
+      await API.patch(`/technician/requests/${requestId}/respond`, { action, ...(action === 'counter' ? { counterOffer: Number(counterOffer) } : {}) });
+      await loadData();
+      setFixedCounterAmounts(p => ({ ...p, [requestId]: '' }));
+    } catch (err) { alert(err.response?.data?.message || 'Unable to respond to counter-offer.'); }
+    finally { setRespondingCounter(null); }
+  };
+
   const refreshRequests = useCallback(async () => {
     try {
       const { data } = await API.get('/technician/requests');
@@ -1309,6 +1323,11 @@ const TechnicianDashboard = () => {
       );
       if (request.status === 'accepted') refreshRequests();
     };
+    const onRequestAssigned = ({ request }) => {
+      if (!request) return;
+      setRequests((prev) => prev.map((r) => r._id === request._id ? { ...r, ...request } : r));
+      refreshRequests();
+    };
 
     const onChargeReviewed = ({ requestId, requestChargesStatus }) => {
       setRequests((prev) =>
@@ -1342,6 +1361,7 @@ const TechnicianDashboard = () => {
     socket.on('request:message', onRequestMessage);
     socket.on('request:status', onRequestStatus);
     socket.on('request:updated', onRequestUpdated);
+    socket.on('request:assigned', onRequestAssigned);
     socket.on('charge:reviewed', onChargeReviewed);
     socket.on('invoice:generated', onInvoiceGenerated);
     socket.on('invoice:paid', onInvoicePaid);
@@ -1354,6 +1374,7 @@ const TechnicianDashboard = () => {
       socket.off('request:message', onRequestMessage);
       socket.off('request:status', onRequestStatus);
       socket.off('request:updated', onRequestUpdated);
+      socket.off('request:assigned', onRequestAssigned);
       socket.off('charge:reviewed', onChargeReviewed);
       socket.off('invoice:generated', onInvoiceGenerated);
       socket.off('invoice:paid', onInvoicePaid);
@@ -2047,6 +2068,7 @@ const TechnicianDashboard = () => {
               const hasCharges = req.chargesStatus && req.chargesStatus !== 'none';
               const needsReply = req.chargesStatus === 'pending' || req.chargesStatus === 'reviewing';
               const isAdminCounter = req.status === 'counter-offer' && req.counterOfferFrom === 'admin';
+              const waitingForAssignment = req.status === 'accepted' && req.adminApproved && req.chargesStatus && !['none', 'agreed', 'invoiced'].includes(req.chargesStatus) && !req.job?.assignedTechnician;
 
               return (
                 <div key={req._id} style={S.card}>
@@ -2058,6 +2080,7 @@ const TechnicianDashboard = () => {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                       {reqStatusBadge(req.status)}
+                      {waitingForAssignment && <span style={S.badge('#b45309', 'rgba(234,179,8,0.15)')}>⏳ Approved — charges pending</span>}
                       {hasCharges && (
                         <span style={S.badge(
                           req.chargesStatus === 'invoiced' ? '#A5732F' : req.chargesStatus === 'agreed' ? '#16a34a' :
@@ -2111,15 +2134,15 @@ const TechnicianDashboard = () => {
         marginBottom: 10,
       }}
     >
-      You can respond to this offer from the Charges & Invoice section.
+      Accept the offer or send a new fixed-price counter-offer.
     </div>
 
-    <button
-      onClick={() => toggleChargesPanel(req._id)}
-      style={S.btn('#2563eb')}
-    >
-      🧾 View Charges & Respond
-    </button>
+    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      <button disabled={respondingCounter === req._id} onClick={() => respondToFixedCounter(req._id, 'accept')} style={S.btn('#16a34a')}>✓ Accept ${Number(req.counterOffer).toLocaleString()}</button>
+      <input type="number" min="1" placeholder="New amount" value={fixedCounterAmounts[req._id] || ''} onChange={e => setFixedCounterAmounts(p => ({ ...p, [req._id]: e.target.value }))} style={{ width: 120, border: '1px solid #ced4da', borderRadius: 7, padding: '6px 8px' }} />
+      <button disabled={respondingCounter === req._id} onClick={() => respondToFixedCounter(req._id, 'counter')} style={S.btn('#2563eb')}>↔ Re-counter</button>
+      <button disabled={respondingCounter === req._id} onClick={() => respondToFixedCounter(req._id, 'reject')} style={S.btn('#dc3545')}>✕ Reject</button>
+    </div>
   </div>
 )}
 
@@ -2179,6 +2202,7 @@ const TechnicianDashboard = () => {
                         + Submit Charges
                       </button>
                     )}
+                    {waitingForAssignment && <span style={{ color: '#b45309', fontSize: '0.78rem', alignSelf: 'center' }}>Admin approved your request. Assignment follows after charge negotiation.</span>}
                   </div>
 
                   {/* ── chat window ── */}

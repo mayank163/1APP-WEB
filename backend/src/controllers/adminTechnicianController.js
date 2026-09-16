@@ -4,6 +4,7 @@ const AdditionalCharge = require('../models/AdditionalCharge');
 const User = require('../models/User');
 const { getIO } = require('../utils/socketInstance');
 const sendNotification = require('../services/notificationService');
+const { tryAssignApprovedRequest } = require('../services/technicianRequestWorkflow');
 
 // ── Helper: keep only the fields that belong to the selected pay type ────────
 // This prevents the DB from storing zeros for fields that were never filled in.
@@ -51,6 +52,21 @@ const sanitizePay = (raw = {}) => {
   return cleaned;
 };
 
+const getPayAmount = (pay = {}) => {
+  switch (pay.type) {
+    case 'hourly':
+      return (Number(pay.hourlyRate) || 0) * (Number(pay.maxHours) || 0);
+    case 'perDevice':
+      return (Number(pay.perDeviceRate) || 0) * (Number(pay.maxDevices) || 0);
+    case 'blended':
+      return (Number(pay.blendedFixedAmount) || 0) +
+        ((Number(pay.blendedHourlyRate) || 0) * (Number(pay.blendedMaxAddlHours) || 0));
+    case 'fixed':
+    default:
+      return Number(pay.fixedAmount) || 0;
+  }
+};
+
 // Safely emit to a request-scoped room (never throws if io not ready)
 const emitToRequest = (requestId, event, payload) => {
   try {
@@ -68,6 +84,14 @@ const emitToAdmin = (event, payload) => {
     console.log(`[Socket] emitToAdmin → room="admin" event="${event}"`, JSON.stringify(payload));
   } catch (e) {
     console.warn(`[Socket] emitToAdmin failed for event "${event}":`, e.message);
+  }
+};
+
+const emitToTechnician = (technicianId, event, payload) => {
+  try {
+    if (technicianId) getIO().to(`technician:${technicianId}`).emit(event, payload);
+  } catch (e) {
+    console.warn(`[Socket] emitToTechnician failed for event "${event}":`, e.message);
   }
 };
 
@@ -98,6 +122,12 @@ const createTechnicianJob = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         message: 'Please provide all required job fields'
+      });
+    }
+    if (getPayAmount(pay) <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a valid job price in the payment section',
       });
     }
     const missingRequirementReason = Array.isArray(tasks) && tasks.findIndex((task) =>
@@ -255,6 +285,18 @@ const updateTechnicianRequest = async (req, res, next) => {
       if (!request.job || !request.technician) return res.status(404).json({ success: false, message: 'Job or technician no longer exists.' });
       if (['invited', 'suspended', 'blocked'].includes(request.technician.accountStatus)) return res.status(400).json({ success: false, message: 'Only active technicians can be assigned.' });
       if (!['pending', 'counter-offer'].includes(request.status) || request.job.status !== 'open') return res.status(409).json({ success: false, message: 'This request is no longer available for assignment.' });
+      const unresolvedCharges = await AdditionalCharge.countDocuments({ request: requestId, status: { $in: ['pending', 'countered'] } });
+      if (unresolvedCharges > 0) {
+        request.status = 'accepted';
+        request.adminApproved = true;
+        request.adminMessage = 'Request approved. Assignment will complete after charge negotiation.';
+        request.conversation.push({ sender: 'admin', type: 'message', message: request.adminMessage, createdAt: new Date() });
+        await request.save();
+        emitToRequest(requestId, 'request:status', { requestId, status: request.status, adminApproved: true, waitingForCharges: true });
+        emitToRequest(requestId, 'request:updated', { request });
+        emitToAdmin('request:updated', { request });
+        return res.status(200).json({ success: true, message: 'Request approved; resolve all charges before assignment.', data: { request, waitingForCharges: true } });
+      }
     }
 
     if (request.initiatedBy === 'admin') return res.status(403).json({ success: false, message: 'Only the invited technician can respond to this invitation.' });
@@ -264,6 +306,7 @@ const updateTechnicianRequest = async (req, res, next) => {
     const cleanMessage = adminMessage ? adminMessage.trim() : '';
 
     request.status       = status;
+    request.adminApproved = status === 'accepted';
     request.adminMessage = cleanMessage;
 
     // ── Build a typed conversation entry ─────────────────────────────────
@@ -390,6 +433,8 @@ const updateTechnicianRequest = async (req, res, next) => {
     const latestMsg = request.conversation[request.conversation.length - 1];
     emitToRequest(requestId, 'request:message', { requestId, message: latestMsg });
     emitToRequest(requestId, 'request:status',  { requestId, status: request.status });
+    emitToTechnician(request.technician?._id || request.technician, 'request:message', { requestId, message: latestMsg });
+    emitToTechnician(request.technician?._id || request.technician, 'request:status', { requestId, status: request.status, adminApproved: request.adminApproved });
 
     if (finalAmountData) {
       emitToRequest(requestId, 'final_amount:calculated', {
@@ -408,6 +453,7 @@ const updateTechnicianRequest = async (req, res, next) => {
       },
     });
     emitToAdmin('request:updated', { request });
+    emitToTechnician(request.technician?._id || request.technician, 'request:updated', { request });
   } catch (error) {
     next(error);
   }

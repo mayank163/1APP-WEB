@@ -8,8 +8,15 @@ const socket = io(SOCKET_URL, {
     reconnectionAttempts: 5,
     reconnectionDelay: 2000,
     withCredentials: true,
-    autoConnect: true,
+    autoConnect: false,
 });
+
+export const connectAdminSocket = () => {
+    const token = localStorage.getItem('1app_admin_token');
+    if (!token) return;
+    socket.auth = { token };
+    if (!socket.connected) socket.connect();
+};
 
 socket.on('connect', () => {
     console.log('[Admin Socket] connected:', socket.id);
@@ -17,5 +24,6 @@ socket.on('connect', () => {
     socket.emit('admin:join');
 });
 socket.on('disconnect', () => console.log('[Admin Socket] disconnected'));
+socket.on('connect_error', error => console.error('[Admin Socket] connection failed:', error.message));
 
 export default socket;

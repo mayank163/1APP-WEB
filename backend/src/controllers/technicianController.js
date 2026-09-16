@@ -142,6 +142,33 @@ const sortJobsByJobDate = (jobs) => {
   });
 };
 
+const matchesServiceType = (job, selectedServiceType) => {
+  if (!selectedServiceType.length) return true;
+
+  const jobServiceType = job.serviceType || {};
+
+  return selectedServiceType.some((selected) =>
+    [jobServiceType._id, jobServiceType.name]
+      .filter(Boolean)
+      .some((value) => String(value).trim().toLowerCase() === selected)
+  );
+};
+
+const parseMultiValueQuery = (value) => {
+  const values = Array.isArray(value) ? value : [value];
+
+  return values
+    .filter((item) => item != null)
+    .flatMap((item) => String(item).split(','))
+    .map((item) => item.trim().toLowerCase())
+    .filter(Boolean);
+};
+
+const getDistanceMiles = (fromLat, fromLng, toLat, toLng) => {
+  const distanceMeters = haversineMeters(fromLat, fromLng, toLat, toLng);
+  return distanceMeters == null ? null : distanceMeters / 1609.344;
+};
+
 
 // ─── GET JOBS FOR TECHNICIANS ────────────────────────────────────────────────
 
@@ -151,21 +178,60 @@ const getJobsForTechnicians = async (req, res, next) => {
       filter = 'new',
       fromDate,
       toDate,
+      serviceTypes,
+      serviceTypeIds,
+      latitude,
+      longitude,
+      lat,
+      lng,
+      distanceMiles,
+      radiusMiles,
     } = req.query;
 
     const techId = req.user._id;
+    const selectedServiceTypes = [
+      ...parseMultiValueQuery(serviceTypes),
+      ...parseMultiValueQuery(serviceTypeIds),
+    ];
+    const selectedDistanceMiles = distanceMiles || radiusMiles;
+    const technicianLatitude = Number(latitude ?? lat);
+    const technicianLongitude = Number(longitude ?? lng);
+    const hasTechnicianLocation = Number.isFinite(technicianLatitude) && Number.isFinite(technicianLongitude);
+    const maxDistanceMiles = selectedDistanceMiles == null ? null : Number(selectedDistanceMiles);
+
+    if (maxDistanceMiles != null && (!Number.isFinite(maxDistanceMiles) || maxDistanceMiles <= 0)) {
+      return res.status(400).json({
+        success: false,
+        message: 'distanceMiles must be a positive number',
+      });
+    }
+
+    if (maxDistanceMiles != null && !hasTechnicianLocation) {
+      return res.status(400).json({
+        success: false,
+        message: 'latitude and longitude are required when distanceMiles is provided',
+      });
+    }
 
     let jobs = [];
 
     // --------------------------------
     // NEW
     // --------------------------------
-    if (filter === 'new') {
+    if (filter === 'new' || filter === 'recommended') {
       jobs = await TechnicianJob.find({
         status: 'open',
         requestedBy: {
           $nin: [techId],
         },
+        ...(filter === 'recommended' && {
+          preferredSkills: {
+            $in: (req.user.skills || req.user.technicianProfile?.skills || [])
+              .map((skill) => String(skill).trim())
+              .filter(Boolean)
+              .map((skill) => new RegExp(`^${skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i')),
+          },
+        }),
       }).sort('-createdAt');
     }
 
@@ -190,6 +256,7 @@ const getJobsForTechnicians = async (req, res, next) => {
             'assigned',
             'visited',
             'inprogress',
+            'ontheway',
           ],
         },
         completedAt: null,
@@ -419,9 +486,23 @@ const getJobsForTechnicians = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         message:
-          'Invalid filter. Use: new, requested, active, completed, today, tomorrow, custom',
+          'Invalid filter. Use: new, recommended, requested, active, completed, today, tomorrow, custom',
       });
     }
+
+    jobs = jobs.filter((job) => {
+      if (!matchesServiceType(job, selectedServiceTypes)) return false;
+      if (maxDistanceMiles == null) return true;
+
+      const jobDistanceMiles = getDistanceMiles(
+        technicianLatitude,
+        technicianLongitude,
+        job.coordinates?.lat,
+        job.coordinates?.lng,
+      );
+
+      return jobDistanceMiles != null && jobDistanceMiles <= maxDistanceMiles;
+    });
 
     // --------------------------------
     // GET REQUESTS
@@ -481,6 +562,15 @@ const getJobsForTechnicians = async (req, res, next) => {
         obj.requestStatus =
           request?.status ||
           null;
+
+        if (maxDistanceMiles != null) {
+          obj.distanceMiles = Number(getDistanceMiles(
+            technicianLatitude,
+            technicianLongitude,
+            job.coordinates?.lat,
+            job.coordinates?.lng,
+          ).toFixed(2));
+        }
 
         return obj;
       });
@@ -1743,117 +1833,228 @@ const updateRequestStatus = async (
   }
 };
 
+// Respond to an admin fixed-price counter-offer. Additional charges, when
+// present, remain governed by the per-charge negotiation endpoints.
+const respondToRequestCounter = async (req, res, next) => {
+  try {
+    const { action, counterOffer, note = '' } = req.body || {};
+    if (!['accept', 'counter', 'reject'].includes(action)) return res.status(400).json({ success: false, message: 'action must be accept, counter, or reject' });
+    const request = await TechnicianJobRequest.findById(req.params.requestId).populate('job technician');
+    if (!request) return res.status(404).json({ success: false, message: 'Request not found' });
+    if (!request.technician || String(request.technician._id || request.technician) !== String(req.user._id)) return res.status(403).json({ success: false, message: 'Not authorised' });
+    if (request.status !== 'counter-offer' || request.counterOfferFrom !== 'admin' || Number(request.counterOffer) <= 0) return res.status(400).json({ success: false, message: 'No admin counter-offer is waiting for this request.' });
+
+    const now = new Date();
+    const cleanNote = String(note).trim();
+    if (action === 'counter') {
+      const amount = Number(counterOffer);
+      if (!amount || amount <= 0) return res.status(400).json({ success: false, message: 'counterOffer must be greater than zero' });
+      request.counterOffer = amount;
+      request.counterOfferFrom = 'technician';
+      request.adminApproved = false;
+      await TechnicianJob.updateOne(
+        { _id: request.job._id },
+        { $addToSet: { requestedBy: req.user._id } }
+      );
+      request.conversation.push({ sender: 'technician', type: 'fixed_charge', fixedCharge: amount, counterOffer: amount, counterOfferFrom: 'technician', message: cleanNote || `Technician counter-offer: ₹${amount}`, createdAt: now });
+    } else if (action === 'reject') {
+      request.status = 'rejected';
+      request.adminApproved = false;
+      request.conversation.push({ sender: 'technician', type: 'message', message: cleanNote || 'Technician rejected the admin counter-offer.', createdAt: now });
+    } else {
+      request.status = 'accepted';
+      request.adminApproved = true;
+      request.counterOfferFrom = 'admin';
+      request.conversation.push({ sender: 'technician', type: 'message', message: cleanNote || 'Technician accepted the admin counter-offer.', createdAt: now });
+    }
+    await request.save();
+    const assignment = action === 'accept' ? await tryAssignApprovedRequest(request._id) : null;
+    const payload = { requestId: request._id, request, action, ...(assignment?.assigned ? { assigned: true, job: assignment.job } : {}) };
+    try {
+      const { getIO } = require('../utils/socketInstance');
+      getIO().to('admin').emit('request:updated', payload);
+      getIO().to(`request:${request._id}`).emit('request:status', payload);
+    } catch (socketError) { console.warn('[Socket] fixed counter response failed:', socketError.message); }
+    return res.json({ success: true, message: action === 'accept' ? 'Admin counter-offer accepted.' : action === 'counter' ? 'New counter-offer sent to admin.' : 'Counter-offer rejected.', data: payload });
+  } catch (error) { next(error); }
+};
+
 
 // ─── METRICS ─────────────────────────────────────────────────────────────────
 
-const getMetrics = async (
-  req,
-  res,
-  next
-) => {
+const getMetrics = async (req, res, next) => {
   try {
-    const technician =
-      await User.findById(
-        req.user._id
-      );
+    const technician = await User.findById(req.user._id);
 
-    const requests =
-      await TechnicianJobRequest.find({
-        technician:
-          req.user._id,
-      })
-        .populate('job')
-        .sort({
-          createdAt: -1,
-        });
+    if (!technician) {
+      return res.status(404).json({
+        success: false,
+        message: 'Technician not found',
+      });
+    }
 
-    const acceptedCount =
-      requests.filter(
-        (r) =>
-          r.status ===
-          'accepted'
-      ).length;
+    const technicianId = req.user._id.toString();
 
-    const pendingCount =
-      requests.filter(
-        (r) =>
-          r.status ===
-          'pending'
-      ).length;
+    // Get all requests of this technician
+    const requests = await TechnicianJobRequest.find({
+      technician: req.user._id,
+    })
+      .populate('job')
+      .sort({
+        createdAt: -1,
+      });
 
-    const totalRequests =
-      requests.length;
+    // Accepted requests count
+    const acceptedCount = requests.filter(
+      (r) => r.status === 'accepted'
+    ).length;
 
-    // --------------------------------
-    // MY ACCEPTED JOBS
-    // --------------------------------
+    // Pending requests count
+    const pendingCount = requests.filter(
+      (r) => r.status === 'pending'
+    ).length;
 
-    const myJobs =
-      requests
-        .filter(
-          (r) =>
-            r.status ===
-              'accepted' &&
-            r.job
-        )
-        .map(
-          (r) => r.job
+    // Get all jobs
+    const allJobs = await TechnicianJob.find()
+      .sort({
+        createdAt: -1,
+      });
+
+    // ------------------------------------------------
+    // REQUESTED JOBS
+    // Technician ID in requestedBy array
+    // AND TechnicianJobRequest status is pending
+    // ------------------------------------------------
+
+    const pendingRequests = requests.filter(
+      (r) => r.status === 'pending'
+    );
+
+    const pendingJobIds = new Set(
+      pendingRequests
+        .filter((r) => r.job?._id)
+        .map((r) => r.job._id.toString())
+    );
+
+    const requestedJobs = allJobs.filter((job) => {
+      const isRequested =
+        Array.isArray(job.requestedBy) &&
+        job.requestedBy.some(
+          (id) => id?.toString() === technicianId
         );
 
-    // --------------------------------
-    // ACTIVE JOBS
-    // --------------------------------
-
-    const activeJobs =
-      myJobs.filter(
-        (j) =>
-          j.status !==
-            'completed' &&
-          !j.completedAt
-      ).length;
-
-    // --------------------------------
-    // TODAY'S SCHEDULE
-    // USE jobDate.from / jobDate.to
-    // --------------------------------
-
-    const todayStr =
-      toYMD(
-        new Date()
+      const hasPendingRequest = pendingJobIds.has(
+        job._id.toString()
       );
 
-    const todaySchedule =
-      myJobs.filter(
-        (job) => {
-          // Completed jobs should
-          // not appear in today's
-          // schedule.
-          if (
-            job.status ===
-              'completed' ||
-            job.completedAt
-          ) {
-            return false;
-          }
+      return isRequested && hasPendingRequest;
+    });
 
-          if (
-            !job.jobDate?.from ||
-            !job.jobDate?.to
-          ) {
-            return false;
-          }
+    const requestedJobsCount = requestedJobs.length;
 
-          return isJobDateInRange(
-            job,
-            todayStr,
-            todayStr
-          );
+    // ------------------------------------------------
+    // ASSIGNED JOBS
+    // ------------------------------------------------
+
+    const myAssignedJobs = allJobs.filter(
+      (job) =>
+        job.assignedTechnician?._id &&
+        job.assignedTechnician._id.toString() ===
+          technicianId
+    );
+
+    // Total pending requests
+    const totalRequests = requestedJobsCount;
+
+    // ------------------------------------------------
+    // NEW JOBS
+    // ------------------------------------------------
+
+    const newJobs = allJobs.filter(
+      (job) => job.status === 'open'
+    ).length;
+
+    // ------------------------------------------------
+    // ACTIVE JOBS
+    // ------------------------------------------------
+
+    const activeJobs = myAssignedJobs.filter(
+      (job) =>
+        !['open', 'completed', 'checkout'].includes(
+          job.status
+        ) &&
+        !job.completedAt &&
+        !job.jobCompletedAt
+    ).length;
+
+    // ------------------------------------------------
+    // TODAY SCHEDULE
+    // ------------------------------------------------
+
+    const todaySchedule = myAssignedJobs.filter(
+      (job) => {
+        if (
+          ['completed', 'checkout', 'cancelled'].includes(
+            job.status
+          ) ||
+          job.completedAt ||
+          job.jobCompletedAt
+        ) {
+          return false;
         }
-      ).length;
 
-    // --------------------------------
+        if (
+          !job.jobDate?.from ||
+          !job.jobDate?.to
+        ) {
+          return false;
+        }
+
+        const fromDate = new Date(
+          job.jobDate.from
+        );
+
+        const toDate = new Date(
+          job.jobDate.to
+        );
+
+        if (
+          Number.isNaN(fromDate.getTime()) ||
+          Number.isNaN(toDate.getTime())
+        ) {
+          return false;
+        }
+
+        const today = new Date();
+
+        const jobStart = new Date(
+          fromDate.getFullYear(),
+          fromDate.getMonth(),
+          fromDate.getDate()
+        );
+
+        const jobEnd = new Date(
+          toDate.getFullYear(),
+          toDate.getMonth(),
+          toDate.getDate()
+        );
+
+        const todayDate = new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate()
+        );
+
+        return (
+          jobStart <= todayDate &&
+          jobEnd >= todayDate
+        );
+      }
+    ).length;
+
+    // ------------------------------------------------
     // RESPONSE
-    // --------------------------------
+    // ------------------------------------------------
 
     return res.status(200).json({
       success: true,
@@ -1861,23 +2062,19 @@ const getMetrics = async (
       data: {
         metrics: {
           totalJobsDone:
-            technician.totalJobsDone ||
-            0,
+            technician.totalJobsDone || 0,
 
           totalEarnings:
-            technician.totalEarnings ||
-            0,
+            technician.totalEarnings || 0,
 
           totalWithdrawn:
-            technician.totalWithdrawn ||
-            0,
+            technician.totalWithdrawn || 0,
 
-          availableBalance:
-            Math.max(
-              (technician.totalEarnings || 0) -
-                (technician.totalWithdrawn || 0),
-              0
-            ),
+          availableBalance: Math.max(
+            (technician.totalEarnings || 0) -
+              (technician.totalWithdrawn || 0),
+            0
+          ),
 
           acceptedCount,
 
@@ -1888,10 +2085,11 @@ const getMetrics = async (
           todaySchedule,
 
           totalRequests,
+
+          newJobs,
         },
       },
     });
-
   } catch (error) {
     next(error);
   }
@@ -2113,12 +2311,13 @@ const markReached = async (
     });
 
     // ── Auto-complete the first incomplete "On Site" task ────────────────────
-    const firstOnSiteIdx = job.tasks.findIndex(
+    const tasks = Array.isArray(job.tasks) ? job.tasks : [];
+    const firstOnSiteIdx = tasks.findIndex(
       (t) => t.group === 'On Site' && !t.isDone &&
         !t.requiresNote && !t.requiresImage && !t.requiresSignature
     );
     if (firstOnSiteIdx !== -1) {
-      const t = job.tasks[firstOnSiteIdx];
+      const t = tasks[firstOnSiteIdx];
       t.isDone         = true;
       t.checkedAt      = now;
       t.technicianLat  = hasLocation ? Number(lat) : null;
@@ -2136,7 +2335,7 @@ const markReached = async (
         getIO().to('admin').emit('job:task:completed', {
           jobId,
           taskIndex: firstOnSiteIdx,
-          task: job.tasks[firstOnSiteIdx],
+          task: tasks[firstOnSiteIdx],
         });
       } catch (e) {
         console.warn('[Socket] job:task:completed emit failed:', e.message);
@@ -2163,7 +2362,7 @@ const markReached = async (
           job.reachedStatus,
 
         autoCompletedTaskIndex: firstOnSiteIdx !== -1 ? firstOnSiteIdx : null,
-        autoCompletedTask:      firstOnSiteIdx !== -1 ? job.tasks[firstOnSiteIdx] : null,
+        autoCompletedTask:      firstOnSiteIdx !== -1 ? tasks[firstOnSiteIdx] : null,
       },
     });
 
@@ -2618,6 +2817,7 @@ module.exports = {
   createWithdrawalRequest,
   getWithdrawals,
   updateRequestStatus,
+  respondToRequestCounter,
   getMetrics,
   startNavigation,
   markReached,
