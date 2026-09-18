@@ -27,7 +27,8 @@ const multipart = { headers: { 'Content-Type': 'multipart/form-data' } };
 const adminApi = {
     // ─── Auth ──────────────────────────────────────────────────────────────────
     login: async (email, password) => {
-        const res = await API.post('/admin/login', { email, password });
+        const fcmToken = localStorage.getItem('1app_fcm_token');
+        const res = await API.post('/admin/login', { email, password, ...(fcmToken && { fcmToken }) });
         if (res.data.token) {
             localStorage.setItem('1app_admin_token', res.data.token);
             localStorage.setItem('1app_admin_info', JSON.stringify(res.data.data?.admin || {}));
@@ -41,6 +42,9 @@ const adminApi = {
 
     // ─── Dashboard ─────────────────────────────────────────────────────────────
     getStats: async () => (await API.get('/admin/stats')).data,
+    getNotifications: async () => (await API.get('/notifications')).data,
+    markNotificationsRead: async () => (await API.patch('/notifications/read')).data,
+    registerNotificationToken: async (token) => (await API.post('/notifications/token', { token })).data,
 
     // ─── Bookings ──────────────────────────────────────────────────────────────
     getBookings: async (filters = {}) => {

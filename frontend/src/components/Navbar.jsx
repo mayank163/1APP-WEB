@@ -6,6 +6,7 @@ import { FaShoppingCart, FaUser, FaListAlt, FaSignOutAlt, FaMapMarkerAlt, FaChev
 import { BsStack } from 'react-icons/bs';
 import SearchAutocomplete from './SearchAutocomplete';
 import ServiceSearchAutocomplete from './ServiceSearchAutocomplete';
+import NotificationBell from './NotificationBell';
 
 const tryHeroImg = (filename) => {
         try { return require(`../assets/hero/${filename}`); }
@@ -54,6 +55,8 @@ const NavigationBar = () => {
                         <div className="d-none d-lg-flex align-items-center gap-2">
                             {/* <SearchAutocomplete wrapperStyle={{ minWidth: '185px', maxWidth: '200px' }} /> */}
                             <ServiceSearchAutocomplete wrapperStyle={{ minWidth: '200px', maxWidth: '200px' }} /></div>
+                        {isAuthenticated && <NotificationBell />}
+
                         {/* Cart */}
                         <Link to="/cart" className="position-relative text-dark" style={{ fontSize: '20px' }}>
                             <FaShoppingCart />

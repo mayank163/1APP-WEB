@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import JobInvitationModal from '../components/JobInvitationModal';
 import JobForm from '../components/TechnicianJobForm';
 import { emptyForm, buildJobPayload } from '../utils/jobTemplates';
@@ -460,6 +461,7 @@ const FilterDropdown = ({ label, options, value, onChange }) => {
 
 // ─── Main TechnicianJobs Page ──────────────────────────────────────────────────
 const TechnicianJobs = () => {
+  const [searchParams] = useSearchParams();
   const { can } = useAdminAuth();
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [templates, setTemplates] = useState([]);
@@ -700,6 +702,11 @@ const TechnicianJobs = () => {
   const handleEdit = async (e) => { e.preventDefault(); setSaving(true); try { await adminApi.updateTechnicianJob(editingJobId, buildPayload(form)); toast.success('Job updated!'); setShowEditModal(false); setForm(emptyForm); setEditingJobId(null); await loadData(); } catch (err) { toast.error(err.response?.data?.message || 'Failed to update job'); } finally { setSaving(false); } };
   const handleDelete = async (jobId) => { if (!window.confirm('Delete this job? This cannot be undone.')) return; try { await adminApi.deleteTechnicianJob(jobId); toast.success('Job deleted'); if (selectedJob?._id === jobId) setShowViewPanel(false); await loadData(); } catch (err) { toast.error(err.response?.data?.message || 'Delete failed'); } };
   const openViewPanel = (job) => { setSelectedJob(job); setShowViewPanel(true); };
+  useEffect(() => {
+    const jobId = searchParams.get('jobId');
+    const job = jobs.find(item => item._id === jobId);
+    if (job) openViewPanel(job);
+  }, [searchParams, jobs]);
   const openRescheduleModal = (job) => { setRescheduleJob(job); setShowRescheduleModal(true); };
   const handleReschedule = async (jobId, jobDateFrom, jobDateTo, reason) => { setRescheduling(true); try { await adminApi.rescheduleJob(jobId, { jobDateFrom, jobDateTo, reason }); toast.success('Job rescheduled!'); setShowRescheduleModal(false); setRescheduleJob(null); await loadData(); if (selectedJob?._id === jobId) setSelectedJob(p => p ? { ...p, jobDate: { from: jobDateFrom, to: jobDateTo }, scheduledDate: jobDateFrom } : p); } catch (err) { toast.error(err.response?.data?.message || 'Reschedule failed'); } finally { setRescheduling(false); } };
   const handleStatusUpdate = async (status, note) => { setUpdatingStatus(true); try { await adminApi.updateTechnicianJobStatus(selectedJob._id, { status, note: note || '' }); toast.success('Status updated!'); setStatusModal({ show: false, targetStatus: '' }); setSelectedJob(p => ({ ...p, status, statusHistory: [...(p.statusHistory || []), { status, note: note || '', changedAt: new Date().toISOString() }] })); await loadData(); } catch (err) { toast.error(err.response?.data?.message || 'Update failed'); } finally { setUpdatingStatus(false); } };

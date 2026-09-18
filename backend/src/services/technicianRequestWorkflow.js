@@ -2,6 +2,7 @@ const TechnicianJob = require('../models/TechnicianJob');
 const TechnicianJobRequest = require('../models/TechnicianJobRequest');
 const AdditionalCharge = require('../models/AdditionalCharge');
 const { getIO } = require('../utils/socketInstance');
+const sendNotification = require('./notificationService');
 
 const emit = (room, event, payload) => {
   try { getIO().to(room).emit(event, payload); } catch (error) { console.warn(`[Socket] ${event} failed:`, error.message); }
@@ -43,6 +44,13 @@ const tryAssignApprovedRequest = async (requestId) => {
   request.conversation.push({ sender: 'system', type: 'final_amount', message: `Request approved and job assigned. Final amount: ₹${request.agreedTotal}.`, fixedJobCharge: fixedCharge, additionalChargesTotal: additionalTotal, finalAmount: request.agreedTotal, createdAt: now });
   await request.save();
   await TechnicianJob.findByIdAndUpdate(claimedJob._id, { finalPrice: request.agreedTotal });
+
+  await sendNotification.sendToTechnician(request.technician._id, {
+    type: 'job_assigned',
+    title: 'Job Assigned',
+    message: `You have been assigned to ${claimedJob.title}.`,
+    data: { jobId: String(claimedJob._id), requestId: String(request._id) },
+  });
 
   const payload = { requestId: request._id, request, job: claimedJob, finalJobAmount: request.agreedTotal };
   emit('admin', 'request:assigned', payload);

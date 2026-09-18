@@ -40,6 +40,7 @@ const userSchema = new mongoose.Schema({
     technicianId: { type: String, unique: true, sparse: true },
     createdByAdmin: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
     accountStatus: { type: String, enum: ['active', 'invited', 'suspended', 'blocked'], default: 'active' },
+    tokenVersion: { type: Number, default: 0 },
     dateOfBirth: Date,
     primaryService: { type: String, default: '' },
     serviceArea: { type: String, default: '' },

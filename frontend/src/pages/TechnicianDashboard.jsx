@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import API from '../services/api';
 import { toast } from 'react-toastify';
 import { useSocket } from '../context/SocketContext';
@@ -1131,6 +1132,7 @@ const TaskCompletionModal = ({ task, onClose, onSubmit, saving }) => {
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 const TechnicianDashboard = () => {
+  const [searchParams] = useSearchParams();
   const [jobs, setJobs] = useState([]);
   const [myJobs, setMyJobs] = useState([]);
   const [requests, setRequests] = useState([]);
@@ -1284,6 +1286,11 @@ const TechnicianDashboard = () => {
   }, []);
 
   useEffect(() => { loadData(); }, [loadData]);
+
+  useEffect(() => {
+    const jobId = searchParams.get('jobId');
+    if (jobId) setJobDetailModal(jobId);
+  }, [searchParams]);
 
   useEffect(() => {
     if (openChat) chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });

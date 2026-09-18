@@ -23,6 +23,9 @@ const protect = async (req, res, next) => {
         if (!currentUser) {
             return res.status(401).json({ success: false, message: 'User no longer exists.' });
         }
+        if ((currentUser.tokenVersion || 0) > 0 && decoded.tokenVersion !== currentUser.tokenVersion) {
+            return res.status(401).json({ success: false, message: 'Session has been logged out.' });
+        }
         if (currentUser.role === 'technician' && ['invited', 'suspended', 'blocked'].includes(currentUser.accountStatus)) return res.status(403).json({ success: false, message: 'Account is pending activation or suspended.' });
         req.user = currentUser;
         next();

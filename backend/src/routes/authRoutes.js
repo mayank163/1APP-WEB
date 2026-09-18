@@ -17,6 +17,7 @@ router.post('/refresh-token', authController.refreshToken);
 
 // Protected routes
 router.get('/me', protect, authController.getMe);
+router.post('/logout', protect, authController.logout);
 router.put('/me', protect, authController.updateMe);
 router.post('/me/avatar', protect, upload.single('profileImage'), authController.uploadProfileImage);
 router.post('/send-otp', protect, authController.sendVerificationOTP);

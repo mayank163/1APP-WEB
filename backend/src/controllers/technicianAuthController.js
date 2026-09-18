@@ -7,12 +7,20 @@ const { uploadFile, deleteFile } = require('../utils/s3Upload');
 const pendingRegistrations = new Map();
 const TTL = 10 * 60 * 1000;
 
-const signAccessToken = (id, role) => {
+const saveFcmToken = async (user, token) => {
+  const fcmToken = String(token || '').trim();
+  if (!fcmToken || fcmToken.length > 4096) return;
+  user.fcmTokens = [...new Set([...(user.fcmTokens || []), fcmToken])];
+  await user.save();
+};
+
+const signAccessToken = (id, role, tokenVersion = 0) => {
     return jwt.sign(
         {
             id,
             role,
-            type: 'access'
+            type: 'access',
+            tokenVersion
         },
         process.env.JWT_SECRET,
         {
@@ -21,12 +29,13 @@ const signAccessToken = (id, role) => {
     );
 };
 
-const signRefreshToken = (id, role) => {
+const signRefreshToken = (id, role, tokenVersion = 0) => {
     return jwt.sign(
         {
             id,
             role,
-            type: 'refresh'
+            type: 'refresh',
+            tokenVersion
         },
         process.env.REFRESH_TOKEN_SECRET,
         {
@@ -37,8 +46,8 @@ const signRefreshToken = (id, role) => {
 
 const sendTokenResponse = (user, statusCode, res) => {
     if (['invited', 'suspended', 'blocked'].includes(user.accountStatus)) return res.status(403).json({ success: false, message: 'Account is pending activation or suspended. Please contact support.' });
-    const accessToken = signAccessToken(user._id, user.role);
-    const refreshToken = signRefreshToken(user._id, user.role);
+    const accessToken = signAccessToken(user._id, user.role, user.tokenVersion);
+    const refreshToken = signRefreshToken(user._id, user.role, user.tokenVersion);
 
     // Hide password
     user.password = undefined;
@@ -90,6 +99,7 @@ exports.completeSignup = async (req, res, next) => {
     await technician.validate();
     pendingRegistrations.delete(phone);
     await technician.save();
+    await saveFcmToken(technician, req.body.fcmToken);
     sendTokenResponse(technician, 201, res);
   } catch (error) { next(error); }
 };
@@ -125,6 +135,7 @@ exports.activateTechnician = async (req, res, next) => {
     user.accountStatus = 'active';
     user.isPhoneVerified = true;
     await user.save();
+    await saveFcmToken(user, req.body.fcmToken);
     res.json({ success: true, message: 'Your technician account is activated. You can now sign in.' });
   } catch (error) { next(error); }
 };
@@ -135,7 +146,7 @@ exports.activateTechnician = async (req, res, next) => {
 //    or { "phone": "+91...", "password": "..." }
 exports.login = async (req, res, next) => {
   try {
-    const { email, phone, password } = req.body;
+    const { email, phone, password, fcmToken } = req.body;
 
     if ((!email && !phone) || !password) {
       return res.status(400).json({ success: false, message: 'Please provide email or phone, and password' });
@@ -153,6 +164,7 @@ exports.login = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
+    await saveFcmToken(technician, fcmToken);
     sendTokenResponse(technician, 200, res);
   } catch (error) {
     next(error);
@@ -489,12 +501,10 @@ exports.refreshToken = async (req, res, next) => {
         }
 
         if (['invited', 'suspended', 'blocked'].includes(technician.accountStatus)) return res.status(403).json({ success: false, message: 'Account is pending activation or suspended.' });
+        if ((technician.tokenVersion || 0) > 0 && decoded.tokenVersion !== technician.tokenVersion) return res.status(401).json({ success: false, message: 'Refresh token has been revoked.' });
 
         // Generate new access token
-        const accessToken = signAccessToken(
-            technician._id,
-            technician.role
-        );
+        const accessToken = signAccessToken(technician._id, technician.role, technician.tokenVersion);
 
         res.status(200).json({
             success: true,

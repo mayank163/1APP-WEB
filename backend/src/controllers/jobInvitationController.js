@@ -3,6 +3,7 @@ const Job = require('../models/TechnicianJob');
 const Request = require('../models/TechnicianJobRequest');
 const User = require('../models/User');
 const { getIO } = require('../utils/socketInstance');
+const sendNotification = require('../services/notificationService');
 const error = (message, statusCode = 409) => Object.assign(new Error(message), { statusCode });
 const activeTechnician = user => user?.role === 'technician' && !['invited', 'suspended', 'blocked'].includes(user.accountStatus);
 const openJob = job => job && job.status === 'open' && !job.assignedTechnician?._id && !job.assignedRequest;
@@ -56,6 +57,12 @@ exports.sendInvitation = async (req, res, next) => {
       }], { session });
     });
     await notify(invitation._id, technicianId);
+    await sendNotification.sendToTechnician(technicianId, {
+      type: 'job_invitation',
+      title: 'New Job Invitation',
+      message: 'You have received a new job invitation from admin.',
+      data: { jobId: String(jobId), requestId: String(invitation._id) },
+    }, req.user);
     res.status(201).json({ success: true, message: 'Request sent. Assignment is pending technician acceptance.', data: { request: invitation } });
   } catch (err) { next(err.code === 11000 ? error('This technician has already been invited to this job.') : err); }
 };
@@ -95,6 +102,14 @@ exports.respondToInvitation = async (req, res, next) => {
       await invitation.save({ session });
     });
     await notify(invitation._id, req.user._id, assignedJob);
+    if (assignedJob) {
+      await sendNotification.sendToTechnician(req.user._id, {
+        type: 'job_assigned',
+        title: 'Job Assigned',
+        message: `You accepted ${assignedJob.title}.`,
+        data: { jobId: String(assignedJob._id), requestId: String(invitation._id) },
+      });
+    }
     res.json({ success: true, message: action === 'accept' ? 'Invitation accepted. The job is assigned to you.' : 'Invitation rejected.', data: { request: invitation, job: assignedJob } });
   } catch (err) { next(err); }
 };

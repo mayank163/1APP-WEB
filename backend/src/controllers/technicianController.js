@@ -2,7 +2,9 @@ const User = require('../models/User');
 const TechnicianJob = require('../models/TechnicianJob');
 const TechnicianJobRequest = require('../models/TechnicianJobRequest');
 const TechnicianWithdrawal = require('../models/TechnicianWithdrawal');
+const AdditionalCharge = require('../models/AdditionalCharge');
 const { uploadFile } = require('../utils/s3Upload');
+const sendNotification = require('../services/notificationService');
 
 /**
  * Haversine formula — returns distance in metres between two GPS coordinates.
@@ -812,6 +814,13 @@ const requestJob = async (req, res, next) => {
       await TechnicianJobRequest.create(
         requestData
       );
+
+    await sendNotification.sendToAdmins({
+      type: hasBid ? 'technician_counter_offer' : 'technician_job_request',
+      title: hasBid ? 'Technician Counter Offer' : 'New Technician Job Request',
+      message: `${req.user.name} ${hasBid ? 'sent a counter offer for' : 'requested'} ${job.title}.`,
+      data: { jobId: String(job._id), requestId: String(request._id), amount: hasBid ? bidAmount : '' },
+    }, req.user);
 
     // --------------------------------
     // ADD TECHNICIAN TO REQUESTED BY
@@ -1856,6 +1865,65 @@ const respondToRequestCounter = async (req, res, next) => {
         { _id: request.job._id },
         { $addToSet: { requestedBy: req.user._id } }
       );
+      const fixedCharge = await AdditionalCharge.findOne({
+        request: request._id,
+        chargeType: 'fixed_job',
+      });
+      if (fixedCharge) {
+        fixedCharge.requestedAmount = amount;
+        fixedCharge.status = 'pending';
+        fixedCharge.pendingWith = 'admin';
+        fixedCharge.technicianCounterAmount = null;
+        fixedCharge.adminCounterAmount = null;
+        fixedCharge.adminNote = '';
+        fixedCharge.technicianResponseNote = cleanNote;
+        fixedCharge.reviewedAt = null;
+        fixedCharge.resolvedAt = null;
+        fixedCharge.counterHistory.push({
+          round: (fixedCharge.counterHistory?.length || 0) + 1,
+          actor: 'technician',
+          action: 'counter',
+          amount,
+          note: cleanNote,
+          createdAt: now,
+        });
+        await fixedCharge.save();
+      } else {
+        await AdditionalCharge.create({
+          job: request.job._id || request.job,
+          request: request._id,
+          technician: req.user._id,
+          chargeType: 'fixed_job',
+          label: 'Fixed job price',
+          description: cleanNote,
+          requestedAmount: amount,
+          status: 'pending',
+          pendingWith: 'admin',
+          submittedAt: now,
+          counterHistory: [{
+            round: 1,
+            actor: 'technician',
+            action: 'submit',
+            amount,
+            note: cleanNote,
+            createdAt: now,
+          }],
+        });
+      }
+      request.chargesStatus = 'pending';
+      const savedFixedCharge = fixedCharge || await AdditionalCharge.findOne({
+        request: request._id,
+        chargeType: 'fixed_job',
+      });
+      try {
+        const { getIO } = require('../utils/socketInstance');
+        getIO().to('admin').emit('charges:submitted', {
+          requestId: request._id,
+          charge: savedFixedCharge,
+        });
+      } catch (socketError) {
+        console.warn('[Socket] fixed charge submission failed:', socketError.message);
+      }
       request.conversation.push({ sender: 'technician', type: 'fixed_charge', fixedCharge: amount, counterOffer: amount, counterOfferFrom: 'technician', message: cleanNote || `Technician counter-offer: ₹${amount}`, createdAt: now });
     } else if (action === 'reject') {
       request.status = 'rejected';
@@ -1868,6 +1936,12 @@ const respondToRequestCounter = async (req, res, next) => {
       request.conversation.push({ sender: 'technician', type: 'message', message: cleanNote || 'Technician accepted the admin counter-offer.', createdAt: now });
     }
     await request.save();
+    await sendNotification.sendToAdmins({
+      type: action === 'counter' ? 'technician_counter_offer' : 'technician_request_response',
+      title: action === 'counter' ? 'Technician Counter Offer' : 'Technician Responded',
+      message: `${request.technician.name} ${action === 'counter' ? 'sent a new counter offer for' : action + 'ed'} ${request.job.title}.`,
+      data: { jobId: String(request.job._id), requestId: String(request._id), amount: action === 'counter' ? counterOffer : '' },
+    }, req.user);
     const assignment = action === 'accept' ? await tryAssignApprovedRequest(request._id) : null;
     const payload = { requestId: request._id, request, action, ...(assignment?.assigned ? { assigned: true, job: assignment.job } : {}) };
     try {

@@ -12,9 +12,20 @@ const {
 const pendingRegistrations = new Map();
 const PENDING_REGISTRATION_TTL = 5 * 60 * 1000;
 
-const signAccessToken = (id, role) => {
+exports.logout = async (req, res, next) => {
+    try {
+        const token = String(req.body?.fcmToken || '').trim();
+        const update = { $inc: { tokenVersion: 1 } };
+        if (token) update.$pull = { fcmTokens: token };
+        await req.user.constructor.findByIdAndUpdate(req.user._id, update);
+        res.json({ success: true, message: 'Logged out successfully.' });
+    } catch (error) {
+        next(error);
+    }
+};
+const signAccessToken = (id, role, tokenVersion = 0) => {
     return jwt.sign(
-        { id, role, type: 'access' },
+        { id, role, type: 'access', tokenVersion },
         process.env.JWT_SECRET,
         {
             expiresIn: process.env.JWT_EXPIRE || '7d'
@@ -22,9 +33,9 @@ const signAccessToken = (id, role) => {
     );
 };
 
-const signRefreshToken = (id, role) => {
+const signRefreshToken = (id, role, tokenVersion = 0) => {
     return jwt.sign(
-        { id, role, type: 'refresh' },
+        { id, role, type: 'refresh', tokenVersion },
         process.env.REFRESH_TOKEN_SECRET,
         {
             expiresIn: process.env.REFRESH_TOKEN_EXPIRE || '30d'
@@ -34,8 +45,8 @@ const signRefreshToken = (id, role) => {
 
 const sendTokenResponse = (user, statusCode, res) => {
     if (user.role === 'technician' && ['invited', 'suspended', 'blocked'].includes(user.accountStatus)) return res.status(403).json({ success: false, message: 'Account is pending activation or suspended.' });
-    const accessToken = signAccessToken(user._id, user.role);
-    const refreshToken = signRefreshToken(user._id, user.role);
+    const accessToken = signAccessToken(user._id, user.role, user.tokenVersion);
+    const refreshToken = signRefreshToken(user._id, user.role, user.tokenVersion);
 
     // Hide password
     user.password = undefined;
@@ -101,7 +112,7 @@ exports.startRegister = async (req, res, next) => {
  */
 exports.verifyRegister = async (req, res, next) => {
     try {
-        const { phone, code } = req.body;
+        const { phone, code, fcmToken } = req.body;
 
         if (!phone || !code) {
             return res.status(400).json({
@@ -156,7 +167,8 @@ exports.verifyRegister = async (req, res, next) => {
 
         const user = await User.create({
             ...userData,
-            isPhoneVerified: true
+            isPhoneVerified: true,
+            ...(fcmToken && { fcmTokens: [String(fcmToken).trim()] })
         });
 
         pendingRegistrations.delete(phone);
@@ -232,7 +244,7 @@ exports.register = async (req, res, next) => {
  */
 exports.login = async (req, res, next) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, fcmToken } = req.body;
 
         if (!email || !password) {
             return res.status(400).json({
@@ -263,6 +275,12 @@ exports.login = async (req, res, next) => {
         sendLoginNotification(user).catch(err =>
             console.error('Login notification email failed:', err.message)
         );
+
+        if (fcmToken && String(fcmToken).length <= 4096) {
+            await User.findByIdAndUpdate(user._id, {
+                $addToSet: { fcmTokens: String(fcmToken).trim() },
+            });
+        }
 
         sendTokenResponse(user, 200, res);
     } catch (err) {
@@ -453,14 +471,13 @@ exports.resetPassword = async (req, res, next) => {
         next(err);
     }
 };
-
 /**
  * @desc    Google OAuth login — finds existing account by email
  * @route   POST /api/auth/google
  */
 exports.googleLogin = async (req, res, next) => {
     try {
-        const { accessToken } = req.body;
+        const { accessToken, fcmToken } = req.body;
 
         if (!accessToken) {
             return res.status(400).json({ success: false, message: 'Access token is required' });
@@ -490,6 +507,10 @@ exports.googleLogin = async (req, res, next) => {
                 success: false,
                 message: 'No account found with this Google email. Please sign up first.',
             });
+        }
+
+        if (fcmToken && String(fcmToken).length <= 4096) {
+            await User.findByIdAndUpdate(user._id, { $addToSet: { fcmTokens: String(fcmToken).trim() } });
         }
 
         sendTokenResponse(user, 200, res);
@@ -622,12 +643,10 @@ exports.refreshToken = async (req, res, next) => {
         }
 
         if (user.role === 'technician' && ['invited', 'suspended', 'blocked'].includes(user.accountStatus)) return res.status(403).json({ success: false, message: 'Account is pending activation or suspended.' });
+        if ((user.tokenVersion || 0) > 0 && decoded.tokenVersion !== user.tokenVersion) return res.status(401).json({ success: false, message: 'Refresh token has been revoked.' });
 
         // Generate new access token
-        const accessToken = signAccessToken(
-            user._id,
-            user.role
-        );
+        const accessToken = signAccessToken(user._id, user.role, user.tokenVersion);
 
         res.status(200).json({
             success: true,

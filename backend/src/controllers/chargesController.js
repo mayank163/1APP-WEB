@@ -29,6 +29,8 @@ const JobInvoice           = require('../models/JobInvoice');
 
 const { getIO } = require('../utils/socketInstance');
 const { tryAssignApprovedRequest } = require('../services/technicianRequestWorkflow');
+const { findTechnicianScheduleConflict, createScheduleConflictError } = require('../services/technicianScheduleService');
+const sendNotification = require('../services/notificationService');
 
 const getPayAmount = (pay = {}) => {
   if (pay.type === 'hourly') return (Number(pay.hourlyRate) || 0) * (Number(pay.maxHours) || 0);
@@ -203,8 +205,13 @@ const recalculateFinalAmount = async (request) => {
     : await TechnicianJob.findById(request.job);
   const jobDoc = request.job?._id ? request.job : job;
 
-  const fixedCharge        = request.counterOffer > 0 ? request.counterOffer : getPayAmount(jobDoc?.pay);
-  const acceptedCharges    = charges.filter((c) => c.status === 'accepted');
+  const fixedJobCharge     = charges.find((c) => c.chargeType === 'fixed_job' && c.status === 'accepted');
+  const fixedCharge        = fixedJobCharge?.agreedAmount > 0
+    ? fixedJobCharge.agreedAmount
+    : request.counterOffer > 0
+      ? request.counterOffer
+      : getPayAmount(jobDoc?.pay);
+  const acceptedCharges    = charges.filter((c) => c.status === 'accepted' && c.chargeType !== 'fixed_job');
   const additionalTotal    = acceptedCharges.reduce((sum, c) => sum + (c.agreedAmount || 0), 0);
   const total              = fixedCharge + additionalTotal;
 
@@ -241,6 +248,23 @@ exports.submitCharges = async (req, res, next) => {
     // Only the owning technician can submit charges
     if (request.technician.toString() !== req.user._id.toString()) {
       return res.status(403).json({ success: false, message: 'Not authorised' });
+    }
+
+    const scheduleConflict = await findTechnicianScheduleConflict(
+      request.technician,
+      request.job,
+      { excludeJobId: request.job?._id },
+    );
+    if (scheduleConflict) {
+      return res.status(409).json({
+        success: false,
+        message: 'You already have an assigned job during this time.',
+        data: {
+          conflictingJobId: scheduleConflict._id,
+          conflictingJobTitle: scheduleConflict.title,
+          conflictingJobDate: scheduleConflict.jobDate,
+        },
+      });
     }
 
     // Validate each charge
@@ -308,6 +332,13 @@ exports.submitCharges = async (req, res, next) => {
       $push: { conversation: convEntry },
     });
 
+    await sendNotification.sendToAdmins({
+      type: 'technician_counter_offer',
+      title: 'Technician Submitted Charges',
+      message: `${req.user.name || 'A technician'} submitted additional charges for ${request.job.title}.`,
+      data: { jobId: String(request.job._id), requestId: String(request._id) },
+    }, req.user);
+
     // Notify in real-time
     emitToAdmin('charges:submitted', { requestId, count: created.length, charges: created });
     emitToRequest(requestId, 'charges:submitted', { requestId, charges: created });
@@ -347,6 +378,19 @@ exports.respondToCounter = async (req, res, next) => {
 
     if (charge.technician.toString() !== req.user._id.toString()) {
       return res.status(403).json({ success: false, message: 'Not authorised' });
+    }
+
+    if (action === 'accept') {
+      const request = await TechnicianJobRequest.findById(charge.request).populate('job');
+      const scheduleConflict = await findTechnicianScheduleConflict(
+        charge.technician,
+        request?.job,
+        { excludeJobId: request?.job?._id },
+      );
+      if (scheduleConflict) throw createScheduleConflictError(
+        scheduleConflict,
+        'The technician already has an assigned job during this time.',
+      );
     }
 
     // Must be countered AND it must be technician's turn
@@ -409,6 +453,15 @@ exports.respondToCounter = async (req, res, next) => {
     }
 
     await charge.save();
+
+    if (action === 'counter') {
+      await sendNotification.sendToAdmins({
+        type: 'technician_counter_offer',
+        title: 'Technician Counter Offer',
+        message: 'A technician submitted a counter offer on an additional charge.',
+        data: { requestId: String(charge.request), chargeId: String(charge._id), amount: charge.technicianCounterAmount },
+      }, req.user);
+    }
 
     const newChargesStatus = await syncChargesStatus(charge.request.toString());
 
@@ -752,6 +805,19 @@ exports.reviewCharge = async (req, res, next) => {
       });
     }
 
+    if (action === 'accept') {
+      const request = await TechnicianJobRequest.findById(charge.request).populate('job');
+      const scheduleConflict = await findTechnicianScheduleConflict(
+        charge.technician,
+        request?.job,
+        { excludeJobId: request?.job?._id },
+      );
+      if (scheduleConflict) throw createScheduleConflictError(
+        scheduleConflict,
+        'The technician already has an assigned job during this time.',
+      );
+    }
+
     const now       = new Date();
     const cleanNote = adminNote ? adminNote.trim() : '';
 
@@ -929,10 +995,15 @@ exports.generateInvoice = async (req, res, next) => {
     }
 
     const job        = request.job;
-    const fixedCharge = request.counterOffer > 0 ? request.counterOffer : getPayAmount(job.pay);
+    const fixedJobCharge = charges.find((c) => c.chargeType === 'fixed_job' && c.status === 'accepted');
+    const fixedCharge = fixedJobCharge?.agreedAmount > 0
+      ? fixedJobCharge.agreedAmount
+      : request.counterOffer > 0
+        ? request.counterOffer
+        : getPayAmount(job.pay);
 
     const acceptedCharges = charges
-      .filter((c) => c.status === 'accepted')
+      .filter((c) => c.status === 'accepted' && c.chargeType !== 'fixed_job')
       .map((c) => ({
         chargeId:        c._id,
         label:           c.label,

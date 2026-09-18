@@ -4,7 +4,9 @@ const AdditionalCharge = require('../models/AdditionalCharge');
 const User = require('../models/User');
 const { getIO } = require('../utils/socketInstance');
 const sendNotification = require('../services/notificationService');
+const { sendToTechnician } = sendNotification;
 const { tryAssignApprovedRequest } = require('../services/technicianRequestWorkflow');
+const { findTechnicianScheduleConflict } = require('../services/technicianScheduleService');
 
 // ── Helper: keep only the fields that belong to the selected pay type ────────
 // This prevents the DB from storing zeros for fields that were never filled in.
@@ -180,18 +182,17 @@ const createTechnicianJob = async (req, res, next) => {
       // Find active technicians
       const technicians = await User.find({
         role: 'technician',
-        isActive: true,
-        fcmTokens: {
-          $exists: true,
-          $ne: []
-        }
+        $or: [
+          { accountStatus: 'active' },
+          { accountStatus: { $exists: false } },
+        ],
       }).select('_id fcmTokens');
 
       if (technicians.length > 0) {
 
         await sendNotification({
           recipients: technicians,
-          sender: req.user._id,
+          sender: req.user,
 
           type: 'new_job',
 
@@ -285,6 +286,24 @@ const updateTechnicianRequest = async (req, res, next) => {
       if (!request.job || !request.technician) return res.status(404).json({ success: false, message: 'Job or technician no longer exists.' });
       if (['invited', 'suspended', 'blocked'].includes(request.technician.accountStatus)) return res.status(400).json({ success: false, message: 'Only active technicians can be assigned.' });
       if (!['pending', 'counter-offer'].includes(request.status) || request.job.status !== 'open') return res.status(409).json({ success: false, message: 'This request is no longer available for assignment.' });
+
+      const scheduleConflict = await findTechnicianScheduleConflict(
+        request.technician._id,
+        request.job,
+        { excludeJobId: request.job._id },
+      );
+      if (scheduleConflict) {
+        return res.status(409).json({
+          success: false,
+          message: 'The technician already has an assigned job during this time.',
+          data: {
+            conflictingJobId: scheduleConflict._id,
+            conflictingJobTitle: scheduleConflict.title,
+            conflictingJobDate: scheduleConflict.jobDate,
+          },
+        });
+      }
+
       const unresolvedCharges = await AdditionalCharge.countDocuments({ request: requestId, status: { $in: ['pending', 'countered'] } });
       if (unresolvedCharges > 0) {
         request.status = 'accepted';
@@ -320,6 +339,11 @@ const updateTechnicianRequest = async (req, res, next) => {
         createdAt: now,
       };
     } else if (status === 'rejected') {
+      await TechnicianJob.updateOne(
+        { _id: request.job?._id || request.job },
+        { $pull: { requestedBy: request.technician?._id || request.technician } },
+      );
+
       convEntry = {
         sender:    'admin',
         type:      'message',
@@ -368,6 +392,12 @@ const updateTechnicianRequest = async (req, res, next) => {
         );
         if (!claimed) return res.status(409).json({ success: false, message: 'This job has already been assigned.' });
         Object.assign(job, { status: claimed.status, assignedTechnician: claimed.assignedTechnician, assignedRequest: claimed.assignedRequest });
+        await sendToTechnician(technician._id, {
+          type: 'job_assigned',
+          title: 'Job Assigned',
+          message: `You have been assigned to ${job.title}.`,
+          data: { jobId: String(job._id), requestId: String(request._id) },
+        }, req.user);
       }
 
       request.completedAt   = null;
@@ -634,6 +664,15 @@ const sendTechnicianRequestMessage = async (req, res, next) => {
     request.conversation.push(entry);
     await request.save();
 
+    if (offerAmount > 0) {
+      await sendNotification.sendToTechnician(request.technician, {
+        type: 'admin_counter_offer',
+        title: 'Admin Counter Offer',
+        message: `Admin sent a counter offer for your job request.`,
+        data: { jobId: String(request.job), requestId: String(request._id) },
+      }, req.user);
+    }
+
     const newMsg = request.conversation[request.conversation.length - 1];
     emitToRequest(requestId, 'request:message', { requestId, message: newMsg });
     emitToRequest(requestId, 'request:status', {
@@ -694,6 +733,13 @@ const payTechnician = async (req, res, next) => {
     const technician = await User.findByIdAndUpdate(job.assignedTechnician._id, {
       $inc: { totalEarnings: amount, totalJobsDone: 1 },
     }, { new: true });
+
+    await sendToTechnician(job.assignedTechnician._id, {
+      type: 'wallet_payment',
+      title: 'Payment Added to Wallet',
+      message: `$${amount} has been credited to your wallet for ${job.title}.`,
+      data: { jobId: String(job._id), amount },
+    }, req.user);
 
     const request = await TechnicianJobRequest.findById(job.assignedRequest);
     if (request) {
@@ -766,6 +812,15 @@ const rescheduleJob = async (req, res, next) => {
     });
 
     await job.save();
+
+    if (job.assignedTechnician?._id) {
+      await sendToTechnician(job.assignedTechnician._id, {
+        type: 'job_rescheduled',
+        title: 'Job Rescheduled',
+        message: `${job.title} was rescheduled to ${newFrom.toLocaleString('en-IN')}.`,
+        data: { jobId: String(job._id), jobDateFrom: newFrom.toISOString(), jobDateTo: newTo.toISOString() },
+      }, req.user);
+    }
 
     res.status(200).json({ success: true, message: 'Job rescheduled successfully', data: { job } });
     emitToAdmin('job:updated', { job });

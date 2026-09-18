@@ -35,7 +35,8 @@ const adminSchema = new mongoose.Schema({
         amount: { type: Number, required: true, min: 0 },
         note: { type: String, default: '', trim: true },
         createdAt: { type: Date, default: Date.now },
-    }]
+    }],
+    fcmTokens: { type: [String], default: [] },
 }, { timestamps: true });
 
 // Hash password before saving

@@ -19,7 +19,7 @@ const signToken = (id, role) => {
  */
 exports.login = async (req, res, next) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, fcmToken } = req.body;
 
         if (!email || !password) {
             return res.status(400).json({
@@ -38,13 +38,20 @@ exports.login = async (req, res, next) => {
         }
 
         // Check password matches
-        // const isMatch = await admin.comparePassword(password);
-        // if (!isMatch) {
-        //     return res.status(401).json({
-        //         success: false,
-        //         message: 'Invalid admin credentials'
-        //     });
-        // }
+        const isMatch = await admin.comparePassword(password);
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid admin credentials'
+            });
+        }
+
+        // Store FCM token if provided (web or mobile login)
+        if (fcmToken && String(fcmToken).length <= 4096) {
+            await Admin.findByIdAndUpdate(admin._id, {
+                $addToSet: { fcmTokens: String(fcmToken).trim() }
+            });
+        }
 
         const token = signToken(admin._id, 'admin');
 

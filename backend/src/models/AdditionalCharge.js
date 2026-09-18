@@ -49,6 +49,12 @@ const additionalChargeSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    chargeType: {
+      type: String,
+      enum: ['additional', 'fixed_job'],
+      default: 'additional',
+      index: true,
+    },
 
     // ── Charge details ─────────────────────────────────────────────────────
     label: {

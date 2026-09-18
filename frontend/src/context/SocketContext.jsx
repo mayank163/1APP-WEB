@@ -33,7 +33,15 @@ export const SocketProvider = ({ children }) => {
         });
         socket.on('disconnect', () => setConnected(false));
 
+        if (user?.role === 'technician' && user._id) {
+            socket.on('connect', () => socket.emit('technician:join', user._id));
+            if (socket.connected) socket.emit('technician:join', user._id);
+        }
+
         return () => {
+            if (user?.role === 'technician' && user._id) {
+                socket.emit('technician:leave', user._id);
+            }
             socket.disconnect();
             socketRef.current = null;
             setSocket(null);

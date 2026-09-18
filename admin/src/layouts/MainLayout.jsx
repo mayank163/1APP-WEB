@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import adminApi from '../services/adminApi';
 import { connectAdminSocket } from '../services/socket';
+import NotificationBell from '../components/NotificationBell';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import {
     FaChartBar, FaTasks, FaWrench, FaFolderOpen,
@@ -160,6 +161,7 @@ const MainLayout = () => {
                         <h5 className="fw-bold text-dark mb-0" style={{ fontSize: "0.95rem" }}>Admin Dashboard</h5>
                     </div>
                     <div className="d-flex align-items-center gap-2">
+                        <NotificationBell />
                         <span className="dot bg-success rounded-circle" style={{ width: '8px', height: '8px' }}></span>
                         <span className="text-muted small fw-medium">{admin?.name || 'Admin'}</span>
                         {admin?.isSuperAdmin && (

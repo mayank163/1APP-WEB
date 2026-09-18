@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { enableBrowserNotifications } from '../services/firebaseNotifications';
 
 const AdminAuthContext = createContext(null);
 
@@ -11,6 +12,12 @@ export const AdminAuthProvider = ({ children }) => {
             try { setAdmin(JSON.parse(stored)); } catch { /* ignore */ }
         }
     }, []);
+
+    useEffect(() => {
+        if (admin && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+            enableBrowserNotifications({ requestPermission: false }).catch(() => {});
+        }
+    }, [admin]);
 
     const saveAdmin = (adminData) => {
         setAdmin(adminData);

@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import authService from '../services/authService';
+import { enableBrowserNotifications } from '../services/firebaseNotifications';
 
 export const AuthContext = createContext();
 
@@ -36,6 +37,12 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         checkAuth();
     }, []);
+
+    useEffect(() => {
+        if (user && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+            enableBrowserNotifications({ requestPermission: false }).catch(() => {});
+        }
+    }, [user]);
 
     const login = async (identifier, password) => {
         setLoading(true);
@@ -123,8 +130,8 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const logout = () => {
-        authService.logout();
+    const logout = async () => {
+        await authService.logout();
         setUser(null);
     };
 

@@ -2,10 +2,11 @@ import API from './api';
 
 const authService = {
     login: async (identifier, password) => {
+        const fcmToken = localStorage.getItem('1App_fcm_token');
         // identifier can be email or phone
         const payload = identifier.includes('@')
-            ? { email: identifier, password }
-            : { phone: identifier, password };
+            ? { email: identifier, password, ...(fcmToken && { fcmToken }) }
+            : { phone: identifier, password, ...(fcmToken && { fcmToken }) };
 
         // Try regular user login first, then technician login
         try {
@@ -50,7 +51,8 @@ const authService = {
     },
 
     verifyRegister: async (phone, code) => {
-        const response = await API.post('/auth/verify-register', { phone, code });
+        const fcmToken = localStorage.getItem('1App_fcm_token');
+        const response = await API.post('/auth/verify-register', { phone, code, ...(fcmToken && { fcmToken }) });
         const token = response.data.accessToken || response.data.token;
         if (token) {
             localStorage.setItem('1App_token', token);
@@ -62,7 +64,8 @@ const authService = {
     },
 
     googleLogin: async (accessToken) => {
-        const response = await API.post('/auth/google', { accessToken });
+        const fcmToken = localStorage.getItem('1App_fcm_token');
+        const response = await API.post('/auth/google', { accessToken, ...(fcmToken && { fcmToken }) });
         const token = response.data.accessToken || response.data.token;
         if (token) {
             localStorage.setItem('1App_token', token);
@@ -73,9 +76,13 @@ const authService = {
         return response.data;
     },
 
-    logout: () => {
+    logout: async () => {
+        const fcmToken = localStorage.getItem('1App_fcm_token');
+        const refreshToken = localStorage.getItem('1App_refreshToken');
+        await API.post('/auth/logout', { fcmToken, refreshToken }).catch(() => {});
         localStorage.removeItem('1App_token');
         localStorage.removeItem('1App_refreshToken');
+        localStorage.removeItem('1App_fcm_token');
     },
 
     getMe: async () => {
