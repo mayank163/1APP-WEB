@@ -168,6 +168,16 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const deleteAccount = async () => {
+        try {
+            const res = await authService.deleteAccount();
+            setUser(null);
+            return res;
+        } catch (err) {
+            throw new Error(err.response?.data?.message || 'Account deletion failed');
+        }
+    };
+
     const uploadProfileImage = async (file) => {
         try {
             const res = await authService.uploadProfileImage(file);
@@ -193,6 +203,7 @@ export const AuthProvider = ({ children }) => {
             sendOTP,
             verifyOTP,
             updateProfile,
+            deleteAccount,
             uploadProfileImage,
             isAuthenticated: !!user,
             isAdmin: user?.role === 'admin',

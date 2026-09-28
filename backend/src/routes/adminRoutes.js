@@ -15,6 +15,7 @@ router.get('/stats', checkPermission('dashboard', 'read'), adminController.getDa
 router.get('/bookings', checkPermission('bookings', 'read'), adminController.getAllBookings);
 router.put('/bookings/:id', checkPermission('bookings', 'write'), adminController.updateBookingStatus);
 router.get('/users', checkPermission('users', 'read'), adminController.getAllUsers);
+router.patch('/users/:id/status', checkPermission('users', 'write'), adminController.updateUserAccountStatus);
 
 // Sub-admin management (super admin only via isSuperAdmin check inside checkPermission)
 router.get('/sub-admins/resources', adminController.getResources);

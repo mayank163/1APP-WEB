@@ -33,7 +33,6 @@ Address: ${booking.address}
 -----------------------------------------
 APPOINTMENT DETAILS:
 Scheduled Date: ${serviceDateFormatted}
-Time Slot     : ${booking.timeSlot}
 -----------------------------------------
 SERVICES ORDERED:
 `;

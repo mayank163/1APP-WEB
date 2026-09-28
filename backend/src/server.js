@@ -71,6 +71,28 @@ mongoose.connect(process.env.MONGODB_URI)
                 console.warn('Could not remove TechnicianJob geo index:', err.message);
             }
         }
+
+        // Replace global email/phone uniqueness with uniqueness for usable accounts.
+        try {
+            await User.collection.dropIndex('email_1');
+        } catch (err) {
+            if (err.codeName !== 'IndexNotFound') {
+                console.warn('Could not remove old user email index:', err.message);
+            }
+        }
+        try {
+            await User.collection.dropIndex('phone_1');
+        } catch (err) {
+            if (err.codeName !== 'IndexNotFound') {
+                console.warn('Could not remove old user phone index:', err.message);
+            }
+        }
+        try {
+            await User.syncIndexes();
+            console.log('User email and phone indexes are up to date');
+        } catch (err) {
+            console.warn('Could not update user indexes:', err.message);
+        }
     })
     .catch(err => console.error('❌ MongoDB connection error:', err));
 
@@ -109,6 +131,7 @@ io.use(async (socket, next) => {
             ? await Admin.findById(decoded.id)
             : await User.findById(decoded.id);
         if (!account) return next(new Error('User no longer exists'));
+        if (account.accountStatus === 'inactive') return next(new Error('This account is inactive'));
         if (account.role === 'technician' && ['invited', 'suspended', 'blocked'].includes(account.accountStatus)) {
             return next(new Error('Technician account is not active'));
         }
@@ -366,6 +389,21 @@ io.on("connection", (socket) => {
         if (technicianId) {
             socket.leave(`technician:${technicianId}`);
             console.log(`[Socket] ${socket.id} left technician room: ${technicianId}`);
+        }
+    });
+
+    // Customer joins their own room for realtime booking notifications.
+    socket.on('user:join', (userId) => {
+        if (socket.userRole === 'user' && String(socket.user._id) === String(userId)) {
+            socket.join(`user:${userId}`);
+            console.log(`[Socket] ${socket.id} joined user room: ${userId}`);
+        }
+    });
+
+    socket.on('user:leave', (userId) => {
+        if (socket.userRole === 'user' && String(socket.user._id) === String(userId)) {
+            socket.leave(`user:${userId}`);
+            console.log(`[Socket] ${socket.id} left user room: ${userId}`);
         }
     });
 

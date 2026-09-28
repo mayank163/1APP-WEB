@@ -4,6 +4,7 @@ import { CartContext } from '../context/CartContext';
 import { FaClock, FaDollarSign, FaShoppingCart } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { resolveImageUrl } from '../services/api';
+import { formatServicePrice } from '../utils/servicePrice';
 
 const ServiceCard = ({ service }) => {
     const { addToCart } = useContext(CartContext);
@@ -39,7 +40,7 @@ const ServiceCard = ({ service }) => {
                 <div className="d-flex justify-content-between align-items-center mb-4 mt-auto">
                     <div className="d-flex align-items-center gap-1 text-primary fw-bold fs-5">
                         <FaDollarSign className="fs-6" />
-                        <span>{service.price}</span>
+                        <span>{formatServicePrice(service.price)}</span>
                     </div>
                     <div className="d-flex align-items-center gap-1 text-muted small fw-medium">
                         <FaClock />

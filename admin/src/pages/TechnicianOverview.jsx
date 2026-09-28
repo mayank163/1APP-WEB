@@ -23,7 +23,7 @@ const initialFilters = {
 };
 const initials = name => name.split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
 const verification = t => t.verificationStatus === 'approved' ? 'approved' : t.verificationStatus === 'rejected' ? 'rejected' : t.verificationStatus === 'pending' ? 'under_review' : 'pending';
-const availability = t => ['suspended', 'blocked'].includes(t.accountStatus) ? 'blocked' : t.accountStatus === 'invited' ? 'invited' : t.isOnline ? 'online' : 'offline';
+const availability = t => t.accountStatus === 'inactive' ? 'inactive' : ['suspended', 'blocked'].includes(t.accountStatus) ? 'blocked' : t.accountStatus === 'invited' ? 'invited' : t.isOnline ? 'online' : 'offline';
 const labels = {
   approved: 'Verified',
   rejected: 'Action Required',
@@ -33,6 +33,7 @@ const labels = {
   invited: 'Invited',
   suspended: 'Suspended',
   blocked: 'Blocked',
+  inactive: 'Inactive',
   online: 'Online',
   offline: 'Offline'
 };
@@ -181,18 +182,19 @@ function ActionModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [technician._id, action]);
   const suspend = action === 'suspend';
-  const restoring = ['suspended', 'blocked'].includes(technician.accountStatus);
-  const title = suspend ? `${restoring ? 'Restore' : 'Suspend'} Account` : action === 'assign' ? 'Assign to Job' : 'Message Technician';
+  const inactive = action === 'inactive';
+  const restoring = inactive ? technician.accountStatus === 'inactive' : ['suspended', 'blocked'].includes(technician.accountStatus);
+  const title = inactive ? `${restoring ? 'Activate' : 'Deactivate'} Account` : suspend ? `${restoring ? 'Restore' : 'Suspend'} Account` : action === 'assign' ? 'Assign to Job' : 'Message Technician';
   const submit = async e => {
     e.preventDefault();
     setBusy(true);
     setError('');
     try {
-      if (suspend) await adminApi.updateTechnicianAccount(technician._id, restoring ? 'active' : 'suspended');else if (action === 'assign') await adminApi.updateTechnicianRequest(requestId, {
+      if (inactive) await adminApi.updateTechnicianAccount(technician._id, restoring ? 'active' : 'inactive'); else if (suspend) await adminApi.updateTechnicianAccount(technician._id, restoring ? 'active' : 'suspended');else if (action === 'assign') await adminApi.updateTechnicianRequest(requestId, {
         status: 'accepted',
         adminMessage: 'Assigned by administrator.'
       });else await adminApi.sendTechnicianRequestMessage(requestId, message);
-      toast.success(suspend ? 'Account status updated.' : action === 'assign' ? 'Technician assigned to job.' : 'Message sent.');
+      toast.success(inactive || suspend ? 'Account status updated.' : action === 'assign' ? 'Technician assigned to job.' : 'Message sent.');
       onSaved();
       onClose();
     } catch (err) {
@@ -204,8 +206,8 @@ function ActionModal({
   return <Modal show centered onHide={() => !busy && onClose()} dialogClassName="to-modal to-action-modal" aria-labelledby="to-action-title"><Modal.Header><Modal.Title id="to-action-title">{title}</Modal.Title><button className="to-icon-btn" onClick={onClose} disabled={busy} aria-label="Close"><FiX /></button></Modal.Header><form onSubmit={submit}><Modal.Body>
     <p className="to-muted">{technician.name} · {technician.technicianId}</p>
     {error && <div role="alert" className="to-alert to-error">{error}</div>}
-    {suspend ? <p>{restoring ? 'Restore access for this technician?' : 'This technician will lose account access until an administrator restores it.'}</p> : loading ? <p>Loading job conversations…</p> : <><label className="to-field"><span>{action === 'assign' ? 'Select an open job request' : 'Job conversation'}</span><select required value={requestId} onChange={e => setRequestId(e.target.value)}><option value="">Select job</option>{requests.map(r => <option key={r._id} value={r._id}>{r.job?.title || 'Job'} · {r.status}</option>)}</select></label>{requests.length === 0 && <p className="to-muted">{action === 'assign' ? 'This technician has no pending requests for open jobs.' : 'No job conversations are available for this technician.'} <Link to="/technician-jobs">View technician jobs</Link></p>}{action === 'message' && <label className="to-field"><span>Message</span><textarea required maxLength={2000} rows={4} value={message} onChange={e => setMessage(e.target.value)} placeholder="Write a message…" /></label>}</>}
-  </Modal.Body><Modal.Footer><button type="button" className="to-btn-neutral" disabled={busy} onClick={onClose}>Cancel</button><button type="submit" className={`to-btn-primary${suspend && !restoring ? ' to-btn-danger' : ''}`} disabled={busy || !suspend && (!requestId || loading)}>{busy ? 'Saving…' : title}</button></Modal.Footer></form></Modal>;
+    {suspend || inactive ? <p>{restoring ? 'Restore access for this technician?' : 'This technician will lose account access until an administrator restores it.'}</p> : loading ? <p>Loading job conversations…</p> : <><label className="to-field"><span>{action === 'assign' ? 'Select an open job request' : 'Job conversation'}</span><select required value={requestId} onChange={e => setRequestId(e.target.value)}><option value="">Select job</option>{requests.map(r => <option key={r._id} value={r._id}>{r.job?.title || 'Job'} · {r.status}</option>)}</select></label>{requests.length === 0 && <p className="to-muted">{action === 'assign' ? 'This technician has no pending requests for open jobs.' : 'No job conversations are available for this technician.'} <Link to="/technician-jobs">View technician jobs</Link></p>}{action === 'message' && <label className="to-field"><span>Message</span><textarea required maxLength={2000} rows={4} value={message} onChange={e => setMessage(e.target.value)} placeholder="Write a message…" /></label>}</>}
+  </Modal.Body><Modal.Footer><button type="button" className="to-btn-neutral" disabled={busy} onClick={onClose}>Cancel</button><button type="submit" className={`to-btn-primary${(suspend || inactive) && !restoring ? ' to-btn-danger' : ''}`} disabled={busy || (!suspend && !inactive) && (!requestId || loading)}>{busy ? 'Saving…' : title}</button></Modal.Footer></form></Modal>;
 }
 export default function TechnicianOverview() {
   const {
@@ -256,8 +258,8 @@ export default function TechnicianOverview() {
     }));
     setPage(1);
   };
-  const matchesTab = (t, key) => key === 'all' || (key === 'suspended' ? t.accountStatus === 'suspended' : verification(t) === key);
-  const counts = useMemo(() => Object.fromEntries(['all', 'approved', 'under_review', 'rejected', 'suspended'].map(key => [key, raw.filter(t => matchesTab(t, key)).length])), [raw]);
+  const matchesTab = (t, key) => key === 'all' || (['suspended', 'inactive'].includes(key) ? t.accountStatus === key : verification(t) === key);
+  const counts = useMemo(() => Object.fromEntries(['all', 'approved', 'under_review', 'rejected', 'suspended', 'inactive'].map(key => [key, raw.filter(t => matchesTab(t, key)).length])), [raw]);
   const locations = [...new Set(raw.map(t => t.serviceArea).filter(Boolean))].sort();
   const services = [...new Set([...trades, ...raw.map(t => t.primaryService)].filter(Boolean))].sort();
   const filtered = useMemo(() => {
@@ -292,13 +294,13 @@ export default function TechnicianOverview() {
         })}><FiUserPlus /> Invite Technician</button></div></div>
     <section className="to-filter-card" aria-label="Filter technicians"><div className="to-search-row"><div className="to-search-wrap"><input aria-label="Search technicians" placeholder="Search by name or ID" value={filters.search} onChange={e => updateFilter('search', e.target.value)} /><span className="to-search-symbol"><FiSearch /></span></div><label className="to-sort-wrap"><FiFilter /><select aria-label="Sort technicians" value={filters.sort} onChange={e => updateFilter('sort', e.target.value)}><option value="newest">Sort: Newest</option><option value="oldest">Oldest first</option><option value="name">Name A–Z</option><option value="rating">Highest rating</option><option value="jobs">Most jobs</option></select></label></div><div className="to-filters-row">
       {filter('verification', 'Verification Status', ['approved', 'under_review', 'rejected', 'pending'].map(s => [s, labels[s]]))}
-      {filter('availability', 'Availability', ['online', 'offline', 'invited', 'blocked'].map(s => [s, labels[s]]))}
+      {filter('availability', 'Availability', ['online', 'offline', 'invited', 'blocked', 'inactive'].map(s => [s, labels[s]]))}
       {filter('service', 'Service / Category', services)}{filter('location', 'Location', locations)}
       {filter('rating', 'Rating', [['4.5', '4.5 & above'], ['4', '4 & above'], ['3', '3 & above']])}
       {filter('performance', 'Performance', [['90', '90% & above'], ['75', '75% & above'], ['50', '50% & above']])}
-      {filter('account', 'Account Status', ['active', 'invited', 'suspended', 'blocked'].map(s => [s, labels[s]]))}
+      {filter('account', 'Account Status', ['active', 'invited', 'suspended', 'blocked', 'inactive'].map(s => [s, labels[s]]))}
     </div><div className="to-date-row"><div><span className="to-filter-label">Join Date</span><button className="to-date-btn" aria-expanded={dateOpen} onClick={() => setDateOpen(v => !v)}><FiCalendar />{filters.from || filters.to ? `${filters.from || 'Start'} — ${filters.to || 'Today'}` : 'Select Date Range'}</button></div><button className="to-btn-primary" onClick={clear}><FiX /> Clear Filters</button></div>{dateOpen && <div className="to-date-inputs"><label>From<input type="date" value={filters.from} max={filters.to || undefined} onChange={e => updateFilter('from', e.target.value)} /></label><label>To<input type="date" value={filters.to} min={filters.from || undefined} onChange={e => updateFilter('to', e.target.value)} /></label></div>}</section>
-    <div className="to-tabs" aria-label="Technician status">{[['all', 'All'], ['approved', 'Verified'], ['under_review', 'Under Review'], ['rejected', 'Action Required'], ['suspended', 'Suspended']].map(([key, label]) => <button key={key} aria-pressed={tab === key} className={`to-tab${tab === key ? ' active' : ''}`} onClick={() => {
+    <div className="to-tabs" aria-label="Technician status">{[['all', 'All'], ['approved', 'Verified'], ['under_review', 'Under Review'], ['rejected', 'Action Required'], ['suspended', 'Suspended'], ['inactive', 'Inactive']].map(([key, label]) => <button key={key} aria-pressed={tab === key} className={`to-tab${tab === key ? ' active' : ''}`} onClick={() => {
         setTab(key);
         setPage(1);
       }}>{label} <span>{counts[key].toLocaleString()}</span></button>)}</div>
@@ -330,6 +332,7 @@ export default function TechnicianOverview() {
                       type: 'suspend',
                       technician: t
                     })}><FiUserX /> {['suspended', 'blocked'].includes(t.accountStatus) ? 'Restore Account' : 'Suspend Account'}</Dropdown.Item>
+        <Dropdown.Item disabled={!canWrite} onClick={() => setModal({ type: 'inactive', technician: t })}><FiUserX /> {t.accountStatus === 'inactive' ? 'Activate Account' : 'Set Inactive'}</Dropdown.Item>
       </Dropdown.Menu></Dropdown></td>
     </tr>)}</tbody></table></div>}</div>
     {!loading && !loadError && <div className="to-pagination"><span>Showing {filtered.length ? (currentPage - 1) * pageSize + 1 : 0} to {Math.min(currentPage * pageSize, filtered.length)} of {filtered.length.toLocaleString()} technicians</span><nav aria-label="Technician pages"><button aria-label="Previous page" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}><FiChevronLeft /></button>{pageNumbers.map((n, i) => <React.Fragment key={n}>{i > 0 && n - pageNumbers[i - 1] > 1 && <span>…</span>}<button className={currentPage === n ? 'active' : ''} aria-current={currentPage === n ? 'page' : undefined} onClick={() => setPage(n)}>{n}</button></React.Fragment>)}<button aria-label="Next page" disabled={currentPage === totalPages} onClick={() => setPage(currentPage + 1)}><FiChevronRight /></button></nav><select aria-label="Technicians per page" value={pageSize} onChange={e => {
@@ -338,6 +341,6 @@ export default function TechnicianOverview() {
       }}>{[10, 25, 50].map(s => <option key={s} value={s}>{s} per page</option>)}</select></div>}
     {['add', 'edit'].includes(modal?.type) && <TechnicianFormModal technician={selected} trades={services} onClose={() => setModal(null)} onSaved={load} />}
     {modal?.type === 'invite' && <InviteModal technician={selected} onClose={() => setModal(null)} />}
-    {['assign', 'message', 'suspend'].includes(modal?.type) && <ActionModal action={modal.type} technician={selected} onClose={() => setModal(null)} onSaved={load} />}
+    {['assign', 'message', 'suspend', 'inactive'].includes(modal?.type) && <ActionModal action={modal.type} technician={selected} onClose={() => setModal(null)} onSaved={load} />}
   </div>;
 }

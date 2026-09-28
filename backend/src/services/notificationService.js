@@ -61,7 +61,11 @@ const sendNotification = async ({
             const emittedRooms = new Set();
             recipients.forEach((user, index) => {
                 const model = user.constructor?.modelName || recipientModel;
-                const room = model === 'Admin' ? 'admin' : `technician:${user._id}`;
+                const room = model === 'Admin'
+                    ? 'admin'
+                    : user.role === 'technician'
+                        ? `technician:${user._id}`
+                        : `user:${user._id}`;
                 if (emittedRooms.has(room)) return;
                 emittedRooms.add(room);
                 io.to(room).emit('notification:new', {
@@ -114,7 +118,11 @@ const sendNotification = async ({
 
         });
 
-        notificationData.target = recipientModel === 'Admin' ? 'admin' : 'technician';
+        notificationData.target = recipientModel === 'Admin'
+            ? 'admin'
+            : recipients[0].role === 'technician'
+                ? 'technician'
+                : 'user';
 
 
         /*
@@ -204,4 +212,9 @@ module.exports.sendToAdmins = async (payload, sender) => {
 module.exports.sendToTechnician = async (technicianId, payload, sender) => {
     const technician = await User.findOne({ _id: technicianId, role: 'technician' }).select('_id fcmTokens');
     return technician ? sendNotification({ ...payload, recipients: [technician], sender }) : null;
+};
+
+module.exports.sendToUser = async (userId, payload, sender) => {
+    const user = await User.findOne({ _id: userId, role: 'user' }).select('_id role fcmTokens');
+    return user ? sendNotification({ ...payload, recipients: [user], sender }) : null;
 };

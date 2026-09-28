@@ -45,6 +45,7 @@ const signRefreshToken = (id, role, tokenVersion = 0) => {
 };
 
 const sendTokenResponse = (user, statusCode, res) => {
+  if (user.accountStatus === 'inactive') return res.status(403).json({ success: false, message: 'This account is inactive. Please create a new account.' });
     if (['invited', 'suspended', 'blocked'].includes(user.accountStatus)) return res.status(403).json({ success: false, message: 'Account is pending activation or suspended. Please contact support.' });
     const accessToken = signAccessToken(user._id, user.role, user.tokenVersion);
     const refreshToken = signRefreshToken(user._id, user.role, user.tokenVersion);
@@ -67,7 +68,7 @@ const sendTokenResponse = (user, statusCode, res) => {
 exports.sendOTP = async (req, res, next) => {
   try {
     const phone = normalizePhone(req.body.phone);
-    if (await User.findOne(phoneQuery(phone))) return res.status(409).json({ success: false, message: 'This number is already registered. Use account activation if an admin added you.' });
+    if (await User.findOne({ ...phoneQuery(phone), accountStatus: { $ne: 'inactive' } })) return res.status(409).json({ success: false, message: 'This number is already registered. Use account activation if an admin added you.' });
     pendingRegistrations.delete(phone);
     await otpService.sendOTP(phone, 'technician-signup');
     res.json({ success: true, message: 'OTP sent to your mobile number.', type: 'phone' });
@@ -94,7 +95,7 @@ exports.completeSignup = async (req, res, next) => {
     const pending = pendingRegistrations.get(phone);
     if (!pending?.verified || pending.expires < Date.now()) return res.status(400).json({ success: false, message: 'Verify this mobile number before creating your account.' });
     const alternatives = [phoneQuery(phone), ...(email ? [{ email }] : [])];
-    if (await User.findOne({ $or: alternatives })) return res.status(409).json({ success: false, message: 'Mobile number or email already registered.' });
+    if (await User.findOne({ $or: alternatives, accountStatus: { $ne: 'inactive' } })) return res.status(409).json({ success: false, message: 'Mobile number or email already registered.' });
     const technician = new User({ name, phone, ...(email && { email }), password, role: 'technician', isPhoneVerified: true, isEmailVerified: false, profileCompleted: false });
     await technician.validate();
     pendingRegistrations.delete(phone);
@@ -126,7 +127,7 @@ exports.activateTechnician = async (req, res, next) => {
       const name = String(req.body.name || '').trim();
       const email = String(req.body.email || '').trim().toLowerCase();
       if (!name) return res.status(400).json({ success: false, message: 'Full name is required.' });
-      if (email && await User.findOne({ email })) return res.status(409).json({ success: false, message: 'Email is already registered.' });
+      if (email && await User.findOne({ email, accountStatus: { $ne: 'inactive' } })) return res.status(409).json({ success: false, message: 'Email is already registered.' });
       user = new User({ name, phone, ...(email && { email }), role: 'technician', password });
     }
     user.password = password;
@@ -500,6 +501,7 @@ exports.refreshToken = async (req, res, next) => {
             });
         }
 
+        if (technician.accountStatus === 'inactive') return res.status(403).json({ success: false, message: 'This account is inactive. Please create a new account.' });
         if (['invited', 'suspended', 'blocked'].includes(technician.accountStatus)) return res.status(403).json({ success: false, message: 'Account is pending activation or suspended.' });
         if ((technician.tokenVersion || 0) > 0 && decoded.tokenVersion !== technician.tokenVersion) return res.status(401).json({ success: false, message: 'Refresh token has been revoked.' });
 

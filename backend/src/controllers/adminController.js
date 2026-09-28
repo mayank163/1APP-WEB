@@ -4,6 +4,8 @@ const Admin = require('../models/Admin');
 const { RESOURCES, ADMIN_ROLES } = require('../models/Admin');
 const jwt = require('jsonwebtoken');
 const { sendBookingStatusUpdated } = require('../utils/emailService');
+const notificationService = require('../services/notificationService');
+const { getPagination, getPaginationMeta } = require('../utils/pagination');
 
 const signToken = (id, role) => {
     return jwt.sign(
@@ -166,32 +168,37 @@ exports.getDashboardStats = async (req, res, next) => {
 exports.getAllBookings = async (req, res, next) => {
     try {
         const { status, paymentStatus, search } = req.query;
+        const { page, limit, skip } = getPagination(req.query);
         const query = {};
 
         if (status) query.status = status;
         if (paymentStatus) query.paymentStatus = paymentStatus;
 
-        let bookings = await Booking.find(query)
+        if (search) {
+            const searchRegex = new RegExp(search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+            const matchingUsers = await User.find({ role: 'user', $or: [{ name: searchRegex }, { email: searchRegex }] }).select('_id');
+            const searchConditions = [
+                { address: searchRegex },
+                { phone: searchRegex },
+                { user: { $in: matchingUsers.map(user => user._id) } }
+            ];
+            if (/^[a-f\d]{24}$/i.test(search.trim())) searchConditions.push({ _id: search.trim() });
+            query.$or = searchConditions;
+        }
+
+        const total = await Booking.countDocuments(query);
+        const bookings = await Booking.find(query)
             .populate('user')
             .populate('services.service')
-            .sort('-createdAt');
-
-        // Manual search filtering if search term is provided
-        if (search) {
-            const searchLower = search.toLowerCase();
-            bookings = bookings.filter(b => {
-                const userMatch = b.user && (b.user.name.toLowerCase().includes(searchLower) || b.user.email.toLowerCase().includes(searchLower));
-                const addressMatch = b.address.toLowerCase().includes(searchLower);
-                const phoneMatch = b.phone.includes(searchLower);
-                const idMatch = b._id.toString().includes(searchLower);
-                return userMatch || addressMatch || phoneMatch || idMatch;
-            });
-        }
+            .sort('-createdAt')
+            .skip(skip)
+            .limit(limit);
 
         res.status(200).json({
             success: true,
-            count: bookings.length,
-            data: { bookings }
+            count: total,
+            data: { bookings },
+            pagination: getPaginationMeta({ page, limit, total })
         });
     } catch (err) {
         next(err);
@@ -214,21 +221,64 @@ exports.updateBookingStatus = async (req, res, next) => {
             });
         }
 
-        if (status) booking.status = status;
-        if (paymentStatus) booking.paymentStatus = paymentStatus;
+        const previouslyAssigned = Boolean(
+            booking.assignedTechnician?.name || booking.assignedTechnician?.phone
+        );
+        const assigningTechnician = Boolean(technicianName || technicianPhone);
+        const statusChanged = Boolean(status && status !== booking.status);
+        const updates = {};
 
-        if (technicianName || technicianPhone) {
-            booking.assignedTechnician = {
-                name: technicianName || booking.assignedTechnician.name,
-                phone: technicianPhone || booking.assignedTechnician.phone
-            };
-        }
+        if (status) updates.status = status;
+        if (paymentStatus) updates.paymentStatus = paymentStatus;
+        if (assigningTechnician) updates.assignedTechnician = {
+            name: technicianName || booking.assignedTechnician?.name || '',
+            phone: technicianPhone || booking.assignedTechnician?.phone || ''
+        };
 
-        await booking.save();
+        await Booking.findByIdAndUpdate(req.params.id, { $set: updates }, { new: true });
 
         const updatedBooking = await Booking.findById(req.params.id)
             .populate('user')
             .populate('services.service');
+
+        if (updatedBooking.user?._id) {
+            let notification = null;
+
+            if (statusChanged) {
+                const statusMessages = {
+                    Pending: 'Your booking is pending confirmation.',
+                    Confirmed: 'Your booking has been confirmed.',
+                    'In Progress': 'Your service is now in progress.',
+                    Completed: 'Your booking has been completed.',
+                    Cancelled: 'Your booking has been cancelled.',
+                };
+                notification = {
+                    type: 'booking_status_updated',
+                    title: `Booking ${updatedBooking.status}`,
+                    message: statusMessages[updatedBooking.status] || `Your booking status is now ${updatedBooking.status}.`,
+                };
+            } else if (!previouslyAssigned && assigningTechnician) {
+                notification = {
+                    type: 'technician_assigned',
+                    title: 'Technician Assigned',
+                    message: `${updatedBooking.assignedTechnician.name || 'A technician'} has been assigned to your booking.`,
+                };
+            }
+
+            if (notification) {
+                notificationService.sendToUser(updatedBooking.user._id, {
+                    ...notification,
+                    data: {
+                        bookingId: String(updatedBooking._id),
+                        status: updatedBooking.status,
+                        technicianName: updatedBooking.assignedTechnician?.name || '',
+                        technicianPhone: updatedBooking.assignedTechnician?.phone || '',
+                    },
+                }, req.user).catch(err =>
+                    console.error('Customer booking notification failed:', err.message)
+                );
+            }
+        }
 
         // Send status update email to user (non-blocking)
         sendBookingStatusUpdated(updatedBooking).catch(err =>
@@ -251,12 +301,48 @@ exports.updateBookingStatus = async (req, res, next) => {
  */
 exports.getAllUsers = async (req, res, next) => {
     try {
-        const users = await User.find({ role: 'user' }).sort('-createdAt');
+        const { search, sort = 'newest' } = req.query;
+        const { page, limit, skip } = getPagination(req.query);
+        const query = { role: 'user' };
+        if (search) {
+            const searchRegex = new RegExp(search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+            query.$or = [{ name: searchRegex }, { email: searchRegex }, { phone: searchRegex }];
+        }
+        const total = await User.countDocuments(query);
+        const users = await User.find(query)
+            .sort(sort === 'asc' ? { name: 1 } : sort === 'desc' ? { name: -1 } : { createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
         res.status(200).json({
             success: true,
-            count: users.length,
-            data: { users }
+            count: total,
+            data: { users },
+            pagination: getPaginationMeta({ page, limit, total })
         });
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
+ * @desc    Change a customer's account status
+ * @route   PATCH /api/admin/users/:id/status
+ */
+exports.updateUserAccountStatus = async (req, res, next) => {
+    try {
+        const { status } = req.body;
+        if (!['active', 'inactive'].includes(status)) {
+            return res.status(400).json({ success: false, message: 'Status must be active or inactive.' });
+        }
+
+        const user = await User.findOneAndUpdate(
+            { _id: req.params.id, role: 'user' },
+            { $set: { accountStatus: status, ...(status === 'inactive' ? { isOnline: false } : {}) }, $inc: { tokenVersion: 1 } },
+            { new: true }
+        );
+        if (!user) return res.status(404).json({ success: false, message: 'Customer not found.' });
+
+        res.json({ success: true, message: `Customer account ${status}.`, data: { user } });
     } catch (err) {
         next(err);
     }

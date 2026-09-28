@@ -613,6 +613,107 @@ const updateTechnicianJobStatus = async (req, res, next) => {
   }
 };
 
+const unassignTechnicianJob = async (req, res, next) => {
+  try {
+    const { jobId } = req.params;
+    const reason = typeof req.body.reason === 'string' ? req.body.reason.trim() : '';
+    if (!reason || reason.length > 1000) {
+      return res.status(400).json({ success: false, message: 'Provide an unassignment reason of up to 1000 characters.' });
+    }
+
+    let job;
+    let request;
+    let technicianId;
+    await TechnicianJob.db.transaction(async session => {
+      const currentJob = await TechnicianJob.findById(jobId).session(session);
+      if (!currentJob) {
+        const error = new Error('Job not found');
+        error.statusCode = 404;
+        throw error;
+      }
+      if (!currentJob.assignedTechnician?._id || !currentJob.assignedRequest) {
+        const error = new Error('This job does not have an active technician assignment.');
+        error.statusCode = 409;
+        throw error;
+      }
+      if (!['assigned', 'ontheway', 'visited', 'inprogress', 'in-progress'].includes(currentJob.status)) {
+        const error = new Error('Only active assignments can be unassigned.');
+        error.statusCode = 409;
+        throw error;
+      }
+      if (currentJob.payment?.status === 'paid') {
+        const error = new Error('A paid job cannot be unassigned.');
+        error.statusCode = 409;
+        throw error;
+      }
+
+      technicianId = currentJob.assignedTechnician._id;
+      request = await TechnicianJobRequest.findById(currentJob.assignedRequest).session(session);
+      const now = new Date();
+      if (request) {
+        request.status = 'rejected';
+        request.adminMessage = `Assignment ended: ${reason}`;
+        request.respondedAt = now;
+        request.releasedAt = now;
+        request.paymentStatus = 'unpaid';
+        request.completedAt = null;
+        request.amountEarned = 0;
+        request.finalJobAmount = null;
+        request.conversation.push({ sender: 'admin', message: `Technician unassigned. Reason: ${reason}`, createdAt: now });
+        await request.save({ session });
+      }
+
+      currentJob.status = 'open';
+      currentJob.assignedTechnician = { _id: null, name: '', email: '', phone: '' };
+      currentJob.assignedRequest = null;
+      currentJob.visibleTo = 'technicians';
+      currentJob.requestedBy = [];
+      currentJob.reachedAt = null;
+      currentJob.reachedStatus = { at: null, lat: null, lng: null, distanceMeters: null };
+      currentJob.jobStartedAt = null;
+      currentJob.jobCompletedAt = null;
+      currentJob.completedStatus = { at: null, lat: null, lng: null, distanceMeters: null };
+      currentJob.jobDurationMinutes = null;
+      currentJob.completedAt = null;
+      currentJob.finalPrice = 0;
+      currentJob.tasks = (currentJob.tasks || []).map(task => ({
+        ...task.toObject(),
+        isDone: false,
+        checkedAt: null,
+        technicianLat: null,
+        technicianLng: null,
+        distanceMeters: null,
+        completionNote: undefined,
+        completionImage: undefined,
+        completionSignature: undefined,
+      }));
+      currentJob.statusHistory.push({ status: 'open', note: `Technician unassigned. Reason: ${reason}`, changedAt: now });
+      currentJob.conversation.push({ sender: 'admin', message: `Technician unassigned. Reason: ${reason}`, createdAt: now });
+      job = await currentJob.save({ session });
+    });
+
+    request = request ? await TechnicianJobRequest.findById(request._id).populate('job technician') : null;
+    emitToAdmin('job:updated', { job });
+    emitToAdmin('job:availability', { jobId: String(job._id), status: job.status });
+    if (request) emitToAdmin('request:updated', { request });
+    emitToTechnician(technicianId, 'job:unassigned', { jobId: String(job._id), reason });
+    try {
+      getIO().emit('job:availability', { jobId: String(job._id), status: job.status });
+    } catch (error) {
+      console.warn('Failed to broadcast reopened job:', error.message);
+    }
+    await sendToTechnician(technicianId, {
+      type: 'job_unassigned',
+      title: 'Job Assignment Ended',
+      message: `You have been unassigned from ${job.title}. Reason: ${reason}`,
+      data: { jobId: String(job._id) },
+    }, req.user);
+    res.status(200).json({ success: true, message: 'Technician unassigned and job reopened.', data: { job } });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // ── Send a chat message without changing status ──────────────────────────────
 const sendTechnicianRequestMessage = async (req, res, next) => {
   try {
@@ -903,6 +1004,7 @@ module.exports = {
   updateTechnicianJob,
   deleteTechnicianJob,
   updateTechnicianJobStatus,
+  unassignTechnicianJob,
   payTechnician,
   rescheduleJob,
 };

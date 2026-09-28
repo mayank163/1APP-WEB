@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
@@ -16,7 +16,6 @@ import Home from './pages/Home';
 import Services from './pages/Services';
 import ServiceDetail from './pages/ServiceDetail';
 import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
 import Bookings from './pages/Bookings';
 import Profile from './pages/Profile';
 import LoginPage from './pages/LoginPage';
@@ -35,6 +34,7 @@ import BlogDetail from './pages/BlogDetail';
 import TechnicianDashboard from './pages/TechnicianDashboard';
 import TechnicianActivation from './pages/TechnicianActivation';
 import TechnicianChat from './pages/TechnicianChat';
+import UserChat from './pages/UserChat';
 
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
 
@@ -60,10 +60,11 @@ const AppShell = () => {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/verify-otp" element={<OtpVerify />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/checkout" element={<PrivateRoute><Checkout /></PrivateRoute>} />
+          <Route path="/checkout" element={<Navigate to="/cart" replace />} />
           <Route path="/bookings" element={<PrivateRoute><Bookings /></PrivateRoute>} />
           <Route path="/technician" element={<PrivateRoute><TechnicianDashboard /></PrivateRoute>} />
           <Route path="/technician-chat" element={<PrivateRoute><TechnicianChat /></PrivateRoute>} />
+          <Route path="/support-chat" element={<PrivateRoute><UserChat /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/terms" element={<TermsAndConditions />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />

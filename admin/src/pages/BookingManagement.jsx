@@ -1,14 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import adminApi from '../services/adminApi';
 import { ShimmerBookingTable } from '../components/Shimmer';
-import { FaSearch, FaEye, FaUser, FaPhone, FaMapMarkerAlt, FaDollarSign, FaCalendarAlt, FaClock } from 'react-icons/fa';
+import { FaSearch, FaEye, FaUser, FaPhone, FaMapMarkerAlt, FaDollarSign, FaCalendarAlt } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import Pagination from '../components/Pagination';
+
+const formatAddress = (address) => {
+    if (typeof address === 'string') return address.trim() || 'N/A';
+    if (!address || typeof address !== 'object') return 'N/A';
+
+    return [address.addressLine, address.city, address.state, address.zipcode]
+        .filter(part => typeof part === 'string' && part.trim())
+        .map(part => part.trim())
+        .join(', ') || 'N/A';
+};
 
 const BookingManagement = () => {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
     
     // Details Drawer States
     const [selectedBooking, setSelectedBooking] = useState(null);
@@ -24,10 +38,13 @@ const BookingManagement = () => {
         try {
             const res = await adminApi.getBookings({
                 status: statusFilter,
-                search: searchQuery
+                search: searchQuery,
+                page,
+                limit: pageSize
             });
             if (res.success) {
                 setBookings(res.data.bookings);
+                setPagination(res.pagination || { page, limit: pageSize, total: res.count || 0, totalPages: Math.max(1, Math.ceil((res.count || 0) / pageSize)) });
             }
         } catch (err) {
             toast.error('Failed to load bookings');
@@ -38,10 +55,11 @@ const BookingManagement = () => {
 
     useEffect(() => {
         fetchBookings();
-    }, [statusFilter]);
+    }, [statusFilter, page, pageSize]);
 
     const handleSearchSubmit = (e) => {
         e.preventDefault();
+        setPage(1);
         fetchBookings();
     };
 
@@ -154,7 +172,7 @@ const BookingManagement = () => {
                                     <thead className="table-light border-0">
                                         <tr>
                                             <th>ID / Customer</th>
-                                            <th>Date & Slot</th>
+                                            <th>Date</th>
                                             <th>Total</th>
                                             <th>Status</th>
                                             <th>Action</th>
@@ -169,7 +187,6 @@ const BookingManagement = () => {
                                                 </td>
                                                 <td>
                                                     <small className="d-block text-dark fw-semibold">{new Date(booking.serviceDate).toLocaleDateString()}</small>
-                                                    <span className="badge bg-light text-muted border text-uppercase" style={{ fontSize: '0.7rem' }}>{booking.timeSlot}</span>
                                                 </td>
                                                 <td className="font-monospace fw-bold" style={{ color: "#A5732F" }}>${booking.totalAmount}</td>
                                                 <td>
@@ -197,6 +214,7 @@ const BookingManagement = () => {
                                 </table>
                             </div>
                         )}
+                        {!loading && <Pagination {...pagination} page={page} limit={pageSize} onPageChange={setPage} onLimitChange={size => { setPageSize(size); setPage(1); }} />}
                     </div>
                 </div>
 
@@ -222,7 +240,21 @@ const BookingManagement = () => {
                                 </div>
                                 <div className="d-flex align-items-start gap-2 text-muted small">
                                     <FaMapMarkerAlt className="mt-1" />
-                                    <span>Service Location: <strong>{selectedBooking.address}</strong></span>
+                                    <div>
+                                        <span>Service Location: <strong>{formatAddress(selectedBooking.address)}</strong></span>
+                                        {selectedBooking.address && typeof selectedBooking.address === 'object' && (
+                                            <div className="mt-1" style={{ lineHeight: 1.6 }}>
+                                                {selectedBooking.address.label && <span className="badge bg-secondary me-1">{selectedBooking.address.label}</span>}
+                                                {selectedBooking.address.name && <span className="d-block">Name: {selectedBooking.address.name}</span>}
+                                                {selectedBooking.address.city && <span className="d-block">City: {selectedBooking.address.city}</span>}
+                                                {selectedBooking.address.state && <span className="d-block">State: {selectedBooking.address.state}</span>}
+                                                {selectedBooking.address.zipcode && <span className="d-block">ZIP: {selectedBooking.address.zipcode}</span>}
+                                                {selectedBooking.address.coordinates?.lat && (
+                                                    <span className="d-block">📍 {selectedBooking.address.coordinates.lat.toFixed(5)}, {selectedBooking.address.coordinates.lng.toFixed(5)}</span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
@@ -233,13 +265,6 @@ const BookingManagement = () => {
                                     <div>
                                         <small className="text-muted d-block">Scheduled</small>
                                         <span className="fw-bold text-dark small">{new Date(selectedBooking.serviceDate).toLocaleDateString()}</span>
-                                    </div>
-                                </div>
-                                <div className="col-6 d-flex align-items-center gap-2">
-                                    <FaClock style={{ color: "#A5732F" }} />
-                                    <div>
-                                        <small className="text-muted d-block">Slot</small>
-                                        <span className="fw-bold text-dark small">{selectedBooking.timeSlot}</span>
                                     </div>
                                 </div>
                             </div>

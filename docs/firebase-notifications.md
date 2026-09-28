@@ -43,7 +43,7 @@ Authorization: Bearer <accessToken>
 Content-Type: application/json
 ```
 
-The JWT identifies either a technician User account or an Admin account. Tokens are stored against the authenticated account, so the Flutter app must register the token after login and again whenever Firebase rotates it.
+The JWT identifies a customer User account, a technician User account, or an Admin account. Tokens are stored against the authenticated account, so each Flutter app must register the token after login and again whenever Firebase rotates it.
 
 ## Register the FCM token
 
@@ -143,6 +143,7 @@ All values in `data` are strings. In Flutter, handle `message.data['type']` and 
 | `job_rescheduled` | Assigned technician | Admin changes the job date/time window | `jobId`, `jobDateFrom`, `jobDateTo` |
 | `wallet_payment` | Technician | Admin approves checkout payment and credits technician earnings | `jobId`, `amount` |
 | `technician_request_response` | Admins | Technician accepts or rejects an admin counter offer | `jobId`, `requestId` |
+| `technician_assigned` | Customer | Admin assigns a technician to a customer booking | `bookingId`, `technicianName`, `technicianPhone`, `status` |
 
 ## Realtime Socket.IO delivery
 
@@ -166,7 +167,7 @@ socket.on('notification:new', (payload) {
 });
 ```
 
-A technician receives notifications in `technician:<technicianId>`. Admin clients join the `admin` room with:
+A technician receives notifications in `technician:<technicianId>`. Customer clients receive notifications in `user:<userId>`. Admin clients join the `admin` room with:
 
 ```text
 admin:join
@@ -178,6 +179,13 @@ On logout or account switch:
 
 ```text
 technician:leave <technicianId>
+```
+
+Customer clients use the matching events:
+
+```text
+user:join <userId>
+user:leave <userId>
 ```
 
 ## Flutter FCM checklist
@@ -200,3 +208,4 @@ technician:leave <technicianId>
 - Notification persistence is independent of FCM availability. If a device is offline or has no token, the notification remains available from `GET /api/notifications`.
 - Admin notifications are persisted for every active admin and delivered to the authenticated admin room.
 - Technician notifications are persisted for the target technician and delivered to that technician's room.
+- Customer notifications are persisted for the booking owner and delivered to that customer's room.

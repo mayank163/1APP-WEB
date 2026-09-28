@@ -749,3 +749,24 @@
     from { transform: rotate(0deg); }
     to   { transform: rotate(360deg); }
 }
+
+.dashboard-page .dash-breadcrumb { font-size: 14px; }
+.dashboard-page .dash-hello { font-size: 29px; }
+.dashboard-page .dash-title { font-size: 16px; }
+.dashboard-page .dash-filter-pill,
+.dashboard-page .dash-refresh-btn { font-size: 14px; }
+.dashboard-page .dash-section-title { font-size: 17px; }
+.dashboard-page .dash-card .card-title { font-size: 14px; }
+.dashboard-page .dash-card .card-value { font-size: 22px; }
+.dashboard-page .card-change { font-size: 11px; }
+.dashboard-page .jobs-funnel-step .step-label { font-size: 11px; }
+.dashboard-page .jobs-funnel-step .step-value { font-size: 14px; }
+.dashboard-page .summary-box .sb-label { font-size: 11px; }
+.dashboard-page .summary-box .sb-value { font-size: 16px; }
+.dashboard-page .earnings-card .ec-title { font-size: 12px; }
+.dashboard-page .ec-pill { font-size: 10px; }
+.dashboard-page .ec-row,
+.dashboard-page .ec-row .ec-val { font-size: 10px; }
+.dashboard-page .attention-card .at-title { font-size: 15px; }
+.dashboard-page .attention-row .at-label { font-size: 11px; }
+.dashboard-page .attention-row .at-badge { font-size: 10px; }

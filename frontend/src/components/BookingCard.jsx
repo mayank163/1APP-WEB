@@ -2,6 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import bookingService from '../services/bookingService';
 import { resolveImageUrl } from '../services/api';
+import { FiCalendar, FiMapPin, FiUser } from "react-icons/fi";
+
+const formatAddress = (address) => {
+    if (!address) return 'N/A';
+    if (typeof address === 'string') return address;
+
+    return [address.addressLine, address.city, address.state, address.zipcode]
+        .filter(Boolean)
+        .join(', ') || 'N/A';
+};
 
 /* ─────────────── Review Popup ─────────────── */
 const ReviewPopup = ({ bookingId, onClose, onReviewed }) => {
@@ -205,7 +215,7 @@ const BookingCard = ({ booking, onCancelled }) => {
     });
 
     const statusLabel = booking.status?.toUpperCase();
-    const address = booking.address || 'N/A';
+    const address = formatAddress(booking.address);
     const technician = booking.assignedTechnician || {};
 
     const getStatusStyle = () => {
@@ -255,41 +265,43 @@ const BookingCard = ({ booking, onCancelled }) => {
                     </div>
 
                     <div style={styles.infoBox}>
-                        <span style={styles.infoIcon}>📅</span>
-                        <div>
-                            <div style={styles.infoLabel}>Date &amp; Time</div>
-                            <div style={styles.infoValue}>{serviceDateFormatted} · {booking.timeSlot}</div>
-                        </div>
-                    </div>
+    <FiCalendar style={styles.infoIcon} />
+    <div>
+        <div style={styles.infoLabel}>Date &amp; Time</div>
+        <div style={styles.infoValue}>
+                            {serviceDateFormatted}
+        </div>
+    </div>
+</div>
 
-                    <div style={styles.infoBox}>
-                        <span style={styles.infoIcon}>📍</span>
-                        <div>
-                            <div style={styles.infoLabel}>Location</div>
-                            <div style={styles.infoValue}>{address}</div>
-                        </div>
-                    </div>
+<div style={styles.infoBox}>
+    <FiMapPin style={styles.infoIcon} />
+    <div>
+        <div style={styles.infoLabel}>Location</div>
+        <div style={styles.infoValue}>{address}</div>
+    </div>
+</div>
 
-                    {technician?.name || technician?.phone ? (
-                        <div style={styles.infoBox}>
-                            <span style={styles.infoIcon}>🧑‍🔧</span>
-                            <div>
-                                <div style={styles.infoLabel}>Technician Assigned</div>
-                                <div style={styles.infoValue}>
-                                    {technician.name || 'Technician assigned'}
-                                    {technician.phone ? ` • ${technician.phone}` : ''}
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        <div style={{ ...styles.infoBox, backgroundColor: '#f9fbf9' }}>
-                            <span style={styles.infoIcon}>🧑‍🔧</span>
-                            <div>
-                                <div style={styles.infoLabel}>Technician Assigned</div>
-                                <div style={styles.infoValue}>Awaiting assignment</div>
-                            </div>
-                        </div>
-                    )}
+{technician?.name || technician?.phone ? (
+    <div style={styles.infoBox}>
+        <FiUser style={styles.infoIcon} />
+        <div>
+            <div style={styles.infoLabel}>Technician Assigned</div>
+            <div style={styles.infoValue}>
+                {technician.name || "Technician assigned"}
+                {technician.phone ? ` • ${technician.phone}` : ""}
+            </div>
+        </div>
+    </div>
+) : (
+    <div style={{ ...styles.infoBox, backgroundColor: "#f9fbf9" }}>
+        <FiUser style={styles.infoIcon} />
+        <div>
+            <div style={styles.infoLabel}>Technician Assigned</div>
+            <div style={styles.infoValue}>Awaiting assignment</div>
+        </div>
+    </div>
+)}
 
                     <button style={styles.btnPrimary} onClick={() => setShowDetails(true)}>
                         View Details
@@ -337,7 +349,6 @@ const BookingCard = ({ booking, onCancelled }) => {
                                 <div style={styles.detailBlock}><div style={styles.detailLabel}>Booking ID</div><div style={styles.detailValue}>{booking._id}</div></div>
                                 <div style={styles.detailBlock}><div style={styles.detailLabel}>Payment</div><div style={styles.detailValue}>{booking.paymentStatus || 'N/A'}</div></div>
                                 <div style={styles.detailBlock}><div style={styles.detailLabel}>Date</div><div style={styles.detailValue}>{serviceDateFormatted}</div></div>
-                                <div style={styles.detailBlock}><div style={styles.detailLabel}>Time Slot</div><div style={styles.detailValue}>{booking.timeSlot || 'N/A'}</div></div>
                                 <div style={styles.detailBlock}><div style={styles.detailLabel}>Phone</div><div style={styles.detailValue}>{booking.phone || 'N/A'}</div></div>
                                 <div style={styles.detailBlock}><div style={styles.detailLabel}>Address</div><div style={styles.detailValue}>{address}</div></div>
                             </div>
@@ -713,10 +724,10 @@ const styles = {
     headerLabel: { fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: '#555', textTransform: 'uppercase' },
     badge: { color: '#fff', fontSize: 11, fontWeight: 700, letterSpacing: 1, padding: '4px 12px', borderRadius: 4 },
     completedBadge: { backgroundColor: '#000000' },
-    cancelledBadge: { backgroundColor: '#c62828' },
-    confirmedBadge: { backgroundColor: '#f57c00' },
-    pendingBadge: { backgroundColor: '#1976d2' },
-    rescheduledBadge: { backgroundColor: '#5e35b1' },
+    cancelledBadge: { backgroundColor: '#000000' },
+    confirmedBadge: { backgroundColor: '#000000' },
+    pendingBadge: { backgroundColor: '#000000' },
+    rescheduledBadge: { backgroundColor: '#000000' },
     defaultBadge: { backgroundColor: '#111' },
     body: { padding: '20px' },
     serviceRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 },
@@ -728,7 +739,7 @@ const styles = {
     infoValue: { fontSize: 14, color: '#111', fontWeight: 500, marginTop: 2 },
     btnPrimary: { width: '100%', backgroundColor: '#000000', color: '#fff', border: 'none', borderRadius: 8, padding: '14px', fontWeight: 600, fontSize: 15, letterSpacing: 0.5, cursor: 'pointer', marginTop: 12, marginBottom: 8 },
     btnReview: { width: '100%', backgroundColor: '#1a1a2e', color: '#fff', border: 'none', borderRadius: 8, padding: '13px', fontWeight: 600, fontSize: 15, letterSpacing: 0.5, cursor: 'pointer', marginBottom: 8 },
-    btnSecondary: { width: '100%', backgroundColor: '#fff', color: '#c62828', border: '1.5px solid #c62828', borderRadius: 8, padding: '13px', fontWeight: 600, fontSize: 15, letterSpacing: 0.5, cursor: 'pointer' },
+    btnSecondary: { width: '100%', backgroundColor: '#fff', color: '#000000', border: '1.5px solid #000000', borderRadius: 8, padding: '13px', fontWeight: 600, fontSize: 15, letterSpacing: 0.5, cursor: 'pointer' },
     modalOverlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, zIndex: 2000 },
     modalCard: { width: '100%', maxWidth: 760, maxHeight: '90vh', overflowY: 'auto', background: '#fff', borderRadius: 18, boxShadow: '0 20px 50px rgba(0,0,0,0.25)', position: 'relative', padding: 24 },
     closeButton: { position: 'absolute', top: 12, right: 12, border: 'none', background: '#f3f3f3', borderRadius: '50%', width: 36, height: 36, cursor: 'pointer', fontSize: 18, color: '#333' },

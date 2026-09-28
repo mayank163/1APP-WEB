@@ -35,6 +35,7 @@ router.post('/technician-jobs', checkPermission('technician_jobs', 'write'), adm
 router.put('/technician-jobs/:jobId', checkPermission('technician_jobs', 'write'), adminTechnicianController.updateTechnicianJob);
 router.delete('/technician-jobs/:jobId', checkPermission('technician_jobs', 'write'), adminTechnicianController.deleteTechnicianJob);
 router.patch('/technician-jobs/:jobId/status', checkPermission('technician_jobs', 'write'), adminTechnicianController.updateTechnicianJobStatus);
+router.patch('/technician-jobs/:jobId/unassign', adminOnly, checkPermission('technician_jobs', 'write'), adminTechnicianController.unassignTechnicianJob);
 router.post('/technician-jobs/:jobId/pay', checkPermission('technician_jobs', 'write'), adminTechnicianController.payTechnician);
 router.patch('/technician-jobs/:jobId/reschedule', checkPermission('technician_jobs', 'write'), adminTechnicianController.rescheduleJob);
 router.get('/technician-requests', checkPermission('technician_jobs', 'read'), adminTechnicianController.getTechnicianRequests);

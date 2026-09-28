@@ -3,6 +3,7 @@ import adminApi from '../services/adminApi';
 import { ShimmerCategoryTable } from '../components/Shimmer';
 import { FaPlus, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle, FaFolder } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import Pagination from '../components/Pagination';
 
 const ServiceManagement = () => {
     const [categories, setCategories] = useState([]);
@@ -13,12 +14,18 @@ const ServiceManagement = () => {
     const [submitting, setSubmitting] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortOrder, setSortOrder] = useState('asc');
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
 
     const fetchCategories = async () => {
         setLoading(true);
         try {
-            const res = await adminApi.getCategories();
-            if (res.success) setCategories(res.data.categories);
+            const res = await adminApi.getCategories({ page, limit: pageSize, search: searchTerm, sort: sortOrder });
+            if (res.success) {
+                setCategories(res.data.categories);
+                setPagination(res.pagination || { page, limit: pageSize, total: res.count || 0, totalPages: Math.max(1, Math.ceil((res.count || 0) / pageSize)) });
+            }
         } catch {
             toast.error('Failed to load categories');
         } finally {
@@ -26,7 +33,7 @@ const ServiceManagement = () => {
         }
     };
 
-    useEffect(() => { fetchCategories(); }, []);
+    useEffect(() => { fetchCategories(); }, [page, pageSize, searchTerm, sortOrder]);
 
     const handleOpenCreate = () => {
         setEditingId(null);
@@ -70,18 +77,7 @@ const ServiceManagement = () => {
         }
     };
 
-    const filteredCategories = [...categories]
-    .filter((cat) =>
-        cat.name.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .sort((a, b) => {
-        const first = a.name.toLowerCase();
-        const second = b.name.toLowerCase();
-
-        return sortOrder === 'asc'
-            ? first.localeCompare(second)
-            : second.localeCompare(first);
-    });
+    const filteredCategories = categories;
 
     return (
         <div>
@@ -136,14 +132,14 @@ const ServiceManagement = () => {
             placeholder="Search category..."
             style={{ maxWidth: "350px" }}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
         />
 
         <select
             className="form-select"
             style={{ width: "200px" }}
             value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
+            onChange={(e) => { setSortOrder(e.target.value); setPage(1); }}
         >
             <option value="asc">Ascending (A-Z)</option>
             <option value="desc">Descending (Z-A)</option>
@@ -190,6 +186,7 @@ const ServiceManagement = () => {
                         </table>
                     </div>
                 )}
+                {!loading && <Pagination {...pagination} page={page} limit={pageSize} onPageChange={setPage} onLimitChange={size => { setPageSize(size); setPage(1); }} />}
             </div>
         </div>
     );

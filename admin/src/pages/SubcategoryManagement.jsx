@@ -10,6 +10,7 @@ import {
     FaPercentage, FaTag, FaFileImage, FaVideo
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import Pagination from '../components/Pagination';
 
 const SubcategoryManagement = () => {
     const [services, setServices] = useState([]);
@@ -21,6 +22,9 @@ const SubcategoryManagement = () => {
     const [editingId, setEditingId] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortOrder, setSortOrder] = useState('asc');
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
 
     // Main form fields
     const [selectedCategoryId, setSelectedCategoryId] = useState('');
@@ -114,11 +118,14 @@ const SubcategoryManagement = () => {
         setLoading(true);
         try {
             const [svcRes, catRes, subRes] = await Promise.all([
-                adminApi.getServices(),
-                adminApi.getCategories(),
-                adminApi.getSubCategories()
+                adminApi.getServices({ status: 'active', page, limit: pageSize, search: searchTerm }),
+                adminApi.getCategories({ limit: 100 }),
+                adminApi.getSubCategories('', { limit: 100 })
             ]);
-            if (svcRes.success) setServices(svcRes.data.services.filter(s => s.status !== 'inactive' && s.isActive !== false));
+            if (svcRes.success) {
+                setServices(svcRes.data.services.filter(s => s.status !== 'inactive' && s.isActive !== false));
+                setPagination(svcRes.pagination || { page, limit: pageSize, total: svcRes.count || 0, totalPages: Math.max(1, Math.ceil((svcRes.count || 0) / pageSize)) });
+            }
             if (catRes.success) setCategories(catRes.data.categories);
             if (subRes.success) setSubcategories(subRes.data.subcategories);
         } catch {
@@ -128,7 +135,7 @@ const SubcategoryManagement = () => {
         }
     };
 
-    useEffect(() => { fetchData(); }, []);
+    useEffect(() => { fetchData(); }, [page, pageSize, searchTerm]);
 
     // Filter subcategories when category changes
     useEffect(() => {
@@ -743,25 +750,7 @@ const SubcategoryManagement = () => {
         return svc.serviceDuration ? `${svc.serviceDuration} min` : '—';
     };
 
-    const filteredServices = [...services]
-    .filter((svc) => {
-        const keyword = searchTerm.toLowerCase();
-
-        return (
-            svc.name?.toLowerCase().includes(keyword) ||
-            svc.category?.name?.toLowerCase().includes(keyword) ||
-            svc.subcategory?.name?.toLowerCase().includes(keyword) ||
-            svc.serviceType?.toLowerCase().includes(keyword)
-        );
-    })
-    .sort((a, b) => {
-        const first = a.name.toLowerCase();
-        const second = b.name.toLowerCase();
-
-        return sortOrder === 'asc'
-            ? first.localeCompare(second)
-            : second.localeCompare(first);
-    });
+    const filteredServices = services;
 
     return (
         <div>
@@ -1689,14 +1678,14 @@ const SubcategoryManagement = () => {
             placeholder="Search service, category, sub-category..."
             style={{ maxWidth: "400px" }}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
         />
 
         <select
             className="form-select"
             style={{ width: "220px" }}
             value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
+            onChange={(e) => { setSortOrder(e.target.value); setPage(1); }}
         >
             <option value="asc">
                 Ascending (A-Z)
@@ -1808,6 +1797,7 @@ const SubcategoryManagement = () => {
                         </table>
                     </div>
                 )}
+                {!loading && <Pagination {...pagination} page={page} limit={pageSize} onPageChange={setPage} onLimitChange={size => { setPageSize(size); setPage(1); }} />}
             </div>
         </div>
     );

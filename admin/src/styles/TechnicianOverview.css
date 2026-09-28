@@ -1594,3 +1594,28 @@
   .to-document-list>div { grid-template-columns: 22px minmax(100px, 1fr); }
   .to-document-list span { grid-column: 2; text-align: left; }
 }
+
+.to-page .to-breadcrumb { font-size: 12px; }
+.to-page .to-page-header h1 { font-size: 26px; }
+.to-page .to-page-header p { font-size: 14px; }
+.to-page .to-btn-primary,
+.to-page .to-btn-outline,
+.to-page .to-btn-neutral,
+.to-page .to-btn-soft,
+.to-page .to-date-btn { font-size: 13px; }
+.to-page .to-search-wrap input { font-size: 14px; }
+.to-page .to-sort-wrap select,
+.to-page .to-filter-group select { font-size: 13px; }
+.to-page .to-filter-group>span,
+.to-page .to-filter-label { font-size: 13px; }
+.to-page .to-tab { font-size: 14px; }
+.to-page .to-tab span { font-size: 12px; }
+.to-page .to-table { font-size: 13px; }
+.to-page .to-table th { font-size: 13px; }
+.to-page .to-table td { font-size: 13px; }
+.to-page .to-tech-cell strong { font-size: 14px; }
+.to-page .to-tech-cell small { font-size: 11px; }
+.to-page .to-badge { font-size: 12px; }
+.to-page .to-pagination { font-size: 13px; }
+.to-page .to-pagination nav button { font-size: 12px; }
+.to-page .to-pagination>select { font-size: 13px; }

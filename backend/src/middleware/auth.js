@@ -23,6 +23,9 @@ const protect = async (req, res, next) => {
         if (!currentUser) {
             return res.status(401).json({ success: false, message: 'User no longer exists.' });
         }
+        if (currentUser.accountStatus === 'inactive') {
+            return res.status(403).json({ success: false, message: 'This account is inactive. Please create a new account.' });
+        }
         if ((currentUser.tokenVersion || 0) > 0 && decoded.tokenVersion !== currentUser.tokenVersion) {
             return res.status(401).json({ success: false, message: 'Session has been logged out.' });
         }

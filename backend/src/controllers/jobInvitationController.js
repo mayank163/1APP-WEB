@@ -42,12 +42,16 @@ exports.sendInvitation = async (req, res, next) => {
       const job = await Job.findById(jobId).session(session);
       const technician = await User.findById(technicianId).session(session);
       if (!job) throw error('Job not found.', 404);
-      if (!openJob(job)) throw error('Only open, unassigned jobs can receive invitations.');
+      const isReplacementInvitation = job.status === 'assigned' && job.assignedTechnician?._id && job.assignedRequest;
+      if (!openJob(job) && !isReplacementInvitation) throw error('Only open jobs or jobs with an active assignment can receive invitations.');
+      if (isReplacementInvitation && String(job.assignedTechnician._id) === String(technicianId)) throw error('The current technician cannot be invited as their own replacement.', 400);
       if (!activeTechnician(technician)) throw error('Select an active technician.', 400);
       if (await Request.findOne({ job: jobId, technician: technicianId, initiatedBy: 'admin' }).session(session)) throw error('This technician has already been invited to this job.');
-      // Lock against assignment during invitation creation, without assigning the job.
-      const available = await Job.updateOne({ _id: jobId, status: 'open', 'assignedTechnician._id': null, assignedRequest: null }, { $inc: { __v: 1 } }, { session });
-      if (!available.matchedCount) throw error('This job is no longer available.');
+      const availability = openJob(job)
+        ? { _id: jobId, status: 'open', 'assignedTechnician._id': null, assignedRequest: null }
+        : { _id: jobId, status: 'assigned', 'assignedTechnician._id': job.assignedTechnician._id, assignedRequest: job.assignedRequest };
+      const lockedJob = await Job.updateOne(availability, { $inc: { __v: 1 } }, { session });
+      if (!lockedJob.matchedCount) throw error('This job assignment has changed. Refresh and try again.');
       [invitation] = await Request.create([{
         job: jobId, technician: technicianId, initiatedBy: 'admin', invitedBy: req.user._id,
         status: 'pending',
@@ -71,7 +75,7 @@ exports.respondToInvitation = async (req, res, next) => {
   try {
     const { action } = req.body;
     if (!['accept', 'reject'].includes(action) || !mongoose.isValidObjectId(req.params.requestId)) throw error('Choose accept or reject for a valid invitation.', 400);
-    let invitation, assignedJob;
+    let invitation, assignedJob, previousTechnicianId, previousRequestId, replacementTechnicianName;
     await mongoose.connection.transaction(async session => {
       invitation = await Request.findOne({ _id: req.params.requestId, technician: req.user._id, initiatedBy: 'admin' }).session(session);
       if (!invitation) throw error('Invitation not found.', 404);
@@ -81,10 +85,45 @@ exports.respondToInvitation = async (req, res, next) => {
       const now = new Date();
       if (action === 'accept') {
         const amount = baseAmount(invitation.offeredPay);
-        assignedJob = await Job.findOneAndUpdate({ _id: invitation.job, status: 'open', 'assignedTechnician._id': null, assignedRequest: null }, {
-          $set: { status: 'assigned', assignedRequest: invitation._id, assignedTechnician: { _id: technician._id, name: technician.name, email: technician.email, phone: technician.phone }, finalPrice: amount },
-          $push: { statusHistory: { status: 'assigned', note: 'Technician accepted the admin invitation.', changedAt: now }, conversation: { sender: 'system', message: `${technician.name} accepted the invitation and was assigned.`, createdAt: now } },
-        }, { session, new: true, runValidators: true });
+        const currentJob = await Job.findById(invitation.job).session(session);
+        const newAssignedTechnician = { _id: technician._id, name: technician.name, email: technician.email, phone: technician.phone };
+        replacementTechnicianName = technician.name;
+        if (openJob(currentJob)) {
+          assignedJob = await Job.findOneAndUpdate({ _id: currentJob._id, status: 'open', 'assignedTechnician._id': null, assignedRequest: null }, {
+            $set: { status: 'assigned', assignedRequest: invitation._id, assignedTechnician: newAssignedTechnician, finalPrice: amount },
+            $push: { statusHistory: { status: 'assigned', note: 'Technician accepted the admin invitation.', changedAt: now }, conversation: { sender: 'system', message: `${technician.name} accepted the invitation and was assigned.`, createdAt: now } },
+          }, { session, new: true, runValidators: true });
+        } else if (currentJob?.status === 'assigned' && currentJob.assignedTechnician?._id && currentJob.assignedRequest) {
+          previousTechnicianId = currentJob.assignedTechnician._id;
+          previousRequestId = currentJob.assignedRequest;
+          assignedJob = await Job.findOneAndUpdate({
+            _id: currentJob._id,
+            status: 'assigned',
+            'assignedTechnician._id': previousTechnicianId,
+            assignedRequest: previousRequestId,
+          }, {
+            $set: { assignedRequest: invitation._id, assignedTechnician: newAssignedTechnician, finalPrice: amount },
+            $push: {
+              statusHistory: { status: 'assigned', note: `${technician.name} accepted a replacement invitation.`, changedAt: now },
+              conversation: { sender: 'system', message: `${technician.name} accepted a replacement invitation and took over the job.`, createdAt: now },
+            },
+          }, { session, new: true, runValidators: true });
+          if (assignedJob) {
+            const previousRequest = await Request.findById(previousRequestId).session(session);
+            if (previousRequest) {
+              previousRequest.status = 'rejected';
+              previousRequest.adminMessage = `Assignment transferred to ${technician.name} after accepting a replacement invitation.`;
+              previousRequest.respondedAt = now;
+              previousRequest.releasedAt = now;
+              previousRequest.paymentStatus = 'unpaid';
+              previousRequest.completedAt = null;
+              previousRequest.amountEarned = 0;
+              previousRequest.finalJobAmount = null;
+              previousRequest.conversation.push({ sender: 'system', message: `The job was reassigned to ${technician.name} after they accepted an invitation.`, createdAt: now });
+              await previousRequest.save({ session });
+            }
+          }
+        }
         if (!assignedJob) throw error('This job has already been assigned or is no longer open.');
         invitation.paymentStatus = 'pending';
         invitation.agreedFixedCharge = amount;
@@ -102,6 +141,23 @@ exports.respondToInvitation = async (req, res, next) => {
       await invitation.save({ session });
     });
     await notify(invitation._id, req.user._id, assignedJob);
+    if (previousRequestId) {
+      try {
+        const previousRequest = await Request.findById(previousRequestId).populate('job technician');
+        getIO().to('admin').emit('request:updated', { request: previousRequest });
+      } catch (err) { console.warn('Previous assignment update notification failed:', err.message); }
+    }
+    if (previousTechnicianId) {
+      try {
+        getIO().to(`technician:${previousTechnicianId}`).emit('job:unassigned', { jobId: String(assignedJob._id), reason: `Reassigned to ${replacementTechnicianName} after invitation acceptance.` });
+      } catch (err) { console.warn('Previous technician socket notification failed:', err.message); }
+      await sendNotification.sendToTechnician(previousTechnicianId, {
+        type: 'job_reassigned',
+        title: 'Job Reassigned',
+        message: `${assignedJob.title} has been reassigned to ${replacementTechnicianName}.`,
+        data: { jobId: String(assignedJob._id) },
+      });
+    }
     if (assignedJob) {
       await sendNotification.sendToTechnician(req.user._id, {
         type: 'job_assigned',

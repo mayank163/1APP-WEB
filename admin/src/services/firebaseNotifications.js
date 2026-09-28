@@ -20,19 +20,18 @@ let workerPromise = null;
 const waitForActiveServiceWorker = async registration => {
   if (registration.active?.state === 'activated') return registration;
   const worker = registration.installing || registration.waiting || registration.active;
-  if (!worker) throw new Error('The notification service worker could not be activated. Reload the page and try again.');
+  if (!worker) throw new Error('The Firebase service worker could not be activated. Check /firebase-messaging-sw.js in the browser Network tab.');
   if (registration.waiting) registration.waiting.postMessage({ type: 'SKIP_WAITING' });
 
   await new Promise((resolve, reject) => {
     const finish = error => {
       clearTimeout(timeout);
       worker.removeEventListener('statechange', onStateChange);
-      if (error) reject(error);
-      else resolve();
+      if (error) reject(error); else resolve();
     };
     const onStateChange = () => {
       if (worker.state === 'activated') finish();
-      else if (worker.state === 'redundant') finish(new Error('The notification service worker could not start. Reload the page and try again.'));
+      else if (worker.state === 'redundant') finish(new Error('The Firebase service worker became redundant before activation.'));
     };
     const timeout = setTimeout(() => finish(new Error('Notification setup timed out. Reload the page and try again.')), 15000);
     worker.addEventListener('statechange', onStateChange);
@@ -43,13 +42,9 @@ const waitForActiveServiceWorker = async registration => {
 
 const getServiceWorker = () => {
   if (!workerPromise) {
-    // register() also checks for updates; a second update() can race installation.
     workerPromise = navigator.serviceWorker.register('/firebase-messaging-sw.js', { scope: '/' })
       .then(waitForActiveServiceWorker)
-      .catch(error => {
-        workerPromise = null;
-        throw error;
-      });
+      .catch(error => { workerPromise = null; throw error; });
   }
   return workerPromise;
 };
@@ -61,7 +56,6 @@ export const stopBrowserNotifications = () => {
   pendingSetup = null;
 };
 
-// Startup passes requestPermission: false. Only an explicit click prompts the user.
 export const enableBrowserNotifications = async ({ requestPermission = true } = {}) => {
   if (!('Notification' in window)) throw new Error('This browser does not support notifications.');
   if (!window.isSecureContext) throw new Error('Notifications require HTTPS (localhost is allowed for development).');
@@ -69,9 +63,7 @@ export const enableBrowserNotifications = async ({ requestPermission = true } = 
 
   const authToken = localStorage.getItem('1app_admin_token');
   if (!authToken) return false;
-  if (Notification.permission === 'denied') {
-    throw new Error('Notifications are blocked for this site. Allow them in the browser site settings, then try again.');
-  }
+  if (Notification.permission === 'denied') throw new Error('Notifications are blocked for this site. Allow them in the browser site settings, then try again.');
   if (Notification.permission !== 'granted' && !requestPermission) return false;
 
   const missingConfig = Object.entries({ ...config, vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY })
@@ -79,17 +71,19 @@ export const enableBrowserNotifications = async ({ requestPermission = true } = 
     .map(([key]) => key);
   if (missingConfig.length) throw new Error(`Firebase web configuration is incomplete. Missing: ${missingConfig.join(', ')}`);
 
+  if (Notification.permission === 'denied') {
+    throw new Error('Notifications are blocked for this site. Allow them in the browser site settings, then try again.');
+  }
+
   if (pendingSetup?.session === session) return pendingSetup.promise;
   const currentSession = session;
   const isCurrentSession = () => currentSession === session && localStorage.getItem('1app_admin_token') === authToken;
+  const permission = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
+  if (permission !== 'granted') throw new Error(`Notification permission is ${permission}.`);
   const promise = (async () => {
-    // Keep the permission call before asynchronous SDK work to preserve the click gesture.
-    const permission = Notification.permission === 'granted' ? 'granted' : await Notification.requestPermission();
-    if (permission !== 'granted') throw new Error(`Notification permission is ${permission}.`);
     if (!isCurrentSession()) return false;
     if (!await isSupported()) throw new Error('Firebase notifications are not supported in this browser.');
     if (!isCurrentSession()) return false;
-
     const app = getApps().length ? getApps()[0] : initializeApp(config);
     const messaging = getMessaging(app);
     const registration = await getServiceWorker();
@@ -106,17 +100,11 @@ export const enableBrowserNotifications = async ({ requestPermission = true } = 
             data: payload.data || {},
             icon: '/logo192.png',
             ...(payload.messageId && { tag: payload.messageId }),
-          }).catch(() => {
-            console.warn('[Firebase] Browser notification display failed. Check browser and system notification settings.');
-          });
+          }).catch(() => {});
         }
       });
     }
-
-    const token = await getToken(messaging, {
-      vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY,
-      serviceWorkerRegistration: registration,
-    });
+    const token = await getToken(messaging, { vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY, serviceWorkerRegistration: registration });
     if (!isCurrentSession()) return false;
     if (!token) throw new Error('Firebase did not return a browser token. Check the Firebase web app and VAPID key configuration.');
     await adminApi.registerNotificationToken(token);
@@ -124,10 +112,8 @@ export const enableBrowserNotifications = async ({ requestPermission = true } = 
     localStorage.setItem('1app_fcm_token', token);
     return true;
   })();
-  pendingSetup = { session: currentSession, promise };
-  try {
-    return await promise;
-  } finally {
+  pendingSetup = { session, promise };
+  try { return await promise; } finally {
     if (pendingSetup?.promise === promise) pendingSetup = null;
   }
 };

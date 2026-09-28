@@ -10,8 +10,6 @@ const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: function () { return this.role !== 'technician'; },
-        sparse: true,
-        unique: true,
         lowercase: true,
         trim: true,
         match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please provide a valid email address']
@@ -25,13 +23,29 @@ const userSchema = new mongoose.Schema({
     phone: {
         type: String,
         required: [true, 'Please provide a phone number'],
-        unique: true,
         trim: true
     },
+    // Legacy single address (kept for backward compat, no longer primary)
     address: {
         type: String,
         default: ''
     },
+    // Structured multi-address list
+    addresses: [
+        {
+            label: { type: String, default: 'Home', trim: true },    // type category: Home / Office / Work / Other
+            name: { type: String, default: '', trim: true },         // custom nickname: "My Home", "Friend's Home", etc.
+            addressLine: { type: String, default: '', trim: true },  // street / flat / building
+            city: { type: String, default: '', trim: true },
+            state: { type: String, default: '', trim: true },
+            zipcode: { type: String, default: '', trim: true },
+            isDefault: { type: Boolean, default: false },
+            coordinates: {
+                lat: { type: Number, default: null },
+                lng: { type: Number, default: null }
+            }
+        }
+    ],
     role: {
         type: String,
         enum: ['user', 'admin', 'technician'],
@@ -39,9 +53,19 @@ const userSchema = new mongoose.Schema({
     },
     technicianId: { type: String, unique: true, sparse: true },
     createdByAdmin: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
-    accountStatus: { type: String, enum: ['active', 'invited', 'suspended', 'blocked'], default: 'active' },
+    accountStatus: { type: String, enum: ['active', 'inactive', 'invited', 'suspended', 'blocked'], default: 'active' },
     tokenVersion: { type: Number, default: 0 },
     dateOfBirth: Date,
+    gender: {
+        type: String,
+        trim: true,
+        default: ''
+    },
+    alternateContact: {
+        type: String,
+        trim: true,
+        default: ''
+    },
     primaryService: { type: String, default: '' },
     serviceArea: { type: String, default: '' },
     serviceRadius: { type: Number, min: 1, max: 500, default: 15 },
@@ -137,7 +161,15 @@ const userSchema = new mongoose.Schema({
     cart: [
         {
             service: { type: mongoose.Schema.Types.ObjectId, ref: 'Service', required: true },
-            quantity: { type: Number, default: 1, min: 1 }
+            quantity: { type: Number, default: 1, min: 1 },
+            variantId: { type: mongoose.Schema.Types.ObjectId, default: null },
+            variantName: { type: String, default: '', trim: true },
+            variantPrice: { type: Number, default: null, min: 0 },
+            selectedAddons: [{
+                addonId: { type: mongoose.Schema.Types.ObjectId, default: null },
+                name: { type: String, default: '', trim: true },
+                price: { type: Number, default: 0, min: 0 }
+            }]
         }
     ],
     resetPasswordToken: String,
@@ -145,6 +177,17 @@ const userSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+
+// Inactive accounts retain their data but release email and phone for signup.
+const usableAccountStatuses = ['active', 'invited', 'suspended', 'blocked'];
+userSchema.index(
+    { email: 1 },
+    { unique: true, sparse: true, partialFilterExpression: { accountStatus: { $in: usableAccountStatuses } } }
+);
+userSchema.index(
+    { phone: 1 },
+    { unique: true, partialFilterExpression: { accountStatus: { $in: usableAccountStatuses } } }
+);
 
 // Hash password before saving
 userSchema.pre('save', async function () {

@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const otpService = require('../utils/otpService');
+const { normalizePhone, phoneQuery } = require('../utils/phone');
 const { uploadFile, deleteFile } = require('../utils/s3Upload');
 const {
     sendWelcomeEmail,
@@ -44,6 +45,7 @@ const signRefreshToken = (id, role, tokenVersion = 0) => {
 };
 
 const sendTokenResponse = (user, statusCode, res) => {
+    if (user.accountStatus === 'inactive') return res.status(403).json({ success: false, message: 'This account is inactive. Please create a new account.' });
     if (user.role === 'technician' && ['invited', 'suspended', 'blocked'].includes(user.accountStatus)) return res.status(403).json({ success: false, message: 'Account is pending activation or suspended.' });
     const accessToken = signAccessToken(user._id, user.role, user.tokenVersion);
     const refreshToken = signRefreshToken(user._id, user.role, user.tokenVersion);
@@ -70,7 +72,7 @@ exports.startRegister = async (req, res, next) => {
     try {
         const { name, email, password, phone, address } = req.body;
 
-        const emailExists = await User.findOne({ email });
+        const emailExists = await User.findOne({ email, accountStatus: { $ne: 'inactive' } });
         if (emailExists) {
             return res.status(400).json({
                 success: false,
@@ -78,7 +80,7 @@ exports.startRegister = async (req, res, next) => {
             });
         }
 
-        const phoneExists = await User.findOne({ phone });
+        const phoneExists = await User.findOne({ phone, accountStatus: { $ne: 'inactive' } });
         if (phoneExists) {
             return res.status(400).json({
                 success: false,
@@ -147,7 +149,7 @@ exports.verifyRegister = async (req, res, next) => {
 
         const { userData } = pending;
 
-        const emailExists = await User.findOne({ email: userData.email });
+        const emailExists = await User.findOne({ email: userData.email, accountStatus: { $ne: 'inactive' } });
         if (emailExists) {
             pendingRegistrations.delete(phone);
             return res.status(400).json({
@@ -156,7 +158,7 @@ exports.verifyRegister = async (req, res, next) => {
             });
         }
 
-        const phoneExists = await User.findOne({ phone });
+        const phoneExists = await User.findOne({ phone, accountStatus: { $ne: 'inactive' } });
         if (phoneExists) {
             pendingRegistrations.delete(phone);
             return res.status(400).json({
@@ -192,7 +194,7 @@ exports.register = async (req, res, next) => {
         const { name, email, password, phone, address } = req.body;
 
         // Check if user already exists
-        const emailExists = await User.findOne({ email });
+        const emailExists = await User.findOne({ email, accountStatus: { $ne: 'inactive' } });
         if (emailExists) {
             return res.status(400).json({
                 success: false,
@@ -200,7 +202,7 @@ exports.register = async (req, res, next) => {
             });
         }
 
-        const phoneExists = await User.findOne({ phone });
+        const phoneExists = await User.findOne({ phone, accountStatus: { $ne: 'inactive' } });
         if (phoneExists) {
             return res.status(400).json({
                 success: false,
@@ -244,30 +246,35 @@ exports.register = async (req, res, next) => {
  */
 exports.login = async (req, res, next) => {
     try {
-        const { email, password, fcmToken } = req.body;
+        const { email, phone, password, fcmToken } = req.body;
 
-        if (!email || !password) {
+        if ((!email && !phone) || !password) {
             return res.status(400).json({
                 success: false,
-                message: 'Please provide an email and password'
+                message: 'Please provide email or phone and password'
             });
         }
 
-        // Check for user
-        const user = await User.findOne({ email }).select('+password');
+        const query = email
+            ? { email: email.trim().toLowerCase() }
+            : phoneQuery(normalizePhone(phone));
+        const user = await User.findOne(query).select('+password');
         if (!user) {
             return res.status(401).json({
                 success: false,
-                message: 'Invalid email or password'
+                message: 'Invalid email/phone or password'
             });
         }
 
-        // Check if password matches
+        if (user.accountStatus === 'inactive') {
+            return res.status(403).json({ success: false, message: 'This account is inactive. Please create a new account.' });
+        }
+
         const isMatch = await user.comparePassword(password);
         if (!isMatch) {
             return res.status(401).json({
                 success: false,
-                message: 'Invalid email or password'
+                message: 'Invalid email/phone or password'
             });
         }
 
@@ -307,19 +314,50 @@ exports.getMe = async (req, res, next) => {
 };
 
 /**
- * @desc    Update user profile
+ * @desc    Deactivate the current account without deleting its data
+ * @route   DELETE /api/auth/me
+ */
+exports.deleteMe = async (req, res, next) => {
+    try {
+        const user = await User.findByIdAndUpdate(
+            req.user.id,
+            { $set: { accountStatus: 'inactive', isOnline: false }, $inc: { tokenVersion: 1 } },
+            { new: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        res.status(200).json({ success: true, message: 'Account deactivated successfully.' });
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
+ * @desc    Update user profile (name, phone, addresses array)
  * @route   PUT /api/auth/me
+ *
+ * addresses operations (all optional, applied in order):
+ *   addAddress    – { label, addressLine, city, state, zipcode, isDefault? }
+ *   updateAddress – { id, label?, addressLine?, city?, state?, zipcode?, isDefault? }
+ *   removeAddress – addressId string
+ *   setDefaultAddress – addressId string
  */
 exports.updateMe = async (req, res, next) => {
     try {
-        const { name, phone, address } = req.body;
+        const { name, phone, dateOfBirth, dob, gender, alternateContact, addAddress, updateAddress, removeAddress, setDefaultAddress } = req.body;
 
         const user = await User.findById(req.user.id);
 
         if (name) user.name = name;
 
+        if (dateOfBirth !== undefined || dob !== undefined) user.dateOfBirth = (dateOfBirth ?? dob) || null;
+        if (gender !== undefined) user.gender = String(gender).trim();
+        if (alternateContact !== undefined) user.alternateContact = String(alternateContact).trim();
+
         if (phone && phone !== user.phone) {
-            // Check if phone already registered by another user
             const phoneExists = await User.findOne({ phone, _id: { $ne: user._id } });
             if (phoneExists) {
                 return res.status(400).json({
@@ -328,9 +366,7 @@ exports.updateMe = async (req, res, next) => {
                 });
             }
             user.phone = phone;
-            user.isPhoneVerified = false; // Reset verification
-
-            // Trigger OTP for new phone
+            user.isPhoneVerified = false;
             try {
                 await otpService.sendOTP(phone);
             } catch (smsError) {
@@ -338,15 +374,66 @@ exports.updateMe = async (req, res, next) => {
             }
         }
 
-        if (address !== undefined) user.address = address;
+        // --- Address management ---
+
+        // ADD a new address
+        if (addAddress) {
+            const { label = 'Home', addressLine, city = '', state = '', zipcode = '', isDefault = false, coordinates } = addAddress;
+            if (!addressLine || !addressLine.trim()) {
+                return res.status(400).json({ success: false, message: 'addressLine is required when adding an address' });
+            }
+            if (isDefault) {
+                // Clear existing default flag
+                user.addresses.forEach(a => { a.isDefault = false; });
+            }
+            user.addresses.push({
+                label, addressLine: addressLine.trim(), city, state, zipcode,
+                isDefault: isDefault || user.addresses.length === 0,
+                coordinates: coordinates?.lat ? { lat: coordinates.lat, lng: coordinates.lng } : { lat: null, lng: null }
+            });
+        }
+
+        // UPDATE an existing address by _id
+        if (updateAddress) {
+            const { id, coordinates, ...fields } = updateAddress;
+            const addr = user.addresses.id(id);
+            if (!addr) {
+                return res.status(404).json({ success: false, message: 'Address not found' });
+            }
+            if (fields.isDefault) {
+                user.addresses.forEach(a => { a.isDefault = false; });
+            }
+            Object.assign(addr, fields);
+            if (coordinates?.lat) {
+                addr.coordinates = { lat: coordinates.lat, lng: coordinates.lng };
+            }
+        }
+
+        // REMOVE an address by _id
+        if (removeAddress) {
+            const idx = user.addresses.findIndex(a => a._id.toString() === removeAddress);
+            if (idx !== -1) {
+                const wasDefault = user.addresses[idx].isDefault;
+                user.addresses.splice(idx, 1);
+                // Promote first remaining address as default if deleted one was default
+                if (wasDefault && user.addresses.length > 0) {
+                    user.addresses[0].isDefault = true;
+                }
+            }
+        }
+
+        // SET default address by _id
+        if (setDefaultAddress) {
+            user.addresses.forEach(a => {
+                a.isDefault = a._id.toString() === setDefaultAddress;
+            });
+        }
 
         await user.save();
 
         res.status(200).json({
             success: true,
-            data: {
-                user
-            }
+            data: { user }
         });
     } catch (err) {
         next(err);
@@ -399,7 +486,8 @@ exports.forgotPassword = async (req, res, next) => {
         }
 
         const user = await User.findOne({
-            $or: [{ email: identifier.toLowerCase() }, { phone: identifier }]
+            $or: [{ email: identifier.toLowerCase() }, { phone: identifier }],
+            accountStatus: { $ne: 'inactive' }
         });
 
         if (!user) {
@@ -458,6 +546,10 @@ exports.resetPassword = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
 
+        if (user.accountStatus === 'inactive') {
+            return res.status(403).json({ success: false, message: 'This account is inactive. Please create a new account.' });
+        }
+
         user.password = newPassword;
         await user.save();
 
@@ -507,6 +599,10 @@ exports.googleLogin = async (req, res, next) => {
                 success: false,
                 message: 'No account found with this Google email. Please sign up first.',
             });
+        }
+
+        if (user.accountStatus === 'inactive') {
+            return res.status(403).json({ success: false, message: 'This account is inactive. Please create a new account.' });
         }
 
         if (fcmToken && String(fcmToken).length <= 4096) {
@@ -642,6 +738,7 @@ exports.refreshToken = async (req, res, next) => {
             });
         }
 
+        if (user.accountStatus === 'inactive') return res.status(403).json({ success: false, message: 'This account is inactive. Please create a new account.' });
         if (user.role === 'technician' && ['invited', 'suspended', 'blocked'].includes(user.accountStatus)) return res.status(403).json({ success: false, message: 'Account is pending activation or suspended.' });
         if ((user.tokenVersion || 0) > 0 && decoded.tokenVersion !== user.tokenVersion) return res.status(401).json({ success: false, message: 'Refresh token has been revoked.' });
 

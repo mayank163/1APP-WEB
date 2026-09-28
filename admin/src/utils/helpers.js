@@ -8,8 +8,9 @@
  */
 export const getImageUrl = (key) => {
     if (!key) return '';
+    if (typeof key !== 'string') return '';
     // Already a full URL (legacy records) — return as-is
     if (key.startsWith('http://') || key.startsWith('https://')) return key;
     const base = (process.env.REACT_APP_IMAGE_URL || '').replace(/\/$/, '');
-    return `${base}/${key}`;
+    return `${base}/${key.replace(/^\/+/, '')}`;
 };

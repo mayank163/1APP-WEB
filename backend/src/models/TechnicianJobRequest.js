@@ -122,6 +122,7 @@ const technicianJobRequestSchema = new mongoose.Schema(
     },
     initiatedBy: { type: String, enum: ['technician', 'admin'], default: 'technician' },
     invitedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
+    releasedAt: { type: Date, default: null },
     // Keep the pay snapshot flexible for older invitations and the current
     // job model, which stores the base amount in `pay`.
     offeredPay: { type: mongoose.Schema.Types.Mixed, default: null },

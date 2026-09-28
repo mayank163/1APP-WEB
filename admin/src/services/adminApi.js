@@ -47,20 +47,17 @@ const adminApi = {
     registerNotificationToken: async (token) => (await API.post('/notifications/token', { token })).data,
 
     // ─── Bookings ──────────────────────────────────────────────────────────────
-    getBookings: async (filters = {}) => {
-        const { status, paymentStatus, search } = filters;
-        const params = [];
-        if (status) params.push(`status=${encodeURIComponent(status)}`);
-        if (paymentStatus) params.push(`paymentStatus=${encodeURIComponent(paymentStatus)}`);
-        if (search) params.push(`search=${encodeURIComponent(search)}`);
-        return (await API.get(`/admin/bookings${params.length ? '?' + params.join('&') : ''}`)).data;
-    },
+    getBookings: async (params = {}) => (await API.get('/admin/bookings', { params })).data,
     updateBooking: async (id, data) => (await API.put(`/admin/bookings/${id}`, data)).data,
 
     getTechnicians: async () => (await API.get('/admin/technicians')).data,
+    getChatInbox: async (participantType) => (await API.get(`/chat/conversations/inbox/${participantType}`)).data,
     getChatMessages: async (technicianId, params = {}) => (await API.get(`/chat/conversations/${technicianId}/messages`, { params })).data,
+    getUserChatMessages: async (userId, params = {}) => (await API.get(`/chat/conversations/user/${userId}/messages`, { params })).data,
     markChatRead: async (technicianId) => (await API.patch(`/chat/conversations/${technicianId}/read`)).data,
+    markUserChatRead: async (userId) => (await API.patch(`/chat/conversations/user/${userId}/read`)).data,
     sendChatMedia: async (technicianId, formData) => (await API.post(`/chat/conversations/${technicianId}/messages`, formData, multipart)).data,
+    sendUserChatMedia: async (userId, formData) => (await API.post(`/chat/conversations/user/${userId}/messages`, formData, multipart)).data,
     createTechnician: async (payload) => (await API.post('/admin/technicians', payload, multipart)).data,
     updateTechnician: async (id, payload) => (await API.patch(`/admin/technicians/${id}`, payload)).data,
     updateTechnicianAccount: async (id, status) => (await API.patch(`/admin/technicians/${id}/account`, { status })).data,
@@ -78,6 +75,7 @@ const adminApi = {
     updateTechnicianJob: async (id, payload) => (await API.put(`/admin/technician-jobs/${id}`, payload)).data,
     deleteTechnicianJob: async (id) => (await API.delete(`/admin/technician-jobs/${id}`)).data,
     updateTechnicianJobStatus: async (id, payload) => (await API.patch(`/admin/technician-jobs/${id}/status`, payload)).data,
+    unassignTechnicianJob: async (id, payload) => (await API.patch(`/admin/technician-jobs/${id}/unassign`, payload)).data,
     payTechnician: async (id, payload) => (await API.post(`/admin/technician-jobs/${id}/pay`, payload)).data,
     rescheduleJob: async (id, payload) => (await API.patch(`/admin/technician-jobs/${id}/reschedule`, payload)).data,
     completeTask: async (jobId, taskIndex, payload = {}) => (await API.patch(`/technician/jobs/${jobId}/tasks/${taskIndex}/complete`, payload)).data,
@@ -95,18 +93,19 @@ const adminApi = {
     updateDocumentStatus: async (technicianId, documentId, payload) => (await API.patch(`/admin/technician-verifications/${technicianId}/documents/${documentId}`, payload)).data,
 
     // ─── Users ─────────────────────────────────────────────────────────────────
-    getUsers: async () => (await API.get('/admin/users')).data,
+    getUsers: async (params = {}) => (await API.get('/admin/users', { params })).data,
+    updateUserAccount: async (id, status) => (await API.patch(`/admin/users/${id}/status`, { status })).data,
 
     // ─── Categories ────────────────────────────────────────────────────────────
-    getCategories: async () => (await API.get('/services/categories')).data,
+    getCategories: async (params = {}) => (await API.get('/services/categories', { params: Object.keys(params).length ? params : { limit: 100 } })).data,
     createCategory: async (fd) => (await API.post('/services/categories', fd, multipart)).data,
     updateCategory: async (id, fd) => (await API.put(`/services/categories/${id}`, fd, multipart)).data,
     deleteCategory: async (id) => (await API.delete(`/services/categories/${id}`)).data,
 
     // ─── SubCategories ─────────────────────────────────────────────────────────
-    getSubCategories: async (categoryId = '') => {
-        const url = categoryId ? `/services/subcategories?category=${categoryId}` : '/services/subcategories';
-        return (await API.get(url)).data;
+    getSubCategories: async (categoryId = '', params = {}) => {
+        const query = Object.keys(params).length ? params : { limit: 100 };
+        return (await API.get('/services/subcategories', { params: { ...query, ...(categoryId && { category: categoryId }) } })).data;
     },
     getSubCategoriesByCategory: async (categoryId) => (await API.get(`/services/categories/${categoryId}/subcategories`)).data,
     getServicesBySubCategory: async (subcategoryId) => (await API.get(`/services/subcategories/${subcategoryId}/services`)).data,
@@ -116,11 +115,7 @@ const adminApi = {
     toggleSubCategoryStatus: async (id, isActive) => (await API.patch(`/services/subcategories/${id}/status`, { isActive })).data,
 
     // ─── Services ──────────────────────────────────────────────────────────────
-    getServices: async (filters = {}) => {
-        const params = [];
-        Object.entries(filters).forEach(([k, v]) => { if (v) params.push(`${k}=${encodeURIComponent(v)}`); });
-        return (await API.get(`/services${params.length ? '?' + params.join('&') : ''}`)).data;
-    },
+    getServices: async (params = {}) => (await API.get('/services', { params: Object.keys(params).length ? params : { limit: 100 } })).data,
     getServiceById: async (id) => (await API.get(`/services/${id}`)).data,
     createService: async (fd) => (await API.post('/services', fd, multipart)).data,
     updateService: async (id, fd) => (await API.put(`/services/${id}`, fd, multipart)).data,

@@ -1,13 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { FiMessageCircle, FiPaperclip, FiSend, FiImage, FiVideo } from 'react-icons/fi';
+import { FiArrowLeft, FiPaperclip, FiSend, FiImage, FiVideo } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useSocket } from '../context/SocketContext';
 import { chatApi } from '../services/api';
 import './TechnicianChat.css';
+import './SupportChatScrollbar.css';
 
 const messageKey = message => String(message._id || `${message.createdAt}-${message.senderId}`);
 const formatTime = value => value ? new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+const avatarValue = user => typeof user?.profileImage === 'object' ? user.profileImage?.url : user?.profileImage;
+const initials = name => String(name || '?').split(' ').slice(0, 2).map(part => part[0]).join('').toUpperCase();
 
 export default function TechnicianChat() {
     const { user } = useAuth();
@@ -86,9 +89,10 @@ export default function TechnicianChat() {
         finally { setSending(false); }
     };
 
-    return <main className="tech-chat-page">
-        <header className="tech-chat-header"><button className="tech-chat-back" onClick={() => navigate('/technician')}>Back to dashboard</button><div><span className="tech-chat-kicker"><FiMessageCircle /> SUPPORT DESK</span><h1>Talk to support</h1><p>Share a question, photo, or video with the operations team.</p></div><span className={`tech-chat-status ${connected ? 'is-online' : ''}`}>{connected ? 'Live' : 'Connecting'}</span></header>
-        <section className="tech-chat-shell">
+    const image = avatarValue(user);
+    return <main className="tech-chat-page support-chat-page">
+        <section className="tech-chat-shell support-chat-shell">
+            <header className="support-chat-header"><div className="support-chat-avatar">{image ? <img src={image} alt="" /> : initials(user?.name)}</div><div className="support-chat-person"><h1>{user?.name || 'Technician'}</h1><p>Technician <span>·</span> {user?.email || 'Support conversation'} <span>·</span> {connected ? 'Live' : 'Connecting'}</p></div><button className="support-chat-new" type="button" title="Back to dashboard" aria-label="Back to dashboard" onClick={() => navigate('/technician')}><FiArrowLeft /></button></header>
             <div className="tech-chat-thread" aria-live="polite">
                 {loading ? <p className="tech-chat-empty">Loading your conversation...</p> : !messages.length ? <p className="tech-chat-empty">Your support conversation will appear here.</p> : messages.map(message => <article className={`tech-chat-message ${message.senderRole === 'technician' ? 'mine' : ''}`} key={messageKey(message)}><div className="tech-chat-bubble">{message.messageType === 'image' && <img src={message.media?.url} alt="Support attachment" />} {message.messageType === 'video' && <video controls src={message.media?.url} />} {message.text && <p>{message.text}</p>}<time>{formatTime(message.createdAt)}</time></div></article>)}
                 {typing && <div className="tech-chat-typing">Support is typing<span>•••</span></div>}

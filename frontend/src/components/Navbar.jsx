@@ -7,6 +7,7 @@ import { BsStack } from 'react-icons/bs';
 import SearchAutocomplete from './SearchAutocomplete';
 import ServiceSearchAutocomplete from './ServiceSearchAutocomplete';
 import NotificationBell from './NotificationBell';
+import { resolveImageUrl } from '../services/api';
 
 const tryHeroImg = (filename) => {
         try { return require(`../assets/hero/${filename}`); }
@@ -74,7 +75,7 @@ const NavigationBar = () => {
                                     <div className="rounded-circle overflow-hidden d-flex align-items-center justify-content-center flex-shrink-0"
                                         style={{ width: 32, height: 32, border: '2px solid #2d6a4f', background: user?.profileImage?.url ? 'transparent' : '#6c757d' }}>
                                         {user?.profileImage?.url ? (
-                                            <img src={user.profileImage.url} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            <img src={resolveImageUrl(user.profileImage.url)} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                         ) : (
                                             <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff', lineHeight: 1 }}>
                                                 {user?.name?.charAt(0)?.toUpperCase()}
@@ -85,6 +86,7 @@ const NavigationBar = () => {
                                 <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-2 navbar-dropdown">
                                     <li><Link className="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" to="/profile"><FaUser className="text-muted" /><span>Profile</span></Link></li>
                                     <li><Link className="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" to="/bookings"><FaListAlt className="text-muted" /><span>My Bookings</span></Link></li>
+                                    {user?.role === 'user' && <li><Link className="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" to="/support-chat"><FaComments className="text-muted" /><span>Support Chat</span></Link></li>}
                                     {user?.role === 'technician' && <li><Link className="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" to="/technician-chat"><FaComments className="text-muted" /><span>Support Chat</span></Link></li>}
                                     <li><hr className="dropdown-divider" /></li>
                                     <li><button className="dropdown-item d-flex align-items-center gap-2 py-2 text-danger" onClick={handleLogout} style={{ border: 'none', background: 'none' }}>

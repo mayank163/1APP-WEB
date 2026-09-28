@@ -34,6 +34,7 @@ const Home = () => {
     const [hierarchy, setHierarchy] = useState({});
 
     const UPLOAD_IMAGE_URL = `${process.env.REACT_APP_IMAGE_URL}`;
+    const normalizeCategoryName = (name) => (name || '').toLowerCase().replace(/\s+/g, '');
 
     const resolveCategoryImage = (imageUrl) => {
         if (!imageUrl) return null;
@@ -88,7 +89,8 @@ const Home = () => {
     };
 
     const handleCategoryClick = async (category) => {
-        const cat = categoriesWithSubs.find(c => c.name === category);
+        const normalizedCategory = normalizeCategoryName(category);
+        const cat = categoriesWithSubs.find(c => normalizeCategoryName(c.name) === normalizedCategory);
         if (!cat) {
             navigate(`/services?search=${encodeURIComponent(category)}`);
             return;
@@ -120,7 +122,8 @@ const Home = () => {
     };
 
     const handleViewAllServices = (categoryName) => {
-        const cat = categoriesWithSubs.find(c => c.name === categoryName);
+        const normalizedCategory = normalizeCategoryName(categoryName);
+        const cat = categoriesWithSubs.find(c => normalizeCategoryName(c.name) === normalizedCategory);
         if (cat) navigate(`/services?category=${cat.id}`);
         else navigate(`/services`);
     };
@@ -130,10 +133,11 @@ const Home = () => {
     };
 
     const getCategoryByName = (name) => {
-        return categoriesWithSubs.find(c =>
-            c.name.toLowerCase().replace(/\s+/g, '').includes(name.toLowerCase().replace(/\s+/g, '')) ||
-            name.toLowerCase().replace(/\s+/g, '').includes(c.name.toLowerCase().replace(/\s+/g, ''))
-        );
+        const normalizedName = normalizeCategoryName(name);
+        return categoriesWithSubs.find(c => {
+            const normalizedCategory = normalizeCategoryName(c.name);
+            return normalizedCategory.includes(normalizedName) || normalizedName.includes(normalizedCategory);
+        });
     };
 
 
@@ -196,6 +200,7 @@ const Home = () => {
                 }
 
                 .hero-center-panel {
+                    margin-bottom: 220px;
                     flex: 1 1 320px;
                     min-width: 0;
                     display: flex;
@@ -289,7 +294,7 @@ const Home = () => {
         <div className="hero-three-col">
             {/* LEFT CARD - Home Services */}
             {(() => {
-                const homeCat = getCategoryByName('Home');
+                const homeCat = getCategoryByName('Home Services');
                 const desiredSubNames = ['Cleaning', 'Diagnosis', 'Home Theater', 'Smart Home', 'TV Mounting'];
                 const homeSubcategories = desiredSubNames.map(name =>
                     homeCat?.subcategories?.find(s => s.name?.toLowerCase() === name.toLowerCase()) || { name }
@@ -373,7 +378,7 @@ const Home = () => {
 
             {/* CENTRE PANEL */}
             <div className="hero-center-panel" style={{ padding: '0 8px' }}>
-                <div style={{
+                {/* <div style={{
                     display: 'inline-flex', alignItems: 'center', gap: '5px',
                     background: 'rgba(255,255,255,0.20)',
                     borderRadius: '999px',
@@ -385,7 +390,7 @@ const Home = () => {
                 }}>
                     <FaStar size={10} style={{ color: '#1a1a1a' }} />
                     TRUSTED BY 10,000+ CUSTOMERS
-                </div>
+                </div> */}
 
                 <h1 style={{
                     fontSize: 'clamp(26px, 3.2vw, 44px)',
@@ -541,7 +546,7 @@ const Home = () => {
 </div>
 
 {/* ── Exclusive Home Services Offers ── */}
-<section className="py-3 bg-white" style={{ marginTop: '-5px' }}>
+<section className="py-3 bg-white" >
     <div className="container">
         <h2 className="fw-bold mb-1" style={{ fontSize: '1.5rem' }}>Exclusive Home Services Offers</h2>
         <p className="text-muted mb-3" style={{ fontSize: '0.9rem' }}>Book Cleaner, Plumber, Handyman, Gardner or any one for your home help.</p>
@@ -626,6 +631,55 @@ const Home = () => {
         </div>
     </div>
 </section>
+
+{/* Marketing & Business Services - Dynamic from API */}
+            {[
+                { key: 'Marketing', subtitle: 'Digital marketing solutions for your brand' },
+                { key: 'Consulting', subtitle: 'Expert consulting for your business' },
+                { key: 'Professional', subtitle: 'Specialized professional services' },
+            ].map(({ key, subtitle }) => {
+                const cat = getCategoryByName(key);
+                if (!cat) return null;
+                return (
+                    <section key={key} className="py-5 bg-white">
+                        <div className="container">
+                            <div className="d-flex justify-content-between align-items-center mb-4">
+                                <h2 className="fw-bold mb-0">{cat.name}</h2>
+                                <button onClick={() => navigate(`/services?category=${cat.id}`)} className="btn btn-link text-dark fw-semibold text-decoration-none p-0">See All</button>
+                            </div>
+                            <div className="row g-3">
+                                {cat.subcategories.slice(0, 4).map((sub, idx) => (
+                                    <div key={idx} className="col-lg-3 col-md-6">
+                                        <div
+                                            className="border rounded-3 p-3 h-100 d-flex flex-column justify-content-between"
+                                            style={{ cursor: 'pointer', background: '#fff' }}
+                                            onClick={() => navigate(`/services?subcategory=${sub._id}`)}
+                                        >
+                                            <div>
+                                                <div className="fw-semibold mb-1" style={{ fontSize: '14px', lineHeight: 1.4 }}>{sub.name}</div>
+                                                <div className="text-muted" style={{ fontSize: '12px', lineHeight: 1.5 }}>{subtitle}</div>
+                                            </div>
+                                            <div className="d-flex align-items-center justify-content-between mt-3 pt-3 border-top">
+                                                <div>
+                                                    <div className="text-muted" style={{ fontSize: '11px' }}>Standard Package</div>
+                                                    <div style={{ fontSize: '13px' }}>Starts From <span className="fw-bold">${sub.startingFromPrice}</span></div>
+                                                </div>
+                                                <button className="btn p-2 rounded-2" style={{ background: '#f5f5f5', border: 'none', height: '30px' }}>
+                                                    <FaPhoneAlt
+                                                        size={14}
+                                                        className="text-dark"
+                                                        style={{ display: 'flex' }}
+                                                    />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                );
+            })}
 
             {/* Home Painting Banner */}
             <section className="py-5 bg-white">
@@ -960,29 +1014,21 @@ const Home = () => {
                                 <div className="row g-2">
                                     <div className="col-6">
                                         <div className="fw-semibold small mb-2">Technology</div>
-                                        {['Web Design', 'Website Development', 'App Development', 'Software Development'].map((s, i) => {
-                                            const itCat = getCategoryByName('IT');
-                                            const sub = itCat?.subcategories?.find(sc => sc.name.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(sc.name.toLowerCase()));
-                                            return (
-                                                <div key={i} className="d-flex align-items-center gap-2 mb-1" style={{ fontSize: '13px', color: '#444', cursor: 'pointer' }}
-                                                    onClick={() => sub ? navigate(`/services?subcategory=${sub._id}`) : (itCat ? navigate(`/services?category=${itCat.id}`) : handleCategoryClick('IT & Technology'))}>
-                                                    <FaLaptop size={10} className="text-muted" />{s}
-                                                </div>
-                                            );
-                                        })}
+                                        {(getCategoryByName('IT & Technology')?.subcategories || []).map(sub => (
+                                            <div key={sub._id} className="d-flex align-items-center gap-2 mb-1" style={{ fontSize: '13px', color: '#444', cursor: 'pointer' }}
+                                                onClick={() => navigate(`/services?subcategory=${sub._id}`)}>
+                                                <FaLaptop size={10} className="text-muted" />{sub.name}
+                                            </div>
+                                        ))}
                                     </div>
                                     <div className="col-6">
                                         <div className="fw-semibold small mb-2">Marketing</div>
-                                        {['Digital Marketing', 'Social Media Marketing', 'SEO', 'Content Marketing', 'Branding'].map((s, i) => {
-                                            const mktCat = getCategoryByName('Marketing');
-                                            const sub = mktCat?.subcategories?.find(sc => sc.name.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(sc.name.toLowerCase()));
-                                            return (
-                                                <div key={i} className="d-flex align-items-center gap-2 mb-1" style={{ fontSize: '13px', color: '#444', cursor: 'pointer' }}
-                                                    onClick={() => sub ? navigate(`/services?subcategory=${sub._id}`) : (mktCat ? navigate(`/services?category=${mktCat.id}`) : handleCategoryClick('Marketing & Branding'))}>
-                                                    <FaBullhorn size={10} className="text-muted" />{s}
-                                                </div>
-                                            );
-                                        })}
+                                        {(getCategoryByName('Marketing & Branding')?.subcategories || []).map(sub => (
+                                            <div key={sub._id} className="d-flex align-items-center gap-2 mb-1" style={{ fontSize: '13px', color: '#444', cursor: 'pointer' }}
+                                                onClick={() => navigate(`/services?subcategory=${sub._id}`)}>
+                                                <FaBullhorn size={10} className="text-muted" />{sub.name}
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
@@ -1000,54 +1046,7 @@ const Home = () => {
                 </div>
             </section>
 
-            {/* Marketing & Business Services - Dynamic from API */}
-            {[
-                { key: 'Marketing', subtitle: 'Digital marketing solutions for your brand' },
-                { key: 'Consulting', subtitle: 'Expert consulting for your business' },
-                { key: 'Professional', subtitle: 'Specialized professional services' },
-            ].map(({ key, subtitle }) => {
-                const cat = getCategoryByName(key);
-                if (!cat) return null;
-                return (
-                    <section key={key} className="py-5 bg-white">
-                        <div className="container">
-                            <div className="d-flex justify-content-between align-items-center mb-4">
-                                <h2 className="fw-bold mb-0">{cat.name}</h2>
-                                <button onClick={() => navigate(`/services?category=${cat.id}`)} className="btn btn-link text-dark fw-semibold text-decoration-none p-0">See All</button>
-                            </div>
-                            <div className="row g-3">
-                                {cat.subcategories.slice(0, 4).map((sub, idx) => (
-                                    <div key={idx} className="col-lg-3 col-md-6">
-                                        <div
-                                            className="border rounded-3 p-3 h-100 d-flex flex-column justify-content-between"
-                                            style={{ cursor: 'pointer', background: '#fff' }}
-                                            onClick={() => navigate(`/services?subcategory=${sub._id}`)}
-                                        >
-                                            <div>
-                                                <div className="fw-semibold mb-1" style={{ fontSize: '14px', lineHeight: 1.4 }}>{sub.name}</div>
-                                                <div className="text-muted" style={{ fontSize: '12px', lineHeight: 1.5 }}>{subtitle}</div>
-                                            </div>
-                                            <div className="d-flex align-items-center justify-content-between mt-3 pt-3 border-top">
-                                                <div>
-                                                    <div className="text-muted" style={{ fontSize: '11px' }}>Standard Package</div>
-                                                    <div style={{ fontSize: '13px' }}>Starts From <span className="fw-bold">${sub.startingFromPrice}</span></div>
-                                                </div>
-                                                <button className="btn p-2 rounded-2" style={{ background: '#f5f5f5', border: 'none', height: '30px' }}>
-                                                    <FaPhoneAlt
-                                                        size={14}
-                                                        className="text-dark"
-                                                        style={{ display: 'flex' }}
-                                                    />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </section>
-                );
-            })}
+            
 
 
 
@@ -1361,14 +1360,14 @@ const Home = () => {
                         <div
                             className="position-absolute w-100 text-center"
                             style={{
-                                top: "120px",
+                                top: "260px",
                                 left: 0,
                                 zIndex: 1,
                                 userSelect: "none",
                                 lineHeight: 0.82,
                             }}
                         >
-                            <div
+                            {/* <div
                                 style={{
                                     fontSize: "clamp(120px,22vw,260px)",
                                     fontWeight: 900,
@@ -1380,7 +1379,7 @@ const Home = () => {
                                 }}
                             >
                                 ONE
-                            </div>
+                            </div> */}
 
                             <div
                                 style={{
@@ -1388,12 +1387,12 @@ const Home = () => {
                                     fontWeight: 900,
                                     letterSpacing: "-8px",
                                     background:
-                                        "linear-gradient(to bottom,#e6e6e6,#9c9c9c)",
+                                        "linear-gradient(to bottom,#e6e6e6,#000)",
                                     WebkitBackgroundClip: "text",
                                     WebkitTextFillColor: "transparent",
                                 }}
                             >
-                                APP
+                                1APP
                             </div>
                         </div>
 
@@ -1468,7 +1467,7 @@ const Home = () => {
 
                                 <p
                                     style={{
-                                        color: "#67d36b",
+                                        color: "#d8d8d8",
                                         fontStyle: "italic",
                                         fontWeight: 600,
                                         fontSize: "16px",

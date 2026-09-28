@@ -1,5 +1,22 @@
 import API from './api';
 
+const fetchAllPages = async (endpoint, resourceKey) => {
+    const limit = 100;
+    const firstResponse = await API.get(endpoint, { params: { page: 1, limit } });
+    const firstPageItems = firstResponse.data.data[resourceKey] || [];
+    const totalPages = firstResponse.data.pagination?.totalPages || 1;
+    const remainingResponses = await Promise.all(
+        Array.from({ length: totalPages - 1 }, (_, index) =>
+            API.get(endpoint, { params: { page: index + 2, limit } })
+        )
+    );
+
+    return [
+        ...firstPageItems,
+        ...remainingResponses.flatMap(response => response.data.data[resourceKey] || []),
+    ];
+};
+
 const serviceService = {
     getAllServices: async (filters = {}) => {
         const { category, subcategory, search } = filters;
@@ -24,18 +41,18 @@ const serviceService = {
     },
 
     getCategoriesWithSubcategories: async () => {
-        const [catRes, subRes] = await Promise.all([
-            API.get('/services/categories'),
-            API.get('/services/subcategories'),
+        const [categories, subcategories] = await Promise.all([
+            fetchAllPages('/services/categories', 'categories'),
+            fetchAllPages('/services/subcategories', 'subcategories'),
         ]);
-        const categories = catRes.data.data.categories.map(cat => ({
+        const categoriesWithSubcategories = categories.map(cat => ({
             ...cat,
             id: cat._id,
-            subcategories: subRes.data.data.subcategories.filter(
+            subcategories: subcategories.filter(
                 sub => (sub.category?._id || sub.category) === (cat._id?.toString?.() || cat._id)
             ),
         }));
-        return { success: true, data: { categories } };
+        return { success: true, data: { categories: categoriesWithSubcategories } };
     },
 
     getFeaturedServices: async () => {

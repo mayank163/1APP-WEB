@@ -6,6 +6,7 @@ import { ServiceDetailShimmer } from '../components/Shimmer';
 import { CartContext } from '../context/CartContext';
 import { toast } from 'react-toastify';
 import { resolveImageUrl } from '../services/api';
+import { formatServicePrice, getStartingPrice } from '../utils/servicePrice';
 import technicianImage from '../assets/hero/technician_image.png';
 
 const ServiceDetail = () => {
@@ -132,8 +133,8 @@ const ServiceDetail = () => {
     };
 
     const getPrice = () => {
-        if (selectedVariant) return selectedVariant.offerPrice || selectedVariant.price;
-        return service?.offerPrice || service?.price || 0;
+        if (selectedVariant) return getStartingPrice(selectedVariant.offerPrice || selectedVariant.actualPrice || selectedVariant.price);
+        return getStartingPrice(service?.price ?? (service?.offerPrice || service?.actualPrice));
     };
 
     const getTotalPrice = () => {
@@ -141,31 +142,13 @@ const ServiceDetail = () => {
         return getPrice() + addonTotal;
     };
 
-    const handleAddToCart = () => {
-        const cartService = selectedVariant
-            ? { ...service, price: selectedVariant.offerPrice || selectedVariant.price, name: `${service.name} - ${selectedVariant.name}` }
-            : service;
-
-        const added = addToCart(cartService, 1);
+    const handleAddToCart = async () => {
+        const added = await addToCart(service, 1, selectedVariant, selectedAddons);
         if (!added) {
             toast.info(`${service.subcategory?.name || service.name} is already in your cart!`);
             return;
         }
-
-        // Only add addons if the service was freshly added; skip duplicates silently
-        const newAddons = [];
-        const skippedAddons = [];
-        selectedAddons.forEach(addon => {
-            const addonAdded = addToCart({ ...addon, _id: addon._id, price: addon.price }, 1);
-            if (addonAdded) newAddons.push(addon.name);
-            else skippedAddons.push(addon.name);
-        });
-
-        if (skippedAddons.length > 0) {
-            toast.success(`Service added. ${skippedAddons.length} add-on(s) already in cart were skipped.`);
-        } else {
-            toast.success(`${service.subcategory?.name || service.name} added to cart!`);
-        }
+        toast.success(`${service.subcategory?.name || service.name} added to cart!`);
     };
 
     if (loading) return <ServiceDetailShimmer />;
@@ -180,7 +163,6 @@ const ServiceDetail = () => {
     }
 
     const visibleImages = galleryImages.slice(galleryIndex * 2, galleryIndex * 2 + 2);
-    const basePrice = service.offerPrice || service.price;
     const discountPct = service.discountPercentage || 0;
 
     return (
@@ -227,15 +209,15 @@ const ServiceDetail = () => {
                     <a href="#reviews" style={{ color: '#888', fontSize: '13px', textDecoration: 'underline' }}>({service.ratingsQuantity > 0 ? `${service.ratingsQuantity}` : '6.1M'} reviews)</a>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: discountPct > 0 ? '4px' : 0 }}>
-                    <span style={{ fontSize: '16px', fontWeight: '700', color: '#1a1a2e' }}>${(service.offerPrice || service.price || 0).toFixed(2)}</span>
+                    <span style={{ fontSize: '16px', fontWeight: '700', color: '#1a1a2e' }}>${formatServicePrice(service.price ?? (service.offerPrice || service.actualPrice), 2)}</span>
                     {discountPct > 0 && (
                         <span style={{ fontSize: '14px', color: '#999', textDecoration: 'line-through' }}>${(service.actualPrice || 0).toFixed(2)}</span>
                     )}
                     <span style={{ color: '#555', fontSize: '14px', display:'none'}}>• {service.duration} hrs</span>
                 </div>
                 {service.hasVariants && service.variants?.length > 0 && (() => {
-                    const cheapest = service.variants.reduce((min, v) => (v.offerPrice || v.price) < (min.offerPrice || min.price) ? v : min, service.variants[0]);
-                    const perUnit = cheapest.quantity > 1 ? ((cheapest.offerPrice || cheapest.price) / cheapest.quantity).toFixed(2) : null;
+                    const cheapest = service.variants.reduce((min, v) => (v.offerPrice || v.actualPrice || v.price || 0) < (min.offerPrice || min.actualPrice || min.price || 0) ? v : min, service.variants[0]);
+                    const perUnit = cheapest.quantity > 1 ? ((cheapest.offerPrice || cheapest.actualPrice || cheapest.price || 0) / cheapest.quantity).toFixed(2) : null;
                     return perUnit ? (
                         <div style={{ color: '#000000', fontSize: '14px', fontWeight: '600' }}>♦ ${perUnit} per bathroom</div>
                     ) : null;
@@ -256,8 +238,8 @@ const ServiceDetail = () => {
                         {service.variants.map(v => {
                             const isSelected = selectedVariant?._id === v._id;
                             const vDiscount = v.discountPercentage || 0;
-                            const vOffer = v.offerPrice || v.price;
-                            const vActual = v.actualPrice || v.price;
+                            const vOffer = getStartingPrice(v.offerPrice || v.actualPrice || v.price);
+                            const vActual = getStartingPrice(v.actualPrice || v.price);
                             const perUnit = v.quantity > 1 ? (vOffer / v.quantity).toFixed(2) : null;
                             return (
                                 <div key={v._id} onClick={() => setSelectedVariant(v)}
@@ -729,7 +711,7 @@ const ServiceDetail = () => {
                         )}
                     </div>
                     {discountPct > 0 && !selectedVariant && (
-                        <div style={{ fontSize: '12px', color: '#999', textDecoration: 'line-through' }}>${(service.actualPrice || service.price || 0).toFixed(2)}</div>
+                        <div style={{ fontSize: '12px', color: '#999', textDecoration: 'line-through' }}>${getStartingPrice(service.actualPrice || service.price).toFixed(2)}</div>
                     )}
                 </div>
                 <button onClick={handleAddToCart}

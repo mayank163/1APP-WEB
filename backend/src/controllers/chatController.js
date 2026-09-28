@@ -16,20 +16,31 @@ const isHeicImage = (file) => {
         fileName.endsWith('.heic') || fileName.endsWith('.heif');
 };
 
-const findTechnician = async (req, technicianId) => {
+const findParticipant = async (req, participantType, participantId) => {
     const isAdmin = req.user instanceof Admin || req.user.constructor?.modelName === 'Admin';
-    if (!isAdmin && req.user.role !== 'technician') return null;
-    if (req.user.role === 'technician' && String(req.user._id) !== String(technicianId)) {
+    if (!isAdmin && !['technician', 'user'].includes(req.user.role)) return null;
+    if (!isAdmin && String(req.user._id) !== String(participantId)) {
         return null;
     }
-    return User.findOne({ _id: technicianId, role: 'technician' });
+    return User.findOne({ _id: participantId, role: participantType });
+};
+
+const participantParams = req => ({
+    participantType: req.params.participantType || 'technician',
+    participantId: req.params.participantId || req.params.technicianId
+});
+
+const roomFor = (participantType, participantId) => `chat:${participantType}:${participantId}`;
+const senderRoleFor = user => {
+    const isAdmin = user instanceof Admin || user.constructor?.modelName === 'Admin' || user.role === 'super-admin';
+    return isAdmin ? 'admin' : user.role;
 };
 
 const sendMessage = async (req, res, next) => {
     try {
-        const { technicianId } = req.params;
-        const technician = await findTechnician(req, technicianId);
-        if (!technician) return res.status(403).json({ success: false, message: 'You cannot access this conversation.' });
+        const { participantType, participantId } = participantParams(req);
+        const participant = await findParticipant(req, participantType, participantId);
+        if (!participant) return res.status(403).json({ success: false, message: 'You cannot access this conversation.' });
 
         const file = req.file;
         const messageType = file
@@ -73,22 +84,24 @@ const sendMessage = async (req, res, next) => {
                     size: compressedBuffer.length
                 };
             }
-            const { key } = await uploadFile(upload, `chat/${technicianId}`);
+            const { key } = await uploadFile(upload, `chat/${participantType}/${participantId}`);
             media = { url: mediaUrl(key), key, mimeType: upload.mimetype, size: upload.size };
         }
 
         const message = await ChatMessage.create({
-            technicianId,
+            ...(participantType === 'technician' ? { technicianId: participantId } : {}),
+            participantId,
+            participantType,
             senderId: req.user._id,
-            senderRole: req.user.role === 'technician' ? 'technician' : 'admin',
-            receiverId: req.user.role === 'technician' ? (req.body.receiverId || null) : technician._id,
+            senderRole: senderRoleFor(req.user),
+            receiverId: req.user.role === participantType ? (req.body.receiverId || null) : participant._id,
             messageType,
             text,
             media
         });
 
         try {
-            getIO().to(`chat:technician:${technicianId}`).emit('chat:message', { message });
+            getIO().to(roomFor(participantType, participantId)).emit('chat:message', { message });
         } catch (socketError) {
             console.warn('[Chat] message broadcast failed:', socketError.message);
         }
@@ -101,11 +114,14 @@ const sendMessage = async (req, res, next) => {
 
 const getMessages = async (req, res, next) => {
     try {
-        const technician = await findTechnician(req, req.params.technicianId);
-        if (!technician) return res.status(403).json({ success: false, message: 'You cannot access this conversation.' });
+        const { participantType, participantId } = participantParams(req);
+        const participant = await findParticipant(req, participantType, participantId);
+        if (!participant) return res.status(403).json({ success: false, message: 'You cannot access this conversation.' });
 
         const limit = Math.min(Math.max(Number(req.query.limit) || 50, 1), 100);
-        const query = { technicianId: technician._id };
+        const query = participantType === 'technician'
+            ? { $or: [{ technicianId: participant._id }, { participantId: participant._id, participantType }] }
+            : { participantId: participant._id, participantType };
         if (req.query.before) query.createdAt = { $lt: new Date(req.query.before) };
         const messages = await ChatMessage.find(query).sort({ createdAt: -1 }).limit(limit).lean();
         res.json({ success: true, data: { messages: messages.reverse(), hasMore: messages.length === limit } });
@@ -116,10 +132,14 @@ const getMessages = async (req, res, next) => {
 
 const markRead = async (req, res, next) => {
     try {
-        const technician = await findTechnician(req, req.params.technicianId);
-        if (!technician) return res.status(403).json({ success: false, message: 'You cannot access this conversation.' });
+        const { participantType, participantId } = participantParams(req);
+        const participant = await findParticipant(req, participantType, participantId);
+        if (!participant) return res.status(403).json({ success: false, message: 'You cannot access this conversation.' });
+        const conversationQuery = participantType === 'technician'
+            ? { $or: [{ technicianId: participant._id }, { participantId: participant._id, participantType }] }
+            : { participantId: participant._id, participantType };
         await ChatMessage.updateMany(
-            { technicianId: technician._id, 'readBy.userId': { $ne: req.user._id }, senderId: { $ne: req.user._id } },
+            { ...conversationQuery, 'readBy.userId': { $ne: req.user._id }, senderId: { $ne: req.user._id } },
             { $push: { readBy: { userId: req.user._id, readAt: new Date() } } }
         );
         res.json({ success: true, message: 'Messages marked as read.' });
@@ -128,4 +148,39 @@ const markRead = async (req, res, next) => {
     }
 };
 
-module.exports = { sendMessage, getMessages, markRead };
+const getInbox = async (req, res, next) => {
+    try {
+        if (!(req.user instanceof Admin || req.user.constructor?.modelName === 'Admin')) {
+            return res.status(403).json({ success: false, message: 'Only admins can view the chat inbox.' });
+        }
+        const participantType = req.params.participantType;
+        if (!['technician', 'user'].includes(participantType)) {
+            return res.status(400).json({ success: false, message: 'Invalid chat participant type.' });
+        }
+        const participants = await User.find({ role: participantType }).sort({ name: 1 }).lean();
+        const participantMatch = participantType === 'technician'
+            ? { $or: [{ participantType: 'technician' }, { participantType: { $exists: false } }] }
+            : { participantType };
+        const latest = await ChatMessage.aggregate([
+            { $match: participantMatch },
+            { $sort: { createdAt: -1 } },
+            { $group: { _id: { $ifNull: ['$participantId', '$technicianId'] }, lastMessage: { $first: '$$ROOT' } } }
+        ]);
+        const latestByParticipant = new Map(latest.map(item => [String(item._id), item.lastMessage]));
+        const unread = await ChatMessage.aggregate([
+            { $match: { ...participantMatch, senderRole: { $ne: 'admin' }, 'readBy.userId': { $ne: req.user._id } } },
+            { $group: { _id: { $ifNull: ['$participantId', '$technicianId'] }, count: { $sum: 1 } } }
+        ]);
+        const unreadByParticipant = new Map(unread.map(item => [String(item._id), item.count]));
+        const conversations = participants.map(participant => ({
+            participant,
+            lastMessage: latestByParticipant.get(String(participant._id)) || null,
+            unreadCount: unreadByParticipant.get(String(participant._id)) || 0
+        })).sort((a, b) => new Date(b.lastMessage?.createdAt || 0) - new Date(a.lastMessage?.createdAt || 0));
+        res.json({ success: true, data: { conversations } });
+    } catch (error) {
+        next(error);
+    }
+};
+
+module.exports = { sendMessage, getMessages, markRead, getInbox };

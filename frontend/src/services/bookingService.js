@@ -11,8 +11,8 @@ const bookingService = {
         return response.data;
     },
 
-    verifyStripePayment: async (bookingId, stripePaymentIntentId) => {
-        const response = await API.post('/bookings/verify', { bookingId, stripePaymentIntentId });
+    verifyStripePayment: async (paymentAttemptId, stripePaymentIntentId) => {
+        const response = await API.post('/bookings/verify', { paymentAttemptId, stripePaymentIntentId });
         return response.data;
     },
 

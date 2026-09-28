@@ -1,42 +1,11 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
 import { AuthContext } from '../context/AuthContext';
-import { FaShoppingCart, FaTag, FaCheckCircle, FaArrowLeft, FaPercent } from 'react-icons/fa';
+import { FaTag, FaCheckCircle, FaArrowLeft, FaPercent } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { resolveImageUrl } from '../services/api';
-import SlotModal from '../components/SlotModal';
-
-const getStoredBookingSelection = () => {
-    if (typeof window === 'undefined') return null;
-    const bookingDate = sessionStorage.getItem('1App_booking_date');
-    const bookingSlot = sessionStorage.getItem('1App_booking_slot');
-    if (!bookingDate || !bookingSlot) return null;
-
-    if (bookingSlot.startsWith('Instant')) {
-        return { type: 'instant', etaMinutes: 50, date: bookingDate, time: bookingSlot };
-    }
-
-    return { type: 'scheduled', date: bookingDate, time: bookingSlot };
-};
-
-const persistBookingSelection = (slot) => {
-    if (typeof window === 'undefined') return;
-
-    if (!slot) {
-        sessionStorage.removeItem('1App_booking_date');
-        sessionStorage.removeItem('1App_booking_slot');
-        return;
-    }
-
-    if (slot.type === 'instant') {
-        sessionStorage.setItem('1App_booking_date', new Date().toISOString());
-        sessionStorage.setItem('1App_booking_slot', `Instant • In ${slot.etaMinutes || 50} mins`);
-    } else if (slot.type === 'scheduled') {
-        sessionStorage.setItem('1App_booking_date', slot.date);
-        sessionStorage.setItem('1App_booking_slot', slot.time);
-    }
-};
+import Checkout from './Checkout';
 
 const groupByCategory = (items) =>
     items.reduce((groups, item) => {
@@ -62,30 +31,8 @@ const Cart = () => {
     const handleCheckout = () => {
         if (!isAuthenticated) {
             toast.warn('Please login to proceed to checkout.');
-            navigate('/login');
-            return;
+            navigate('/login', { state: { from: { pathname: '/cart' } } });
         }
-
-        const storedSelection = getStoredBookingSelection();
-        if (!selectedSlot && !storedSelection) {
-            toast.warn('Please select a time slot before checkout.');
-            return;
-        }
-
-        if (selectedSlot) {
-            persistBookingSelection(selectedSlot);
-        }
-
-        navigate('/checkout');
-    };
-
-    const [slotModalOpen, setSlotModalOpen] = useState(false);
-    const [selectedSlot, setSelectedSlot] = useState(() => getStoredBookingSelection());
-
-    const handleSlotSelect = (slot) => {
-        setSelectedSlot(slot);
-        persistBookingSelection(slot);
-        toast.success('Slot selected');
     };
 
     // ── Empty State ──
@@ -136,6 +83,8 @@ const Cart = () => {
         );
     }
 
+    if (isAuthenticated) return <Checkout />;
+
     const grouped = groupByCategory(cartItems);
     const total = getCartTotal();
 
@@ -148,7 +97,7 @@ const Cart = () => {
                     <button onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}>
                         <FaArrowLeft size={18} color="#111" />
                     </button>
-                    <h2 style={{ fontWeight: 800, fontSize: '1.5rem', margin: 0, color: '#111' }}>Checkout</h2>
+                    <h2 style={{ fontWeight: 800, fontSize: '1.5rem', margin: 0, color: '#111' }}>Your Cart</h2>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 20, alignItems: 'start' }}>
@@ -189,18 +138,6 @@ const Cart = () => {
                             )}
                         </div>
 
-                        {/* Slot card */}
-                        <div style={{ background: '#fff', borderRadius: 14, padding: '20px 22px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
-                            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 8 }}>Slot</div>
-                            {selectedSlot ? (
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                    <div style={{ color: '#333' }}>{selectedSlot.type === 'instant' ? `Instant • In ${selectedSlot.etaMinutes} mins` : `${new Date(selectedSlot.date).toLocaleDateString()} • ${selectedSlot.time}`}</div>
-                                    <button onClick={() => setSlotModalOpen(true)} style={{ border: '1px solid #e6e6e6', background: '#fff', padding: '8px 10px', borderRadius: 8, cursor: 'pointer' }}>Edit</button>
-                                </div>
-                            ) : (
-                                <button onClick={() => setSlotModalOpen(true)} style={{ width: '100%', background: '#000000', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 0', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>Select time & date</button>
-                            )}
-                        </div>
                     </div>
 
                     {/* ── RIGHT ── */}
@@ -222,7 +159,7 @@ const Cart = () => {
                                                             style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }}
                                                         />
                                                     )}
-                                                    <span style={{ fontSize: 14, color: '#333', lineHeight: 1.4 }}>{item.service.name}</span>
+                                                    <span style={{ fontSize: 14, color: '#333', lineHeight: 1.4 }}>{item.service.name}{item.selectedAddons?.length > 0 && <small style={{ display: 'block', marginTop: 3, color: '#777' }}>Add-ons: {item.selectedAddons.map(addon => addon.name).join(', ')}</small>}</span>
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0, marginLeft: 12 }}>
                                                     <QtyControl
@@ -304,7 +241,6 @@ const Cart = () => {
                     </div>
                 </div>
             </div>
-            <SlotModal open={slotModalOpen} onClose={() => setSlotModalOpen(false)} onSelect={handleSlotSelect} initial={false} />
         </div>
     );
 };

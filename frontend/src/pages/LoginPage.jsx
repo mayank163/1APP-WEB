@@ -5,6 +5,7 @@ import { FaPhone, FaEnvelope, FaLock, FaEye, FaEyeSlash ,FaPhoneAlt} from 'react
 import { toast } from 'react-toastify';
 import { useGoogleLogin } from '@react-oauth/google';
 import AuthPanel from './AuthPanel';
+import CountryCodePicker, { DEFAULT_COUNTRY } from '../components/CountryCodePicker';
 
 const inputStyle = { border: 'none', outline: 'none', flex: 1, fontSize: '0.95rem', background: 'transparent' };
 
@@ -25,6 +26,7 @@ const LoginPage = () => {
 
     const [useEmail, setUseEmail] = useState(false);
     const [identifier, setIdentifier] = useState('');
+    const [phoneCountry, setPhoneCountry] = useState(DEFAULT_COUNTRY);
     const [password, setPassword] = useState('');
     const [showPass, setShowPass] = useState(false);
 
@@ -34,8 +36,9 @@ const LoginPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const loginIdentifier = useEmail ? identifier : `${phoneCountry.code}${identifier}`;
         try {
-            const user = await login(identifier, password);
+            const user = await login(loginIdentifier, password);
             toast.success('Logged in successfully!');
             if (user?.role === 'technician') navigate('/technician', { replace: true });
         } catch (err) {
@@ -81,15 +84,30 @@ const LoginPage = () => {
                                 {useEmail ? 'Email Address' : 'Phone Number'}
                             </label>
                             <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #ccc', borderRadius: 8, padding: '10px 14px', gap: 10 }}>
-                                {useEmail ? <FaEnvelope color="#888" size={14} /> : <FaPhoneAlt color="#888" size={14} />}
-                                <input
-                                    type={useEmail ? 'email' : 'tel'}
-                                    required
-                                    placeholder={useEmail ? 'name@example.com' : '+91 98765 43210'}
-                                    value={identifier}
-                                    onChange={e => setIdentifier(e.target.value)}
-                                    style={inputStyle}
-                                />
+                                {useEmail ? (
+                                    <>
+                                        <FaEnvelope color="#888" size={14} />
+                                        <input
+                                            type="email"
+                                            required
+                                            placeholder="name@example.com"
+                                            value={identifier}
+                                            onChange={e => setIdentifier(e.target.value)}
+                                            style={inputStyle}
+                                        />
+                                    </>
+                                ) : (
+                                    <>
+                                        <FaPhoneAlt color="#888" size={14} />
+                                        <CountryCodePicker
+                                            selectedCountry={phoneCountry}
+                                            onCountryChange={setPhoneCountry}
+                                            phoneValue={identifier}
+                                            onPhoneChange={setIdentifier}
+                                            required
+                                        />
+                                    </>
+                                )}
                             </div>
                             <div style={{ textAlign: 'right', marginTop: 5 }}>
                                 <button type="button" onClick={() => { setUseEmail(!useEmail); setIdentifier(''); }}

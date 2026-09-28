@@ -6,8 +6,8 @@ const cartService = {
         return res.data;
     },
 
-    addToCart: async (serviceId, quantity = 1) => {
-        const res = await API.post('/cart', { serviceId, quantity });
+    addToCart: async (serviceId, quantity = 1, variantId, addonIds) => {
+        const res = await API.post('/cart', { serviceId, quantity, variantId, ...(Array.isArray(addonIds) && { addonIds }) });
         return res.data;
     },
 

@@ -23,6 +23,31 @@ const clearGuestCart = () => {
     localStorage.removeItem(GUEST_CART_KEY);
 };
 
+const normalizeCart = items => (items || []).map(item => {
+    if (!item.service) return item;
+    const activeVariants = (item.service.variants || []).filter(variant => variant.isActive !== false);
+    const selectedVariant = item.variantId
+        ? activeVariants.find(variant => String(variant._id) === String(item.variantId))
+        : (item.service.hasVariants ? activeVariants[0] : null);
+    const variantName = selectedVariant ? (item.variantName || selectedVariant.name) : '';
+    const variantPrice = selectedVariant
+        ? (item.variantPrice != null ? Number(item.variantPrice) : Number(selectedVariant.offerPrice || selectedVariant.actualPrice || 0))
+        : Number(item.service.price?.min ?? item.service.price ?? item.service.offerPrice ?? item.service.actualPrice ?? 0);
+    const selectedAddons = item.selectedAddons || [];
+    const addonTotal = selectedAddons.reduce((total, addon) => total + Number(addon.price || 0), 0);
+    return {
+        ...item,
+        ...(selectedVariant && { variantId: item.variantId || String(selectedVariant._id) }),
+        variantName,
+        variantPrice,
+        service: {
+            ...item.service,
+            name: variantName && !item.service.name.endsWith(` - ${variantName}`) ? `${item.service.name} - ${variantName}` : item.service.name,
+            price: variantPrice + addonTotal
+        }
+    };
+});
+
 // ─── shape normaliser ─────────────────────────────────────────────────────────
 // Backend returns { service: { _id, name, price, ... }, quantity }
 // Guest cart already stores the same shape, so no conversion needed.
@@ -51,13 +76,15 @@ export const CartProvider = ({ children }) => {
 
         const mergeItems = guestItems.map(i => ({
             serviceId: i.service._id,
-            quantity: i.quantity
+            quantity: i.quantity,
+            variantId: i.variantId,
+            addonIds: (i.selectedAddons || []).map(addon => addon.addonId)
         }));
 
         cartService.mergeCart(mergeItems)
             .then(res => {
                 if (res.success) {
-                    setCartItems(res.data.cart);
+                    setCartItems(normalizeCart(res.data.cart));
                     clearGuestCart();
                 }
             })
@@ -69,7 +96,7 @@ export const CartProvider = ({ children }) => {
         setCartLoading(true);
         try {
             const res = await cartService.getCart();
-            if (res.success) setCartItems(res.data.cart);
+            if (res.success) setCartItems(normalizeCart(res.data.cart));
         } catch (err) {
             console.error('Failed to load cart:', err.message);
         } finally {
@@ -78,11 +105,11 @@ export const CartProvider = ({ children }) => {
     };
 
     // ── addToCart ──────────────────────────────────────────────────────────────
-    const addToCart = async (service, quantity = 1) => {
+    const addToCart = async (service, quantity = 1, variant = null, addons) => {
         if (isAuthenticated) {
             try {
-                const res = await cartService.addToCart(service._id, quantity);
-                if (res.success) setCartItems(res.data.cart);
+                const res = await cartService.addToCart(service._id, quantity, variant?._id, addons?.map(addon => addon._id));
+                if (res.success) setCartItems(normalizeCart(res.data.cart));
                 return !res.duplicate; // true = added, false = already there
             } catch (err) {
                 console.error('addToCart error:', err.message);
@@ -93,8 +120,47 @@ export const CartProvider = ({ children }) => {
         // Guest path
         let added = false;
         setCartItems(prev => {
-            if (prev.find(i => i.service._id === service._id)) return prev;
-            const next = [...prev, { service, quantity }];
+            const variantPrice = variant ? Number(variant.offerPrice || variant.actualPrice || variant.price || 0) : null;
+            const selectedAddons = Array.isArray(addons)
+                ? addons.map(addon => ({ addonId: String(addon._id), name: addon.name, price: Number(addon.price || 0) }))
+                : null;
+            const existing = prev.find(i => i.service._id === service._id);
+            if (existing) {
+                const variantChanged = variant && String(existing.variantId || '') !== String(variant._id);
+                const addonsChanged = selectedAddons && JSON.stringify((existing.selectedAddons || []).map(addon => String(addon.addonId))) !== JSON.stringify(selectedAddons.map(addon => String(addon.addonId)));
+                if (!variantChanged && !addonsChanged) return prev;
+                const finalVariantId = variant?._id || existing.variantId;
+                const finalVariantName = variant?.name || existing.variantName;
+                const finalVariantPrice = variant ? variantPrice : existing.variantPrice;
+                const finalAddons = selectedAddons || existing.selectedAddons || [];
+                const basePrice = Number(finalVariantPrice ?? service.price?.min ?? service.price ?? service.offerPrice ?? service.actualPrice ?? 0);
+                const addonTotal = finalAddons.reduce((total, addon) => total + Number(addon.price || 0), 0);
+                const next = prev.map(item => item.service._id === service._id ? {
+                    ...item,
+                    variantId: finalVariantId ? String(finalVariantId) : null,
+                    variantName: finalVariantName || '',
+                    variantPrice: finalVariantPrice ?? null,
+                    selectedAddons: finalAddons,
+                    service: { ...service, name: finalVariantName ? `${service.name} - ${finalVariantName}` : service.name, price: basePrice + addonTotal }
+                } : item);
+                writeGuestCart(next);
+                added = true;
+                return next;
+            }
+            const finalAddons = selectedAddons || [];
+            const basePrice = Number(variantPrice ?? service.price?.min ?? service.price ?? service.offerPrice ?? service.actualPrice ?? 0);
+            const addonTotal = finalAddons.reduce((total, addon) => total + Number(addon.price || 0), 0);
+            const cartService = {
+                ...service,
+                ...(variant && { name: `${service.name} - ${variant.name}` }),
+                price: basePrice + addonTotal
+            };
+            const next = [...prev, {
+                service: cartService,
+                quantity,
+                ...(variant && { variantId: String(variant._id), variantName: variant.name, variantPrice }),
+                selectedAddons: finalAddons
+            }];
             writeGuestCart(next);
             added = true;
             return next;
@@ -107,7 +173,7 @@ export const CartProvider = ({ children }) => {
         if (isAuthenticated) {
             try {
                 const res = await cartService.removeFromCart(serviceId);
-                if (res.success) setCartItems(res.data.cart);
+                if (res.success) setCartItems(normalizeCart(res.data.cart));
             } catch (err) {
                 console.error('removeFromCart error:', err.message);
             }
@@ -128,7 +194,7 @@ export const CartProvider = ({ children }) => {
         if (isAuthenticated) {
             try {
                 const res = await cartService.updateCartItem(serviceId, qty);
-                if (res.success) setCartItems(res.data.cart);
+                if (res.success) setCartItems(normalizeCart(res.data.cart));
             } catch (err) {
                 console.error('updateQuantity error:', err.message);
             }

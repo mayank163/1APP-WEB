@@ -2,6 +2,7 @@ const Category = require('../models/Category');
 const SubCategory = require('../models/SubCategory');
 const { uploadFile, deleteFile } = require("../utils/s3Upload");
 const { getIO } = require('../utils/socketInstance');
+const { getPagination, getPaginationMeta } = require('../utils/pagination');
 
 // Helper — broadcast category change to all connected clients
 const emitCategoryEvent = (event, payload) => {
@@ -13,12 +14,28 @@ const emitCategoryEvent = (event, payload) => {
     }
 };
 
+const cleanupCategoryImage = async key => {
+    if (!key) return;
+    try {
+        await deleteFile(key);
+    } catch (err) {
+        const isQuarantinedKey = String(err.message || '').includes('AWSCompromisedKeyQuarantineV3');
+        if (!isQuarantinedKey) throw err;
+        console.warn(`[S3] Skipping quarantined category image cleanup for key "${key}".`);
+    }
+};
+
 // ─── CATEGORY ────────────────────────────────────────────────────────────────
 
 exports.getAllCategories = async (req, res, next) => {
     try {
-        const categories = await Category.find({ isActive: true }).sort({ name: 1 });
-        res.status(200).json({ success: true, count: categories.length, data: { categories } });
+        const { page, limit, skip } = getPagination(req.query);
+        const query = { isActive: true };
+        if (req.query.search) query.name = { $regex: req.query.search.trim(), $options: 'i' };
+        const total = await Category.countDocuments(query);
+        const sort = req.query.sort === 'desc' ? { name: -1 } : { name: 1 };
+        const categories = await Category.find(query).sort(sort).skip(skip).limit(limit);
+        res.status(200).json({ success: true, count: total, data: { categories }, pagination: getPaginationMeta({ page, limit, total }) });
     } catch (err) { next(err); }
 };
 
@@ -81,13 +98,9 @@ exports.updateCategory = async (req, res, next) => {
         if (req.body.name) update.name = req.body.name;
 
         if (req.file) {
-            // Delete old image from S3 before uploading the new one
-            if (existing.image) {
-                await deleteFile(existing.image);
-            }
-
             const uploaded = await uploadFile(req.file, "categories");
             update.image = uploaded.key;
+            await cleanupCategoryImage(existing.image);
         }
 
         const category = await Category.findByIdAndUpdate(
@@ -105,7 +118,7 @@ exports.deleteCategory = async (req, res, next) => {
         const category = await Category.findById(req.params.id);
         if (!category) return res.status(404).json({ success: false, message: 'Category not found' });
         if (category.image) {
-            await deleteFile(category.image);
+            await cleanupCategoryImage(category.image);
         }
         category.isActive = false;
         await category.save();
@@ -118,10 +131,14 @@ exports.deleteCategory = async (req, res, next) => {
 
 exports.getAllSubCategories = async (req, res, next) => {
     try {
+        const { page, limit, skip } = getPagination(req.query);
         const filter = { isActive: true };
         if (req.query.category) filter.category = req.query.category;
-        const subcategories = await SubCategory.find(filter).populate('category', 'name').sort({ name: 1 });
-        res.status(200).json({ success: true, count: subcategories.length, data: { subcategories } });
+        if (req.query.search) filter.name = { $regex: req.query.search.trim(), $options: 'i' };
+        const total = await SubCategory.countDocuments(filter);
+        const sort = req.query.sort === 'desc' ? { name: -1 } : { name: 1 };
+        const subcategories = await SubCategory.find(filter).populate('category', 'name').sort(sort).skip(skip).limit(limit);
+        res.status(200).json({ success: true, count: total, data: { subcategories }, pagination: getPaginationMeta({ page, limit, total }) });
     } catch (err) { next(err); }
 };
 

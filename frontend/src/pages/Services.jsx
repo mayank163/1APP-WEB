@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useContext, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { FaStar, FaTag, FaShoppingCart, FaCheckCircle, FaShieldAlt, FaCalendarAlt, FaMedal, FaArrowRight } from 'react-icons/fa';
+import { FaStar, FaTag, FaShoppingCart, FaCheckCircle, FaShieldAlt, FaCalendarAlt, FaMedal, FaArrowRight, FaChevronLeft, FaChevronRight, FaTimes } from 'react-icons/fa';
 import serviceService from '../services/serviceService';
 import { resolveImageUrl } from '../services/api';
 import { CartContext } from '../context/CartContext';
 import { useSocket } from '../context/SocketContext';
 import { ServicesShimmer } from '../components/Shimmer';
+import { getStartingPrice } from '../utils/servicePrice';
+import { toast } from 'react-toastify';
 
 const UPLOAD_IMAGE_URL = process.env.REACT_APP_IMAGE_URL || '';
 
@@ -31,6 +33,71 @@ const SLIDES = [
     },
 ];
 
+const SERVICES_PER_PAGE = 5;
+
+function ServicePagination({ total, page, onPageChange }) {
+    const totalPages = Math.ceil(total / SERVICES_PER_PAGE);
+    if (totalPages <= 1) return null;
+
+    const visiblePages = Array.from({ length: totalPages }, (_, index) => index + 1)
+        .filter(number => number === 1 || number === totalPages || Math.abs(number - page) <= 1);
+
+    return (
+        <nav aria-label="Service pages" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginTop: 16 }}>
+            <small style={{ color: '#666' }}>Showing {(page - 1) * SERVICES_PER_PAGE + 1} to {Math.min(page * SERVICES_PER_PAGE, total)} of {total} services</small>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <button type="button" aria-label="Previous page" disabled={page === 1} onClick={() => onPageChange(page - 1)} style={{ background: '#fff', border: '1px solid #ddd', borderRadius: 6, padding: '6px 9px', cursor: page === 1 ? 'default' : 'pointer' }}><FaChevronLeft size={11} /></button>
+                {visiblePages.map((number, index) => (
+                    <React.Fragment key={number}>
+                        {index > 0 && number - visiblePages[index - 1] > 1 && <span style={{ padding: '0 3px', color: '#777' }}>…</span>}
+                        <button type="button" aria-current={page === number ? 'page' : undefined} onClick={() => onPageChange(number)} style={{ minWidth: 32, padding: '5px 8px', background: page === number ? '#171717' : '#fff', color: page === number ? '#fff' : '#222', border: '1px solid #ddd', borderRadius: 6, cursor: 'pointer' }}>{number}</button>
+                    </React.Fragment>
+                ))}
+                <button type="button" aria-label="Next page" disabled={page === totalPages} onClick={() => onPageChange(page + 1)} style={{ background: '#fff', border: '1px solid #ddd', borderRadius: 6, padding: '6px 9px', cursor: page === totalPages ? 'default' : 'pointer' }}><FaChevronRight size={11} /></button>
+            </div>
+        </nav>
+    );
+}
+
+function VariantPickerModal({ service, selectedVariantId, onSelect, onClose, onAdd, saving }) {
+    if (!service) return null;
+    const variants = (service.variants || []).filter(variant => variant.isActive !== false);
+
+    return (
+        <div role="presentation" onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(16, 20, 18, 0.58)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+            <section role="dialog" aria-modal="true" aria-labelledby="variant-picker-title" onClick={event => event.stopPropagation()} style={{ width: '100%', maxWidth: 540, maxHeight: '90vh', overflowY: 'auto', background: '#fff', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,0.25)' }}>
+                <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '20px 22px', borderBottom: '1px solid #eee' }}>
+                    <div>
+                        <h2 id="variant-picker-title" style={{ margin: 0, fontSize: 20, fontWeight: 750, color: '#161a18' }}>Choose an option</h2>
+                        <p style={{ margin: '5px 0 0', color: '#666', fontSize: 14 }}>{service.name}</p>
+                    </div>
+                    <button type="button" aria-label="Close variant selection" onClick={onClose} style={{ border: 0, background: 'transparent', padding: 6, cursor: 'pointer', color: '#555' }}><FaTimes /></button>
+                </header>
+                <div style={{ padding: 22, display: 'grid', gap: 10 }}>
+                    {variants.map(variant => {
+                        const selected = String(selectedVariantId) === String(variant._id);
+                        const price = getStartingPrice(variant.offerPrice || variant.actualPrice || variant.price);
+                        return (
+                            <button key={variant._id} type="button" aria-pressed={selected} onClick={() => onSelect(String(variant._id))} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 16px', textAlign: 'left', background: selected ? '#f3f7f4' : '#fff', border: `1.5px solid ${selected ? '#315b43' : '#dededb'}`, borderRadius: 9, cursor: 'pointer' }}>
+                                <span>
+                                    <strong style={{ display: 'block', color: '#181c19', fontSize: 15 }}>{variant.name}</strong>
+                                    {(variant.sizeCapacity || variant.unit) && <small style={{ display: 'block', marginTop: 3, color: '#777' }}>{[variant.sizeCapacity, variant.unit].filter(Boolean).join(' ')}</small>}
+                                </span>
+                                <strong style={{ color: '#1e5034', whiteSpace: 'nowrap' }}>${Number(price).toFixed(2)}</strong>
+                            </button>
+                        );
+                    })}
+                    {!variants.length && <p style={{ margin: 0, color: '#777' }}>No active options are available for this service.</p>}
+                </div>
+                <footer style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '0 22px 20px' }}>
+                    <button type="button" onClick={onClose} disabled={saving} style={{ border: '1px solid #ddd', background: '#fff', borderRadius: 7, padding: '9px 14px', cursor: 'pointer' }}>Cancel</button>
+                    <button type="button" onClick={onAdd} disabled={saving || !selectedVariantId} style={{ border: 0, background: '#1e5034', color: '#fff', borderRadius: 7, padding: '9px 16px', fontWeight: 650, cursor: saving || !selectedVariantId ? 'not-allowed' : 'pointer', opacity: saving || !selectedVariantId ? 0.55 : 1 }}>{saving ? 'Adding…' : 'Add to cart'}</button>
+                </footer>
+            </section>
+        </div>
+    );
+}
+
 export default function Services() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
@@ -43,6 +110,11 @@ export default function Services() {
 
     const [subcategories, setSubcategories] = useState([]);
     const [services, setServices] = useState([]);
+    const [variantService, setVariantService] = useState(null);
+    const [selectedVariantId, setSelectedVariantId] = useState('');
+    const [addingVariant, setAddingVariant] = useState(false);
+    const [servicePage, setServicePage] = useState(1);
+    const [categoryPages, setCategoryPages] = useState({});
     const [activeSubId, setActiveSubId] = useState(subcategoryId || null);
     const [categoryName, setCategoryName] = useState('Home Services');
     const [slide, setSlide] = useState(0);
@@ -56,6 +128,8 @@ export default function Services() {
     useEffect(() => {
         if (subcategoryId) setActiveSubId(subcategoryId);
     }, [subcategoryId]);
+
+    useEffect(() => { setServicePage(1); }, [categoryId, subcategoryId, searchQuery, activeSubId]);
 
     // ── Browse-all mode: load categories + all services ──────────────────────
     useEffect(() => {
@@ -184,13 +258,45 @@ export default function Services() {
         return item ? item.quantity : 0;
     };
 
+    const hasActiveVariants = service => service.hasVariants && service.variants?.some(variant => variant.isActive !== false);
+    const handleAddService = async service => {
+        if (hasActiveVariants(service)) {
+            setVariantService(service);
+            setSelectedVariantId('');
+            return;
+        }
+        const added = await addToCart(service, 1);
+        if (added) toast.success(`${service.name} added to cart.`);
+        else toast.info(`${service.name} is already in your cart.`);
+    };
+    const handleAddSelectedVariant = async () => {
+        const variant = variantService?.variants?.find(item => String(item._id) === String(selectedVariantId) && item.isActive !== false);
+        if (!variant) return;
+        setAddingVariant(true);
+        try {
+            const added = await addToCart(variantService, 1, variant);
+            if (added) {
+                toast.success(`${variantService.name} - ${variant.name} added to cart.`);
+                setVariantService(null);
+            } else {
+                toast.info(`${variantService.name} is already in your cart.`);
+            }
+        } finally {
+            setAddingVariant(false);
+        }
+    };
+
     const cartTotal = cartItems.reduce((t, i) => t + i.service.price * i.quantity, 0);
     const activeSubName = subcategories.find(s => s._id === activeSubId)?.name || '';
+    const totalServicePages = Math.max(1, Math.ceil(services.length / SERVICES_PER_PAGE));
+    const currentServicePage = Math.min(servicePage, totalServicePages);
+    const paginatedServices = services.slice((currentServicePage - 1) * SERVICES_PER_PAGE, currentServicePage * SERVICES_PER_PAGE);
 
     // ── Browse-all mode render ─────────────────────────────────────────────────
     if (isBrowseAll) {
         return (
             <div style={{ background: '#f5f5f5', minHeight: '100vh', padding: '24px 16px' }}>
+                <VariantPickerModal service={variantService} selectedVariantId={selectedVariantId} onSelect={setSelectedVariantId} onClose={() => setVariantService(null)} onAdd={handleAddSelectedVariant} saving={addingVariant} />
                 <div style={{ maxWidth: 1280, margin: '0 auto' }}>
 
                     {/* Hero banner */}
@@ -226,6 +332,10 @@ export default function Services() {
                                     (s.category?._id || s.category?.id || s.category) === (cat._id || cat.id)
                                 );
                                 if (catServices.length === 0) return null;
+                                const categoryKey = String(cat.id || cat._id);
+                                const categoryTotalPages = Math.ceil(catServices.length / SERVICES_PER_PAGE);
+                                const categoryPage = Math.min(categoryPages[categoryKey] || 1, categoryTotalPages);
+                                const pageServices = catServices.slice((categoryPage - 1) * SERVICES_PER_PAGE, categoryPage * SERVICES_PER_PAGE);
                                 return (
                                     <div key={cat.id || cat._id} style={{ marginBottom: 40 }}>
                                         {/* Category header */}
@@ -260,7 +370,7 @@ export default function Services() {
 
                                         {/* Services grid */}
                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
-                                            {catServices.slice(0, 4).map(svc => {
+                                            {pageServices.map(svc => {
                                                 const qty = getQty(svc._id);
                                                 return (
                                                     <div key={svc._id} style={{
@@ -281,7 +391,7 @@ export default function Services() {
                                                                 <span style={{ fontWeight: 700, fontSize: 12 }}>{svc.ratingsAverage || 4.8}</span>
                                                             </div>
                                                             <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>
-                                                                Starts at ${svc.price}
+                                                                Starts at ${getStartingPrice(svc.price)}
                                                             </div>
                                                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                                                 <span
@@ -290,12 +400,12 @@ export default function Services() {
                                                                 >
                                                                     View details
                                                                 </span>
-                                                                {qty === 0 ? (
+                                                                {qty === 0 || hasActiveVariants(svc) ? (
                                                                     <button
-                                                                        onClick={() => addToCart(svc, 1)}
+                                                                        onClick={() => handleAddService(svc)}
                                                                         style={{ border: '1.5px solid #000', background: '#fff', color: '#000', fontWeight: 700, borderRadius: 20, padding: '4px 16px', cursor: 'pointer', fontSize: 13 }}
                                                                     >
-                                                                        Add
+                                                                        {hasActiveVariants(svc) ? 'Choose option' : 'Add'}
                                                                     </button>
                                                                 ) : (
                                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, border: '1.5px solid #000', borderRadius: 20, padding: '3px 10px' }}>
@@ -310,6 +420,7 @@ export default function Services() {
                                                 );
                                             })}
                                         </div>
+                                        <ServicePagination total={catServices.length} page={categoryPage} onPageChange={page => setCategoryPages(previous => ({ ...previous, [categoryKey]: page }))} />
                                     </div>
                                 );
                             })}
@@ -319,7 +430,7 @@ export default function Services() {
                                 <div>
                                     <h3 style={{ fontWeight: 800, fontSize: '1.2rem', marginBottom: 16 }}>All Services</h3>
                                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
-                                        {services.map(svc => {
+                                        {paginatedServices.map(svc => {
                                             const qty = getQty(svc._id);
                                             return (
                                                 <div key={svc._id} style={{ background: '#fff', borderRadius: 16, padding: 16, boxShadow: '0 2px 10px rgba(0,0,0,0.06)', display: 'flex', gap: 14 }}>
@@ -331,11 +442,11 @@ export default function Services() {
                                                     </div>
                                                     <div style={{ flex: 1 }}>
                                                         <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{svc.name}</div>
-                                                        <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>Starts at ${svc.price}</div>
+                                                        <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>Starts at ${getStartingPrice(svc.price)}</div>
                                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                                             <span onClick={() => navigate(`/service/${svc._id}`)} style={{ color: '#555', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>View details</span>
-                                                            {qty === 0 ? (
-                                                                <button onClick={() => addToCart(svc, 1)} style={{ border: '1.5px solid #000', background: '#fff', color: '#000', fontWeight: 700, borderRadius: 20, padding: '4px 16px', cursor: 'pointer', fontSize: 13 }}>Add</button>
+                                                            {qty === 0 || hasActiveVariants(svc) ? (
+                                                                <button onClick={() => handleAddService(svc)} style={{ border: '1.5px solid #000', background: '#fff', color: '#000', fontWeight: 700, borderRadius: 20, padding: '4px 16px', cursor: 'pointer', fontSize: 13 }}>{hasActiveVariants(svc) ? 'Choose option' : 'Add'}</button>
                                                             ) : (
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, border: '1.5px solid #000', borderRadius: 20, padding: '3px 10px' }}>
                                                                     <button onClick={() => updateQuantity(svc._id, qty - 1)} style={{ border: 'none', background: 'none', fontWeight: 700, fontSize: 15, cursor: 'pointer', color: '#000' }}>−</button>
@@ -349,6 +460,7 @@ export default function Services() {
                                             );
                                         })}
                                     </div>
+                                    <ServicePagination total={services.length} page={currentServicePage} onPageChange={setServicePage} />
                                 </div>
                             )}
                         </>
@@ -361,6 +473,7 @@ export default function Services() {
     // ── Normal mode (category / subcategory / search) ──────────────────────────
     return (
         <div style={{ background: '#f5f5f5', minHeight: '100vh' }}>
+            <VariantPickerModal service={variantService} selectedVariantId={selectedVariantId} onSelect={setSelectedVariantId} onClose={() => setVariantService(null)} onAdd={handleAddSelectedVariant} saving={addingVariant} />
             <div style={{ maxWidth: 1280, margin: '0 auto', padding: '24px 16px', display: 'grid', gridTemplateColumns: '300px 1fr 280px', gap: 20, alignItems: 'start' }}>
 
                 {/* ── LEFT: Category + Subcategories ── */}
@@ -511,7 +624,7 @@ export default function Services() {
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                             
-                            {services.map(svc => {
+                            {paginatedServices.map(svc => {
                                 const qty = getQty(svc._id);
                                 return (
                                     <div key={svc._id} style={{ background: '#fff', borderRadius: 16, padding: 20, boxShadow: '0 2px 10px rgba(0,0,0,0.06)', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
@@ -527,7 +640,7 @@ export default function Services() {
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
                                                 <div style={{ fontWeight: 700, fontSize: '1rem' }}>{svc.name}</div>
                                                 <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
-                                                    <div style={{ fontWeight: 700, fontSize: 14 }}>Starts at ${svc.price}</div>
+                                                    <div style={{ fontWeight: 700, fontSize: 14 }}>Starts at ${getStartingPrice(svc.price)}</div>
                                                     {/* {svc.duration && <div style={{ fontSize: 12, color: '#888' }}>• {svc.duration}</div>} */}
                                                 </div>
                                             </div>
@@ -546,12 +659,12 @@ export default function Services() {
                                                 >
                                                     View details
                                                 </span>
-                                                {qty === 0 ? (
+                                                {qty === 0 || hasActiveVariants(svc) ? (
                                                     <button
-                                                        onClick={() => addToCart(svc, 1)}
+                                                        onClick={() => handleAddService(svc)}
                                                         style={{ border: '1.5px solid #000000', background: '#fff', color: '#000000', fontWeight: 700, borderRadius: 20, padding: '6px 24px', cursor: 'pointer', fontSize: 14 }}
                                                     >
-                                                        Add
+                                                        {hasActiveVariants(svc) ? 'Choose option' : 'Add'}
                                                     </button>
                                                 ) : (
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, border: '1.5px solid #000000', borderRadius: 20, padding: '4px 12px' }}>
@@ -567,6 +680,7 @@ export default function Services() {
                             })}
                         </div>
                     )}
+                    {!loading && services.length > 0 && <ServicePagination total={services.length} page={currentServicePage} onPageChange={setServicePage} />}
                 </div>
 
                 {/* ── RIGHT: Promise + Cart ── */}
@@ -604,10 +718,10 @@ export default function Services() {
                             </div>
                         ) : (
                             <>
-                                {cartItems.map(({ service: svc, quantity }) => (
+                                {cartItems.map(({ service: svc, quantity, selectedAddons }) => (
                                     <div key={svc._id} style={{ marginBottom: 16 }}>
                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                                            <span style={{ fontSize: 14, fontWeight: 500 }}>{svc.subcategory?.name || svc.name}</span>
+                                            <span style={{ fontSize: 14, fontWeight: 500 }}>{svc.subcategory?.name || svc.name}{selectedAddons?.length > 0 && <small style={{ display: 'block', marginTop: 3, color: '#777' }}>Add-ons: {selectedAddons.map(addon => addon.name).join(', ')}</small>}</span>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, border: '1px solid #ddd', borderRadius: 8, padding: '2px 8px' }}>
                                                 <button onClick={() => updateQuantity(svc._id, quantity - 1)} style={{ border: 'none', background: 'none', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>−</button>
                                                 <span style={{ fontWeight: 700, fontSize: 13 }}>{quantity}</span>

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import JobInvitationModal from '../components/JobInvitationModal';
+import Pagination from '../components/Pagination';
 import JobForm from '../components/TechnicianJobForm';
 import { emptyForm, buildJobPayload } from '../utils/jobTemplates';
 import TechnicianTrackingMap from '../components/TechnicianTrackingMap';
@@ -428,6 +429,33 @@ const StatusUpdateModal = ({ show, targetStatus, job, onClose, onConfirm, saving
   );
 };
 
+const UnassignTechnicianModal = ({ job, onClose, onConfirm, saving }) => {
+  const [reason, setReason] = useState('');
+  useEffect(() => { if (job) setReason(''); }, [job]);
+  if (!job) return null;
+  return (
+    <div className="tj-modal-backdrop" onClick={() => !saving && onClose()}>
+      <div className="tj-modal-box" role="dialog" aria-modal="true" aria-labelledby="tj-unassign-title" onClick={event => event.stopPropagation()}>
+        <div className="tj-modal-header">
+          <h5 className="tj-modal-title" id="tj-unassign-title">Unassign Technician</h5>
+          <button className="tj-modal-close" disabled={saving} onClick={onClose}><FaTimes /></button>
+        </div>
+        <form onSubmit={event => { event.preventDefault(); onConfirm(reason); }}>
+          <div className="tj-modal-body">
+            <p><strong>{job.assignedTechnician?.name || 'Technician'}</strong> will be notified, and this job will become visible to all technicians again.</p>
+            <label className="tj-label" htmlFor="tj-unassign-reason">Reason</label>
+            <textarea id="tj-unassign-reason" className="form-control tj-input" rows={4} maxLength={1000} required value={reason} onChange={event => setReason(event.target.value)} placeholder="Explain why this assignment is ending…" disabled={saving} />
+          </div>
+          <div className="tj-reschedule-footer">
+            <button type="button" className="tj-btn-ghost" disabled={saving} onClick={onClose}>Keep Assignment</button>
+            <button type="submit" className="tj-btn-primary-gold" disabled={saving || !reason.trim()}>{saving ? 'Unassigning…' : 'Unassign and Reopen Job'}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 // ─── FilterDropdown — popup panel matching the design ─────────────────────────
 const FilterDropdown = ({ label, options, value, onChange }) => {
   const [open, setOpen] = useState(false);
@@ -498,8 +526,12 @@ const TechnicianJobs = () => {
   const [showMoreFilters, setShowMoreFilters] = useState(false);
   const [filterDate, setFilterDate] = useState('all');
   const [customDate, setCustomDate] = useState('');
+  const [jobPage, setJobPage] = useState(1);
+  const [jobPageSize, setJobPageSize] = useState(10);
 
   const [invitationJob, setInvitationJob] = useState(null);
+  const [unassignJob, setUnassignJob] = useState(null);
+  const [unassigning, setUnassigning] = useState(false);
   const [showAddModal, setShowAddModal]   = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewPanel, setShowViewPanel] = useState(false);
@@ -676,6 +708,11 @@ const TechnicianJobs = () => {
     });
   }, [jobs, activeTab, filterStatus, filterAssignment, search, filterDate, customDate]);
 
+  const totalJobPages = Math.max(1, Math.ceil(filteredJobs.length / jobPageSize));
+  const paginatedJobs = filteredJobs.slice((jobPage - 1) * jobPageSize, jobPage * jobPageSize);
+  useEffect(() => { setJobPage(1); }, [activeTab, search, filterStatus, filterAssignment, filterDate, customDate]);
+  useEffect(() => { if (jobPage > totalJobPages) setJobPage(totalJobPages); }, [jobPage, totalJobPages]);
+
   // ── Form helpers ──────────────────────────────────────────────────────────────
   const buildPayload = f => buildJobPayload(f, workTypes, serviceTypes);
 
@@ -710,6 +747,7 @@ const TechnicianJobs = () => {
   const openRescheduleModal = (job) => { setRescheduleJob(job); setShowRescheduleModal(true); };
   const handleReschedule = async (jobId, jobDateFrom, jobDateTo, reason) => { setRescheduling(true); try { await adminApi.rescheduleJob(jobId, { jobDateFrom, jobDateTo, reason }); toast.success('Job rescheduled!'); setShowRescheduleModal(false); setRescheduleJob(null); await loadData(); if (selectedJob?._id === jobId) setSelectedJob(p => p ? { ...p, jobDate: { from: jobDateFrom, to: jobDateTo }, scheduledDate: jobDateFrom } : p); } catch (err) { toast.error(err.response?.data?.message || 'Reschedule failed'); } finally { setRescheduling(false); } };
   const handleStatusUpdate = async (status, note) => { setUpdatingStatus(true); try { await adminApi.updateTechnicianJobStatus(selectedJob._id, { status, note: note || '' }); toast.success('Status updated!'); setStatusModal({ show: false, targetStatus: '' }); setSelectedJob(p => ({ ...p, status, statusHistory: [...(p.statusHistory || []), { status, note: note || '', changedAt: new Date().toISOString() }] })); await loadData(); } catch (err) { toast.error(err.response?.data?.message || 'Update failed'); } finally { setUpdatingStatus(false); } };
+  const handleUnassign = async reason => { setUnassigning(true); try { const res = await adminApi.unassignTechnicianJob(unassignJob._id, { reason: reason.trim() }); toast.success(res.message || 'Technician unassigned.'); setUnassignJob(null); await loadData(); if (selectedJob?._id === res.data?.job?._id) setSelectedJob(res.data.job); } catch (err) { toast.error(err.response?.data?.message || 'Could not unassign technician.'); } finally { setUnassigning(false); } };
   const openPayModal = (job) => { setPayModalJob(job); setShowPayModal(true); };
   const handlePayWallet = async (jobId, discount, note) => { setPaying(true); try { const res = await adminApi.payTechnician(jobId, { discount, note }); toast.success(res.message || 'Payment approved!'); setShowPayModal(false); setPayModalJob(null); await loadData(); if (selectedJob?._id === jobId && res.data?.job) setSelectedJob(res.data.job); } catch (err) { toast.error(err.response?.data?.message || 'Payment failed'); } finally { setPaying(false); } };
 
@@ -877,7 +915,7 @@ const TechnicianJobs = () => {
                 {filteredJobs.length === 0 ? (
                   <tr><td colSpan={8} className="tj-empty"><FaBriefcase size={28} style={{ color: '#ccc' }} /><span>No jobs found</span></td></tr>
                 ) : (
-                  filteredJobs.map((job) => {
+                  paginatedJobs.map((job) => {
                     const pendingReqCount = requests.filter(r => (r.job?._id || r.job)?.toString() === job._id?.toString() && r.status?.toLowerCase() === 'pending').length;
                     const jobIdShort = job._id?.toString().slice(-6).toUpperCase();
                     return (
@@ -950,10 +988,12 @@ const TechnicianJobs = () => {
             </table>
           </div>
         )}
+        {!loading && <Pagination page={jobPage} limit={jobPageSize} total={filteredJobs.length} totalPages={totalJobPages} onPageChange={setJobPage} onLimitChange={size => { setJobPageSize(size); setJobPage(1); }} />}
       </div>
 
       {/* ── ADD / EDIT MODALS ────────────────────────────────────────────────── */}
       {invitationJob && <JobInvitationModal job={invitationJob} onClose={() => setInvitationJob(null)} onSent={loadData} />}
+      <UnassignTechnicianModal job={unassignJob} onClose={() => setUnassignJob(null)} onConfirm={handleUnassign} saving={unassigning} />
       <Modal show={showTemplateModal} onClose={() => !saving && setShowTemplateModal(false)} title="Create Job Template" size="lg">
         <JobForm form={form} setForm={setForm} onSubmit={handleSaveTemplate} onCancel={() => setShowTemplateModal(false)} saving={saving} isTemplate workTypes={workTypes} serviceTypes={serviceTypes} />
       </Modal>
@@ -1040,6 +1080,8 @@ const TechnicianJobs = () => {
                     <div><div className="tj-ov-label">NAME</div><div className="tj-ov-value gold">{selectedJob.assignedTechnician.name}</div></div>
                     <div><div className="tj-ov-label">PHONE</div><div className="tj-ov-value">{selectedJob.assignedTechnician.phone || '—'}</div></div>
                   </div>
+                  {selectedJob.status === 'assigned' && <button className="tj-btn-reassign mt-2" disabled={!can('technician_jobs', 'write')} onClick={() => setInvitationJob(selectedJob)}><FaUserCheck className="me-2" />Request Replacement</button>}
+                  {['assigned', 'ontheway', 'visited', 'inprogress', 'in-progress'].includes(selectedJob.status) && <button className="tj-btn-reassign mt-2" disabled={!can('technician_jobs', 'write')} onClick={() => setUnassignJob(selectedJob)}><FaExchangeAlt className="me-2" />Unassign Technician</button>}
                 </div>
               ) : (
                 <div className="tj-overview-card">
@@ -1161,6 +1203,11 @@ const TechnicianJobs = () => {
                     <button className="tj-admin-action-link" disabled={selectedJob.status !== 'open' || !can('technician_jobs', 'write')} onClick={() => { setShowViewPanel(false); setInvitationJob(selectedJob); }}>
                       <FaUserCheck style={{ marginRight: 8, color: '#A5732F' }} />Assign technician
                     </button>
+                    {selectedJob.assignedTechnician?.name && ['assigned', 'ontheway', 'visited', 'inprogress', 'in-progress'].includes(selectedJob.status) && (
+                      <button className="tj-admin-action-link danger" disabled={!can('technician_jobs', 'write')} onClick={() => setUnassignJob(selectedJob)}>
+                        <FaExchangeAlt style={{ marginRight: 8 }} />Unassign technician
+                      </button>
+                    )}
                     <button className="tj-admin-action-link" onClick={() => { setShowViewPanel(false); openRescheduleModal(selectedJob); }}>
                       <FaCalendarAlt style={{ marginRight: 8, color: '#A5732F' }} />Reschedule
                     </button>

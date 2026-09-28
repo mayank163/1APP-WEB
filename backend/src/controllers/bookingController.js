@@ -1,17 +1,48 @@
 const Booking = require('../models/Booking');
+const PaymentAttempt = require('../models/PaymentAttempt');
 const Service = require('../models/Service');
 const razorpayInstance = require('../config/razorpay');
 const stripe = require('../config/stripe');
 const { generateTextInvoice } = require('../utils/invoiceService');
 const { sendBookingConfirmed, sendBookingCancelled } = require('../utils/emailService');
 
+const resolveServiceDate = () => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+
+    return date;
+};
+
+const resolveAddressLine = (address) => {
+    if (typeof address === 'string') return address.trim();
+    if (!address || typeof address !== 'object') return '';
+
+    const addressLine = address.addressLine;
+    if (typeof addressLine === 'string') return addressLine.trim();
+
+    return [address.houseNumber, address.street, address.route, address.city, address.state, address.zipcode]
+        .filter((part) => typeof part === 'string' && part.trim())
+        .map((part) => part.trim())
+        .join(', ');
+};
+
 /**
- * @desc    Create a new booking and initialize payment order
+ * @desc    Create a payment attempt without creating a booking
  * @route   POST /api/bookings
  */
 exports.createBookingOrder = async (req, res, next) => {
     try {
-        const { services, address, phone, serviceDate, timeSlot, specialInstructions } = req.body;
+        const { services, address, phone, specialInstructions } = req.body;
+        const bookingAddress = typeof address === 'string'
+            ? { addressLine: address }
+            : address;
+        const addressLine = resolveAddressLine(bookingAddress);
+
+        // Validate structured address
+        if (!addressLine) {
+            return res.status(400).json({ success: false, message: 'Please provide a valid address (addressLine is required)' });
+        }
+        const serviceDate = resolveServiceDate();
 
         // 1) Verify and calculate total amount from DB to prevent tampering
         let calculatedTotal = 0;
@@ -25,18 +56,44 @@ exports.createBookingOrder = async (req, res, next) => {
                     message: `Service with ID ${item.service} not found or inactive`
                 });
             }
-            const price = dbService.price;
+            const activeVariants = (dbService.variants || []).filter(variant => variant.isActive !== false);
+            const selectedVariant = item.variantId
+                ? activeVariants.find(variant => String(variant._id) === String(item.variantId))
+                : (dbService.hasVariants ? activeVariants[0] : null);
+            if (item.variantId && !selectedVariant) {
+                return res.status(400).json({ success: false, message: `The selected variant for ${dbService.name} is no longer available.` });
+            }
+            if (dbService.hasVariants && activeVariants.length === 0) {
+                return res.status(400).json({ success: false, message: `${dbService.name} has no available variants.` });
+            }
+            const price = selectedVariant
+                ? Number(selectedVariant.offerPrice || selectedVariant.actualPrice)
+                : Number(dbService.price);
+            const addonIds = Array.isArray(item.addonIds) ? [...new Set(item.addonIds.map(String))] : [];
+            const selectedAddons = [];
+            for (const addonId of addonIds) {
+                const addon = (dbService.addons || []).find(candidate => String(candidate._id) === addonId && candidate.isActive !== false);
+                if (!addon) {
+                    return res.status(400).json({ success: false, message: `One or more selected add-ons for ${dbService.name} are no longer available.` });
+                }
+                selectedAddons.push({ addonId: addon._id, name: addon.name, price: addon.price });
+            }
+            const addonTotal = selectedAddons.reduce((total, addon) => total + addon.price, 0);
             const quantity = item.quantity || 1;
-            calculatedTotal += price * quantity;
+            calculatedTotal += (price + addonTotal) * quantity;
 
             populatedServices.push({
                 service: dbService._id,
                 quantity,
-                price
+                variantId: selectedVariant?._id || null,
+                variantName: selectedVariant?.name || '',
+                selectedAddons,
+                price: price + addonTotal
             });
         }
 
         const amountInSmallestUnit = Math.round(calculatedTotal * 100);
+        const paymentAttemptId = new PaymentAttempt()._id.toString();
         let paymentOrder;
 
         if (stripe) {
@@ -55,6 +112,7 @@ exports.createBookingOrder = async (req, res, next) => {
                     payment_method_types: ['card'],
                     metadata: {
                         userId: req.user.id,
+                        paymentAttemptId,
                         receipt: `receipt_${Date.now()}`
                     }
                 });
@@ -79,7 +137,8 @@ exports.createBookingOrder = async (req, res, next) => {
                 const order = await razorpayInstance.orders.create({
                     amount: amountInSmallestUnit,
                     currency: 'USD',
-                    receipt: `receipt_${Date.now()}`
+                    receipt: `receipt_${Date.now()}`,
+                    notes: { paymentAttemptId }
                 });
 
                 paymentOrder = {
@@ -102,37 +161,39 @@ exports.createBookingOrder = async (req, res, next) => {
             });
         }
 
-        // 3) Create Booking in DB
-        const booking = await Booking.create({
+        const paymentAttempt = await PaymentAttempt.create({
+            _id: paymentAttemptId,
             user: req.user.id,
             services: populatedServices,
             totalAmount: calculatedTotal,
-            address,
+            address: {
+                label:       bookingAddress.label       || 'Home',
+                name:        bookingAddress.name        || '',
+                addressLine,
+                city:        bookingAddress.city        || '',
+                state:       bookingAddress.state       || '',
+                zipcode:     bookingAddress.zipcode     || '',
+                coordinates: bookingAddress.coordinates?.lat
+                    ? { lat: bookingAddress.coordinates.lat, lng: bookingAddress.coordinates.lng }
+                    : { lat: null, lng: null }
+            },
             phone,
             serviceDate,
-            timeSlot,
             specialInstructions,
-            paymentStatus: 'Pending',
-            status: 'Pending',
             paymentDetails: {
                 provider: paymentOrder.provider,
                 orderId: paymentOrder.id
             }
         });
 
-        if (stripe && paymentOrder.provider === 'stripe') {
-            await stripe.paymentIntents.update(paymentOrder.id, {
-                metadata: {
-                    bookingId: booking._id.toString(),
-                    userId: req.user.id
-                }
-            });
-        }
-
         res.status(201).json({
             success: true,
             data: {
-                booking,
+                paymentAttempt: {
+                    _id: paymentAttempt._id,
+                    totalAmount: paymentAttempt.totalAmount,
+                    serviceDate: paymentAttempt.serviceDate
+                },
                 paymentOrder
             }
         });
@@ -147,80 +208,161 @@ exports.createBookingOrder = async (req, res, next) => {
  */
 exports.verifyPayment = async (req, res, next) => {
     try {
-        const { bookingId, razorpayOrderId, razorpayPaymentId, razorpaySignature, stripePaymentIntentId, status } = req.body;
+        const { paymentAttemptId, razorpayOrderId, razorpayPaymentId, stripePaymentIntentId } = req.body;
+        if (!paymentAttemptId) {
+            return res.status(400).json({ success: false, message: 'Payment attempt ID is required' });
+        }
 
-        // Find the booking
-        const booking = await Booking.findById(bookingId).populate('user').populate('services.service');
-        if (!booking) {
+        const paymentAttempt = await PaymentAttempt.findOne({
+            _id: paymentAttemptId,
+            user: req.user.id
+        });
+        if (!paymentAttempt) {
             return res.status(404).json({
                 success: false,
-                message: 'Booking not found'
+                message: 'Payment attempt not found'
             });
         }
 
-        let isPaymentSuccessful = false;
-        let paymentProvider = 'razorpay';
-        let orderId = razorpayOrderId;
-        let paymentId = razorpayPaymentId;
-        let signature = razorpaySignature;
+        const savedBooking = await Booking.findOne({ 'paymentDetails.orderId': paymentAttempt.paymentDetails.orderId });
+        if (savedBooking) {
+            paymentAttempt.status = 'Completed';
+            paymentAttempt.booking = savedBooking._id;
+            await paymentAttempt.save();
+            const existingBooking = await Booking.findById(savedBooking._id)
+                .populate('user')
+                .populate('services.service');
+            return res.status(200).json({
+                success: true,
+                message: 'Payment was already verified',
+                data: { booking: existingBooking }
+            });
+        }
+
+        let paymentId;
+        const orderId = paymentAttempt.paymentDetails.orderId;
 
         if (stripePaymentIntentId) {
-            if (!stripe) {
+            if (!stripe || paymentAttempt.paymentDetails.provider !== 'stripe') {
                 return res.status(500).json({
                     success: false,
-                    message: 'Stripe is not configured on the server'
+                    message: 'Stripe is unavailable for this payment attempt'
                 });
+            }
+
+            if (stripePaymentIntentId !== orderId) {
+                return res.status(400).json({ success: false, message: 'Payment does not match this payment attempt' });
             }
 
             const paymentIntent = await stripe.paymentIntents.retrieve(stripePaymentIntentId);
-            if (paymentIntent.metadata?.bookingId && paymentIntent.metadata.bookingId !== booking._id.toString()) {
+            if (
+                paymentIntent.metadata?.paymentAttemptId !== paymentAttempt._id.toString() ||
+                paymentIntent.metadata?.userId !== req.user.id
+            ) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Payment does not match this booking'
+                    message: 'Payment does not match this payment attempt'
                 });
             }
 
-            isPaymentSuccessful = paymentIntent.status === 'succeeded';
-            paymentProvider = 'stripe';
-            orderId = paymentIntent.id;
             paymentId = paymentIntent.latest_charge || paymentIntent.id;
-            signature = undefined;
+            const expectedAmount = Math.round(paymentAttempt.totalAmount * 100);
+            if (
+                paymentIntent.status !== 'succeeded' ||
+                paymentIntent.amount !== expectedAmount ||
+                paymentIntent.amount_received !== expectedAmount
+            ) {
+                return res.status(409).json({
+                    success: false,
+                    message: 'Payment is not completed. No booking has been created.'
+                });
+            }
         } else {
-            const isMock = razorpayOrderId?.startsWith('order_mock_') || razorpayPaymentId?.startsWith('pay_mock_');
-            isPaymentSuccessful = isMock || status === 'success';
+            if (paymentAttempt.paymentDetails.provider !== 'razorpay' || razorpayOrderId !== orderId || !razorpayPaymentId) {
+                return res.status(400).json({ success: false, message: 'Payment does not match this payment attempt' });
+            }
+
+            const payment = await razorpayInstance.payments.fetch(razorpayPaymentId);
+            const expectedAmount = Math.round(paymentAttempt.totalAmount * 100);
+            if (
+                payment.order_id !== orderId ||
+                payment.status !== 'captured' ||
+                payment.amount !== expectedAmount
+            ) {
+                return res.status(409).json({
+                    success: false,
+                    message: 'Payment is not completed. No booking has been created.'
+                });
+            }
+            paymentId = payment.id;
         }
 
-        if (isPaymentSuccessful) {
-            booking.paymentStatus = 'Paid';
-            booking.status = 'Confirmed';
-            booking.paymentDetails = {
-                provider: paymentProvider,
-                orderId,
-                paymentId,
-                signature,
-                transactionId: paymentId
-            };
-
-            await booking.save();
-
-            // Send booking confirmed email with invoice (non-blocking)
-            sendBookingConfirmed(booking).catch(err =>
-                console.error('Booking confirmed email failed:', err.message)
-            );
-
-            return res.status(200).json({
-                success: true,
-                message: 'Payment verified and booking confirmed',
-                data: { booking }
-            });
-        } else {
-            booking.paymentStatus = 'Failed';
-            await booking.save();
-            return res.status(400).json({
-                success: false,
-                message: 'Payment verification failed'
-            });
+        const claimedAttempt = await PaymentAttempt.findOneAndUpdate(
+            {
+                _id: paymentAttempt._id,
+                $or: [
+                    { status: 'Pending' },
+                    { status: 'Processing', updatedAt: { $lt: new Date(Date.now() - 60_000) } }
+                ]
+            },
+            { $set: { status: 'Processing' } },
+            { new: true }
+        );
+        if (!claimedAttempt) {
+            const latestAttempt = await PaymentAttempt.findById(paymentAttempt._id);
+            if (latestAttempt?.status === 'Completed' && latestAttempt.booking) {
+                const existingBooking = await Booking.findById(latestAttempt.booking)
+                    .populate('user')
+                    .populate('services.service');
+                return res.status(200).json({
+                    success: true,
+                    message: 'Payment was already verified',
+                    data: { booking: existingBooking }
+                });
+            }
+            return res.status(409).json({ success: false, message: 'Payment verification is already in progress' });
         }
+
+        let booking;
+        try {
+            booking = await Booking.create({
+                user: claimedAttempt.user,
+                services: claimedAttempt.services,
+                totalAmount: claimedAttempt.totalAmount,
+                address: claimedAttempt.address,
+                phone: claimedAttempt.phone,
+                serviceDate: claimedAttempt.serviceDate,
+                specialInstructions: claimedAttempt.specialInstructions,
+                paymentStatus: 'Paid',
+                status: 'Pending',
+                paymentDetails: {
+                    provider: claimedAttempt.paymentDetails.provider,
+                    orderId,
+                    paymentId,
+                    transactionId: paymentId
+                }
+            });
+            claimedAttempt.status = 'Completed';
+            claimedAttempt.booking = booking._id;
+            await claimedAttempt.save();
+        } catch (error) {
+            claimedAttempt.status = 'Pending';
+            await claimedAttempt.save();
+            throw error;
+        }
+
+        const populatedBooking = await Booking.findById(booking._id)
+            .populate('user')
+            .populate('services.service');
+        sendBookingConfirmed(populatedBooking).catch(err =>
+            console.error('Booking confirmed email failed:', err.message)
+        );
+
+        return res.status(201).json({
+            success: true,
+            message: 'Payment verified and booking created',
+            data: { booking: populatedBooking }
+        });
     } catch (err) {
         next(err);
     }

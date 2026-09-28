@@ -256,7 +256,7 @@ exports.updateTechnician = async (req, res, next) => {
 };
 exports.updateTechnicianAccount = async (req, res, next) => {
   try {
-    if (!['suspended', 'active'].includes(req.body.status)) throw fail('Invalid account status.');
+    if (!['suspended', 'active', 'inactive'].includes(req.body.status)) throw fail('Invalid account status.');
     const user = await User.findOne({
       _id: req.params.technicianId,
       role: 'technician'
@@ -264,6 +264,7 @@ exports.updateTechnicianAccount = async (req, res, next) => {
     if (!user) throw fail('Technician not found.', 404);
     user.accountStatus = req.body.status === 'active' && user.createdByAdmin && !user.isPhoneVerified ? 'invited' : req.body.status;
     user.isOnline = false;
+    user.tokenVersion = (user.tokenVersion || 0) + 1;
     await user.save();
     res.json({
       success: true,

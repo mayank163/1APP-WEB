@@ -5,6 +5,7 @@ import AdminImage from '../components/AdminImage';
 import { FaPlus, FaEdit, FaTrash, FaFolder, FaImage } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { getImageUrl } from '../utils/helpers';
+import Pagination from '../components/Pagination';
 
 const CategoryManagement = () => {
     const [subcategories, setSubcategories] = useState([]);
@@ -22,6 +23,9 @@ const CategoryManagement = () => {
     const [submitting, setSubmitting] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortOrder, setSortOrder] = useState('asc');
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
     const formRef = useRef(null);
     const tableRef = useRef(null);
 
@@ -29,11 +33,14 @@ const CategoryManagement = () => {
         setLoading(true);
         try {
             const [catRes, subRes] = await Promise.all([
-                adminApi.getCategories(),
-                adminApi.getSubCategories()
+                adminApi.getCategories({ limit: 100 }),
+                adminApi.getSubCategories('', { page, limit: pageSize, search: searchTerm, sort: sortOrder })
             ]);
             if (catRes.success) setCategories(catRes.data.categories);
-            if (subRes.success) setSubcategories(subRes.data.subcategories);
+            if (subRes.success) {
+                setSubcategories(subRes.data.subcategories);
+                setPagination(subRes.pagination || { page, limit: pageSize, total: subRes.count || 0, totalPages: Math.max(1, Math.ceil((subRes.count || 0) / pageSize)) });
+            }
         } catch {
             toast.error('Failed to load data');
         } finally {
@@ -41,7 +48,7 @@ const CategoryManagement = () => {
         }
     };
 
-    useEffect(() => { fetchData(); }, []);
+    useEffect(() => { fetchData(); }, [page, pageSize, searchTerm, sortOrder]);
 
     const handleOpenCreate = () => {
         setEditingId(null);
@@ -139,19 +146,7 @@ const CategoryManagement = () => {
         }
     };
 
-    const filteredSubcategories = [...subcategories]
-    .filter((sub) =>
-        sub.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        sub.category?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .sort((a, b) => {
-        const first = a.name.toLowerCase();
-        const second = b.name.toLowerCase();
-
-        return sortOrder === 'asc'
-            ? first.localeCompare(second)
-            : second.localeCompare(first);
-    });
+    const filteredSubcategories = subcategories;
 
     return (
         <div>
@@ -265,14 +260,14 @@ const CategoryManagement = () => {
             placeholder="Search category or sub-category..."
             style={{ maxWidth: "350px" }}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
         />
 
         <select
             className="form-select"
             style={{ width: "180px" }}
             value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
+            onChange={(e) => { setSortOrder(e.target.value); setPage(1); }}
         >
             <option value="asc">
                 Ascending (A-Z)
@@ -369,6 +364,7 @@ const CategoryManagement = () => {
                         </table>
                     </div>
                 )}
+                {!loading && <Pagination {...pagination} page={page} limit={pageSize} onPageChange={setPage} onLimitChange={size => { setPageSize(size); setPage(1); }} />}
             </div>
         </div>
     );

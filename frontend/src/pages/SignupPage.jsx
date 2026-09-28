@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import { useGoogleLogin } from '@react-oauth/google';
 import AuthPanel from './AuthPanel';
 import axios from 'axios';
+import CountryCodePicker, { DEFAULT_COUNTRY } from '../components/CountryCodePicker';
 
 const getStrength = (pwd) => {
     if (!pwd) return 0;
@@ -49,6 +50,7 @@ const SignupPage = () => {
 
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
+    const [phoneCountry, setPhoneCountry] = useState(DEFAULT_COUNTRY);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [otp, setOtp] = useState('');
@@ -84,8 +86,15 @@ const SignupPage = () => {
             return;
         }
 
+        if (phone.length < phoneCountry.maxDigits) {
+            toast.error(`Phone number must be ${phoneCountry.maxDigits} digits for ${phoneCountry.name}`);
+            return;
+        }
+
+        const fullPhone = `${phoneCountry.code}${phone}`;
+
         try {
-            const res = await startRegister({ name, email, phone, password });
+            const res = await startRegister({ name, email, phone: fullPhone, password });
             setDevOtp(res.devOtp || null);
             setRegistrationStep('otp');
             toast.success('OTP sent. Verify your phone to create your account.');
@@ -144,8 +153,13 @@ const SignupPage = () => {
                                 </Field>
 
                                 <Field label="Phone Number" icon={<FaPhoneAlt color="#888" size={14} />}>
-                                    <input type="tel" required placeholder="+91 98765 43210" value={phone}
-                                        onChange={e => setPhone(e.target.value)} style={inputStyle} />
+                                    <CountryCodePicker
+                                        selectedCountry={phoneCountry}
+                                        onCountryChange={setPhoneCountry}
+                                        phoneValue={phone}
+                                        onPhoneChange={setPhone}
+                                        required
+                                    />
                                 </Field>
 
                                 <Field label="Email Address" icon={<FaEnvelope color="#888" size={14} />}>
@@ -187,7 +201,7 @@ const SignupPage = () => {
                             <>
                                 <div style={{ background: '#f5fbf6', border: '1px solid #d7eadb', borderRadius: 8, padding: 12, marginBottom: 16 }}>
                                     <div style={{ color: '#000000', fontWeight: 800, fontSize: '0.9rem' }}>Verify your phone</div>
-                                    <div style={{ color: '#555', fontSize: '0.85rem', marginTop: 4 }}>OTP sent to {phone}</div>
+                                    <div style={{ color: '#555', fontSize: '0.85rem', marginTop: 4 }}>OTP sent to {phoneCountry.code} {phone}</div>
                                     <button type="button" onClick={editDetails} style={{ background: 'none', border: 'none', color: '#000000', fontWeight: 700, padding: '8px 0 0', cursor: 'pointer' }}>
                                         Edit details
                                     </button>

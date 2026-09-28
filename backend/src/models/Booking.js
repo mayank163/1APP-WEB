@@ -18,6 +18,13 @@ const bookingSchema = new mongoose.Schema({
                 default: 1,
                 min: 1
             },
+            variantId: { type: mongoose.Schema.Types.ObjectId, default: null },
+            variantName: { type: String, default: '', trim: true },
+            selectedAddons: [{
+                addonId: { type: mongoose.Schema.Types.ObjectId, default: null },
+                name: { type: String, default: '', trim: true },
+                price: { type: Number, default: 0, min: 0 }
+            }],
             price: {
                 type: Number,
                 required: true
@@ -29,8 +36,17 @@ const bookingSchema = new mongoose.Schema({
         required: [true, 'Booking must have a total amount']
     },
     address: {
-        type: String,
-        required: [true, 'Please provide service address']
+        // Structured address captured at booking time
+        label: { type: String, default: 'Home' },
+        name: { type: String, default: '', trim: true },  // custom nickname: "My Home", "Friend's Home"
+        addressLine: { type: String, required: [true, 'Please provide address line'], trim: true },
+        city: { type: String, default: '', trim: true },
+        state: { type: String, default: '', trim: true },
+        zipcode: { type: String, default: '', trim: true },
+        coordinates: {
+            lat: { type: Number, default: null },
+            lng: { type: Number, default: null }
+        }
     },
     phone: {
         type: String,
@@ -39,10 +55,6 @@ const bookingSchema = new mongoose.Schema({
     serviceDate: {
         type: Date,
         required: [true, 'Please provide service date']
-    },
-    timeSlot: {
-        type: String,
-        required: [true, 'Please provide service time slot']
     },
     status: {
         type: String,
@@ -72,5 +84,7 @@ const bookingSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+
+bookingSchema.index({ 'paymentDetails.orderId': 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model('Booking', bookingSchema);

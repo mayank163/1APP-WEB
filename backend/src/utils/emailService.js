@@ -139,10 +139,6 @@ const bookingDetailBlock = (booking) => {
         <div class="detail-value">${serviceDate}</div>
       </div>
       <div class="detail-row">
-        <div class="detail-label">Time Slot</div>
-        <div class="detail-value">${booking.timeSlot}</div>
-      </div>
-      <div class="detail-row">
         <div class="detail-label">Address</div>
         <div class="detail-value">${booking.address}</div>
       </div>

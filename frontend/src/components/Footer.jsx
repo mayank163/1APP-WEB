@@ -40,17 +40,18 @@ function FooterLink({ label, to }) {
             href={to || '/'}
             onClick={handleClick}
             style={{
-                color: '#a9a9a9',
+                color: '#ffffff',
                 textDecoration: 'none',
                 fontSize: '14px',
                 lineHeight: '1.5',
                 transition: 'color 0.2s ease',
+                fontWeight: 500,
             }}
             onMouseEnter={(e) => {
                 e.currentTarget.style.color = '#ffffff';
             }}
             onMouseLeave={(e) => {
-                e.currentTarget.style.color = '#a9a9a9';
+                e.currentTarget.style.color = '#ffffff';
             }}
         >
             {label}
@@ -248,7 +249,7 @@ export default function Footer() {
                         zIndex: 3,
 
                         // Tilt phone to the right
-                        transform: 'rotate(0deg)',
+                        transform: 'rotate(10deg)',
                         transformOrigin: 'center bottom',
                     }}
                 >

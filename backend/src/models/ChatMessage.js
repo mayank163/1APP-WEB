@@ -4,7 +4,17 @@ const chatMessageSchema = new mongoose.Schema({
     technicianId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true,
+        index: true
+    },
+    participantId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        index: true
+    },
+    participantType: {
+        type: String,
+        enum: ['technician', 'user'],
+        default: 'technician',
         index: true
     },
     senderId: {
@@ -13,7 +23,7 @@ const chatMessageSchema = new mongoose.Schema({
     },
     senderRole: {
         type: String,
-        enum: ['admin', 'technician'],
+        enum: ['admin', 'technician', 'user'],
         required: true
     },
     receiverId: {

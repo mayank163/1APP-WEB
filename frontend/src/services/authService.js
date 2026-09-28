@@ -4,9 +4,10 @@ const authService = {
     login: async (identifier, password) => {
         const fcmToken = localStorage.getItem('1App_fcm_token');
         // identifier can be email or phone
-        const payload = identifier.includes('@')
-            ? { email: identifier, password, ...(fcmToken && { fcmToken }) }
-            : { phone: identifier, password, ...(fcmToken && { fcmToken }) };
+        const normalizedIdentifier = String(identifier || '').trim();
+        const payload = normalizedIdentifier.includes('@')
+            ? { email: normalizedIdentifier.toLowerCase(), password, ...(fcmToken && { fcmToken }) }
+            : { phone: normalizedIdentifier, password, ...(fcmToken && { fcmToken }) };
 
         // Try regular user login first, then technician login
         try {
@@ -92,6 +93,14 @@ const authService = {
 
     updateMe: async (userData) => {
         const response = await API.put('/auth/me', userData);
+        return response.data;
+    },
+
+    deleteAccount: async () => {
+        const response = await API.delete('/auth/me');
+        localStorage.removeItem('1App_token');
+        localStorage.removeItem('1App_refreshToken');
+        localStorage.removeItem('1App_fcm_token');
         return response.data;
     },
 

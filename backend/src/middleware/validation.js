@@ -27,7 +27,14 @@ const validateVerifyRegister = [
 ];
 
 const validateLogin = [
-    body('email').trim().isEmail().withMessage('Please provide a valid email'),
+    body('email').optional({ checkFalsy: true }).trim().isEmail().withMessage('Please provide a valid email'),
+    body('phone').optional({ checkFalsy: true }).trim().notEmpty().withMessage('Please provide a valid phone number'),
+    body().custom((value) => {
+        if (!value.email && !value.phone) {
+            throw new Error('Please provide an email or phone number');
+        }
+        return true;
+    }),
     body('password').notEmpty().withMessage('Password is required'),
     checkValidationResult
 ];
@@ -36,10 +43,14 @@ const validateBooking = [
     body('services').isArray({ min: 1 }).withMessage('At least one service must be selected'),
     body('services.*.service').notEmpty().withMessage('Service ID is required'),
     body('services.*.quantity').isInt({ min: 1 }).withMessage('Quantity must be at least 1'),
-    body('address').trim().notEmpty().withMessage('Address is required'),
+    body('address').custom((address) => {
+        const addressLine = typeof address === 'string' ? address : address?.addressLine;
+        if (typeof addressLine !== 'string' || !addressLine.trim()) {
+            throw new Error('Address is required');
+        }
+        return true;
+    }),
     body('phone').trim().notEmpty().withMessage('Phone number is required'),
-    body('serviceDate').notEmpty().withMessage('Service date is required'),
-    body('timeSlot').notEmpty().withMessage('Time slot is required'),
     checkValidationResult
 ];
 

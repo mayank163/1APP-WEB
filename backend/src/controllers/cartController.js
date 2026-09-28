@@ -1,4 +1,35 @@
 const User = require('../models/User');
+const Service = require('../models/Service');
+
+const resolveCartVariant = (service, variantId) => {
+    if (!service.hasVariants) {
+        if (variantId) throw Object.assign(new Error('This service does not have variants.'), { statusCode: 400 });
+        return null;
+    }
+    const activeVariants = (service.variants || []).filter(variant => variant.isActive !== false);
+    if (!activeVariants.length) {
+        if (variantId) throw Object.assign(new Error('This service has no active variants.'), { statusCode: 400 });
+        return null;
+    }
+
+    const variant = variantId
+        ? activeVariants.find(item => String(item._id) === String(variantId))
+        : activeVariants[0];
+    if (!variant) throw Object.assign(new Error('Select an active variant for this service.'), { statusCode: 400 });
+    return variant;
+};
+
+const resolveCartAddons = (service, addonIds) => {
+    if (addonIds === undefined) return null;
+    if (!Array.isArray(addonIds)) throw Object.assign(new Error('Add-ons must be provided as a list.'), { statusCode: 400 });
+
+    const uniqueIds = [...new Set(addonIds.map(String))];
+    return uniqueIds.map(addonId => {
+        const addon = (service.addons || []).find(item => String(item._id) === addonId && item.isActive !== false);
+        if (!addon) throw Object.assign(new Error('One or more selected add-ons are unavailable.'), { statusCode: 400 });
+        return { addonId: addon._id, name: addon.name, price: addon.price };
+    });
+};
 
 /**
  * @desc    Get current user's cart (populated with service details)
@@ -20,21 +51,45 @@ exports.getCart = async (req, res, next) => {
  */
 exports.addToCart = async (req, res, next) => {
     try {
-        const { serviceId, quantity = 1 } = req.body;
+        const { serviceId, quantity = 1, variantId, addonIds } = req.body;
         if (!serviceId) {
             return res.status(400).json({ success: false, message: 'serviceId is required' });
         }
 
         const user = await User.findById(req.user.id);
+        const service = await Service.findById(serviceId);
+        if (!service || !service.isActive) {
+            return res.status(404).json({ success: false, message: 'Service not found or inactive.' });
+        }
+        const variant = resolveCartVariant(service, variantId);
+        const selectedAddons = resolveCartAddons(service, addonIds);
         const existing = user.cart.find(i => i.service.toString() === serviceId);
 
         if (existing) {
+            const variantChanged = String(existing.variantId || '') !== String(variant?._id || '');
+            const addonsChanged = selectedAddons !== null && JSON.stringify((existing.selectedAddons || []).map(addon => String(addon.addonId))) !== JSON.stringify(selectedAddons.map(addon => String(addon.addonId)));
+            if (variantChanged || addonsChanged) {
+                existing.variantId = variant?._id || null;
+                existing.variantName = variant?.name || '';
+                existing.variantPrice = variant ? (variant.offerPrice || variant.actualPrice) : null;
+                if (selectedAddons !== null) existing.selectedAddons = selectedAddons;
+                await user.save();
+                await user.populate('cart.service');
+                return res.status(200).json({ success: true, duplicate: false, data: { cart: user.cart } });
+            }
             // Item already in cart — return without modifying (mirrors current behaviour)
             await user.populate('cart.service');
             return res.status(200).json({ success: true, duplicate: true, data: { cart: user.cart } });
         }
 
-        user.cart.push({ service: serviceId, quantity: parseInt(quantity) });
+        user.cart.push({
+            service: serviceId,
+            quantity: parseInt(quantity),
+            variantId: variant?._id || null,
+            variantName: variant?.name || '',
+            variantPrice: variant ? (variant.offerPrice || variant.actualPrice) : null,
+            selectedAddons: selectedAddons || []
+        });
         await user.save();
         await user.populate('cart.service');
 
@@ -128,11 +183,22 @@ exports.mergeCart = async (req, res, next) => {
 
         const user = await User.findById(req.user.id);
 
-        for (const { serviceId, quantity } of items) {
+        for (const { serviceId, quantity, variantId, addonIds } of items) {
             if (!serviceId) continue;
             const already = user.cart.find(i => i.service.toString() === serviceId);
             if (!already) {
-                user.cart.push({ service: serviceId, quantity: parseInt(quantity) || 1 });
+                const service = await Service.findById(serviceId);
+                if (!service || !service.isActive) continue;
+                const variant = resolveCartVariant(service, variantId);
+                const selectedAddons = resolveCartAddons(service, addonIds);
+                user.cart.push({
+                    service: serviceId,
+                    quantity: parseInt(quantity) || 1,
+                    variantId: variant?._id || null,
+                    variantName: variant?.name || '',
+                    variantPrice: variant ? (variant.offerPrice || variant.actualPrice) : null,
+                    selectedAddons: selectedAddons || []
+                });
             }
             // If already in DB cart, keep existing — don't double-add
         }

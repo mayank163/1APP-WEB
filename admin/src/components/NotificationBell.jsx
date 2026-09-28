@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaBell } from 'react-icons/fa';
+import { toast } from 'react-toastify';
 import adminApi from '../services/adminApi';
 import socket from '../services/socket';
 import { enableBrowserNotifications } from '../services/firebaseNotifications';
@@ -17,6 +18,7 @@ const NotificationBell = () => {
     const onNotification = ({ notification }) => {
       if (!notification) return;
       setItems(previous => [notification, ...previous.filter(item => item._id !== notification._id)].slice(0, 50));
+      toast.info(notification.message ? `${notification.title}: ${notification.message}` : notification.title || 'New notification');
     };
     socket.on('notification:new', onNotification);
     return () => socket.off('notification:new', onNotification);

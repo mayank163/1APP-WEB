@@ -1,18 +1,16 @@
 import React, { useState, useRef, useEffect, useCallback, useContext } from 'react';
 import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { FaSearch, FaTag, FaCalendarAlt, FaChevronDown } from 'react-icons/fa';
+import { FaSearch, FaTag, FaChevronDown } from 'react-icons/fa';
 import serviceService from '../services/serviceService';
 import { CartContext } from '../context/CartContext';
 import { toast } from 'react-toastify';
 
-/* ─────────────────────────────────────────────
-   Available time slots
-───────────────────────────────────────────── */
-const TIME_SLOTS = [
-    '08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM',
-    '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM',
-    '04:00 PM', '05:00 PM', '06:00 PM', '07:00 PM',
+const BOOKING_PERIODS = [
+    { value: 'today', label: 'Today' },
+    { value: 'tomorrow', label: 'Tomorrow' },
+    { value: 'week', label: 'Week' },
+    { value: 'month', label: 'Month' },
 ];
 
 /* ─────────────────────────────────────────────
@@ -300,10 +298,7 @@ const InlineServiceSearch = ({ selectedService, onSelect }) => {
     );
 };
 
-/* ─────────────────────────────────────────────
-   Slot selector — portal dropdown of time slots
-───────────────────────────────────────────── */
-const SlotSelector = ({ value, onChange }) => {
+const BookingPeriodSelector = ({ value, onChange }) => {
     const [open, setOpen] = useState(false);
     const wrapperRef = useRef(null);
     const anchorRef = useRef(null);
@@ -312,7 +307,7 @@ const SlotSelector = ({ value, onChange }) => {
         const h = (e) => {
             if (
                 wrapperRef.current && !wrapperRef.current.contains(e.target) &&
-                !e.target.closest('[data-slot-dropdown]')
+                !e.target.closest('[data-booking-period-dropdown]')
             ) setOpen(false);
         };
         document.addEventListener('mousedown', h);
@@ -350,7 +345,7 @@ const SlotSelector = ({ value, onChange }) => {
                     flex: 1,
                     textAlign: 'left',
                 }}>
-                    {value || 'Select slot'}
+                    {BOOKING_PERIODS.find(period => period.value === value)?.label || 'Select period'}
                 </span>
                 <FaChevronDown
                     size={11}
@@ -364,22 +359,22 @@ const SlotSelector = ({ value, onChange }) => {
             </button>
 
             <PortalDropdown anchorRef={anchorRef} open={open} minWidth={160}>
-                <ul data-slot-dropdown style={dropdownListStyle}>
-                    {TIME_SLOTS.map((t) => (
+                <ul data-booking-period-dropdown style={dropdownListStyle}>
+                    {BOOKING_PERIODS.map((period) => (
                         <li
-                            key={t}
-                            onMouseDown={() => { onChange(t); setOpen(false); }}
+                            key={period.value}
+                            onMouseDown={() => { onChange(period.value); setOpen(false); }}
                             style={{
                                 ...dropdownItemStyle,
-                                background: value === t ? '#f5f5f5' : '#fff',
-                                fontWeight: value === t ? 700 : 400,
+                                background: value === period.value ? '#f5f5f5' : '#fff',
+                                fontWeight: value === period.value ? 700 : 400,
                                 color: '#1a1a1a',
                                 justifyContent: 'center',
                             }}
                             onMouseEnter={e => e.currentTarget.style.background = '#f5f5f5'}
-                            onMouseLeave={e => e.currentTarget.style.background = value === t ? '#f5f5f5' : '#fff'}
+                            onMouseLeave={e => e.currentTarget.style.background = value === period.value ? '#f5f5f5' : '#fff'}
                         >
-                            {t}
+                            {period.label}
                         </li>
                     ))}
                 </ul>
@@ -390,21 +385,14 @@ const SlotSelector = ({ value, onChange }) => {
 
 /* ─────────────────────────────────────────────
    Main HeroBookingBar
-   Layout:  [ 🔍 Search service ] | [ Select slot ▾ ] | [ 📅 Date ] [ Book ]
+    Layout:  [ Search service ] | [ Select period ] [ Book ]
 ───────────────────────────────────────────── */
 const HeroBookingBar = () => {
     const navigate = useNavigate();
     const { addToCart } = useContext(CartContext);
 
     const [selectedService, setSelectedService] = useState(null);
-    const [selectedSlot, setSelectedSlot] = useState('');
-    const [bookingDate, setBookingDate] = useState('');
-    const dateInputRef = useRef(null);
-
-    /* formatted date shown inside the date field */
-    const formattedDate = bookingDate
-        ? new Date(bookingDate + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-        : '';
+    const [bookingPeriod, setBookingPeriod] = useState('');
 
     const handleBook = () => {
         const token = localStorage.getItem('1App_token');
@@ -414,26 +402,16 @@ const HeroBookingBar = () => {
             return;
         }
         if (!selectedService) { toast.warning('Please select a service first'); return; }
-        if (!selectedSlot) { toast.warning('Please select a time slot'); return; }
-        if (!bookingDate) { toast.warning('Please select a booking date'); return; }
+        if (!bookingPeriod) { toast.warning('Please select when you need the service'); return; }
 
-        const isoDate = new Date(bookingDate + 'T00:00:00').toISOString();
-        sessionStorage.setItem('1App_booking_date', isoDate);
-        sessionStorage.setItem('1App_booking_slot', selectedSlot);
+        const bookingDate = new Date();
+        if (bookingPeriod === 'tomorrow') bookingDate.setDate(bookingDate.getDate() + 1);
+        if (bookingPeriod === 'week') bookingDate.setDate(bookingDate.getDate() + (7 - bookingDate.getDay() || 7));
+        if (bookingPeriod === 'month') bookingDate.setMonth(bookingDate.getMonth() + 1, 1);
+        sessionStorage.setItem('1App_booking_date', bookingDate.toISOString());
+        sessionStorage.setItem('1App_booking_period', bookingPeriod);
         addToCart(selectedService, 1);
-        navigate('/checkout');
-    };
-
-    /* Open native calendar picker when user clicks anywhere in date section */
-    const openDatePicker = () => {
-        if (dateInputRef.current) {
-            try {
-                dateInputRef.current.showPicker();
-            } catch {
-                dateInputRef.current.focus();
-                dateInputRef.current.click();
-            }
-        }
+        navigate('/cart');
     };
 
     return (
@@ -466,7 +444,7 @@ const HeroBookingBar = () => {
 
             <Sep />
 
-            {/* ── Section 2: Slot Selector ── */}
+            {/* ── Section 2: Booking period ── */}
             <div style={{
                 flex: 1,
                 minWidth: 0,
@@ -475,58 +453,7 @@ const HeroBookingBar = () => {
                 padding: '0 20px',
                 height: '100%',
             }}>
-                <SlotSelector value={selectedSlot} onChange={setSelectedSlot} />
-            </div>
-
-            <Sep />
-
-            {/* ── Section 3: Date picker ── */}
-            {/* Clicking anywhere in this section opens the native calendar */}
-            <div
-                onClick={openDatePicker}
-                style={{
-                    flex: 1,
-                    minWidth: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '0 20px',
-                    height: '100%',
-                    cursor: 'pointer',
-                    position: 'relative',
-                }}
-            >
-                <FaCalendarAlt
-                    size={13}
-                    style={{ color: bookingDate ? '#1a1a1a' : '#aaa', flexShrink: 0, marginRight: 8 }}
-                />
-                <span style={{
-                    fontSize: 14,
-                    color: bookingDate ? '#1a1a1a' : '#a0a0a0',
-                    fontWeight: bookingDate ? 500 : 400,
-                    whiteSpace: 'nowrap',
-                    flex: 1,
-                    userSelect: 'none',
-                }}>
-                    {formattedDate || 'dd / mm / yyyy'}
-                </span>
-
-                {/* Hidden date input — not overlaid, just used programmatically */}
-                <input
-                    ref={dateInputRef}
-                    type="date"
-                    value={bookingDate}
-                    min={new Date().toISOString().split('T')[0]}
-                    onChange={e => setBookingDate(e.target.value)}
-                    onClick={e => e.stopPropagation()}
-                    style={{
-                        position: 'absolute',
-                        width: 1,
-                        height: 1,
-                        opacity: 0,
-                        pointerEvents: 'none',
-                        border: 'none',
-                    }}
-                />
+                <BookingPeriodSelector value={bookingPeriod} onChange={setBookingPeriod} />
             </div>
 
             {/* ── Book button ── */}

@@ -1,5 +1,6 @@
 const Service = require('../models/Service');
 const { uploadFile, deleteFile } = require("../utils/s3Upload");
+const { getPagination, getPaginationMeta } = require('../utils/pagination');
 
 const getS3Key = (keyOrUrl) => {
     if (!keyOrUrl) return null;
@@ -251,23 +252,24 @@ data.requirements = await Promise.all(
 exports.getAllServices = async (req, res, next) => {
     try {
         const { category, subcategory, status, search } = req.query;
+        const { page, limit, skip } = getPagination(req.query);
         const query = {};
         if (category) query.category = category;
         if (subcategory) query.subcategory = subcategory;
         if (status) query.status = status;
 
-        let services = await Service.find(query).populate(POPULATE).sort({ createdAt: -1 });
-
         if (search) {
-            const s = search.toLowerCase();
-            services = services.filter(sv =>
-                sv.name?.toLowerCase().includes(s) ||
-                (sv.shortDescription && sv.shortDescription.some(p => p.toLowerCase().includes(s))) ||
-                sv.category?.name?.toLowerCase().includes(s)
-            );
+            query.name = { $regex: search.trim(), $options: 'i' };
         }
 
-        res.json({ success: true, count: services.length, data: { services } });
+        const total = await Service.countDocuments(query);
+        const services = await Service.find(query)
+            .populate(POPULATE)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        res.json({ success: true, count: total, data: { services }, pagination: getPaginationMeta({ page, limit, total }) });
     } catch (err) { next(err); }
 };
 

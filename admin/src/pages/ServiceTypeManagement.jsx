@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import adminApi from '../services/adminApi';
 import { FaPlus, FaEdit, FaTrash, FaWrench, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import Pagination from '../components/Pagination';
 
 const EMPTY_FORM = { name: '', description: '' };
 
@@ -14,6 +15,8 @@ const ServiceTypeManagement = () => {
     const [saving, setSaving]             = useState(false);
     const [searchTerm, setSearchTerm]     = useState('');
     const [sortOrder, setSortOrder]       = useState('asc');
+        const [page, setPage]                   = useState(1);
+        const [pageSize, setPageSize]           = useState(10);
     const formRef                         = useRef(null);
 
     /* ─── fetch ────────────────────────────────────────────────────── */
@@ -88,6 +91,7 @@ const ServiceTypeManagement = () => {
         .sort((a, b) => sortOrder === 'asc'
             ? a.name.localeCompare(b.name)
             : b.name.localeCompare(a.name));
+        const visibleServiceTypes = filtered.slice((page - 1) * pageSize, page * pageSize);
 
     /* ─── render ───────────────────────────────────────────────────── */
     return (
@@ -154,13 +158,13 @@ const ServiceTypeManagement = () => {
                         style={{ maxWidth: 350 }}
                         placeholder="Search service types…"
                         value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
+                        onChange={e => { setSearchTerm(e.target.value); setPage(1); }}
                     />
                     <select
                         className="form-select"
                         style={{ width: 180 }}
                         value={sortOrder}
-                        onChange={e => setSortOrder(e.target.value)}
+                        onChange={e => { setSortOrder(e.target.value); setPage(1); }}
                     >
                         <option value="asc">Ascending (A–Z)</option>
                         <option value="desc">Descending (Z–A)</option>
@@ -182,9 +186,9 @@ const ServiceTypeManagement = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filtered.map((st, idx) => (
+                                {visibleServiceTypes.map((st, idx) => (
                                     <tr key={st._id}>
-                                        <td className="text-muted small">{idx + 1}</td>
+                                                                                <td className="text-muted small">{(page - 1) * pageSize + idx + 1}</td>
                                         <td>
                                             <div className="d-flex align-items-center gap-2">
                                                 <div
@@ -247,6 +251,7 @@ const ServiceTypeManagement = () => {
                         </table>
                     </div>
                 )}
+                {!loading && <Pagination page={page} limit={pageSize} total={filtered.length} totalPages={Math.max(1, Math.ceil(filtered.length / pageSize))} onPageChange={setPage} onLimitChange={size => { setPageSize(size); setPage(1); }} />}
             </div>
         </div>
     );

@@ -9,8 +9,9 @@ export const API_BASE_URL = process.env.REACT_APP_IMAGE_URL;
  */
 export const resolveImageUrl = (imageUrl) => {
     if (!imageUrl) return null;
+    if (typeof imageUrl !== 'string') return null;
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl;
-    return `${API_BASE_URL}${imageUrl}`;
+    return `${String(API_BASE_URL || '').replace(/\/$/, '')}/${imageUrl.replace(/^\/+/, '')}`;
 };
 
 const API = axios.create({
@@ -54,4 +55,7 @@ export const chatApi = {
     getMessages: (technicianId, params = {}) => API.get(`/chat/conversations/${technicianId}/messages`, { params }),
     markRead: (technicianId) => API.patch(`/chat/conversations/${technicianId}/read`),
     sendMedia: (technicianId, formData) => API.post(`/chat/conversations/${technicianId}/messages`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    getUserMessages: (userId, params = {}) => API.get(`/chat/conversations/user/${userId}/messages`, { params }),
+    markUserRead: userId => API.patch(`/chat/conversations/user/${userId}/read`),
+    sendUserMedia: (userId, formData) => API.post(`/chat/conversations/user/${userId}/messages`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
 };
