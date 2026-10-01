@@ -3,6 +3,7 @@ const TechnicianJobRequest = require('../models/TechnicianJobRequest');
 const AdditionalCharge = require('../models/AdditionalCharge');
 const { getIO } = require('../utils/socketInstance');
 const sendNotification = require('./notificationService');
+const { syncBookingFromTechnicianJob } = require('./bookingTechnicianJobSync');
 
 const emit = (room, event, payload) => {
   try { getIO().to(room).emit(event, payload); } catch (error) { console.warn(`[Socket] ${event} failed:`, error.message); }
@@ -44,6 +45,8 @@ const tryAssignApprovedRequest = async (requestId) => {
   request.conversation.push({ sender: 'system', type: 'final_amount', message: `Request approved and job assigned. Final amount: ₹${request.agreedTotal}.`, fixedJobCharge: fixedCharge, additionalChargesTotal: additionalTotal, finalAmount: request.agreedTotal, createdAt: now });
   await request.save();
   await TechnicianJob.findByIdAndUpdate(claimedJob._id, { finalPrice: request.agreedTotal });
+  claimedJob.finalPrice = request.agreedTotal;
+  await syncBookingFromTechnicianJob(claimedJob);
 
   await sendNotification.sendToTechnician(request.technician._id, {
     type: 'job_assigned',

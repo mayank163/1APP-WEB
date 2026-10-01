@@ -494,7 +494,7 @@ export default function Services() {
                                 <div style={{ fontSize: 12, color: '#555' }}>Up to 30 days warranty</div>
                             </div>
                         </div>
-                        <span style={{ color: '#888', fontSize: 18 }}>›</span>
+                       
                     </div>
 
                     {searchQuery ? (

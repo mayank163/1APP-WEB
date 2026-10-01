@@ -8,6 +8,7 @@ import TechnicianTrackingMap from '../components/TechnicianTrackingMap';
 import { toast } from 'react-toastify';
 import adminApi from '../services/adminApi';
 import { useAdminAuth } from '../context/AdminAuthContext';
+import { getImageUrl } from '../utils/helpers';
 import { templateToJobForm } from '../utils/jobTemplates';
 import socket from '../services/socket';
 import { JOB_STATUS_OPTIONS, getJobStatusLabel, getJobStatusTone } from '../utils/jobStatus';
@@ -64,6 +65,7 @@ const fmtTime = (dt) => {
 
 // ─── Status config matching the design ─────────────────────────────────────────
 const STATUS_CONFIG = {
+  draft:       { label: 'Draft',       cls: 'status-pending'    },
   open:        { label: 'Pending',     cls: 'status-pending'    },
   assigned:    { label: 'Assigned',    cls: 'status-assigned'   },
   ontheway:    { label: 'On the Way',  cls: 'status-ontheway'   },
@@ -507,6 +509,7 @@ const TechnicianJobs = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [saving, setSaving]     = useState(false);
+  const [publishing, setPublishing] = useState(false);
   const [workTypes, setWorkTypes]       = useState([]);
   const [serviceTypes, setServiceTypes] = useState([]);
   const [paying, setPaying]           = useState(false);
@@ -658,7 +661,8 @@ const TechnicianJobs = () => {
 
   // ── Tab counts ────────────────────────────────────────────────────────────────
   const tabCounts = useMemo(() => ({
-    all:        jobs.filter(j => ['assigned','open', 'ontheway', 'inprogress', 'checkout', 'cancelled', 'completed'].includes(j.status)).length,
+    all:        jobs.filter(j => ['draft', 'assigned','open', 'ontheway', 'inprogress', 'checkout', 'cancelled', 'completed'].includes(j.status)).length,
+    drafts:     jobs.filter(j => j.status === 'draft').length,
     alljobs:    jobs.length,
     pending:    jobs.filter(j => j.status === 'open').length,
     assigned:   jobs.filter(j => j.status === 'assigned').length,
@@ -671,8 +675,9 @@ const TechnicianJobs = () => {
 
   // ── Tab-to-status mapping ─────────────────────────────────────────────────────
   const TAB_STATUS_MAP = {
-    all:        ['assigned','open', 'ontheway', 'inprogress', 'checkout', 'cancelled','completed'],
+    all:        ['draft', 'assigned','open', 'ontheway', 'inprogress', 'checkout', 'cancelled','completed'],
     alljobs:    null,
+    drafts:     ['draft'],
     pending:    ['open'],
     assigned:   ['assigned'],
     ontheway:   ['ontheway'],
@@ -695,7 +700,16 @@ const TechnicianJobs = () => {
       if (filterStatus !== 'all' && job.status !== filterStatus) return false;
       if (filterAssignment === 'assigned' && !job.assignedTechnician?.name) return false;
       if (filterAssignment === 'unassigned' && job.assignedTechnician?.name) return false;
-      if (search && ![job.title, job.location, job.assignedTechnician?.name].join(' ').toLowerCase().includes(search.toLowerCase())) return false;
+      if (search) {
+        const query = search.trim().toLowerCase();
+        const jobId = String(job._id || '');
+        const displayJobId = `JB-${jobId.slice(-6)}`;
+        const searchableText = [jobId, displayJobId, job.title, job.location, job.assignedTechnician?.name]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+        if (!searchableText.includes(query)) return false;
+      }
       if (filterDate !== 'all') {
         const jobDay = toLocalDay(job.jobDate?.from);
         if (!jobDay) return false;
@@ -747,6 +761,25 @@ const TechnicianJobs = () => {
   const openRescheduleModal = (job) => { setRescheduleJob(job); setShowRescheduleModal(true); };
   const handleReschedule = async (jobId, jobDateFrom, jobDateTo, reason) => { setRescheduling(true); try { await adminApi.rescheduleJob(jobId, { jobDateFrom, jobDateTo, reason }); toast.success('Job rescheduled!'); setShowRescheduleModal(false); setRescheduleJob(null); await loadData(); if (selectedJob?._id === jobId) setSelectedJob(p => p ? { ...p, jobDate: { from: jobDateFrom, to: jobDateTo }, scheduledDate: jobDateFrom } : p); } catch (err) { toast.error(err.response?.data?.message || 'Reschedule failed'); } finally { setRescheduling(false); } };
   const handleStatusUpdate = async (status, note) => { setUpdatingStatus(true); try { await adminApi.updateTechnicianJobStatus(selectedJob._id, { status, note: note || '' }); toast.success('Status updated!'); setStatusModal({ show: false, targetStatus: '' }); setSelectedJob(p => ({ ...p, status, statusHistory: [...(p.statusHistory || []), { status, note: note || '', changedAt: new Date().toISOString() }] })); await loadData(); } catch (err) { toast.error(err.response?.data?.message || 'Update failed'); } finally { setUpdatingStatus(false); } };
+  const handlePublishWorkOrder = async (job) => {
+    setPublishing(true);
+    try {
+      const res = await adminApi.updateTechnicianJobStatus(job._id, {
+        status: 'open',
+        note: 'Booking work order reviewed and published.',
+      });
+      const publishedJob = res.data?.job;
+      if (publishedJob) {
+        setSelectedJob(publishedJob);
+        setJobs(previous => previous.map(item => item._id === publishedJob._id ? publishedJob : item));
+      }
+      toast.success('Work order published and made available to technicians.');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Could not publish work order.');
+    } finally {
+      setPublishing(false);
+    }
+  };
   const handleUnassign = async reason => { setUnassigning(true); try { const res = await adminApi.unassignTechnicianJob(unassignJob._id, { reason: reason.trim() }); toast.success(res.message || 'Technician unassigned.'); setUnassignJob(null); await loadData(); if (selectedJob?._id === res.data?.job?._id) setSelectedJob(res.data.job); } catch (err) { toast.error(err.response?.data?.message || 'Could not unassign technician.'); } finally { setUnassigning(false); } };
   const openPayModal = (job) => { setPayModalJob(job); setShowPayModal(true); };
   const handlePayWallet = async (jobId, discount, note) => { setPaying(true); try { const res = await adminApi.payTechnician(jobId, { discount, note }); toast.success(res.message || 'Payment approved!'); setShowPayModal(false); setPayModalJob(null); await loadData(); if (selectedJob?._id === jobId && res.data?.job) setSelectedJob(res.data.job); } catch (err) { toast.error(err.response?.data?.message || 'Payment failed'); } finally { setPaying(false); } };
@@ -759,7 +792,7 @@ const TechnicianJobs = () => {
   const handleSendMessage = async (requestId) => { if (!adminReply.trim()) return; setSending(true); try { await adminApi.sendTechnicianRequestMessage(requestId, adminReply.trim()); setAdminReply(''); } catch (err) { toast.error(err.response?.data?.message || 'Failed to send'); } finally { setSending(false); } };
 
   // ── Filter option lists ───────────────────────────────────────────────────────
-  const statusOptions = [{ value: 'all', label: 'All' }, ...JOB_STATUS_OPTIONS.map(s => ({ value: s, label: getStatusLbl(s) }))];
+  const statusOptions = [{ value: 'all', label: 'All' }, { value: 'draft', label: 'Draft' }, ...JOB_STATUS_OPTIONS.map(s => ({ value: s, label: getStatusLbl(s) }))];
   const urgencyOptions = [{ value: 'all', label: 'All' }, { value: 'normal', label: 'Normal' }, { value: 'emergency', label: 'Emergency' }];
   const paymentOptions = [{ value: 'all', label: 'All' }, { value: 'authorized', label: 'Authorized' }, { value: 'paid', label: 'Paid' }, { value: 'pending', label: 'Pending' }, { value: 'refunded', label: 'Refunded' }, { value: 'on_hold', label: 'On Hold' }];
   const assignmentOptions = [{ value: 'all', label: 'All' }, { value: 'assigned', label: 'Assigned' }, { value: 'unassigned', label: 'Unassigned' }];
@@ -767,6 +800,7 @@ const TechnicianJobs = () => {
 
   const TABS = [
     { key: 'all',        label: 'All' },
+    { key: 'drafts',     label: 'Drafts' },
     { key: 'pending',    label: 'Unassigned' },
     { key: 'assigned',   label: 'Assigned' },
     { key: 'ontheway',   label: 'On the Way' },
@@ -847,7 +881,7 @@ const TechnicianJobs = () => {
         <div className="tj-search-bar-wrap">
           <div className="tj-search-wrap">
             <FaSearch className="tj-search-icon" />
-            <input className="tj-search-input" placeholder="Search by Job ID, customer, technician, or service.." value={search} onChange={(e) => setSearch(e.target.value)} />
+            <input className="tj-search-input" placeholder="Search by Job ID, title, technician, or location..." value={search} onChange={(e) => setSearch(e.target.value)} />
             {search && <button className="tj-search-clear" onClick={() => setSearch('')}><FaTimes /></button>}
           </div>
         </div>
@@ -1064,6 +1098,11 @@ const TechnicianJobs = () => {
                   <button className="tj-btn-reassign" onClick={() => setJobRequestsModal({ show: true, job: selectedJob })}>
                     <FaBell style={{ marginRight: 6 }} />View Requests
                   </button>
+                  {selectedJob.status === 'draft' && (
+                    <button className="tj-btn-primary-gold" disabled={!can('technician_jobs', 'write') || publishing} onClick={() => handlePublishWorkOrder(selectedJob)}>
+                      <FaPaperPlane className="me-2" />{publishing ? 'Publishing...' : 'Publish Work Order'}
+                    </button>
+                  )}
                   {selectedJob.status === 'checkout' && (
                     <button className="tj-btn-pay-sm" onClick={() => openPayModal(selectedJob)}>
                       <FaWallet style={{ marginRight: 6 }} />Pay Wallet
@@ -1149,7 +1188,59 @@ const TechnicianJobs = () => {
               {selectedJob.tasks?.length > 0 && (
                 <div className="tj-overview-card">
                   <div className="tj-overview-card-title"><FaTools style={{ color: '#A5732F', marginRight: 6 }} />Tasks ({selectedJob.tasks.filter(t => t.isDone).length}/{selectedJob.tasks.length} done)</div>
-                  {['Prep','On Site','Post'].map(g => { const gTasks = selectedJob.tasks.filter(t => t.group === g); if (!gTasks.length) return null; return (<div key={g} className="tj-task-group" style={{ marginTop: 6 }}><div className="tj-task-group-label">{g}</div>{gTasks.map((t, i) => (<div key={i} className={`tj-task-row${t.isDone ? ' done' : ''}`}><span className={`tj-task-circle${t.isDone ? ' checked' : ''}`}>{t.isDone && <FaCheck style={{ fontSize: '0.55rem', color: '#fff' }} />}</span><span className="tj-task-title">{t.title}</span>{t.isDone && t.checkedAt && <span className="tj-task-meta">{fmtDT(t.checkedAt)}</span>}</div>))}</div>); })}
+                  {Array.from(new Set(['Prep', 'On Site', 'Post', ...selectedJob.tasks.map(task => task.group || 'Other')])).map(group => {
+                    const groupTasks = selectedJob.tasks.filter(task => (task.group || 'Other') === group);
+                    if (!groupTasks.length) return null;
+                    return (
+                      <div key={group} className="tj-task-group" style={{ marginTop: 6 }}>
+                        <div className="tj-task-group-label">{group}</div>
+                        {groupTasks.map((task, index) => {
+                          const completionImage = task.completionImage ? getImageUrl(task.completionImage) : '';
+                          const completionSignature = task.completionSignature ? getImageUrl(task.completionSignature) : '';
+
+                          return (
+                            <div key={task._id || `${group}-${index}`}>
+                              <div className={`tj-task-row${task.isDone ? ' done' : ''}`}>
+                                <span className={`tj-task-circle${task.isDone ? ' checked' : ''}`}>
+                                  {task.isDone && <FaCheck style={{ fontSize: '0.55rem', color: '#fff' }} />}
+                                </span>
+                                <span className="tj-task-title">{task.title}</span>
+                                {task.isDone && task.checkedAt && <span className="tj-task-meta">{fmtDT(task.checkedAt)}</span>}
+                              </div>
+                              {task.isDone && (
+                                <div style={{ margin: '0 0 0.35rem 1.9rem', padding: '0.65rem 0.75rem', background: '#fff', border: '1px solid #e8ecef', borderRadius: 7 }}>
+                                  {task.completionNote && (
+                                    <div style={{ marginBottom: completionImage || completionSignature ? '0.65rem' : 0 }}>
+                                      <div className="tj-ov-label">TECHNICIAN NOTE</div>
+                                      <div style={{ color: '#495057', fontSize: '0.82rem', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{task.completionNote}</div>
+                                    </div>
+                                  )}
+                                  {(completionImage || completionSignature) ? (
+                                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+                                      {completionImage && (
+                                        <a href={completionImage} target="_blank" rel="noreferrer" aria-label="Open technician completion image">
+                                          <img src={completionImage} alt="Technician completion evidence" style={{ display: 'block', width: 150, height: 110, objectFit: 'contain', border: '1px solid #e8ecef', borderRadius: 5, background: '#f8f9fa' }} />
+                                          <small className="text-muted">Completion image</small>
+                                        </a>
+                                      )}
+                                      {completionSignature && (
+                                        <a href={completionSignature} target="_blank" rel="noreferrer" aria-label="Open technician signature">
+                                          <img src={completionSignature} alt="Technician signature" style={{ display: 'block', width: 150, height: 110, objectFit: 'contain', border: '1px solid #e8ecef', borderRadius: 5, background: '#fff' }} />
+                                          <small className="text-muted">Signature</small>
+                                        </a>
+                                      )}
+                                    </div>
+                                  ) : !task.completionNote && (
+                                    <small className="text-muted">No technician note, image, or signature was submitted for this task.</small>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 

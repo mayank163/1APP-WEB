@@ -1,0 +1,34 @@
+.privacy-policy-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 260px;
+    grid-template-areas: 'content toc';
+    gap: 32px;
+    align-items: start;
+}
+
+.privacy-policy-content {
+    grid-area: content;
+    min-width: 0;
+}
+
+.privacy-policy-toc {
+    position: sticky;
+    top: 80px;
+    grid-area: toc;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+}
+
+@media (max-width: 760px) {
+    .privacy-policy-layout {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas: 'toc' 'content';
+        gap: 24px;
+        padding: 24px 16px !important;
+    }
+
+    .privacy-policy-toc {
+        position: static;
+        max-height: 40vh;
+    }
+}

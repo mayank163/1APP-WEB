@@ -8,7 +8,8 @@ const {
   sendSMS
 } = require('../utils/otpService');
 const {
-  sendEmail
+  sendEmail,
+  renderEmailLayout
 } = require('../utils/emailService');
 const {
   uploadFile,
@@ -101,6 +102,7 @@ const deliverInvitation = async ({
   mail
 }) => {
   const url = activationURL(phone);
+  const safeUrl = url.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
   const deliveries = [];
   if (sms) deliveries.push({
     channel: 'sms',
@@ -114,7 +116,13 @@ const deliverInvitation = async ({
       to: email,
       subject: 'Your 1APP technician invitation',
       text: `You are invited to join 1APP. Verify your mobile number and set your password: ${url}`,
-      html: `<p>You are invited to join 1APP as a technician.</p><p><a href="${url.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}">Activate your account</a></p><p>Verify your mobile number and set your password to get started.</p>`
+        html: renderEmailLayout(`
+          <div class="hero action"><div class="hero-copy"><div class="hero-eyebrow">TECHNICIAN INVITATION</div><h1>Join the 1APP team</h1><p>Your technician account is ready to activate.</p></div><div class="hero-icon" aria-hidden="true">&#9733;</div></div>
+          <p class="greeting">Welcome to 1APP</p>
+          <p class="text">Verify your mobile number and set your password to start receiving eligible job requests.</p>
+          <p style="margin:24px 0 8px;text-align:center;"><a class="button" href="${safeUrl}">Activate your account &nbsp; &rarr;</a></p>
+          <p class="text">If the button does not work, use this link:<br /><a href="${safeUrl}">${safeUrl}</a></p>
+        `, 'Your 1APP technician account is ready to activate.')
     })
   });
   return Promise.all(deliveries.map(async ({

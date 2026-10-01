@@ -4,6 +4,7 @@ const Request = require('../models/TechnicianJobRequest');
 const User = require('../models/User');
 const { getIO } = require('../utils/socketInstance');
 const sendNotification = require('../services/notificationService');
+const { syncBookingFromTechnicianJob } = require('../services/bookingTechnicianJobSync');
 const error = (message, statusCode = 409) => Object.assign(new Error(message), { statusCode });
 const activeTechnician = user => user?.role === 'technician' && !['invited', 'suspended', 'blocked'].includes(user.accountStatus);
 const openJob = job => job && job.status === 'open' && !job.assignedTechnician?._id && !job.assignedRequest;
@@ -140,6 +141,7 @@ exports.respondToInvitation = async (req, res, next) => {
       invitation.conversation.push({ sender: 'technician', message: action === 'accept' ? 'I accepted the job invitation.' : 'I declined the job invitation.', createdAt: now });
       await invitation.save({ session });
     });
+    if (assignedJob) await syncBookingFromTechnicianJob(assignedJob);
     await notify(invitation._id, req.user._id, assignedJob);
     if (previousRequestId) {
       try {

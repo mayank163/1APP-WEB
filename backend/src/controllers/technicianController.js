@@ -5,6 +5,7 @@ const TechnicianWithdrawal = require('../models/TechnicianWithdrawal');
 const AdditionalCharge = require('../models/AdditionalCharge');
 const { uploadFile } = require('../utils/s3Upload');
 const sendNotification = require('../services/notificationService');
+const { syncBookingFromTechnicianJob } = require('../services/bookingTechnicianJobSync');
 
 /**
  * Haversine formula — returns distance in metres between two GPS coordinates.
@@ -2219,6 +2220,7 @@ const startNavigation = async (req, res, next) => {
     });
 
     await job.save();
+    await syncBookingFromTechnicianJob(job);
 
     try {
       const { getIO } = require('../utils/socketInstance');
@@ -2401,6 +2403,7 @@ const markReached = async (
     }
 
     await job.save();
+    await syncBookingFromTechnicianJob(job);
 
     // Notify admin about the auto-completed On Site task
     if (firstOnSiteIdx !== -1) {
@@ -2619,6 +2622,7 @@ const markJobCompleted = async (
     });
 
     await job.save();
+    await syncBookingFromTechnicianJob(job);
 
     res.status(200).json({
       success: true,
@@ -2732,15 +2736,14 @@ const completeTask = async (
       return res.status(400).json({ success: false, message: 'A signature is required for this task' });
     }
 
+    let completionImage = '';
+    let completionSignature = '';
     if (req.files?.completionImage?.[0]) {
-      const { key } = await uploadFile(req.files.completionImage[0], 'technician-task-completions/images');
-      task.completionImage = key;
+      ({ key: completionImage } = await uploadFile(req.files.completionImage[0], 'technician-task-completions/images'));
     }
     if (req.files?.signature?.[0]) {
-      const { key } = await uploadFile(req.files.signature[0], 'technician-task-completions/signatures');
-      task.completionSignature = key;
+      ({ key: completionSignature } = await uploadFile(req.files.signature[0], 'technician-task-completions/signatures'));
     }
-    if (note) task.completionNote = note;
 
     // --------------------------------
     // LOCATION
@@ -2762,30 +2765,34 @@ const completeTask = async (
           )
         : null;
 
-    task.isDone =
-      true;
+    const taskPath = `tasks.${idx}`;
+    const taskUpdates = {
+      [`${taskPath}.isDone`]: true,
+      [`${taskPath}.checkedAt`]: new Date(),
+      [`${taskPath}.technicianLat`]: hasLocation ? Number(lat) : null,
+      [`${taskPath}.technicianLng`]: hasLocation ? Number(lng) : null,
+      [`${taskPath}.distanceMeters`]: distMeters,
+      [`${taskPath}.completionNote`]: note,
+    };
+    if (completionImage) taskUpdates[`${taskPath}.completionImage`] = completionImage;
+    if (completionSignature) taskUpdates[`${taskPath}.completionSignature`] = completionSignature;
 
-    task.checkedAt =
-      new Date();
-
-    task.technicianLat =
-      hasLocation
-        ? Number(lat)
-        : null;
-
-    task.technicianLng =
-      hasLocation
-        ? Number(lng)
-        : null;
-
-    task.distanceMeters =
-      distMeters;
-
-    job.markModified(
-      'tasks'
+    const updatedJob = await TechnicianJob.findOneAndUpdate(
+      {
+        _id: jobId,
+        'assignedTechnician._id': req.user._id,
+        [`${taskPath}.isDone`]: { $ne: true },
+      },
+      { $set: taskUpdates },
+      { new: true, runValidators: true }
     );
-
-    await job.save();
+    if (!updatedJob) {
+      return res.status(409).json({
+        success: false,
+        message: 'Task was already completed or is no longer assigned to you',
+      });
+    }
+    const updatedTask = updatedJob.tasks[idx];
 
     // --------------------------------
     // SOCKET
@@ -2808,8 +2815,7 @@ const completeTask = async (
             taskIndex:
               idx,
 
-            task:
-              job.tasks[idx],
+            task: updatedTask,
           }
         );
 
@@ -2827,8 +2833,7 @@ const completeTask = async (
         'Task marked as completed',
 
       data: {
-        task:
-          job.tasks[idx],
+        task: updatedTask,
       },
     });
 

@@ -5,7 +5,8 @@ const controller = require('../controllers/notificationController');
 const router = express.Router();
 router.use(protect);
 router.get('/', controller.list);
-router.patch('/read', controller.markRead);
+router.patch('/read-all', controller.markAllRead);
+router.patch('/:notificationId/read', controller.markRead);
 router.post('/token', controller.registerToken);
 router.delete('/token', controller.removeToken);
 

@@ -212,7 +212,7 @@ export default function Blogs() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 40 }}>
                     {featuredTwo.map(b => (
                         <div key={b._id} onClick={() => navigate(`/blogs/${b._id}`)} style={{
-                            cursor: 'pointer', background: '#fdf6ee', borderRadius: 12,
+                            cursor: 'pointer', background: '#ecececb3', borderRadius: 12,
                             display: 'flex', gap: 12, padding: 12, alignItems: 'center',
                         }}>
                             <div style={{ width: 120, height: 90, borderRadius: 8, overflow: 'hidden', flexShrink: 0, background: '#eee' }}>

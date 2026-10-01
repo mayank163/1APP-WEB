@@ -41,7 +41,7 @@ const adminApi = {
     },
 
     // ─── Dashboard ─────────────────────────────────────────────────────────────
-    getStats: async () => (await API.get('/admin/stats')).data,
+    getStats: async (params = {}) => (await API.get('/admin/stats', { params })).data,
     getNotifications: async () => (await API.get('/notifications')).data,
     markNotificationsRead: async () => (await API.patch('/notifications/read')).data,
     registerNotificationToken: async (token) => (await API.post('/notifications/token', { token })).data,
@@ -75,7 +75,6 @@ const adminApi = {
     updateTechnicianJob: async (id, payload) => (await API.put(`/admin/technician-jobs/${id}`, payload)).data,
     deleteTechnicianJob: async (id) => (await API.delete(`/admin/technician-jobs/${id}`)).data,
     updateTechnicianJobStatus: async (id, payload) => (await API.patch(`/admin/technician-jobs/${id}/status`, payload)).data,
-    unassignTechnicianJob: async (id, payload) => (await API.patch(`/admin/technician-jobs/${id}/unassign`, payload)).data,
     payTechnician: async (id, payload) => (await API.post(`/admin/technician-jobs/${id}/pay`, payload)).data,
     rescheduleJob: async (id, payload) => (await API.patch(`/admin/technician-jobs/${id}/reschedule`, payload)).data,
     completeTask: async (jobId, taskIndex, payload = {}) => (await API.patch(`/technician/jobs/${jobId}/tasks/${taskIndex}/complete`, payload)).data,
@@ -95,6 +94,13 @@ const adminApi = {
     // ─── Users ─────────────────────────────────────────────────────────────────
     getUsers: async (params = {}) => (await API.get('/admin/users', { params })).data,
     updateUserAccount: async (id, status) => (await API.patch(`/admin/users/${id}/status`, { status })).data,
+
+    // ─── Plans ────────────────────────────────────────────────────────────────
+    getPlans: async () => (await API.get('/plans/admin/plans')).data,
+    createPlan: async (payload) => (await API.post('/plans/admin/plans', payload)).data,
+    updatePlan: async (id, payload) => (await API.put(`/plans/admin/plans/${id}`, payload)).data,
+    updatePlanStatus: async (id, isActive) => (await API.patch(`/plans/admin/plans/${id}/status`, { isActive })).data,
+    getPlanPurchases: async () => (await API.get('/plans/admin/purchases')).data,
 
     // ─── Categories ────────────────────────────────────────────────────────────
     getCategories: async (params = {}) => (await API.get('/services/categories', { params: Object.keys(params).length ? params : { limit: 100 } })).data,

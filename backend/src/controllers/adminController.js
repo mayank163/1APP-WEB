@@ -1,10 +1,12 @@
 const Booking = require('../models/Booking');
 const User = require('../models/User');
 const Admin = require('../models/Admin');
+const PlanPurchase = require('../models/PlanPurchase');
 const { RESOURCES, ADMIN_ROLES } = require('../models/Admin');
 const jwt = require('jsonwebtoken');
 const { sendBookingStatusUpdated } = require('../utils/emailService');
 const notificationService = require('../services/notificationService');
+const { ensureTechnicianJobForBooking } = require('../services/bookingTechnicianJobSync');
 const { getPagination, getPaginationMeta } = require('../utils/pagination');
 
 const signToken = (id, role) => {
@@ -83,60 +85,43 @@ exports.login = async (req, res, next) => {
  */
 exports.getDashboardStats = async (req, res, next) => {
     try {
-        // 1) General metrics
-        const totalUsers = await User.countDocuments({ role: 'user' });
-        const totalBookings = await Booking.countDocuments();
-        
-        // Revenue (sum totalAmount for paid bookings)
-        const revenueResult = await Booking.aggregate([
-            { $match: { paymentStatus: 'Paid' } },
-            { $group: { _id: null, total: { $sum: '$totalAmount' } } }
-        ]);
-        const totalRevenue = revenueResult.length > 0 ? revenueResult[0].total : 0;
+        const { startDate, endDate } = req.query;
+        const dateFilter = {};
 
-        // Bookings count by status
-        const pendingCount = await Booking.countDocuments({ status: 'Pending' });
-        const confirmedCount = await Booking.countDocuments({ status: 'Confirmed' });
-        const inProgressCount = await Booking.countDocuments({ status: 'In Progress' });
-        const completedCount = await Booking.countDocuments({ status: 'Completed' });
-        const cancelledCount = await Booking.countDocuments({ status: 'Cancelled' });
-
-        // 2) Aggregated data for Recharts (last 7 days of sales)
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        sevenDaysAgo.setHours(0, 0, 0, 0);
-
-        const chartDataResult = await Booking.aggregate([
-            {
-                $match: {
-                    createdAt: { $gte: sevenDaysAgo },
-                    paymentStatus: 'Paid'
-                }
-            },
-            {
-                $group: {
-                    _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-                    revenue: { $sum: '$totalAmount' },
-                    bookings: { $sum: 1 }
-                }
-            },
-            { $sort: { _id: 1 } }
-        ]);
-
-        // Format chart data to ensure we have entries (fill in gaps if no bookings on some days)
-        const chartData = [];
-        for (let i = 6; i >= 0; i--) {
-            const date = new Date();
-            date.setDate(date.getDate() - i);
-            const dateString = date.toISOString().split('T')[0];
-            
-            const existingDay = chartDataResult.find(item => item._id === dateString);
-            chartData.push({
-                date: dateString,
-                revenue: existingDay ? existingDay.revenue : 0,
-                bookings: existingDay ? existingDay.bookings : 0
-            });
+        if (startDate) {
+            const parsedStartDate = new Date(startDate);
+            if (Number.isNaN(parsedStartDate.getTime())) {
+                return res.status(400).json({ success: false, message: 'Invalid startDate' });
+            }
+            dateFilter.$gte = parsedStartDate;
         }
+
+        if (endDate) {
+            const parsedEndDate = new Date(endDate);
+            if (Number.isNaN(parsedEndDate.getTime())) {
+                return res.status(400).json({ success: false, message: 'Invalid endDate' });
+            }
+            dateFilter.$lt = parsedEndDate;
+        }
+
+        const bookingFilter = Object.keys(dateFilter).length ? { createdAt: dateFilter } : {};
+        const [totalUsers, totalBookings, revenueResult, bookingStatusCounts] = await Promise.all([
+            User.countDocuments({ role: 'user' }),
+            Booking.countDocuments(bookingFilter),
+            Booking.aggregate([
+                { $match: { ...bookingFilter, paymentStatus: 'Paid' } },
+                { $group: { _id: null, total: { $sum: '$totalAmount' }, count: { $sum: 1 } } }
+            ]),
+            Booking.aggregate([
+                { $match: bookingFilter },
+                { $group: { _id: '$status', count: { $sum: 1 } } }
+            ])
+        ]);
+
+        const statusCounts = bookingStatusCounts.reduce((counts, item) => {
+            counts[item._id] = item.count;
+            return counts;
+        }, { Pending: 0, Confirmed: 0, 'In Progress': 0, Completed: 0, Cancelled: 0 });
 
         res.status(200).json({
             success: true,
@@ -144,16 +129,10 @@ exports.getDashboardStats = async (req, res, next) => {
                 stats: {
                     totalUsers,
                     totalBookings,
-                    totalRevenue,
-                    statusCounts: {
-                        Pending: pendingCount,
-                        Confirmed: confirmedCount,
-                        InProgress: inProgressCount,
-                        Completed: completedCount,
-                        Cancelled: cancelledCount
-                    }
-                },
-                chartData
+                    totalRevenue: revenueResult[0]?.total || 0,
+                    paidBookings: revenueResult[0]?.count || 0,
+                    statusCounts
+                }
             }
         });
     } catch (err) {
@@ -241,6 +220,14 @@ exports.updateBookingStatus = async (req, res, next) => {
             .populate('user')
             .populate('services.service');
 
+        if (updatedBooking.status === 'Confirmed') {
+            try {
+                await ensureTechnicianJobForBooking(updatedBooking, req.user._id, req.user);
+            } catch (error) {
+                console.error('Confirmed booking work order creation failed:', error.message);
+            }
+        }
+
         if (updatedBooking.user?._id) {
             let notification = null;
 
@@ -248,7 +235,10 @@ exports.updateBookingStatus = async (req, res, next) => {
                 const statusMessages = {
                     Pending: 'Your booking is pending confirmation.',
                     Confirmed: 'Your booking has been confirmed.',
+                    Assigned: `A technician has been assigned to your booking${updatedBooking.assignedTechnician?.name ? `: ${updatedBooking.assignedTechnician.name}` : ''}.`,
+                    'On the Way': 'Your technician is on the way.',
                     'In Progress': 'Your service is now in progress.',
+                    Checkout: 'Your technician has completed the work and it is awaiting checkout.',
                     Completed: 'Your booking has been completed.',
                     Cancelled: 'Your booking has been cancelled.',
                 };
@@ -313,10 +303,22 @@ exports.getAllUsers = async (req, res, next) => {
             .sort(sort === 'asc' ? { name: 1 } : sort === 'desc' ? { name: -1 } : { createdAt: -1 })
             .skip(skip)
             .limit(limit);
+        const userIds = users.map(user => user._id);
+        const purchases = await PlanPurchase.find({ user: { $in: userIds } }).sort({ createdAt: -1 });
+        const purchasesByUser = new Map();
+        purchases.forEach(purchase => {
+            const key = String(purchase.user);
+            if (!purchasesByUser.has(key)) purchasesByUser.set(key, []);
+            purchasesByUser.get(key).push(purchase);
+        });
+        const usersWithPlans = users.map(user => ({
+            ...user.toObject(),
+            planPurchases: purchasesByUser.get(String(user._id)) || []
+        }));
         res.status(200).json({
             success: true,
             count: total,
-            data: { users },
+            data: { users: usersWithPlans },
             pagination: getPaginationMeta({ page, limit, total })
         });
     } catch (err) {

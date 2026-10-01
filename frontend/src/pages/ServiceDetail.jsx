@@ -229,9 +229,9 @@ const ServiceDetail = () => {
                 <h2 style={sectionTitle}>Select requirements</h2>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                     <span style={{ fontSize: '15px', color: '#333' }}>Select no. of bathrooms</span>
-                    <button onClick={() => setRequirementsOpen(o => !o)} style={plainBtn}>
+                    {/* <button onClick={() => setRequirementsOpen(o => !o)} style={plainBtn}>
                         {requirementsOpen ? '∧' : '∨'}
-                    </button>
+                    </button> */}
                 </div>
                 {requirementsOpen && (
                     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
@@ -267,7 +267,7 @@ const ServiceDetail = () => {
                 <Section>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                         <span style={{ fontSize: '17px', fontWeight: '600' }}>Select add-ons</span>
-                        <button onClick={() => setAddonsOpen(o => !o)} style={plainBtn}>{addonsOpen ? '∨' : '∧'}</button>
+                        {/* <button onClick={() => setAddonsOpen(o => !o)} style={plainBtn}>{addonsOpen ? '∨' : '∧'}</button> */}
                     </div>
                     {addonsOpen && (
                         <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px' }}>
@@ -435,7 +435,7 @@ const ServiceDetail = () => {
                                     width: '36px',
                                     height: '36px',
                                     borderRadius: '9px',
-                                    background: '#fdf5ea',
+                                    background: '#deddda',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',

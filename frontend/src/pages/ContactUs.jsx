@@ -52,17 +52,39 @@ export default function ContactUs() {
                             placeholder="Enter your email address" style={inputStyle} />
                     </div>
 
-                    <div>
-                        <label style={labelStyle}>Enter Phone Number</label>
-                        <div style={{ display: 'flex', gap: 8 }}>
-                            <select name="countryCode" value={form.countryCode} onChange={handleChange}
-                                style={{ ...inputStyle, width: 90, flexShrink: 0 }}>
-                                {COUNTRY_CODES.map(c => <option key={c}>{c}</option>)}
-                            </select>
-                            <input name="phone" type="tel" value={form.phone} onChange={handleChange}
-                                placeholder="Phone Number" style={inputStyle} />
-                        </div>
-                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+    <select
+        name="countryCode"
+        value={form.countryCode}
+        onChange={handleChange}
+        style={{ ...inputStyle, width: 90, flexShrink: 0 }}
+    >
+        {COUNTRY_CODES.map(c => (
+            <option key={c}>{c}</option>
+        ))}
+    </select>
+
+    <input
+        name="phone"
+        type="tel"
+        value={form.phone}
+        onChange={(e) => {
+            const value = e.target.value.replace(/\D/g, '');
+            if (value.length <= 10) {
+                handleChange({
+                    target: {
+                        name: 'phone',
+                        value
+                    }
+                });
+            }
+        }}
+        maxLength={10}
+        inputMode="numeric"
+        placeholder="Phone Number"
+        style={inputStyle}
+    />
+</div>
 
                     <div>
                         <label style={labelStyle}>Enter Message</label>
@@ -83,7 +105,7 @@ export default function ContactUs() {
                     <p style={{ fontSize: '14px', color: '#555', lineHeight: 1.7, marginBottom: 10 }}>
                         For any immediate help regarding your bookings, please log-in and visit our Help Center. You will be able to get instant resolution through our chat support.
                     </p>
-                    <a href="#" style={{ color: '#000000', fontWeight: 700, fontSize: '14px', textDecoration: 'none' }}>Open Help Center &rsaquo;</a>
+                    {/* <a href="#" style={{ color: '#000000', fontWeight: 700, fontSize: '14px', textDecoration: 'none' }}>Open Help Center &rsaquo;</a> */}
                 </InfoCard>
 
                 <InfoCard title="Still facing issues?">
@@ -110,7 +132,7 @@ export default function ContactUs() {
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                         <FaMapMarkerAlt size={16} style={{ color: '#111', marginTop: 2, flexShrink: 0 }} />
                         <p style={{ fontSize: '14px', color: '#555', lineHeight: 1.7, margin: 0 }}>
-                            4404 Westminster Dr, Irving, TX 75038, US
+                            6565 N MacArthur Blvd, Irving, TX 75039
                         </p>
                     </div>
                 </InfoCard>

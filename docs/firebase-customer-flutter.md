@@ -95,7 +95,7 @@ Endpoints are relative to the backend API base URL (for example, `https://api.ex
 POST   /notifications/token       {"token":"<fcm-token>"}
 DELETE /notifications/token       {"token":"<fcm-token>"}
 GET    /notifications              notification history and unread count
-PATCH  /notifications/read         mark customer notifications as read
+PATCH  /notifications/{notificationId}/read  mark one customer notification as read
 ```
 
 All require `Authorization: Bearer <accessToken>`. The backend deduplicates tokens, and one customer may have multiple phones/tablets.
@@ -222,7 +222,7 @@ Leave the room on logout with `socket.emit('user:leave', userId)`. The server ac
 3. Assign a technician to a booking from the admin panel.
 4. Confirm the customer receives `technician_assigned` while the app is foregrounded, backgrounded, and terminated.
 5. Tap the notification and verify it opens the correct booking using `bookingId`.
-6. Confirm `GET /notifications` contains the notification and `PATCH /notifications/read` clears the unread count.
+6. Confirm `GET /notifications` contains the notification, then mark one ID read and verify other unread notifications remain unread.
 7. Test token refresh, logout/login with another customer, Android 13 permission, and iOS APNs delivery.
 
 If FCM delivery fails, first check Firebase project/bundle IDs, APNs configuration, notification permission, backend service-account configuration, and that the token was registered after login. The backend logs invalid tokens and removes them automatically.

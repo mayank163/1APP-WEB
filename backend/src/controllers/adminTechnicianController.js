@@ -7,6 +7,7 @@ const sendNotification = require('../services/notificationService');
 const { sendToTechnician } = sendNotification;
 const { tryAssignApprovedRequest } = require('../services/technicianRequestWorkflow');
 const { findTechnicianScheduleConflict } = require('../services/technicianScheduleService');
+const { syncBookingFromTechnicianJob } = require('../services/bookingTechnicianJobSync');
 
 // ── Helper: keep only the fields that belong to the selected pay type ────────
 // This prevents the DB from storing zeros for fields that were never filled in.
@@ -94,6 +95,33 @@ const emitToTechnician = (technicianId, event, payload) => {
     if (technicianId) getIO().to(`technician:${technicianId}`).emit(event, payload);
   } catch (e) {
     console.warn(`[Socket] emitToTechnician failed for event "${event}":`, e.message);
+  }
+};
+
+const publishJobToTechnicians = async (job, sender) => {
+  try {
+    const technicians = await User.find({
+      role: 'technician',
+      $or: [{ accountStatus: 'active' }, { accountStatus: { $exists: false } }],
+    }).select('_id fcmTokens');
+    if (technicians.length) {
+      await sendNotification({
+        recipients: technicians,
+        sender,
+        type: 'new_job',
+        title: 'New Job Available',
+        message: `A new ${job.title} job is available.`,
+        data: { jobId: job._id.toString(), type: 'new_job' },
+      });
+    }
+  } catch (error) {
+    console.error('Failed to send new job notification:', error);
+  }
+
+  try {
+    getIO().emit('job:new', { job });
+  } catch (error) {
+    console.warn('[Socket] broadcast failed for published job:', error.message);
   }
 };
 
@@ -392,6 +420,7 @@ const updateTechnicianRequest = async (req, res, next) => {
         );
         if (!claimed) return res.status(409).json({ success: false, message: 'This job has already been assigned.' });
         Object.assign(job, { status: claimed.status, assignedTechnician: claimed.assignedTechnician, assignedRequest: claimed.assignedRequest });
+        await syncBookingFromTechnicianJob(claimed);
         await sendToTechnician(technician._id, {
           type: 'job_assigned',
           title: 'Job Assigned',
@@ -588,6 +617,11 @@ const updateTechnicianJobStatus = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Job not found' });
     }
 
+    const publishingDraft = job.status === 'draft' && status === 'open';
+    if (publishingDraft && getPayAmount(job.pay) <= 0) {
+      return res.status(400).json({ success: false, message: 'Set the technician pay in the draft before publishing this work order.' });
+    }
+
     job.status = status;
 
     // Push to audit trail — always, even if note is empty
@@ -606,6 +640,8 @@ const updateTechnicianJobStatus = async (req, res, next) => {
     }
 
     await job.save();
+    if (publishingDraft) await publishJobToTechnicians(job, req.user);
+    await syncBookingFromTechnicianJob(job);
     res.status(200).json({ success: true, message: 'Job status updated', data: { job } });
     emitToAdmin('job:updated', { job });
   } catch (error) {
@@ -692,6 +728,7 @@ const unassignTechnicianJob = async (req, res, next) => {
       job = await currentJob.save({ session });
     });
 
+    await syncBookingFromTechnicianJob(job);
     request = request ? await TechnicianJobRequest.findById(request._id).populate('job technician') : null;
     emitToAdmin('job:updated', { job });
     emitToAdmin('job:availability', { jobId: String(job._id), status: job.status });
@@ -825,6 +862,7 @@ const payTechnician = async (req, res, next) => {
     job.statusHistory = job.statusHistory || [];
     job.statusHistory.push({ status: 'completed', note: payNote, changedAt: new Date() });
     await job.save();
+    await syncBookingFromTechnicianJob(job);
 
     const admin = await require('../models/Admin').findByIdAndUpdate(req.user._id, {
       $inc: { walletBalance: amount },

@@ -66,13 +66,17 @@ const technicianJobSchema = new mongoose.Schema({
     ref: 'Admin',
     required: true,
   },
+  sourceBooking: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Booking',
+  },
   requestedBy: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   }],
   status: {
     type: String,
-    enum: ['open', 'assigned', 'ontheway', 'visited', 'inprogress', 'in-progress', 'completed', 'checkout', 'closed', 'cancelled'],
+    enum: ['draft', 'open', 'assigned', 'ontheway', 'visited', 'inprogress', 'in-progress', 'completed', 'checkout', 'closed', 'cancelled'],
     default: 'open',
   },
   assignedTechnician: {
@@ -189,6 +193,9 @@ const technicianJobSchema = new mongoose.Schema({
     requiresImage: { type: Boolean, default: false },
     requiresSignature: { type: Boolean, default: false },
     requirementReason: { type: String, default: '', trim: true },
+    completionNote: { type: String, default: '', trim: true },
+    completionImage: { type: String, default: '' },
+    completionSignature: { type: String, default: '' },
     checkedAt: { type: Date, default: null },
     technicianLat: { type: Number, default: null },
     technicianLng: { type: Number, default: null },
@@ -202,5 +209,7 @@ const technicianJobSchema = new mongoose.Schema({
 }, {
   timestamps: true,
 });
+
+technicianJobSchema.index({ sourceBooking: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model('TechnicianJob', technicianJobSchema);

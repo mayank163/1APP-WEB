@@ -73,7 +73,7 @@ const SignupPage = () => {
             }
 
             try {
-                await verifyRegister(phone, otp);
+                await verifyRegister(`${phoneCountry.code}${phone}`, otp);
                 toast.success('Phone verified. Account created!');
             } catch (err) {
                 toast.error(err.message || 'OTP verification failed');

@@ -26,6 +26,8 @@ const BookingManagement = () => {
     
     // Details Drawer States
     const [selectedBooking, setSelectedBooking] = useState(null);
+    const [serviceDetails, setServiceDetails] = useState({});
+    const [serviceDetailsLoading, setServiceDetailsLoading] = useState(false);
     const [newStatus, setNewStatus] = useState('');
     const [newPaymentStatus, setNewPaymentStatus] = useState('');
     const [newPaymentDetails, setNewPaymentDetails] = useState('');
@@ -56,6 +58,32 @@ const BookingManagement = () => {
     useEffect(() => {
         fetchBookings();
     }, [statusFilter, page, pageSize]);
+
+    useEffect(() => {
+        let active = true;
+        const serviceItems = selectedBooking?.services || [];
+        const serviceIds = [...new Set(serviceItems.map(item => (
+            typeof item.service === 'object' ? item.service?._id : item.service
+        )).filter(Boolean))];
+
+        setServiceDetails({});
+        setServiceDetailsLoading(serviceIds.length > 0);
+
+        Promise.all(serviceIds.map(async id => {
+            try {
+                const response = await adminApi.getServiceById(id);
+                return [id, response.data?.service || null];
+            } catch {
+                return [id, null];
+            }
+        })).then(results => {
+            if (active) setServiceDetails(Object.fromEntries(results));
+        }).finally(() => {
+            if (active) setServiceDetailsLoading(false);
+        });
+
+        return () => { active = false; };
+    }, [selectedBooking]);
 
     const handleSearchSubmit = (e) => {
         e.preventDefault();
@@ -102,7 +130,10 @@ const BookingManagement = () => {
         switch (status) {
             case 'Pending': return 'text-white';
             case 'Confirmed': return 'bg-info text-dark';
+            case 'Assigned': return 'bg-primary text-light';
+            case 'On the Way': return 'bg-primary text-light';
             case 'In Progress': return 'bg-primary text-light';
+            case 'Checkout': return 'bg-warning text-dark';
             case 'Completed': return 'bg-success text-light';
             case 'Cancelled': return 'bg-danger text-light';
             default: return 'bg-secondary text-light';
@@ -148,7 +179,10 @@ const BookingManagement = () => {
                             <option value="">All Statuses</option>
                             <option value="Pending">Pending</option>
                             <option value="Confirmed">Confirmed</option>
+                            <option value="Assigned">Assigned</option>
+                            <option value="On the Way">On the Way</option>
                             <option value="In Progress">In Progress</option>
+                            <option value="Checkout">Checkout</option>
                             <option value="Completed">Completed</option>
                             <option value="Cancelled">Cancelled</option>
                         </select>
@@ -267,6 +301,48 @@ const BookingManagement = () => {
                                         <span className="fw-bold text-dark small">{new Date(selectedBooking.serviceDate).toLocaleDateString()}</span>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div className="border-bottom pb-4 mb-4">
+                                <h6 className="fw-bold text-dark mb-3">Booked Services</h6>
+                                {serviceDetailsLoading && <p className="text-muted small">Loading service details...</p>}
+                                {(selectedBooking.services || []).map((item, index) => {
+                                    const serviceId = typeof item.service === 'object' ? item.service?._id : item.service;
+                                    const service = serviceDetails[serviceId] || (typeof item.service === 'object' ? item.service : null);
+                                    const description = service?.longDescription || service?.shortDescription?.join(' ');
+
+                                    return (
+                                        <div key={serviceId || index} className="bg-light rounded-3 p-3 mb-2">
+                                            <div className="d-flex justify-content-between align-items-start gap-3">
+                                                <div>
+                                                    <div className="fw-bold text-dark">{service?.name || 'Service details unavailable'}</div>
+                                                    {(service?.category?.name || service?.subcategory?.name) && (
+                                                        <small className="text-muted">
+                                                            {[service.category?.name, service.subcategory?.name].filter(Boolean).join(' / ')}
+                                                        </small>
+                                                    )}
+                                                </div>
+                                                <div className="text-end fw-bold text-nowrap" style={{ color: '#A5732F' }}>
+                                                    ${((Number(item.price) || 0) * (Number(item.quantity) || 1)).toFixed(2)}
+                                                </div>
+                                            </div>
+                                            {description && <p className="small text-muted mt-2 mb-2">{description}</p>}
+                                            <div className="small text-muted">
+                                                <span>Quantity: {item.quantity || 1}</span>
+                                                {item.variantName && <span> · Variant: {item.variantName}</span>}
+                                            </div>
+                                            {item.selectedAddons?.length > 0 && (
+                                                <div className="small mt-2">
+                                                    <span className="text-muted">Add-ons: </span>
+                                                    {item.selectedAddons.map(addon => `${addon.name} ($${Number(addon.price || 0).toFixed(2)})`).join(', ')}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                                {!serviceDetailsLoading && !selectedBooking.services?.length && (
+                                    <p className="text-muted small mb-0">No service items were saved with this booking.</p>
+                                )}
                             </div>
 
                             {/* Payment Information */}

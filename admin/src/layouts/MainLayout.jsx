@@ -8,7 +8,7 @@ import {
     FaChartBar, FaTasks, FaWrench, FaFolderOpen,
     FaUsers, FaTag, FaSignOutAlt, FaTools,
     FaLayerGroup, FaBlog, FaHardHat, FaCheckCircle, FaComments,
-    FaBars, FaChevronLeft, FaUserShield, FaSitemap, FaCogs
+    FaBars, FaChevronLeft, FaUserShield, FaSitemap, FaCogs, FaGem
 } from 'react-icons/fa';
 
 const MainLayout = () => {
@@ -34,6 +34,7 @@ const MainLayout = () => {
         { to: "/services", icon: <FaLayerGroup size={14} />, label: "Services", resource: 'services' },
         { to: "/users", icon: <FaUsers size={14} />, label: "Users", resource: 'users' },
         { to: "/offers", icon: <FaTag size={14} />, label: "Offers & Coupons", resource: 'offers' },
+        { to: "/plans", icon: <FaGem size={14} />, label: "Plans", resource: 'offers' },
         { to: "/job-templates", icon: <FaFolderOpen size={14} />, label: "Job Templates", resource: 'technician_jobs' },
         { to: "/technician-jobs", icon: <FaHardHat size={14} />, label: "Technician Jobs", resource: 'technician_jobs' },
         { to: "/technician-overview", icon: <FaUsers size={14} />, label: "Technicians", resource: 'technician_jobs' },

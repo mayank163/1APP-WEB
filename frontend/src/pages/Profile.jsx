@@ -1,4 +1,4 @@
-import React, { useContext, useState, useRef } from 'react';
+import React, { useContext, useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { ProfileShimmer } from '../components/Shimmer';
@@ -10,6 +10,7 @@ import {
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { resolveImageUrl } from '../services/api';
+import planService from '../services/planService';
 
 // Label → icon mapping
 const labelIcon = (label = '') => {
@@ -54,8 +55,17 @@ const Profile = () => {
     const [savingAddr, setSavingAddr] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
     const [deletingAccount, setDeletingAccount] = useState(false);
+    const [planPurchases, setPlanPurchases] = useState([]);
+    const [loadingPlans, setLoadingPlans] = useState(true);
 
     const addresses = user?.addresses || [];
+
+    useEffect(() => {
+        planService.getMyPurchases()
+            .then(response => setPlanPurchases(response.data?.planPurchases || []))
+            .catch(() => {})
+            .finally(() => setLoadingPlans(false));
+    }, []);
 
     /* ────────────────── helpers ────────────────── */
     const patchField = (key) => (e) => setAddrForm(f => ({ ...f, [key]: e.target.value }));
@@ -226,14 +236,14 @@ const Profile = () => {
     };
 
     const handleDeleteAccount = async () => {
-        if (!window.confirm('Deactivate your account? You will be signed out and can create a new account later with this email and phone.')) return;
+        if (!window.confirm('Delete your account? You will be signed out and can create a new account later with this email and phone.')) return;
         setDeletingAccount(true);
         try {
             await deleteAccount();
-            toast.success('Your account has been deactivated.');
+            toast.success('Your account has been deleted.');
             navigate('/login', { replace: true });
         } catch (err) {
-            toast.error(err.message || 'Failed to deactivate account');
+            toast.error(err.message || 'Failed to Delete Account');
         } finally {
             setDeletingAccount(false);
         }
@@ -320,12 +330,39 @@ const Profile = () => {
                     </div>
 
                     <div className="card border-0 shadow-sm rounded-4 bg-white p-4">
-                        <h5 className="fw-bold text-danger mb-2">Deactivate Account</h5>
+                        
+                        {loadingPlans ? <div className="small text-muted">Loading your plan...</div> : planPurchases.length ? (
+                            <div className="d-flex flex-column gap-3">
+                                {planPurchases.map(purchase => (
+                                    <div key={purchase._id} className="border rounded-3 p-3">
+                                        <div className="d-flex justify-content-between align-items-start gap-2">
+                                            <div>
+                                                <div className="fw-bold">{purchase.planName}</div>
+<div className="small text-muted">
+    {purchase.durationMonths} months · ${Number(purchase.price).toFixed(2)}
+</div>                                            </div>
+                                            <span className={`badge ${purchase.status === 'active' ? 'bg-success' : ['expired', 'replaced'].includes(purchase.status) ? 'bg-secondary' : 'bg-warning text-dark'}`}>{purchase.status}</span>
+                                        </div>
+                                        {/* {purchase.status === 'replaced' && purchase.replacedAt ? (
+                                            <div className="small text-muted mt-2">Replaced on {new Date(purchase.replacedAt).toLocaleDateString()}</div>
+                                        ) : purchase.expiresAt && (
+                                            <div className="small text-muted mt-2">Valid through {new Date(purchase.expiresAt).toLocaleDateString()}</div>
+                                        )} */}
+                                    </div>
+                                ))}
+                            </div>
+                        ) : <p className="small text-muted mb-0">No active plan.</p>}
+                    </div>
+
+                    <div className="card border-0 shadow-sm rounded-4 bg-white p-4">
+                        <h5 className="fw-bold text-danger mb-2">Delete Account</h5>
                         <p className="small text-muted mb-3">Your account data will be retained, but you will be signed out and unable to use this account.</p>
                         <button type="button" disabled={deletingAccount} onClick={handleDeleteAccount} className="btn btn-outline-danger fw-bold px-4 py-2" style={{ borderRadius: 8 }}>
-                            {deletingAccount ? 'Deactivating...' : 'Deactivate My Account'}
+                            {deletingAccount ? 'Deleting...' : 'Delete My Account'}
                         </button>
                     </div>
+
+                    
                 </div>
 
                 {/* ── Right: edit info + addresses ── */}

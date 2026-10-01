@@ -22,9 +22,17 @@ const getTransporter = () => {
 const FROM = () =>
     `"${process.env.FROM_NAME || '1APP Services'}" <${process.env.FROM_EMAIL || 'noreply@1app.com'}>`;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Shared layout wrapper
-// ─────────────────────────────────────────────────────────────────────────────
+const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, character => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+}[character]));
+
+const siteBase = () => String(process.env.CLIENT_URL || '').replace(/\/+$/, '');
+const appLink = (path) => siteBase() ? `${siteBase()}${path}` : '';
+const actionButton = (label, path) => {
+    const href = appLink(path);
+    return href ? `<p style="margin:24px 0 8px;text-align:center;"><a class="button" href="${escapeHtml(href)}">${escapeHtml(label)} &nbsp; &rarr;</a></p>` : '';
+};
+
 const layout = (bodyHtml, previewText = '') => `
 <!DOCTYPE html>
 <html lang="en">
@@ -32,142 +40,108 @@ const layout = (bodyHtml, previewText = '') => `
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>1APP</title>
-  <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #f4f4f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1a1a1a; }
-    a { color: #1a1a1a; text-decoration: none; }
-    .wrapper { max-width: 600px; margin: 32px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-    .header { background: #1a1a1a; padding: 28px 40px; text-align: center; }
-    .header-logo { font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: 2px; }
-    .header-sub { font-size: 11px; color: rgba(255,255,255,0.45); letter-spacing: 3px; text-transform: uppercase; margin-top: 4px; }
-    .body { padding: 36px 40px; }
-    .greeting { font-size: 20px; font-weight: 700; margin-bottom: 10px; }
-    .text { font-size: 14.5px; color: #444; line-height: 1.7; margin-bottom: 14px; }
-    .highlight-box { background: #f8f8f8; border-left: 4px solid #1a1a1a; border-radius: 6px; padding: 16px 20px; margin: 20px 0; }
-    .highlight-box p { font-size: 13.5px; color: #333; line-height: 1.6; margin: 0; }
-    .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; }
-    .badge-confirmed  { background: #d1fae5; color: #065f46; }
-    .badge-pending    { background: #fef3c7; color: #92400e; }
-    .badge-inprogress { background: #dbeafe; color: #1e40af; }
-    .badge-completed  { background: #d1fae5; color: #065f46; }
-    .badge-cancelled  { background: #fee2e2; color: #991b1b; }
-    .table-wrap { margin: 20px 0; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb; }
-    table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-    table th { background: #1a1a1a; color: #fff; padding: 10px 14px; text-align: left; font-weight: 600; }
-    table td { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; color: #333; }
-    table tr:last-child td { border-bottom: none; }
-    table tr:nth-child(even) td { background: #fafafa; }
-    .total-row td { font-weight: 700; background: #f3f4f6 !important; font-size: 14px; }
-    .detail-grid { display: table; width: 100%; margin: 16px 0; }
-    .detail-row { display: table-row; }
-    .detail-label { display: table-cell; font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; padding: 5px 12px 5px 0; white-space: nowrap; width: 130px; }
-    .detail-value { display: table-cell; font-size: 13.5px; color: #1a1a1a; padding: 5px 0; }
-    .btn { display: inline-block; background: #1a1a1a; color: #fff !important; padding: 13px 32px; border-radius: 8px; font-size: 14px; font-weight: 700; margin: 22px 0 8px; letter-spacing: 0.3px; }
-    .divider { border: none; border-top: 1px solid #e5e7eb; margin: 24px 0; }
-    .footer { background: #f8f8f8; padding: 22px 40px; text-align: center; }
-    .footer p { font-size: 12px; color: #aaa; line-height: 1.6; }
-    .footer a { color: #888; }
-    .status-banner { text-align: center; padding: 18px; margin-bottom: 24px; border-radius: 8px; }
-    .status-banner.confirmed  { background: #d1fae5; }
-    .status-banner.cancelled  { background: #fee2e2; }
-    .status-banner.updated    { background: #dbeafe; }
-    .status-banner.welcome    { background: #f0fdf4; }
-    .status-banner h2 { font-size: 17px; font-weight: 800; margin-top: 6px; }
-    .icon { font-size: 30px; line-height: 1; }
+        * { box-sizing: border-box; }
+    body { margin: 0; background: #f1f2f4; color: #17191f; font-family: Arial, Helvetica, sans-serif; }
+    a { color: inherit; }
+    .outer { width: 100%; padding: 22px 12px; }
+    .wrapper { width: 100%; max-width: 680px; margin: 0 auto; }
+    .header { background: #08090b; border-radius: 14px; padding: 18px 24px; }
+    .header-table, .footer-table { width: 100%; border-collapse: collapse; }
+    .header-logo { color: #fff; font-size: 23px; font-weight: 800; letter-spacing: -0.5px; }
+    .header-nav { color: #e5e7eb; text-align: right; font-size: 12px; white-space: nowrap; }
+    .header-nav a { color: #e5e7eb; text-decoration: none; padding-left: 18px; }
+    .body { margin: 16px 0; padding: 26px; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; }
+    .hero { display: table; width: 100%; margin-bottom: 24px; padding: 24px; border-radius: 12px; background: #f3f4f6; }
+    .hero-copy, .hero-icon { display: table-cell; vertical-align: middle; }
+    .hero-eyebrow { color: #687386; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
+    .hero h1 { margin: 8px 0 6px; color: #111318; font-size: 27px; line-height: 1.15; }
+    .hero p { margin: 0; color: #596273; font-size: 14px; line-height: 1.55; }
+    .hero-icon { width: 72px; text-align: right; color: #20242c; font-size: 42px; }
+    .hero.confirmed, .hero.completed { background: #f6f1ea; }
+    .hero.cancelled, .hero.action { background: #f3f4f6; }
+    .greeting { margin: 0 0 7px; font-size: 19px; font-weight: 700; }
+    .text { margin: 0 0 14px; color: #525b6b; font-size: 14px; line-height: 1.65; }
+    .detail-card { margin: 20px 0; padding: 18px 20px; border: 1px solid #e2e5ea; border-radius: 12px; }
+    .detail-title { margin: 0 0 4px; font-size: 16px; font-weight: 700; }
+    .detail-subtitle { margin-bottom: 12px; color: #8b93a1; font-size: 9px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; }
+    .detail-row { width: 100%; border-collapse: collapse; }
+    .detail-row td { padding: 9px 0; border-top: 1px solid #eef0f2; font-size: 12px; line-height: 1.45; vertical-align: top; }
+    .detail-row tr:first-child td { border-top: 0; }
+    .detail-label { width: 38%; padding-right: 12px !important; color: #737d8c; }
+    .detail-value { color: #17191f; font-weight: 600; text-align: right; }
+    .total-row .detail-value { font-size: 16px; }
+    .note { margin: 18px 0; padding: 14px 16px; border-radius: 10px; background: #f4f5f7; color: #525b6b; font-size: 12px; line-height: 1.6; }
+    .button { display: inline-block; padding: 13px 24px; border-radius: 9px; background: #111214; color: #fff !important; font-size: 13px; font-weight: 700; text-decoration: none; }
+    .otp { margin: 22px 0; padding: 18px; border-radius: 10px; background: #f3f4f6; color: #111318; font-family: monospace; font-size: 30px; font-weight: 800; letter-spacing: 8px; text-align: center; }
+    .footer { padding: 18px 22px; border-radius: 14px; background: #08090b; color: #fff; }
+    .footer-logo { color: #fff; font-size: 18px; font-weight: 800; }
+    .footer-copy { margin-top: 4px; color: #a7aab2; font-size: 11px; line-height: 1.5; }
+    .footer-links { color: #d5d7dc; text-align: right; font-size: 11px; }
+    .footer-links a { color: #d5d7dc; text-decoration: none; }
+    .copyright { padding-top: 15px; color: #858992; font-size: 10px; text-align: center; }
+    @media only screen and (max-width: 520px) {
+      .outer { padding: 10px 7px; }
+      .header { padding: 15px; }
+      .header-nav a { padding-left: 9px; font-size: 10px; }
+      .body { padding: 18px 14px; }
+      .hero { padding: 18px 15px; }
+      .hero h1 { font-size: 23px; }
+      .hero-icon { width: 48px; font-size: 32px; }
+      .detail-card { padding: 15px 13px; }
+      .detail-label { width: 34%; }
+      .footer { padding: 16px 14px; }
+    }
   </style>
 </head>
 <body>
-  ${previewText ? `<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">${previewText}</div>` : ''}
-  <div class="wrapper">
-    <div class="header">
-      <div class="header-logo">1APP</div>
-      <div class="header-sub">Home Services Platform</div>
-    </div>
-    <div class="body">
-      ${bodyHtml}
-    </div>
-    <div class="footer">
-      <p>© ${new Date().getFullYear()} 1APP Services. All rights reserved.</p>
-      <p style="margin-top:6px;">Need help? <a href="mailto:support@1app.com">support@1app.com</a> · <a href="tel:+180001APP">+1800-1APP</a></p>
-    </div>
-  </div>
+  ${previewText ? `<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">${escapeHtml(previewText)}</div>` : ''}
+  <div class="outer"><div class="wrapper">
+    <div class="header"><table class="header-table" role="presentation"><tr>
+      <td class="header-logo">1APP</td>
+    <td class="header-nav">${siteBase() ? `<a href="${escapeHtml(appLink('/services'))}">Services</a><a href="${escapeHtml(appLink('/support'))}">Support</a><a href="mailto:support@1app.com">Contact</a>` : '<a href="mailto:support@1app.com">Contact</a>'}</td>
+    </tr></table></div>
+    <div class="body">${bodyHtml}</div>
+    <div class="footer"><table class="footer-table" role="presentation"><tr>
+      <td><div class="footer-logo">1APP</div><div class="footer-copy">Book trusted professionals.<br />Get things done.</div></td>
+      <td class="footer-links"><a href="mailto:support@1app.com">Help &amp; Support</a>${siteBase() ? ` &nbsp; | &nbsp; <a href="${escapeHtml(appLink('/privacy-policy'))}">Privacy</a>` : ''}</td>
+    </tr></table><div class="copyright">&copy; ${new Date().getFullYear()} 1APP Services. All rights reserved.</div></div>
+  </div></div>
 </body>
 </html>`;
+
+const hero = (eyebrow, title, description, icon, tone = 'action') => `
+  <div class="hero ${tone}"><div class="hero-copy"><div class="hero-eyebrow">${escapeHtml(eyebrow)}</div><h1>${escapeHtml(title)}</h1><p>${escapeHtml(description)}</p></div><div class="hero-icon" aria-hidden="true">${icon}</div></div>`;
+
+const detailCard = (title, rows, subtitle = 'ACCOUNT DETAILS') => `
+  <div class="detail-card"><h2 class="detail-title">${escapeHtml(title)}</h2><div class="detail-subtitle">${escapeHtml(subtitle)}</div>
+    <table class="detail-row" role="presentation"><tbody>${rows.map(([label, value, className = '']) => `<tr class="${className}"><td class="detail-label">${escapeHtml(label)}</td><td class="detail-value">${value}</td></tr>`).join('')}</tbody></table>
+  </div>`;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Booking detail block (shared across booking emails)
 // ─────────────────────────────────────────────────────────────────────────────
 const bookingDetailBlock = (booking) => {
-    const serviceDate = new Date(booking.serviceDate).toLocaleDateString('en-IN', {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-    });
-    const createdAt = new Date(booking.createdAt).toLocaleDateString('en-IN', {
-        year: 'numeric', month: 'long', day: 'numeric',
-    });
-
-    const serviceRows = booking.services.map((item, i) => {
-        const name = item.service?.name || 'Service';
-        const itemTotal = (item.price * item.quantity).toFixed(2);
-        return `
-        <tr>
-          <td>${i + 1}. ${name}</td>
-          <td style="text-align:center;">${item.quantity}</td>
-          <td style="text-align:right;">$${item.price.toFixed(2)}</td>
-          <td style="text-align:right;">$${itemTotal}</td>
-        </tr>`;
-    }).join('');
-
-    const technicianHtml = booking.assignedTechnician?.name ? `
-    <div class="detail-row">
-      <div class="detail-label">Technician</div>
-      <div class="detail-value">${booking.assignedTechnician.name}${booking.assignedTechnician.phone ? ` · ${booking.assignedTechnician.phone}` : ''}</div>
-    </div>` : '';
-
-    return `
-    <div class="detail-grid">
-      <div class="detail-row">
-        <div class="detail-label">Booking ID</div>
-        <div class="detail-value" style="font-family:monospace;font-size:12px;">${booking._id}</div>
-      </div>
-      <div class="detail-row">
-        <div class="detail-label">Booked On</div>
-        <div class="detail-value">${createdAt}</div>
-      </div>
-      <div class="detail-row">
-        <div class="detail-label">Service Date</div>
-        <div class="detail-value">${serviceDate}</div>
-      </div>
-      <div class="detail-row">
-        <div class="detail-label">Address</div>
-        <div class="detail-value">${booking.address}</div>
-      </div>
-      <div class="detail-row">
-        <div class="detail-label">Phone</div>
-        <div class="detail-value">${booking.phone}</div>
-      </div>
-      ${technicianHtml}
-    </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Service</th>
-            <th style="text-align:center;">Qty</th>
-            <th style="text-align:right;">Unit Price</th>
-            <th style="text-align:right;">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${serviceRows}
-          <tr class="total-row">
-            <td colspan="3">Total Amount</td>
-            <td style="text-align:right;">$${booking.totalAmount.toFixed(2)}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>`;
+    const formatDate = (value) => {
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? 'Not provided' : date.toLocaleDateString('en-IN', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+        });
+    };
+    const address = typeof booking.address === 'string'
+        ? booking.address
+        : [booking.address?.addressLine, booking.address?.city, booking.address?.state, booking.address?.zipcode].filter(Boolean).join(', ');
+    const serviceNames = (booking.services || []).map(item => item.service?.name || 'Service').join(', ') || 'Home service';
+    const rows = [
+        ['Service', escapeHtml(serviceNames)],
+        ['Booking ID', `<span style="font-family:monospace;">#${escapeHtml(String(booking._id || '').slice(-12))}</span>`],
+        ['Scheduled for', escapeHtml(formatDate(booking.serviceDate))],
+        ['Location', escapeHtml(address || 'Not provided')],
+        ...(booking.assignedTechnician?.name ? [['Technician', escapeHtml(`${booking.assignedTechnician.name}${booking.assignedTechnician.phone ? ` · ${booking.assignedTechnician.phone}` : ''}`)]] : []),
+        ['Phone', escapeHtml(booking.phone || 'Not provided')],
+        ['Total amount', escapeHtml(`$${Number(booking.totalAmount || 0).toFixed(2)}`), 'total-row']
+    ];
+    return detailCard('Booking Summary', rows, 'SERVICE INFORMATION');
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -178,27 +152,12 @@ const bookingDetailBlock = (booking) => {
 const welcomeTemplate = (user) => ({
     subject: 'Welcome to 1APP — Your Account is Ready!',
     html: layout(`
-    <div class="status-banner welcome">
-      <div class="icon">🎉</div>
-      <h2>Welcome to 1APP!</h2>
-    </div>
-    <p class="greeting">Hi ${user.name},</p>
-    <p class="text">
-      Your account has been created successfully. We're excited to have you on board.
-      1APP connects you with trusted home service professionals — fast, reliable, and hassle-free.
-    </p>
-    <div class="highlight-box">
-      <p><strong>Your registered email:</strong> ${user.email}</p>
-      <p style="margin-top:6px;"><strong>Phone:</strong> ${user.phone}</p>
-    </div>
-    <p class="text">
-      You can now browse services, book appointments, and track everything from your dashboard.
-    </p>
-    <hr class="divider" />
-    <p class="text" style="font-size:13px;color:#888;">
-      If you didn't create this account, please contact us immediately at
-      <a href="mailto:support@1app.com">support@1app.com</a>.
-    </p>`,
+    ${hero('ACCOUNT READY', 'Welcome to 1APP', 'Your account is ready. Find trusted professionals for the jobs that matter.', '&#10003;', 'completed')}
+    <p class="greeting">Hi ${escapeHtml(user.name)},</p>
+    <p class="text">Thanks for joining 1APP. You can now browse services, book appointments, and manage your home services in one place.</p>
+    ${detailCard('Your Account', [['Email', escapeHtml(user.email)], ['Phone', escapeHtml(user.phone || 'Not provided')]])}
+    ${actionButton('Browse Services', '/services')}
+    <p class="text">If you did not create this account, contact <a href="mailto:support@1app.com">support@1app.com</a>.</p>`,
         `Welcome to 1APP, ${user.name}! Your account is ready.`),
 });
 
@@ -211,18 +170,11 @@ const loginTemplate = (user) => {
     return {
         subject: '1APP — New Login to Your Account',
         html: layout(`
-    <p class="greeting">Hi ${user.name},</p>
-    <p class="text">
-      We detected a new sign-in to your 1APP account. If this was you, no action is needed.
-    </p>
-    <div class="highlight-box">
-      <p><strong>Time:</strong> ${time}</p>
-      <p style="margin-top:6px;"><strong>Account:</strong> ${user.email}</p>
-    </div>
-    <p class="text">
-      If you did <strong>not</strong> sign in, please change your password immediately and
-      contact our support team at <a href="mailto:support@1app.com">support@1app.com</a>.
-    </p>`,
+    ${hero('SECURITY NOTICE', 'New sign-in detected', 'We noticed a successful sign-in to your 1APP account.', '&#9679;', 'action')}
+    <p class="greeting">Hi ${escapeHtml(user.name)},</p>
+    <p class="text">If this was you, no action is needed. If you do not recognize this activity, secure your account and contact our support team.</p>
+    ${detailCard('Sign-in Details', [['Time', escapeHtml(time)], ['Account', escapeHtml(user.email)]])}
+    <p class="text">Need help? Contact <a href="mailto:support@1app.com">support@1app.com</a>.</p>`,
             `New login detected on your 1APP account.`),
     };
 };
@@ -231,25 +183,11 @@ const loginTemplate = (user) => {
 const forgotPasswordTemplate = (user, otp) => ({
     subject: '1APP — Your Password Reset OTP',
     html: layout(`
-    <p class="greeting">Hi ${user.name},</p>
-    <p class="text">
-      We received a request to reset the password for your 1APP account.
-      Use the OTP below to proceed. This code is valid for <strong>10 minutes</strong>.
-    </p>
-    <div style="text-align:center;margin:28px 0;">
-      <div style="display:inline-block;background:#1a1a1a;color:#fff;font-size:32px;font-weight:800;
-                  letter-spacing:10px;padding:18px 36px;border-radius:10px;font-family:monospace;">
-        ${otp}
-      </div>
-    </div>
-    <p class="text" style="text-align:center;font-size:13px;color:#888;">
-      Do not share this OTP with anyone.
-    </p>
-    <hr class="divider" />
-    <p class="text" style="font-size:13px;color:#888;">
-      If you didn't request a password reset, you can safely ignore this email.
-      Your password will remain unchanged.
-    </p>`,
+    ${hero('ACCOUNT SECURITY', 'Reset your password', 'Use the one-time code below to continue resetting your 1APP password.', '&#128274;', 'action')}
+    <p class="greeting">Hi ${escapeHtml(user.name)},</p>
+    <p class="text">This verification code expires in <strong>10 minutes</strong>. Do not share it with anyone.</p>
+    <div class="otp">${escapeHtml(otp)}</div>
+    <p class="text">If you did not request a password reset, you can ignore this email. Your password will remain unchanged.</p>`,
         `Your 1APP password reset OTP: ${otp}`),
 });
 
@@ -257,22 +195,11 @@ const forgotPasswordTemplate = (user, otp) => ({
 const passwordResetSuccessTemplate = (user) => ({
     subject: '1APP — Your Password Has Been Reset',
     html: layout(`
-    <div class="status-banner welcome">
-      <div class="icon">🔐</div>
-      <h2>Password Changed</h2>
-    </div>
-    <p class="greeting">Hi ${user.name},</p>
-    <p class="text">
-      Your 1APP account password was successfully reset. You can now log in with your new password.
-    </p>
-    <div class="highlight-box">
-      <p><strong>Account:</strong> ${user.email}</p>
-      <p style="margin-top:6px;"><strong>Time:</strong> ${new Date().toLocaleString('en-IN')}</p>
-    </div>
-    <p class="text">
-      If you did not make this change, please contact us immediately at
-      <a href="mailto:support@1app.com">support@1app.com</a>.
-    </p>`,
+    ${hero('PASSWORD UPDATED', 'Password changed', 'Your account security details have been updated.', '&#10003;', 'completed')}
+    <p class="greeting">Hi ${escapeHtml(user.name)},</p>
+    <p class="text">Your 1APP password was successfully reset. If you did not make this change, contact us immediately.</p>
+    ${detailCard('Change Details', [['Account', escapeHtml(user.email)], ['Changed on', escapeHtml(new Date().toLocaleString('en-IN'))]])}
+    <div class="note"><strong>If you made this change:</strong> no further action is needed.<br /><strong>If you did not:</strong> contact <a href="mailto:support@1app.com">support@1app.com</a>.</div>`,
         `Your 1APP password has been successfully reset.`),
 });
 
@@ -280,77 +207,49 @@ const passwordResetSuccessTemplate = (user) => ({
 const bookingConfirmedTemplate = (booking) => ({
     subject: `1APP — Booking Confirmed! #${String(booking._id).slice(-6).toUpperCase()}`,
     html: layout(`
-    <div class="status-banner confirmed">
-      <div class="icon">✅</div>
-      <h2>Booking Confirmed</h2>
-    </div>
-    <p class="greeting">Hi ${booking.user.name},</p>
-    <p class="text">
-      Great news! Your payment was successful and your booking is now confirmed.
-      Here are your booking details:
-    </p>
+    ${hero('BOOKING CONFIRMED', 'Your booking is confirmed!', 'Payment received. Here are the details of your upcoming service.', '&#10003;', 'confirmed')}
+    <p class="greeting">Hi ${escapeHtml(booking.user.name)},</p>
+    <p class="text">Thanks for choosing 1APP. We will share technician and booking updates as your service progresses.</p>
     ${bookingDetailBlock(booking)}
-    <div class="highlight-box" style="margin-top:20px;">
-      <p>Payment Status: <strong style="color:#065f46;">PAID</strong></p>
-      ${booking.paymentDetails?.paymentId
-        ? `<p style="margin-top:4px;font-size:12px;">Transaction ID: <code>${booking.paymentDetails.paymentId}</code></p>`
-        : ''}
-    </div>
-    <p class="text" style="margin-top:16px;">
-      We'll notify you once a technician is assigned. For any queries, contact us at
-      <a href="mailto:support@1app.com">support@1app.com</a> or call <strong>+1800-1APP</strong>.
-    </p>`,
+    ${detailCard('Payment Details', [['Payment status', 'Paid'], ...(booking.paymentDetails?.paymentId ? [['Transaction ID', escapeHtml(booking.paymentDetails.paymentId)]] : [])], 'PAYMENT')}
+    ${actionButton('View Booking', '/bookings')}
+    <p class="text">Questions? Contact <a href="mailto:support@1app.com">support@1app.com</a>.</p>`,
         `Your 1APP booking is confirmed. Service on ${new Date(booking.serviceDate).toDateString()}.`),
 });
 
 /** 6. Booking status updated by admin */
 const bookingStatusUpdatedTemplate = (booking) => {
-    const statusBadgeMap = {
-        Confirmed:   'confirmed',
-        'In Progress': 'updated',
-        Completed:   'confirmed',
-        Cancelled:   'cancelled',
-        Pending:     'updated',
+    const statusContent = {
+        Confirmed: { eyebrow: 'BOOKING CONFIRMED', title: 'Your booking is confirmed', description: 'Your service is scheduled. We will keep you updated.', icon: '&#10003;', tone: 'confirmed' },
+        Assigned: { eyebrow: 'TECHNICIAN ASSIGNED', title: 'Your technician is confirmed', description: 'A technician has been assigned to your service.', icon: '&#128100;', tone: 'action' },
+        'On the Way': { eyebrow: 'TECHNICIAN EN ROUTE', title: 'Your technician is on the way', description: 'Your technician has started traveling to the service location.', icon: '&#10148;', tone: 'action' },
+        'In Progress': { eyebrow: 'SERVICE IN PROGRESS', title: 'Your service is underway', description: 'Your technician has started work on your service.', icon: '&#9881;', tone: 'action' },
+        Checkout: { eyebrow: 'CHECKOUT', title: 'Service work is complete', description: 'Your technician finished the work. The job is awaiting final checkout.', icon: '&#10003;', tone: 'completed' },
+        Completed: { eyebrow: 'SERVICE COMPLETED', title: 'Your service is complete!', description: 'Your service has been successfully completed.', icon: '&#10003;', tone: 'completed' },
+        Cancelled: { eyebrow: 'BOOKING CANCELLED', title: 'Your booking was cancelled', description: 'The booking status has been updated. See the details below.', icon: '&#10005;', tone: 'cancelled' },
+        Pending: { eyebrow: 'BOOKING UPDATE', title: 'Your booking is pending', description: 'We are processing your booking and will share an update soon.', icon: '&#8987;', tone: 'action' },
     };
-    const iconMap = {
-        Confirmed:   '✅',
-        'In Progress': '🔧',
-        Completed:   '🎉',
-        Cancelled:   '❌',
-        Pending:     '⏳',
+    const content = statusContent[booking.status] || {
+        eyebrow: 'BOOKING UPDATE', title: `Booking ${booking.status || 'updated'}`,
+        description: 'Your booking details have been updated.', icon: '&#9679;', tone: 'action'
     };
-    const bannerClass = statusBadgeMap[booking.status] || 'updated';
-    const icon = iconMap[booking.status] || '📋';
-
-    const technicianSection = booking.assignedTechnician?.name ? `
-    <div class="highlight-box" style="margin-top:4px;">
-      <p><strong>🔧 Assigned Technician</strong></p>
-      <p style="margin-top:6px;">${booking.assignedTechnician.name}</p>
-      ${booking.assignedTechnician.phone
-        ? `<p style="margin-top:4px;">📞 ${booking.assignedTechnician.phone}</p>`
-        : ''}
-    </div>` : '';
+    const completionNote = booking.status === 'Completed'
+        ? '<div class="note">We would love to hear about your experience. You can share feedback from your 1APP account.</div>'
+        : '';
+    const cancellationNote = booking.status === 'Cancelled'
+        ? `<div class="note">${booking.paymentStatus === 'Paid' ? 'If your payment is eligible for a refund, it will be handled according to the applicable refund policy.' : 'If you have questions about this cancellation, contact our support team.'}</div>`
+        : '';
 
     return {
-        subject: `1APP — Booking Update: ${booking.status} · #${String(booking._id).slice(-6).toUpperCase()}`,
+        subject: `1APP — Booking Update: ${escapeHtml(booking.status)} · #${String(booking._id).slice(-6).toUpperCase()}`,
         html: layout(`
-    <div class="status-banner ${bannerClass}">
-      <div class="icon">${icon}</div>
-      <h2>Booking ${booking.status}</h2>
-    </div>
-    <p class="greeting">Hi ${booking.user.name},</p>
-    <p class="text">
-      Your booking status has been updated to
-      <span class="badge badge-${booking.status.toLowerCase().replace(' ', '')}">
-        ${booking.status}
-      </span>.
-    </p>
-    ${technicianSection}
+    ${hero(content.eyebrow, content.title, content.description, content.icon, content.tone)}
+    <p class="greeting">Hi ${escapeHtml(booking.user.name)},</p>
+    <p class="text">Your booking status is now <strong>${escapeHtml(booking.status)}</strong>.</p>
     ${bookingDetailBlock(booking)}
-    <p class="text" style="margin-top:16px;">
-      Questions? Reach us at <a href="mailto:support@1app.com">support@1app.com</a>
-      or call <strong>+1800-1APP</strong>.
-    </p>`,
+    ${completionNote}${cancellationNote}
+    ${actionButton('View Booking', '/bookings')}
+    <p class="text">Questions? Contact <a href="mailto:support@1app.com">support@1app.com</a>.</p>`,
             `Your 1APP booking is now ${booking.status}.`),
     };
 };
@@ -359,22 +258,12 @@ const bookingStatusUpdatedTemplate = (booking) => {
 const bookingCancelledTemplate = (booking) => ({
     subject: `1APP — Booking Cancelled · #${String(booking._id).slice(-6).toUpperCase()}`,
     html: layout(`
-    <div class="status-banner cancelled">
-      <div class="icon">❌</div>
-      <h2>Booking Cancelled</h2>
-    </div>
-    <p class="greeting">Hi ${booking.user.name},</p>
-    <p class="text">
-      Your booking has been cancelled as requested. We're sorry to see you go —
-      here's a summary for your records:
-    </p>
+    ${hero('BOOKING CANCELLED', 'Your booking was cancelled', 'The cancellation is confirmed. Keep this email for your records.', '&#10005;', 'cancelled')}
+    <p class="greeting">Hi ${escapeHtml(booking.user.name)},</p>
+    <p class="text">We are sorry your plans changed. Here is a summary of the cancelled service.</p>
     ${bookingDetailBlock(booking)}
-    <div class="highlight-box" style="margin-top:8px;">
-      <p>If you paid online and are eligible for a refund, it will be processed within <strong>5–7 business days</strong> to your original payment method.</p>
-    </div>
-    <p class="text" style="margin-top:16px;">
-      We hope to serve you again soon. Book a new service anytime from your dashboard.
-    </p>`,
+    <div class="note">${booking.paymentStatus === 'Paid' ? 'If your payment is eligible for a refund, it will be handled according to the applicable refund policy.' : 'No payment refund is due for an unpaid booking.'} For help, contact <a href="mailto:support@1app.com">support@1app.com</a>.</div>
+    ${actionButton('Browse Services', '/services')}`,
         `Your 1APP booking has been cancelled.`),
 });
 
@@ -451,6 +340,7 @@ const sendBookingCancelled = async (booking) => {
 
 module.exports = {
     sendEmail,
+    renderEmailLayout: layout,
     sendWelcomeEmail,
     sendLoginNotification,
     sendForgotPasswordEmail,

@@ -23,6 +23,7 @@ import SignupPage from './pages/SignupPage';
 import ForgotPassword from './pages/ForgotPassword';
 import OtpVerify from './pages/OtpVerify';
 import ResetPassword from './pages/ResetPassword';
+import ChangePassword from './pages/ChangePassword';
 import TermsAndConditions from './pages/TermsAndConditions';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import ContactUs from './pages/ContactUs';
@@ -60,6 +61,7 @@ const AppShell = () => {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/verify-otp" element={<OtpVerify />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/change-password" element={<PrivateRoute><ChangePassword /></PrivateRoute>} />
           <Route path="/checkout" element={<Navigate to="/cart" replace />} />
           <Route path="/bookings" element={<PrivateRoute><Bookings /></PrivateRoute>} />
           <Route path="/technician" element={<PrivateRoute><TechnicianDashboard /></PrivateRoute>} />

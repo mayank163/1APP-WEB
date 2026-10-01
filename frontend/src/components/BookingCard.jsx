@@ -223,7 +223,8 @@ const BookingCard = ({ booking, onCancelled }) => {
         if (s === 'completed') return styles.completedBadge;
         if (s === 'cancelled') return styles.cancelledBadge;
         if (s === 'confirmed') return styles.confirmedBadge;
-        if (s === 'pending' || s === 'in progress') return styles.pendingBadge;
+        if (s === 'assigned' || s === 'on the way') return styles.confirmedBadge;
+        if (s === 'pending' || s === 'in progress' || s === 'checkout') return styles.pendingBadge;
         if (s === 'rescheduled') return styles.rescheduledBadge;
         return styles.defaultBadge;
     };
@@ -314,7 +315,7 @@ const BookingCard = ({ booking, onCancelled }) => {
                         </button>
                     )}
 
-                    {!['completed', 'cancelled'].includes((booking.status || '').toLowerCase()) && (
+                    {!['assigned', 'on the way', 'in progress', 'checkout', 'completed', 'cancelled'].includes((booking.status || '').toLowerCase()) && (
                         <button style={styles.btnSecondary} onClick={handleCancel} disabled={cancelling}>
                             {cancelling ? 'Cancelling...' : 'Cancel Booking'}
                         </button>

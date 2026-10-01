@@ -5,6 +5,7 @@ const razorpayInstance = require('../config/razorpay');
 const stripe = require('../config/stripe');
 const { generateTextInvoice } = require('../utils/invoiceService');
 const { sendBookingConfirmed, sendBookingCancelled } = require('../utils/emailService');
+const { getPagination, getPaginationMeta } = require('../utils/pagination');
 
 const resolveServiceDate = () => {
     const date = new Date();
@@ -374,14 +375,32 @@ exports.verifyPayment = async (req, res, next) => {
  */
 exports.getMyBookings = async (req, res, next) => {
     try {
-        const bookings = await Booking.find({ user: req.user.id })
-            .populate('services.service')
-            .sort('-createdAt');
+        const { page, limit, skip } = getPagination(req.query);
+        const { status } = req.query;
+        const allowedStatuses = ['Pending', 'Confirmed', 'In Progress', 'Completed', 'Cancelled'];
+        if (status && status !== 'all' && !allowedStatuses.includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: `Invalid booking status. Allowed values: ${allowedStatuses.join(', ')}.`
+            });
+        }
+
+        const query = { user: req.user.id };
+        if (status && status !== 'all') query.status = status;
+        const [bookings, total] = await Promise.all([
+            Booking.find(query)
+                .populate('services.service', 'name')
+                .sort('-createdAt')
+                .skip(skip)
+                .limit(limit),
+            Booking.countDocuments(query)
+        ]);
 
         res.status(200).json({
             success: true,
-            count: bookings.length,
-            data: { bookings }
+            count: total,
+            data: { bookings },
+            pagination: getPaginationMeta({ page, limit, total })
         });
     } catch (err) {
         next(err);
@@ -448,8 +467,8 @@ exports.cancelBooking = async (req, res, next) => {
             });
         }
 
-        // Only allow cancellation if not In Progress/Completed/already Cancelled
-        if (['In Progress', 'Completed', 'Cancelled'].includes(booking.status)) {
+        // Active technician assignments cannot be cancelled from the customer app.
+        if (['Assigned', 'On the Way', 'In Progress', 'Checkout', 'Completed', 'Cancelled'].includes(booking.status)) {
             return res.status(400).json({
                 success: false,
                 message: `Booking cannot be cancelled now. Current status is ${booking.status}`

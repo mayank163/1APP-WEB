@@ -95,8 +95,9 @@ const UserManagement = () => {
                                 <tr>
                                     <th>Customer ID</th>
                                     <th>Name</th>
-                                    <th>Email / Phone</th>
+                                    <th>Plans</th>
                                     <th>Phone Status</th>
+                                    <th>Email / Phone</th>
                                     <th>Account Status</th>
                                     <th>Registered Date</th>
                                     <th>Actions</th>
@@ -113,6 +114,13 @@ const UserManagement = () => {
                                                 </div>
                                                 <span className="fw-bold text-dark">{user.name}</span>
                                             </div>
+                                        </td>
+                                        <td>
+                                            {user.planPurchases?.filter(purchase => purchase.status === 'active' && (!purchase.expiresAt || new Date(purchase.expiresAt).getTime() > Date.now())).length ? (
+                                                user.planPurchases.filter(purchase => purchase.status === 'active' && (!purchase.expiresAt || new Date(purchase.expiresAt).getTime() > Date.now())).map(purchase => (
+                                                    <div key={purchase._id} className="small fw-semibold">{purchase.planName}</div>
+                                                ))
+                                            ) : <span className="small text-muted">None</span>}
                                         </td>
                                         <td>
                                             <div className="text-dark small">{user.email}</div>
@@ -148,7 +156,7 @@ const UserManagement = () => {
                                 ))}
                                 {filteredUsers.length === 0 && (
                                     <tr>
-                                        <td colSpan="7" className="text-center py-5 text-muted">No registered customer users found.</td>
+                                        <td colSpan="8" className="text-center py-5 text-muted">No registered customer users found.</td>
                                     </tr>
                                 )}
                             </tbody>

@@ -35,6 +35,7 @@ const blogRoutes = require('./routes/blogRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const workTypeRoutes = require('./routes/workTypeRoutes');
 const serviceTypeRoutes = require('./routes/serviceTypeRoutes');
+const planRoutes = require('./routes/planRoutes');
 const Service = require('./models/Service');
 const TechnicianJob = require('./models/TechnicianJob');
 
@@ -194,6 +195,7 @@ app.use('/api/blogs', blogRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/work-types', workTypeRoutes);
 app.use('/api/service-types', serviceTypeRoutes);
+app.use('/api/plans', planRoutes);
 app.use(
   "/api/routes",
   routeRoutes

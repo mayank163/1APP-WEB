@@ -103,10 +103,10 @@ Response shape:
 }
 ```
 
-Mark all notifications for the current account as read:
+Mark one notification for the current account as read:
 
 ```http
-PATCH /api/notifications/read
+PATCH /api/notifications/{notificationId}/read
 Authorization: Bearer <accessToken>
 ```
 

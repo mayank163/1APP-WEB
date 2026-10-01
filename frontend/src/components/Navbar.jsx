@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { CartContext } from '../context/CartContext';
-import { FaShoppingCart, FaUser, FaListAlt, FaSignOutAlt, FaMapMarkerAlt, FaChevronDown, FaComments } from 'react-icons/fa';
+import { FaShoppingCart, FaUser, FaListAlt, FaSignOutAlt, FaMapMarkerAlt, FaChevronDown, FaComments, FaLock } from 'react-icons/fa';
 import { BsStack } from 'react-icons/bs';
 import SearchAutocomplete from './SearchAutocomplete';
 import ServiceSearchAutocomplete from './ServiceSearchAutocomplete';
@@ -86,6 +86,7 @@ const NavigationBar = () => {
                                 <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-2 navbar-dropdown">
                                     <li><Link className="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" to="/profile"><FaUser className="text-muted" /><span>Profile</span></Link></li>
                                     <li><Link className="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" to="/bookings"><FaListAlt className="text-muted" /><span>My Bookings</span></Link></li>
+                                    <li><Link className="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" to="/change-password"><FaLock className="text-muted" /><span>Reset Password</span></Link></li>
                                     {user?.role === 'user' && <li><Link className="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" to="/support-chat"><FaComments className="text-muted" /><span>Support Chat</span></Link></li>}
                                     {user?.role === 'technician' && <li><Link className="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" to="/technician-chat"><FaComments className="text-muted" /><span>Support Chat</span></Link></li>}
                                     <li><hr className="dropdown-divider" /></li>

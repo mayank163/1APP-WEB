@@ -563,6 +563,40 @@ exports.resetPassword = async (req, res, next) => {
         next(err);
     }
 };
+
+/**
+ * @desc    Change password for the authenticated account
+ * @route   PUT /api/auth/change-password
+ */
+exports.changePassword = async (req, res, next) => {
+    try {
+        const { oldPassword, newPassword } = req.body;
+        if (typeof oldPassword !== 'string' || !oldPassword || typeof newPassword !== 'string' || !newPassword) {
+            return res.status(400).json({ success: false, message: 'Please provide your old and new passwords.' });
+        }
+        if (newPassword.length < 6) {
+            return res.status(400).json({ success: false, message: 'Password must be at least 6 characters.' });
+        }
+        if (oldPassword === newPassword) {
+            return res.status(400).json({ success: false, message: 'New password must be different from your old password.' });
+        }
+
+        const account = await req.user.constructor.findById(req.user._id).select('+password');
+        if (!account) {
+            return res.status(404).json({ success: false, message: 'Account not found.' });
+        }
+        if (!await account.comparePassword(oldPassword)) {
+            return res.status(400).json({ success: false, message: 'Current password is incorrect.' });
+        }
+
+        account.password = newPassword;
+        await account.save();
+        res.json({ success: true, message: 'Password changed successfully.' });
+    } catch (error) {
+        next(error);
+    }
+};
+
 /**
  * @desc    Google OAuth login — finds existing account by email
  * @route   POST /api/auth/google

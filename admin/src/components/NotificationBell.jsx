@@ -24,17 +24,22 @@ const NotificationBell = () => {
     return () => socket.off('notification:new', onNotification);
   }, []);
 
-  const toggle = async () => {
+  const toggle = () => {
     setOpen(value => !value);
     setNotificationError('');
     enableBrowserNotifications().catch(error => setNotificationError(error.message || 'Could not enable browser notifications.'));
-    if (unread) {
-      setItems(previous => previous.map(item => ({ ...item, isRead: true })));
-      await adminApi.markNotificationsRead().catch(() => {});
-    }
   };
 
-  const openNotification = (item) => {
+  const openNotification = async (item) => {
+    if (!item.isRead) {
+      setItems(previous => previous.map(notification => notification._id === item._id ? { ...notification, isRead: true } : notification));
+      try {
+        await adminApi.markNotificationRead(item._id);
+      } catch {
+        setItems(previous => previous.map(notification => notification._id === item._id ? { ...notification, isRead: false } : notification));
+      }
+    }
+
     const jobId = item.data?.jobId;
     if (!jobId) return;
     setOpen(false);
@@ -52,7 +57,7 @@ const NotificationBell = () => {
         {notificationError && <div className="small text-danger px-2 py-2">{notificationError}</div>}
         <div style={{ maxHeight: 320, overflowY: 'auto' }}>
           {items.length === 0 ? <div className="text-muted small px-2 py-3">No notifications yet.</div> : items.map(item => (
-            <button key={item._id} type="button" className="border-top px-2 py-2 text-start w-100 bg-white" onClick={() => openNotification(item)} style={{ borderLeft: 0, borderRight: 0, borderBottom: 0, cursor: item.data?.jobId ? 'pointer' : 'default' }}><div className="small fw-semibold">{item.title}</div><div className="small text-muted">{item.message}</div></button>
+            <button key={item._id} type="button" className="border-top px-2 py-2 text-start w-100 bg-white" onClick={() => openNotification(item)} style={{ borderLeft: 0, borderRight: 0, borderBottom: 0, cursor: item.data?.jobId ? 'pointer' : 'default' }}><div className="small fw-semibold">{!item.isRead && <span className="d-inline-block rounded-circle bg-primary me-1" aria-label="Unread" style={{ width: 6, height: 6 }} />}{item.title}</div><div className="small text-muted">{item.message}</div></button>
           ))}
         </div>
       </div>}

@@ -18,6 +18,7 @@ import { toast } from 'react-toastify';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { HomeShimmer } from '../components/Shimmer';
 import HeroBookingBar from '../components/HeroBookingBar';
+import Plans from './Plans';
 
 const Home = () => {
     const navigate = useNavigate();
@@ -548,7 +549,7 @@ const Home = () => {
 {/* ── Exclusive Home Services Offers ── */}
 <section className="py-3 bg-white" >
     <div className="container">
-        <h2 className="fw-bold mb-1" style={{ fontSize: '1.5rem' }}>Exclusive Home Services Offers</h2>
+        <h2 className="fw-bold mb-1" style={{ fontSize: '1.5rem', marginTop: '10px' }}>Exclusive Home Services Offers</h2>
         <p className="text-muted mb-3" style={{ fontSize: '0.9rem' }}>Book Cleaner, Plumber, Handyman, Gardner or any one for your home help.</p>
         <div className="position-relative">
             <div
@@ -602,7 +603,7 @@ const Home = () => {
                                 </div>
                                 <button
                                     className="btn fw-semibold rounded-3 px-3 py-1"
-                                    style={{ width: 'fit-content', background: '#000000', color: '#fff', border: 'none', fontSize: '12px' }}
+                                    style={{ width: 'fit-content', background: '#000000', color: '#fff', border: '1px solid #fff', fontSize: '12px' }}
                                     onClick={(e) => { e.stopPropagation(); handleOfferClick(); }}
                                 >
                                     Book Now
@@ -665,7 +666,7 @@ const Home = () => {
                                                     <div style={{ fontSize: '13px' }}>Starts From <span className="fw-bold">${sub.startingFromPrice}</span></div>
                                                 </div>
                                                 <button className="btn p-2 rounded-2" style={{ background: '#f5f5f5', border: 'none', height: '30px' }}>
-                                                    <FaPhoneAlt
+                                                    <FaArrowRight
                                                         size={14}
                                                         className="text-dark"
                                                         style={{ display: 'flex' }}
@@ -682,6 +683,8 @@ const Home = () => {
             })}
 
             {/* Home Painting Banner */}
+                    <Plans />
+
             <section className="py-5 bg-white">
                 <div className="container">
                     <div className="rounded-4 overflow-hidden d-flex" style={{ background: '#fdfdf0', minHeight: '200px' }}>
@@ -690,7 +693,7 @@ const Home = () => {
                             <p className="text-muted mb-5" style={{ fontSize: '16px', lineHeight: 1.8 }}>
                                 We believe deeply in driving social and economic progress across the region. We use our app to connect customers to the communities that need the most support.
                             </p>
-                            <button className="btn rounded-3 px-4 py-2" style={{ width: 'fit-content', background: '#000000', color: '#fff', border: 'none' }}>Read More</button>
+                            <button className="btn rounded-3 px-4 py-2" onClick={() => navigate('/blogs')}  style={{ width: 'fit-content', background: '#000000', color: '#fff', border: 'none' }} >Read More</button>
                         </div>
                         <div style={{ flex: '0 0 55%', overflow: 'hidden' }}>
                             <img

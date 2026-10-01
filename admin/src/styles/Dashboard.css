@@ -103,6 +103,30 @@
     color: #3d2c1e;
 }
 
+.dash-custom-dates {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin: -10px 0 16px;
+}
+
+.dash-custom-dates label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #6b5a47;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.dash-custom-dates input {
+    border: 1px solid #eadfd0;
+    border-radius: 6px;
+    padding: 6px 8px;
+    color: #3d2c1e;
+    background: #fff;
+}
+
 /* ── Section titles ────────────────────────────────────────────────────── */
 .dash-section-title {
     font-size: 16px;
@@ -540,6 +564,17 @@
     margin-bottom: 14px;
 }
 
+.job-stage-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 0;
+}
+
+.dash-period-label {
+    color: #8a7258;
+    font-size: 12px;
+    font-weight: 500;
+}
+
 .dashboard-section {
     margin-bottom: 14px;
 }
@@ -699,6 +734,36 @@
 
 .financial-panel .dash-section-title { margin-bottom: 10px; }
 .summary-box-row { gap: 8px; }
+.booking-summary-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.dashboard-data-error { margin: -10px 0 12px; color: #b42318; font-size: 12px; }
+.dashboard-detail-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr); gap: 12px; }
+.dashboard-detail-panel { min-width: 0; padding: 14px; border: 1px solid #eadfd0; border-radius: 10px; background: #fff; }
+.dashboard-detail-panel .dash-section-title { margin-bottom: 14px; }
+.booking-pipeline-list { display: grid; gap: 13px; }
+.booking-pipeline-label { display: flex; justify-content: space-between; margin-bottom: 5px; color: #5e5042; font-size: 12px; }
+.booking-pipeline-label strong { color: #28221d; }
+.booking-pipeline-track { height: 7px; overflow: hidden; border-radius: 999px; background: #f0ebe4; }
+.booking-pipeline-fill { display: block; height: 100%; min-width: 0; border-radius: inherit; }
+.pipeline-orange { background: #e69a43; }
+.pipeline-blue { background: #5789d2; }
+.pipeline-purple { background: #8c6bc2; }
+.pipeline-green { background: #4aa779; }
+.pipeline-red { background: #d76c65; }
+.dashboard-view-link { color: #765126; font-size: 12px; font-weight: 600; text-decoration: none; }
+.dashboard-view-link:hover, .recent-job-title:hover { text-decoration: underline; }
+.recent-jobs-list { display: grid; }
+.recent-job-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 11px 0; border-top: 1px solid #f1e8dc; }
+.recent-job-main, .recent-job-side { display: grid; min-width: 0; gap: 4px; }
+.recent-job-title { overflow: hidden; color: #30271e; font-size: 13px; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; }
+.recent-job-meta, .recent-job-tech { overflow: hidden; color: #8a7258; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.recent-job-side { justify-items: end; flex-shrink: 0; }
+.recent-job-status { border-radius: 999px; padding: 3px 8px; color: #5e5042; background: #f2eee8; font-size: 10px; font-weight: 700; white-space: nowrap; }
+.status-open, .status-unassigned { color: #9a5d15; background: #fff0d9; }
+.status-assigned, .status-ontheway, .status-on-the-way { color: #315c92; background: #e6f0fd; }
+.status-inprogress, .status-in-progress { color: #665093; background: #efe9ff; }
+.status-completed { color: #28744d; background: #e3f6ec; }
+.status-cancelled { color: #a63e39; background: #fdeaea; }
+.dashboard-empty-state { margin: 0; padding: 10px 0; color: #8a7258; font-size: 12px; }
 .summary-box { padding: 11px 10px; border-radius: 9px; }
 .summary-box .sb-label { font-size: 10px; gap: 5px; margin-bottom: 8px; color: #28221d; }
 .summary-box .sb-value { font-size: 15px; }
@@ -731,12 +796,15 @@
 
 @media (max-width: 900px) {
     .dashboard-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .job-stage-grid, .booking-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .dashboard-lower-grid { grid-template-columns: 1fr; }
+    .dashboard-detail-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 576px) {
     .dash-hello-row { align-items: flex-start; }
     .dash-actions { width: 100%; }
+    .dash-custom-dates { justify-content: flex-start; flex-wrap: wrap; }
     .dash-filter-group { flex: 1; justify-content: space-between; }
     .dash-filter-pill { padding: 6px 10px; }
     .dashboard-stat-grid, .dashboard-loading-grid { grid-template-columns: 1fr 1fr; gap: 8px; }

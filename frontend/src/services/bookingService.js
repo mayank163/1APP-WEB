@@ -16,8 +16,8 @@ const bookingService = {
         return response.data;
     },
 
-    getMyBookings: async () => {
-        const response = await API.get('/bookings/my-bookings');
+    getMyBookings: async ({ page = 1, limit = 10 } = {}) => {
+        const response = await API.get('/bookings/my-bookings', { params: { page, limit } });
         return response.data;
     },
 
