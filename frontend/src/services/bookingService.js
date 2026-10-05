@@ -16,6 +16,11 @@ const bookingService = {
         return response.data;
     },
 
+    verifyPayPalPayment: async (paymentAttemptId, paypalOrderId) => {
+        const response = await API.post('/bookings/verify', { paymentAttemptId, paypalOrderId });
+        return response.data;
+    },
+
     getMyBookings: async ({ page = 1, limit = 10 } = {}) => {
         const response = await API.get('/bookings/my-bookings', { params: { page, limit } });
         return response.data;

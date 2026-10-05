@@ -7,6 +7,7 @@ import { AuthContext } from '../context/AuthContext';
 import bookingService from '../services/bookingService';
 import { CheckoutShimmer } from '../components/Shimmer';
 import LocationPicker from '../components/LocationPicker';
+import PayPalPayment from '../components/PayPalPayment';
 import {
     FaMapMarkerAlt, FaPhoneAlt, FaCalendarAlt, FaLock,
     FaArrowLeft, FaHome, FaBriefcase, FaPlus, FaCheck, FaTimes
@@ -120,6 +121,7 @@ const Checkout = () => {
     const [instructions, setInstructions] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
+    const [paymentProvider, setPaymentProvider] = useState('stripe');
     const [paymentAttempt, setPaymentAttempt] = useState(null);
     const [paymentOrder, setPaymentOrder] = useState(null);
     const [showGateway, setShowGateway] = useState(false);
@@ -218,7 +220,8 @@ const Checkout = () => {
                 },
                 phone,
                 serviceDate: bookingDate,
-                specialInstructions: instructions
+                specialInstructions: instructions,
+                paymentProvider
             });
 
             if (res.success) {
@@ -253,10 +256,13 @@ const Checkout = () => {
                 <div style={{ ...cardStyle, width: '100%', maxWidth: 460, padding: 0, overflow: 'hidden' }}>
                     <div style={{ background: '#111', padding: '28px 24px', textAlign: 'center' }}>
                         <FaLock size={28} color="#635bff" style={{ marginBottom: 10 }} />
-                        <div style={{ fontWeight: 800, fontSize: 18, color: '#fff' }}>Stripe Secure Payment</div>
+                        <div style={{ fontWeight: 800, fontSize: 18, color: '#fff' }}>{paymentOrder?.provider === 'paypal' ? 'PayPal' : 'Stripe'} Secure Payment</div>
                         <div style={{ fontSize: 12, color: '#aaa', marginTop: 4 }}>Complete payment to confirm your booking</div>
                     </div>
-                    {stripeReady ? (
+                    {paymentOrder?.provider === 'paypal' ? (
+                        <PayPalPayment paymentAttempt={paymentAttempt} paymentOrder={paymentOrder}
+                            onSuccess={handlePaymentSuccess} onCancel={() => setShowGateway(false)} />
+                    ) : stripeReady ? (
                         <Elements stripe={stripePromiseRef.current} options={{ clientSecret: paymentOrder.clientSecret, appearance: { theme: 'stripe' } }}>
                             <StripePaymentForm
                                 paymentAttempt={paymentAttempt}
@@ -502,6 +508,18 @@ const Checkout = () => {
                                             onChange={(e) => setInstructions(e.target.value)}
                                         />
                                     </div>
+
+                                    <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>
+                                        <legend style={labelStyle}>Payment method</legend>
+                                        <div style={{ display: 'flex', gap: 16 }}>
+                                            {[['stripe', 'Credit / Debit Card (Stripe)'], ['paypal', 'PayPal']].map(([value, label]) => (
+                                                <label key={value} style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', fontSize: 14 }}>
+                                                    <input type="radio" name="paymentProvider" value={value} checked={paymentProvider === value} onChange={() => setPaymentProvider(value)} />
+                                                    {label}
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </fieldset>
 
                                     <button
                                         type="submit"

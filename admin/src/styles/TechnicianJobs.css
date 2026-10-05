@@ -2116,8 +2116,9 @@
 }
 
 .tj-stl-row {
-  display: flex;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) minmax(0, 1.6fr);
+  align-items: start;
   gap: 8px;
   font-size: 0.82rem;
   color: #1a1208;
@@ -2125,6 +2126,14 @@
   position: relative;
 }
 .tj-stl-row.muted { color: #adb5bd; }
+
+.tj-stl-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.tj-stl-label:last-child {
+  grid-column: 2 / -1;
+}
 
 .tj-stl-dot {
   width: 8px;
@@ -2143,9 +2152,10 @@
 .tj-stl-time {
   font-size: 0.72rem;
   color: #adb5bd;
-  margin-left: auto;
-  white-space: nowrap;
-  padding-left: 8px;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
 }
 .tj-stl-note {
   font-size: 0.72rem;
@@ -2994,3 +3004,14 @@
   overflow-wrap: anywhere;
   white-space: normal;
 }
+
+.tj-rating-form { min-width: 0; margin: 20px 0; }
+.tj-rating-form legend { font-size: 1rem; font-weight: 600; }
+.tj-rating-scale { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 20px; }
+.tj-rating-scale button { flex: 1 1 100px; padding: 12px 8px; border: 1px solid #795629; border-radius: 6px; color: #795629; background: white; }
+.tj-rating-scale button.selected { background: #795629; color: white; }
+.tj-rating-criteria { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 20px 0; }
+.tj-rating-criteria > div { display: flex; align-items: center; gap: 8px; }
+.tj-rating-criteria button { border: 1px solid #ddd; background: white; border-radius: 5px; padding: 4px 6px; }
+.tj-rating-criteria button[aria-pressed="true"] { border-color: #795629; background: #f3e7d5; }
+.tj-rating-form .ql-editor { min-height: 100px; }

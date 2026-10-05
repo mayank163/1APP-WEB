@@ -1,7 +1,6 @@
 const Booking = require('../models/Booking');
 const TechnicianJob = require('../models/TechnicianJob');
-const User = require('../models/User');
-const sendNotification = require('./notificationService');
+const TechnicianJobTemplate = require('../models/TechnicianJobTemplate');
 const { getIO } = require('../utils/socketInstance');
 const { sendBookingStatusUpdated } = require('../utils/emailService');
 
@@ -12,7 +11,7 @@ const bookingStatusByJobStatus = {
   visited: 'In Progress',
   inprogress: 'In Progress',
   'in-progress': 'In Progress',
-  checkout: 'Checkout',
+  checkout: 'Completed',
   completed: 'Completed',
   cancelled: 'Cancelled',
 };
@@ -25,7 +24,7 @@ const getBookingLocation = address => {
     .join(', ');
 };
 
-const ensureTechnicianJobForBooking = async (booking, postedBy, sender = postedBy) => {
+const ensureTechnicianJobForBooking = async (booking, postedBy) => {
   if (!booking?._id || !postedBy) return null;
 
   let job = await TechnicianJob.findOne({ sourceBooking: booking._id });
@@ -34,25 +33,58 @@ const ensureTechnicianJobForBooking = async (booking, postedBy, sender = postedB
   const serviceNames = (booking.services || [])
     .map(item => item.service?.name)
     .filter(Boolean);
-  const jobTitle = serviceNames.join(' + ') || `Service booking #${String(booking._id).slice(-6)}`;
+  const addonNames = (booking.services || [])
+    .flatMap(item => item.selectedAddons || [])
+    .map(addon => addon.name?.trim())
+    .filter(Boolean);
+  const baseTitle = serviceNames.join(' + ') || `Service booking #${String(booking._id).slice(-6)}`;
+  const addonTitle = addonNames.length ? ` - Add-ons: ${addonNames.join(', ')}` : '';
   const location = getBookingLocation(booking.address) || 'Customer location';
+  const template = await TechnicianJobTemplate.findOne({
+    templateName: /^workorder$/i,
+  }).sort('-createdAt');
+  if (!template) {
+    console.warn('Job template named "workorder" was not found; using booking defaults.');
+  }
 
   try {
     job = await TechnicianJob.create({
-      title: jobTitle,
+      title: `${serviceNames.length ? baseTitle : (template?.title || baseTitle)}${addonTitle}`,
       category: 'Booked Service',
       location,
       city: booking.address?.city || '',
       state: booking.address?.state || '',
       zipCode: booking.address?.zipcode || '',
-      description: `Work order created from booking ${booking._id}.`,
+      coordinates: booking.address?.coordinates || template?.coordinates,
+      description: [
+        template?.description,
+        `Work order created from booking ${booking._id}.`,
+      ].filter(Boolean).join('\n\n'),
+      requirements: template?.requirements || [],
+      preferredSkills: template?.preferredSkills || [],
+      workType: template?.workType || {},
+      additionalWorkType: template?.additionalWorkType || {},
+      serviceType: template?.serviceType || {},
+      tasks: (template?.tasks || []).map((task, order) => ({
+        title: task.title || '',
+        group: task.group || '',
+        order: task.order ?? order,
+        isDone: false,
+        requiresNote: Boolean(task.requiresNote),
+        requiresImage: Boolean(task.requiresImage),
+        requiresSignature: Boolean(task.requiresSignature),
+        requirementReason: task.requirementReason || '',
+      })),
       postedBy,
       sourceBooking: booking._id,
-      status: 'open',
-      visibleTo: 'technicians',
+      status: 'draft',
+      visibleTo: template?.visibleTo || 'technicians',
       scheduledDate: booking.serviceDate || null,
-      jobDate: { from: booking.serviceDate || null },
-      pay: { type: 'fixed', fixedAmount: Number(booking.totalAmount) || 0 },
+      jobDate: {
+        from: booking.serviceDate || null,
+        to: template?.jobDate?.to || null,
+      },
+      pay: template?.pay || { type: 'fixed', fixedAmount: Number(booking.totalAmount) || 0 },
     });
   } catch (error) {
     if (error.code === 11000) return TechnicianJob.findOne({ sourceBooking: booking._id });
@@ -60,23 +92,9 @@ const ensureTechnicianJobForBooking = async (booking, postedBy, sender = postedB
   }
 
   try {
-    const technicians = await User.find({
-      role: 'technician',
-      $or: [{ accountStatus: 'active' }, { accountStatus: { $exists: false } }],
-    }).select('_id fcmTokens');
-    if (technicians.length) {
-      await sendNotification({
-        recipients: technicians,
-        sender,
-        type: 'new_job',
-        title: 'New Job Available',
-        message: `A new ${job.title} job is available.`,
-        data: { jobId: String(job._id), type: 'new_job' },
-      });
-    }
-    getIO().emit('job:new', { job });
+    getIO().to('admin').emit('job:created', { job });
   } catch (error) {
-    console.error('Failed to announce booking work order:', error.message);
+    console.error('Failed to announce booking work order to admins:', error.message);
   }
 
   return job;

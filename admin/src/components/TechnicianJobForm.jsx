@@ -26,7 +26,7 @@ const TaskBuilder = ({ tasks, onChange }) => {
 };
 
 // ─── JobForm ───────────────────────────────────────────────────────────────────
-const JobForm = ({ form, setForm, onSubmit, onCancel, isEditing, saving, workTypes, serviceTypes, isTemplate = false }) => {
+const JobForm = ({ form, setForm, onSubmit, onCancel, isEditing, saving, workTypes, serviceTypes, isTemplate = false, canPublish = false }) => {
   const primarySubTypes = workTypes.find(w => w._id === form.workTypeId)?.subTypes?.filter(s => s.isActive) || [];
   const additionalSubTypes = workTypes.find(w => w._id === form.additionalWorkTypeId)?.subTypes?.filter(s => s.isActive) || [];
   return (
@@ -68,7 +68,7 @@ const JobForm = ({ form, setForm, onSubmit, onCancel, isEditing, saving, workTyp
       <div className="col-md-6"><label className="tj-label">Preferred Skills</label><input className="form-control tj-input" value={form.preferredSkills} onChange={(e) => setForm({ ...form, preferredSkills: e.target.value })} placeholder="AC, electrical, repair (comma separated)" /></div>
       <div className="col-md-6"><label className="tj-label">Requirements</label><input className="form-control tj-input" value={form.requirements} onChange={(e) => setForm({ ...form, requirements: e.target.value })} placeholder="Tools, safety gear (comma separated)" /></div>
       <div className="col-12"><TaskBuilder tasks={form.tasks || []} onChange={(tasks) => setForm({ ...form, tasks })} /></div>
-      <div className="col-12 d-flex justify-content-end gap-2 pt-2"><button type="button" className="btn tj-btn-ghost" onClick={onCancel} disabled={saving}>Cancel</button><button type="submit" className="btn tj-btn-primary-gold" disabled={saving}>{saving ? <><span className="spinner-border spinner-border-sm me-2" />Saving…</> : isTemplate ? (isEditing ? 'Update Template' : 'Save Template') : isEditing ? 'Update Job' : 'Create Job'}</button></div>
+      <div className="col-12 d-flex justify-content-end gap-2 pt-2"><button type="button" className="btn tj-btn-ghost" onClick={onCancel} disabled={saving}>Cancel</button>{isEditing && !isTemplate && canPublish && <button type="submit" name="action" value="publish" className="btn tj-btn-primary-gold" disabled={saving}>Save &amp; Publish Workorder</button>}<button type="submit" className="btn tj-btn-primary-gold" disabled={saving}>{saving ? <><span className="spinner-border spinner-border-sm me-2" />Saving…</> : isTemplate ? (isEditing ? 'Update Template' : 'Save Template') : isEditing ? 'Update Job' : 'Create Job'}</button></div>
     </form>
   );
 };

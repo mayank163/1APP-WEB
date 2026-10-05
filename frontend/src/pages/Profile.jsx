@@ -255,114 +255,111 @@ const Profile = () => {
     return (
         <div className="container py-4">
             <h1 className="fw-extrabold text-dark mb-1" style={{ fontSize: '2rem' }}>My Profile</h1>
-            <div className="mb-4" style={{ width: '152px', height: '4px', background: '#2d6a4f', borderRadius: '2px' }} />
+            <div className="mb-4" style={{ width: '152px', height: '4px', background: '#000000', borderRadius: '2px' }} />
 
             <div className="row g-4">
                 {/* ── Left: profile overview ── */}
                 <div className="col-lg-4">
-                    <div className="card border-0 shadow-sm rounded-4 bg-white p-4 text-center">
-                        {/* Avatar */}
-                        <div
-                            className="mx-auto mb-3 position-relative"
-                            style={{ width: 100, height: 100, cursor: 'pointer' }}
-                            onClick={() => !uploadingAvatar && avatarInputRef.current.click()}
-                            title="Click to change profile photo"
-                        >
-                            <div style={{ width: 100, height: 100, borderRadius: '50%', border: '3px solid #2d6a4f', overflow: 'hidden', background: '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                {avatarPreview || user?.profileImage?.url ? (
-                                    <img src={avatarPreview || resolveImageUrl(user.profileImage.url)} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                ) : (
-                                    <span className="fw-bold text-secondary" style={{ fontSize: '2rem' }}>{user?.name?.charAt(0)?.toUpperCase()}</span>
-                                )}
-                            </div>
-                            <div style={{ position: 'absolute', bottom: 0, right: 0, width: 28, height: 28, borderRadius: '50%', background: uploadingAvatar ? '#adb5bd' : '#2d6a4f', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #fff' }}>
-                                {uploadingAvatar
-                                    ? <div className="spinner-border spinner-border-sm text-white" style={{ width: 14, height: 14, borderWidth: 2 }} role="status" />
-                                    : <FaCamera size={12} color="#fff" />}
-                            </div>
-                        </div>
-                        <input ref={avatarInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarChange} />
-
-                        <h4 className="fw-bold mb-1">{user?.name}</h4>
-                        {/* <span className="badge text-uppercase mb-4" style={{ background: '#d8f3dc', color: '#2d6a4f', fontSize: '0.7rem', padding: '5px 10px' }}>{user?.role}</span> */}
-
-                        <div className="text-start d-flex flex-column gap-3 pt-3 border-top w-100">
-                            <div className="d-flex align-items-center gap-2 text-muted">
-                                <FaEnvelope size={14} />
-                                <span className="small">{user?.email}</span>
-                            </div>
-                            <div className="d-flex align-items-center justify-content-between text-muted">
-                                <div className="d-flex align-items-center gap-2">
-                                    <FaPhoneAlt size={14} />
-                                    <span className="small">{user?.phone}</span>
+                    <div className="d-flex flex-column gap-4">
+                        <div className="card border-0 shadow-sm rounded-4 bg-white p-4 text-center">
+                            {/* Avatar */}
+                            <div
+                                className="mx-auto mb-3 position-relative"
+                                style={{ width: 100, height: 100, cursor: 'pointer' }}
+                                onClick={() => !uploadingAvatar && avatarInputRef.current.click()}
+                                title="Click to change profile photo"
+                            >
+                                <div style={{ width: 100, height: 100, borderRadius: '50%', border: '3px solid #000000', overflow: 'hidden', background: '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    {avatarPreview || user?.profileImage?.url ? (
+                                        <img src={avatarPreview || resolveImageUrl(user.profileImage.url)} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    ) : (
+                                        <span className="fw-bold text-secondary" style={{ fontSize: '2rem' }}>{user?.name?.charAt(0)?.toUpperCase()}</span>
+                                    )}
                                 </div>
-                                {user?.isPhoneVerified ? (
-                                    <span className="badge d-flex align-items-center gap-1" style={{ background: '#d8f3dc', color: '#2d6a4f' }}>
-                                        <FaCheckCircle size={10} /> Verified
-                                    </span>
-                                ) : (
-                                    <span className="badge bg-warning-subtle text-warning d-flex align-items-center gap-1">
-                                        <FaExclamationTriangle size={10} /> Unverified
-                                    </span>
-                                )}
+                                <div style={{ position: 'absolute', bottom: 0, right: 0, width: 28, height: 28, borderRadius: '50%', background: uploadingAvatar ? '#adb5bd' : '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #fff' }}>
+                                    {uploadingAvatar
+                                        ? <div className="spinner-border spinner-border-sm text-white" style={{ width: 14, height: 14, borderWidth: 2 }} role="status" />
+                                        : <FaCamera size={12} color="#fff" />}
+                                </div>
                             </div>
+                            <input ref={avatarInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarChange} />
+
+                            <h4 className="fw-bold mb-1">{user?.name}</h4>
+                            {/* <span className="badge text-uppercase mb-4" style={{ background: '#d8f3dc', color: '#000000', fontSize: '0.7rem', padding: '5px 10px' }}>{user?.role}</span> */}
+
+                            <div className="text-start d-flex flex-column gap-3 pt-3 border-top w-100">
+                                <div className="d-flex align-items-center gap-2 text-muted">
+                                    <FaEnvelope size={14} />
+                                    <span className="small">{user?.email}</span>
+                                </div>
+                                <div className="d-flex align-items-center justify-content-between text-muted">
+                                    <div className="d-flex align-items-center gap-2">
+                                        <FaPhoneAlt size={14} />
+                                        <span className="small">{user?.phone}</span>
+                                    </div>
+                                    {user?.isPhoneVerified ? (
+                                        <span className="badge d-flex align-items-center gap-1" style={{ background: '#000000', color: '#ffffff' }}>
+                                            <FaCheckCircle size={10} /> Verified
+                                        </span>
+                                    ) : (
+                                        <span className="badge bg-warning-subtle text-warning d-flex align-items-center gap-1">
+                                            <FaExclamationTriangle size={10} /> Unverified
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+
+                            {!user?.isPhoneVerified && (
+                                <div className="mt-4 pt-3 border-top w-100">
+                                    {!showOtpField ? (
+                                        <button onClick={handleRequestOtp} className="btn w-100 fw-bold py-2 d-flex align-items-center justify-content-center gap-2" style={{ background: '#000', color: '#fff', borderRadius: 8 }}>
+                                            <FaCheckDouble size={14} /> Verify Phone Number
+                                        </button>
+                                    ) : (
+                                        <form onSubmit={handleVerifyOtp} className="text-start bg-light p-3 rounded border">
+                                            <label className="form-label small fw-bold text-muted mb-2">Enter 6-digit OTP:</label>
+                                            <div className="d-flex gap-2">
+                                                <input type="text" maxLength="6" required className="form-control text-center font-monospace" placeholder="999999" value={otpCode} onChange={(e) => setOtpCode(e.target.value)} />
+                                                <button type="submit" disabled={verifying} className="btn fw-bold" style={{ background: '#000', color: '#fff' }}>
+                                                    {verifying ? '...' : 'Verify'}
+                                                </button>
+                                            </div>
+                                        </form>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
-                        {!user?.isPhoneVerified && (
-                            <div className="mt-4 pt-3 border-top w-100">
-                                {!showOtpField ? (
-                                    <button onClick={handleRequestOtp} className="btn w-100 fw-bold py-2 d-flex align-items-center justify-content-center gap-2" style={{ background: '#000', color: '#fff', borderRadius: 8 }}>
-                                        <FaCheckDouble size={14} /> Verify Phone Number
-                                    </button>
-                                ) : (
-                                    <form onSubmit={handleVerifyOtp} className="text-start bg-light p-3 rounded border">
-                                        <label className="form-label small fw-bold text-muted mb-2">Enter 6-digit OTP:</label>
-                                        <div className="d-flex gap-2">
-                                            <input type="text" maxLength="6" required className="form-control text-center font-monospace" placeholder="999999" value={otpCode} onChange={(e) => setOtpCode(e.target.value)} />
-                                            <button type="submit" disabled={verifying} className="btn fw-bold" style={{ background: '#000', color: '#fff' }}>
-                                                {verifying ? '...' : 'Verify'}
-                                            </button>
-                                        </div>
-                                    </form>
+                        {planPurchases.length > 0 && (
+                            <div className="card border-0 shadow-sm rounded-4 bg-white p-4">
+                                {loadingPlans ? <div className="small text-muted">Loading your plan...</div> : (
+                                    <div className="d-flex flex-column gap-3">
+                                        {planPurchases.map(purchase => (
+                                            <div key={purchase._id} className="border rounded-3 p-3">
+                                                <div className="d-flex justify-content-between align-items-start gap-2">
+                                                    <div>
+                                                        <div className="fw-bold">{purchase.planName}</div>
+                                                        <div className="small text-muted">
+                                                            {purchase.durationMonths} months · ${Number(purchase.price).toFixed(2)}
+                                                        </div>
+                                                    </div>
+                                                    <span className={`badge ${purchase.status === 'active' ? 'bg-success' : ['expired', 'replaced'].includes(purchase.status) ? 'bg-secondary' : 'bg-warning text-dark'}`}>{purchase.status}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 )}
                             </div>
                         )}
-                    </div>
 
-                    <div className="card border-0 shadow-sm rounded-4 bg-white p-4">
-                        
-                        {loadingPlans ? <div className="small text-muted">Loading your plan...</div> : planPurchases.length ? (
-                            <div className="d-flex flex-column gap-3">
-                                {planPurchases.map(purchase => (
-                                    <div key={purchase._id} className="border rounded-3 p-3">
-                                        <div className="d-flex justify-content-between align-items-start gap-2">
-                                            <div>
-                                                <div className="fw-bold">{purchase.planName}</div>
-<div className="small text-muted">
-    {purchase.durationMonths} months · ${Number(purchase.price).toFixed(2)}
-</div>                                            </div>
-                                            <span className={`badge ${purchase.status === 'active' ? 'bg-success' : ['expired', 'replaced'].includes(purchase.status) ? 'bg-secondary' : 'bg-warning text-dark'}`}>{purchase.status}</span>
-                                        </div>
-                                        {/* {purchase.status === 'replaced' && purchase.replacedAt ? (
-                                            <div className="small text-muted mt-2">Replaced on {new Date(purchase.replacedAt).toLocaleDateString()}</div>
-                                        ) : purchase.expiresAt && (
-                                            <div className="small text-muted mt-2">Valid through {new Date(purchase.expiresAt).toLocaleDateString()}</div>
-                                        )} */}
-                                    </div>
-                                ))}
-                            </div>
-                        ) : <p className="small text-muted mb-0">No active plan.</p>}
+                        <div className="card border-0 shadow-sm rounded-4 bg-white p-4">
+                            <h5 className="fw-bold text-danger mb-2">Delete Account</h5>
+                            <p className="small text-muted mb-3">Your account data will be retained, but you will be signed out and unable to use this account.</p>
+                            <button type="button" disabled={deletingAccount} onClick={handleDeleteAccount} className="btn btn-outline-danger fw-bold px-4 py-2" style={{ borderRadius: 8 }}>
+                                {deletingAccount ? 'Deleting...' : 'Delete My Account'}
+                            </button>
+                        </div>
                     </div>
-
-                    <div className="card border-0 shadow-sm rounded-4 bg-white p-4">
-                        <h5 className="fw-bold text-danger mb-2">Delete Account</h5>
-                        <p className="small text-muted mb-3">Your account data will be retained, but you will be signed out and unable to use this account.</p>
-                        <button type="button" disabled={deletingAccount} onClick={handleDeleteAccount} className="btn btn-outline-danger fw-bold px-4 py-2" style={{ borderRadius: 8 }}>
-                            {deletingAccount ? 'Deleting...' : 'Delete My Account'}
-                        </button>
-                    </div>
-
-                    
                 </div>
 
                 {/* ── Right: edit info + addresses ── */}
@@ -435,9 +432,9 @@ const Profile = () => {
                                                         style={{
                                                             borderRadius: 20,
                                                             border: '1.5px solid',
-                                                            borderColor: addrForm.label === opt ? '#2d6a4f' : '#dee2e6',
+                                                            borderColor: addrForm.label === opt ? '#000000' : '#dee2e6',
                                                             background: addrForm.label === opt ? '#d8f3dc' : '#fff',
-                                                            color: addrForm.label === opt ? '#2d6a4f' : '#6c757d',
+                                                            color: addrForm.label === opt ? '#000000' : '#6c757d',
                                                             fontWeight: addrForm.label === opt ? 700 : 400,
                                                             fontSize: 12,
                                                             padding: '4px 12px'
@@ -540,7 +537,7 @@ const Profile = () => {
                                     >
                                         <div className="d-flex align-items-start gap-3">
                                             {/* Icon badge */}
-                                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: addr.isDefault ? '#d8f3dc' : '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: addr.isDefault ? '#2d6a4f' : '#6c757d' }}>
+                                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: addr.isDefault ? '#d8f3dc' : '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: addr.isDefault ? '#000000' : '#6c757d' }}>
                                                 {labelIcon(addr.label)}
                                             </div>
                                             <div>
@@ -549,7 +546,7 @@ const Profile = () => {
                                                         {labelIcon(addr.label)} {addr.label || 'Home'}
                                                     </span>
                                                     {addr.isDefault && (
-                                                        <span className="badge d-flex align-items-center gap-1" style={{ background: '#d8f3dc', color: '#2d6a4f', fontSize: '0.65rem' }}>
+                                                        <span className="badge d-flex align-items-center gap-1" style={{ background: '#d8f3dc', color: '#000000', fontSize: '0.65rem' }}>
                                                             <FaStar size={8} /> Default
                                                         </span>
                                                     )}
@@ -573,7 +570,7 @@ const Profile = () => {
                                                     onClick={() => handleSetDefault(addr._id)}
                                                     className="btn btn-sm"
                                                     title="Set as default"
-                                                    style={{ background: 'transparent', color: '#2d6a4f', border: '1px solid #b7e4c7', borderRadius: 6, padding: '4px 8px', fontSize: 11 }}
+                                                    style={{ background: 'transparent', color: '#000000', border: '1px solid #b7e4c7', borderRadius: 6, padding: '4px 8px', fontSize: 11 }}
                                                 >
                                                     Set Default
                                                 </button>

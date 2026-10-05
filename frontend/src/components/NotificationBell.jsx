@@ -16,6 +16,7 @@ const NotificationBell = () => {
   const [notificationError, setNotificationError] = useState('');
   const [unread, setUnread] = useState(0);
   const [loadingMore, setLoadingMore] = useState(true);
+  const wrapperRef = useRef(null);
   const nextPageRef = useRef(1);
   const isLoadingRef = useRef(false);
   const hasMoreRef = useRef(true);
@@ -50,6 +51,19 @@ const NotificationBell = () => {
   }, []);
 
   useEffect(() => { loadNotifications(); }, [loadNotifications]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const handlePointerDown = (event) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    return () => document.removeEventListener('mousedown', handlePointerDown);
+  }, [open]);
 
   useEffect(() => {
     if (!socket) return undefined;
@@ -111,7 +125,7 @@ const NotificationBell = () => {
   };
 
   return (
-    <div className="position-relative">
+    <div ref={wrapperRef} className="position-relative">
       <button type="button" className="btn p-0 border-0 bg-transparent text-dark" onClick={toggle} title="Notifications" aria-label="Notifications">
         <FaBell size={18} />
         {unread > 0 && <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: 9 }}>{unread}</span>}

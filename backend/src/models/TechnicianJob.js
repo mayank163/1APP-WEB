@@ -98,7 +98,8 @@ const technicianJobSchema = new mongoose.Schema({
     at: { type: Date, default: null },
     lat: { type: Number, default: null },
     lng: { type: Number, default: null },
-    distanceMeters: { type: Number, default: null },
+    distanceMiles: { type: Number, default: null },
+    siteStatus: { type: String, enum: ['onsite', 'offsite', null], default: null },
   },
   jobStartedAt: {
     type: Date,
@@ -112,7 +113,9 @@ const technicianJobSchema = new mongoose.Schema({
     at: { type: Date, default: null },
     lat: { type: Number, default: null },
     lng: { type: Number, default: null },
+    distanceMiles: { type: Number, default: null },
     distanceMeters: { type: Number, default: null },
+    siteStatus: { type: String, enum: ['onsite', 'offsite', null], default: null },
   },
   jobDurationMinutes: {
     type: Number,
@@ -169,6 +172,15 @@ const technicianJobSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     default: () => ({}),
   },
+  technicianRating: {
+    score: { type: Number, min: 1, max: 5 },
+    ratedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
+    ratedAt: Date,
+  },
+  privateTechnicianFeedback: {
+    type: new mongoose.Schema({ note: String, criteria: mongoose.Schema.Types.Mixed }, { _id: false }),
+    select: false,
+  },
   statusHistory: [{
     status: { type: String, trim: true },
     note: { type: String, default: '', trim: true },
@@ -199,6 +211,7 @@ const technicianJobSchema = new mongoose.Schema({
     checkedAt: { type: Date, default: null },
     technicianLat: { type: Number, default: null },
     technicianLng: { type: Number, default: null },
+    distanceMiles: { type: Number, default: null },
     distanceMeters: { type: Number, default: null },
   }],
   conversation: [{

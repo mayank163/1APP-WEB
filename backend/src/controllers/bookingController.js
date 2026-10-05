@@ -3,6 +3,7 @@ const PaymentAttempt = require('../models/PaymentAttempt');
 const Service = require('../models/Service');
 const razorpayInstance = require('../config/razorpay');
 const stripe = require('../config/stripe');
+const paypal = require('../config/paypal');
 const { generateTextInvoice } = require('../utils/invoiceService');
 const { sendBookingConfirmed, sendBookingCancelled } = require('../utils/emailService');
 const { getPagination, getPaginationMeta } = require('../utils/pagination');
@@ -33,7 +34,16 @@ const resolveAddressLine = (address) => {
  */
 exports.createBookingOrder = async (req, res, next) => {
     try {
-        const { services, address, phone, specialInstructions } = req.body;
+        const { services, address, phone, specialInstructions, paymentProvider } = req.body;
+        if (paymentProvider && !['stripe', 'paypal'].includes(paymentProvider)) {
+            return res.status(400).json({ success: false, message: 'Choose Stripe or PayPal.' });
+        }
+        if (paymentProvider === 'stripe' && !stripe) {
+            return res.status(503).json({ success: false, message: 'Stripe payments are not configured.' });
+        }
+        if (paymentProvider === 'paypal' && !paypal.isConfigured()) {
+            return res.status(503).json({ success: false, message: 'PayPal payments are not configured.' });
+        }
         const bookingAddress = typeof address === 'string'
             ? { addressLine: address }
             : address;
@@ -97,7 +107,17 @@ exports.createBookingOrder = async (req, res, next) => {
         const paymentAttemptId = new PaymentAttempt()._id.toString();
         let paymentOrder;
 
-        if (stripe) {
+        if (paymentProvider === 'paypal') {
+            try {
+                const order = await paypal.createOrder({ attemptId: paymentAttemptId, amount: amountInSmallestUnit });
+                paymentOrder = {
+                    provider: 'paypal', id: order.id, amount: amountInSmallestUnit,
+                    currency: paypal.currency(), clientId: process.env.PAYPAL_CLIENT_ID
+                };
+            } catch (error) {
+                return res.status(502).json({ success: false, message: error.message });
+            }
+        } else if (stripe) {
             const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY || '';
             if (!publishableKey.startsWith('pk_')) {
                 return res.status(500).json({
@@ -183,7 +203,8 @@ exports.createBookingOrder = async (req, res, next) => {
             specialInstructions,
             paymentDetails: {
                 provider: paymentOrder.provider,
-                orderId: paymentOrder.id
+                orderId: paymentOrder.id,
+                currency: paymentOrder.currency.toUpperCase()
             }
         });
 
@@ -209,7 +230,7 @@ exports.createBookingOrder = async (req, res, next) => {
  */
 exports.verifyPayment = async (req, res, next) => {
     try {
-        const { paymentAttemptId, razorpayOrderId, razorpayPaymentId, stripePaymentIntentId } = req.body;
+        const { paymentAttemptId, razorpayOrderId, razorpayPaymentId, stripePaymentIntentId, paypalOrderId } = req.body;
         if (!paymentAttemptId) {
             return res.status(400).json({ success: false, message: 'Payment attempt ID is required' });
         }
@@ -243,7 +264,32 @@ exports.verifyPayment = async (req, res, next) => {
         let paymentId;
         const orderId = paymentAttempt.paymentDetails.orderId;
 
-        if (stripePaymentIntentId) {
+        if (paypalOrderId) {
+            if (paymentAttempt.paymentDetails.provider !== 'paypal' || paypalOrderId !== orderId) {
+                return res.status(400).json({ success: false, message: 'Payment does not match this payment attempt' });
+            }
+            let order = await paypal.getOrder(orderId);
+            const unit = order.purchase_units?.[0];
+            const expectedAmount = Math.round(paymentAttempt.totalAmount * 100);
+            const expectedCurrency = paymentAttempt.paymentDetails.currency;
+            if (order.id !== orderId || order.intent !== 'CAPTURE' || order.purchase_units?.length !== 1 ||
+                unit?.custom_id !== paymentAttempt._id.toString() ||
+                unit?.amount?.currency_code !== expectedCurrency ||
+                Math.round(Number(unit?.amount?.value) * 100) !== expectedAmount) {
+                return res.status(400).json({ success: false, message: 'Payment does not match this payment attempt' });
+            }
+            if (order.status === 'APPROVED') {
+                order = await paypal.captureOrder(orderId, paymentAttempt._id.toString());
+            }
+            const captures = order.purchase_units?.[0]?.payments?.captures || [];
+            const capture = captures[0];
+            if (order.status !== 'COMPLETED' || captures.length !== 1 || capture?.status !== 'COMPLETED' ||
+                !capture.id || capture.amount?.currency_code !== expectedCurrency ||
+                Math.round(Number(capture.amount?.value) * 100) !== expectedAmount) {
+                return res.status(409).json({ success: false, message: 'Payment is not completed. No booking has been created.' });
+            }
+            paymentId = capture.id;
+        } else if (stripePaymentIntentId) {
             if (!stripe || paymentAttempt.paymentDetails.provider !== 'stripe') {
                 return res.status(500).json({
                     success: false,

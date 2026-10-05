@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 
 const COUNTRIES = [
-    { code: 'IND', flag: '🇮🇳', label: 'India' },
+    { code: 'USD', flag: '🇺🇸', label: 'USD' },
     { code: 'UAE', flag: '🇦🇪', label: 'UAE' },
     { code: 'KSA', flag: '🇸🇦', label: 'Saudi Arabia' },
     { code: 'SGP', flag: '🇸🇬', label: 'Singapore' },
 ];
 
 const CONTENT = {
-    IND: {
+    USD: {
         dir: 'ltr',
         title: 'Anti Discrimination Policy',
         heading: 'Anti-Discrimination Policy',
@@ -51,7 +51,7 @@ const CONTENT = {
 };
 
 export default function AntiDiscrimination() {
-    const [country, setCountry] = useState('IND');
+    const [country, setCountry] = useState('USD');
     const [open, setOpen] = useState(false);
     const selected = COUNTRIES.find(c => c.code === country);
     const content = CONTENT[country];

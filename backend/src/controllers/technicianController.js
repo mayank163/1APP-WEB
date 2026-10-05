@@ -11,7 +11,7 @@ const { syncBookingFromTechnicianJob } = require('../services/bookingTechnicianJ
  * Haversine formula — returns distance in metres between two GPS coordinates.
  * Returns null if any coordinate is missing or invalid.
  */
-const haversineMeters = (lat1, lng1, lat2, lng2) => {
+const haversineDistanceMeters = (lat1, lng1, lat2, lng2) => {
   if (lat1 == null || lng1 == null || lat2 == null || lng2 == null) {
     return null;
   }
@@ -29,9 +29,12 @@ const haversineMeters = (lat1, lng1, lat2, lng2) => {
       Math.cos(toRad(lat2)) *
       Math.sin(dLng / 2) ** 2;
 
-  return Math.round(
-    R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-  );
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
+const haversineMeters = (lat1, lng1, lat2, lng2) => {
+  const distanceMeters = haversineDistanceMeters(lat1, lng1, lat2, lng2);
+  return distanceMeters == null ? null : Math.round(distanceMeters);
 };
 
 /**
@@ -1093,6 +1096,9 @@ const getTechnicianDashboard = async (
             technician.totalJobsDone ||
             0,
 
+          rating: technician.rating ?? null,
+          ratingCount: technician.ratingCount || 0,
+          workOrderRatings: technician.workOrderRatings || [],
           totalEarnings,
 
           totalWithdrawn,
@@ -2314,46 +2320,51 @@ const markReached = async (
     const hasLocation =
       lat != null &&
       lng != null &&
-      !isNaN(Number(lat)) &&
-      !isNaN(Number(lng));
+      Number.isFinite(Number(lat)) &&
+      Number.isFinite(Number(lng)) &&
+      Number(lat) >= -90 &&
+      Number(lat) <= 90 &&
+      Number(lng) >= -180 &&
+      Number(lng) <= 180;
 
-    const distMeters =
-      hasLocation
-        ? haversineMeters(
+    const hasJobCoordinates =
+      job.coordinates?.lat != null &&
+      job.coordinates?.lng != null &&
+      Number.isFinite(Number(job.coordinates.lat)) &&
+      Number.isFinite(Number(job.coordinates.lng)) &&
+      Number(job.coordinates.lat) >= -90 &&
+      Number(job.coordinates.lat) <= 90 &&
+      Number(job.coordinates.lng) >= -180 &&
+      Number(job.coordinates.lng) <= 180;
+
+    const exactDistanceMeters =
+      hasLocation && hasJobCoordinates
+        ? haversineDistanceMeters(
             Number(lat),
             Number(lng),
             job.coordinates?.lat,
             job.coordinates?.lng
           )
         : null;
+    const distanceMiles =
+      exactDistanceMeters == null ? null : exactDistanceMeters / 1609.344;
 
-    if (hasLocation) {
-      job.reachedStatus = {
-        at:
-          now,
-
-        lat:
-          Number(lat),
-
-        lng:
-          Number(lng),
-
-        distanceMeters:
-          distMeters,
-      };
-    }
+    job.reachedStatus = {
+      at: now,
+      lat: hasLocation ? Number(lat) : null,
+      lng: hasLocation ? Number(lng) : null,
+      distanceMiles,
+      siteStatus:
+        distanceMiles == null
+          ? null
+          : distanceMiles < 1
+            ? 'onsite'
+            : 'offsite',
+    };
 
     const distNote =
-      distMeters !== null
-        ? ` Distance from job site: ${
-            distMeters >= 1000
-              ? (
-                  distMeters / 1000
-                ).toFixed(2) +
-                ' km'
-              : distMeters +
-                ' m'
-          }.`
+      distanceMiles !== null
+        ? ` Distance from job site: ${distanceMiles.toFixed(2)} miles.`
         : '';
 
     const locationNote =
@@ -2386,44 +2397,23 @@ const markReached = async (
         now,
     });
 
-    // ── Auto-complete the first incomplete "On Site" task ────────────────────
-    const tasks = Array.isArray(job.tasks) ? job.tasks : [];
-    const firstOnSiteIdx = tasks.findIndex(
-      (t) => t.group === 'On Site' && !t.isDone &&
-        !t.requiresNote && !t.requiresImage && !t.requiresSignature
-    );
-    if (firstOnSiteIdx !== -1) {
-      const t = tasks[firstOnSiteIdx];
-      t.isDone         = true;
-      t.checkedAt      = now;
-      t.technicianLat  = hasLocation ? Number(lat) : null;
-      t.technicianLng  = hasLocation ? Number(lng) : null;
-      t.distanceMeters = distMeters;
-      job.markModified('tasks');
-    }
-
     await job.save();
     await syncBookingFromTechnicianJob(job);
 
-    // Notify admin about the auto-completed On Site task
-    if (firstOnSiteIdx !== -1) {
-      try {
-        const { getIO } = require('../utils/socketInstance');
-        getIO().to('admin').emit('job:task:completed', {
-          jobId,
-          taskIndex: firstOnSiteIdx,
-          task: tasks[firstOnSiteIdx],
-        });
-      } catch (e) {
-        console.warn('[Socket] job:task:completed emit failed:', e.message);
-      }
+    try {
+      const { getIO } = require('../utils/socketInstance');
+      getIO().to('admin').emit('job:updated', { job });
+    } catch (e) {
+      console.warn('[Socket] job:updated emit failed in markReached:', e.message);
     }
 
     res.status(200).json({
       success: true,
 
       message:
-        'Reached location recorded',
+        job.reachedStatus.siteStatus
+          ? `Reached location recorded. Technician is ${job.reachedStatus.siteStatus}.`
+          : 'Reached location recorded. Site status is unavailable because location coordinates could not be verified.',
 
       data: {
         reachedAt:
@@ -2437,9 +2427,6 @@ const markReached = async (
 
         reachedStatus:
           job.reachedStatus,
-
-        autoCompletedTaskIndex: firstOnSiteIdx !== -1 ? firstOnSiteIdx : null,
-        autoCompletedTask:      firstOnSiteIdx !== -1 ? tasks[firstOnSiteIdx] : null,
       },
     });
 
@@ -2538,47 +2525,55 @@ const markJobCompleted = async (
     const hasLocation =
       lat != null &&
       lng != null &&
-      !isNaN(Number(lat)) &&
-      !isNaN(Number(lng));
+      Number.isFinite(Number(lat)) &&
+      Number.isFinite(Number(lng)) &&
+      Number(lat) >= -90 &&
+      Number(lat) <= 90 &&
+      Number(lng) >= -180 &&
+      Number(lng) <= 180;
 
-    const distMeters =
-      hasLocation
-        ? haversineMeters(
+    const hasJobCoordinates =
+      job.coordinates?.lat != null &&
+      job.coordinates?.lng != null &&
+      Number.isFinite(Number(job.coordinates.lat)) &&
+      Number.isFinite(Number(job.coordinates.lng)) &&
+      Number(job.coordinates.lat) >= -90 &&
+      Number(job.coordinates.lat) <= 90 &&
+      Number(job.coordinates.lng) >= -180 &&
+      Number(job.coordinates.lng) <= 180;
+
+    const exactDistanceMeters =
+      hasLocation && hasJobCoordinates
+        ? haversineDistanceMeters(
             Number(lat),
             Number(lng),
             job.coordinates?.lat,
             job.coordinates?.lng
           )
         : null;
+    const distanceMiles =
+      exactDistanceMeters == null ? null : exactDistanceMeters / 1609.344;
+    const siteStatus =
+      distanceMiles == null
+        ? null
+        : distanceMiles < 1
+          ? 'onsite'
+          : 'offsite';
 
-    if (hasLocation) {
-      job.completedStatus = {
-        at:
-          now,
-
-        lat:
-          Number(lat),
-
-        lng:
-          Number(lng),
-
-        distanceMeters:
-          distMeters,
-      };
-    }
+    job.completedStatus = {
+      at: now,
+      lat: hasLocation ? Number(lat) : null,
+      lng: hasLocation ? Number(lng) : null,
+      distanceMiles,
+      siteStatus,
+    };
 
     const distNote =
-      distMeters !== null
-        ? ` Distance from job site: ${
-            distMeters >= 1000
-              ? (
-                  distMeters / 1000
-                ).toFixed(2) +
-                ' km'
-              : distMeters +
-                ' m'
-          }.`
+      distanceMiles !== null
+        ? ` Distance from job site: ${distanceMiles.toFixed(2)} miles.`
         : '';
+    const siteStatusNote =
+      siteStatus == null ? '' : ` Technician is ${siteStatus}.`;
 
     const locationNote =
       hasLocation
@@ -2586,7 +2581,7 @@ const markJobCompleted = async (
             6
           )}, ${Number(lng).toFixed(
             6
-          )})${distNote}`
+          )})${distNote}${siteStatusNote}`
         : '';
 
     // --------------------------------
@@ -2624,11 +2619,18 @@ const markJobCompleted = async (
     await job.save();
     await syncBookingFromTechnicianJob(job);
 
+    try {
+      const { getIO } = require('../utils/socketInstance');
+      getIO().to('admin').emit('job:updated', { job });
+    } catch (e) {
+      console.warn('[Socket] job:updated emit failed in markJobCompleted:', e.message);
+    }
+
     res.status(200).json({
       success: true,
 
       message:
-        'Job moved to checkout. Estimated Time to Approval: 3 days',
+        `Job moved to checkout${siteStatus ? `. Technician is ${siteStatus}` : ''}. Estimated Time to Approval: 3 days`,
 
       data: {
         jobCompletedAt:
@@ -2755,15 +2757,17 @@ const completeTask = async (
       !isNaN(Number(lat)) &&
       !isNaN(Number(lng));
 
-    const distMeters =
+    const exactDistanceMeters =
       hasLocation
-        ? haversineMeters(
+        ? haversineDistanceMeters(
             Number(lat),
             Number(lng),
             job.coordinates?.lat,
             job.coordinates?.lng
           )
         : null;
+    const distanceMiles =
+      exactDistanceMeters == null ? null : exactDistanceMeters / 1609.344;
 
     const taskPath = `tasks.${idx}`;
     const taskUpdates = {
@@ -2771,7 +2775,7 @@ const completeTask = async (
       [`${taskPath}.checkedAt`]: new Date(),
       [`${taskPath}.technicianLat`]: hasLocation ? Number(lat) : null,
       [`${taskPath}.technicianLng`]: hasLocation ? Number(lng) : null,
-      [`${taskPath}.distanceMeters`]: distMeters,
+      [`${taskPath}.distanceMiles`]: distanceMiles,
       [`${taskPath}.completionNote`]: note,
     };
     if (completionImage) taskUpdates[`${taskPath}.completionImage`] = completionImage;

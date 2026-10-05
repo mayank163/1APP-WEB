@@ -36,9 +36,9 @@ const serializeTechnician = user => ({
   photoUrl: user.technicianProfile?.photoUrl || user.profileImage?.url || '',
   isOnline: user.isOnline || false,
   totalJobsDone: user.totalJobsDone || 0,
-  // Ratings and performance have no source in the current schema.
-  rating: null,
-  ratingCount: null,
+  rating: user.rating ?? null,
+  ratingCount: user.ratingCount || 0,
+  workOrderRatings: user.workOrderRatings || [],
   performance: null,
   accountStatus: user.accountStatus || 'active',
   isPhoneVerified: user.isPhoneVerified,
@@ -151,7 +151,7 @@ exports.getTechnicians = async (req, res, next) => {
   try {
     const technicians = await User.find({
       role: 'technician'
-    }).select('name email phone dateOfBirth primaryService skills serviceArea serviceRadius address technicianProfile.yearsOfExperience technicianProfile.verificationStatus technicianProfile.documents technicianProfile.photoUrl profileImage.url isOnline totalJobsDone accountStatus isPhoneVerified createdAt technicianId').sort('-createdAt');
+    }).select('name email phone dateOfBirth primaryService skills serviceArea serviceRadius address technicianProfile.yearsOfExperience technicianProfile.verificationStatus technicianProfile.documents technicianProfile.photoUrl profileImage.url isOnline totalJobsDone rating ratingCount workOrderRatings accountStatus isPhoneVerified createdAt technicianId').sort('-createdAt');
     res.json({
       success: true,
       data: {

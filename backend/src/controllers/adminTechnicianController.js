@@ -1,3 +1,4 @@
+const { validateFeedback, saveTechnicianRating } = require('../services/technicianRating');
 const TechnicianJob = require('../models/TechnicianJob');
 const TechnicianJobRequest = require('../models/TechnicianJobRequest');
 const AdditionalCharge = require('../models/AdditionalCharge');
@@ -274,7 +275,7 @@ const createTechnicianJob = async (req, res, next) => {
 
 const getTechnicianJobs = async (req, res, next) => {
   try {
-    const jobs = await TechnicianJob.find().sort('-createdAt');
+    const jobs = await TechnicianJob.find().select('+privateTechnicianFeedback').sort('-createdAt');
     res.status(200).json({ success: true, data: { jobs } });
   } catch (error) {
     next(error);
@@ -574,7 +575,8 @@ const updateTechnicianJob = async (req, res, next) => {
         checkedAt:      t.checkedAt      || null,
         technicianLat:  t.technicianLat  || null,
         technicianLng:  t.technicianLng  || null,
-        distanceMeters: t.distanceMeters || null,
+        distanceMiles:  t.distanceMiles  ?? null,
+        distanceMeters: t.distanceMeters ?? null,
       }));
     }
 
@@ -705,10 +707,10 @@ const unassignTechnicianJob = async (req, res, next) => {
       currentJob.visibleTo = 'technicians';
       currentJob.requestedBy = [];
       currentJob.reachedAt = null;
-      currentJob.reachedStatus = { at: null, lat: null, lng: null, distanceMeters: null };
+      currentJob.reachedStatus = { at: null, lat: null, lng: null, distanceMiles: null, siteStatus: null };
       currentJob.jobStartedAt = null;
       currentJob.jobCompletedAt = null;
-      currentJob.completedStatus = { at: null, lat: null, lng: null, distanceMeters: null };
+      currentJob.completedStatus = { at: null, lat: null, lng: null, distanceMiles: null, distanceMeters: null, siteStatus: null };
       currentJob.jobDurationMinutes = null;
       currentJob.completedAt = null;
       currentJob.finalPrice = 0;
@@ -718,6 +720,7 @@ const unassignTechnicianJob = async (req, res, next) => {
         checkedAt: null,
         technicianLat: null,
         technicianLng: null,
+        distanceMiles: null,
         distanceMeters: null,
         completionNote: undefined,
         completionImage: undefined,
@@ -830,7 +833,11 @@ const sendTechnicianRequestMessage = async (req, res, next) => {
 const payTechnician = async (req, res, next) => {
   try {
     const { jobId } = req.params;
-    const { discount = 0, note = '' } = req.body || {};
+    const { discount = 0, note = '', feedback } = req.body || {};
+    if (feedback != null) {
+      try { validateFeedback(feedback); }
+      catch (error) { return res.status(400).json({ success: false, message: error.message }); }
+    }
 
     const job = await TechnicianJob.findById(jobId);
     if (!job) {
@@ -890,11 +897,23 @@ const payTechnician = async (req, res, next) => {
       await request.save();
     }
 
+    let ratingWarning;
+    if (feedback != null) {
+      try {
+        const ratedJob = await saveTechnicianRating(job._id, feedback, req.user._id);
+        job.technicianRating = ratedJob.technicianRating;
+      } catch (error) {
+        ratingWarning = 'Payment succeeded, but feedback could not be fully saved. Open the work order to retry.';
+        console.error('Payment feedback failed:', error.message);
+      }
+    }
+
     res.status(200).json({
       success: true,
       message: `Payment approved. $${amount} credited to technician wallet.`,
       data: {
         job,
+        ratingWarning,
         adminWalletBalance: admin?.walletBalance || 0,
         technicianBalance: technician
           ? technician.totalEarnings - (technician.totalWithdrawn || 0)
@@ -902,6 +921,7 @@ const payTechnician = async (req, res, next) => {
       },
     });
     emitToAdmin('job:updated', { job });
+    emitToTechnician(job.assignedTechnician._id, 'job:updated', { job });
   } catch (error) {
     next(error);
   }
@@ -1031,6 +1051,18 @@ const getRequestConversation = async (req, res, next) => {
   }
 };
 
+const rateTechnician = async (req, res, next) => {
+  try {
+    const job = await saveTechnicianRating(req.params.jobId, req.body, req.user._id);
+    emitToAdmin('job:updated', { job });
+    emitToTechnician(job.assignedTechnician._id, 'job:updated', { job });
+    res.json({ success: true, message: 'Technician rated.', data: { job } });
+  } catch (error) {
+    if (error.statusCode) return res.status(error.statusCode).json({ success: false, message: error.message });
+    next(error);
+  }
+};
+
 module.exports = {
   ...require('../services/adminTechnicians'),
   createTechnicianJob,
@@ -1044,5 +1076,6 @@ module.exports = {
   updateTechnicianJobStatus,
   unassignTechnicianJob,
   payTechnician,
+  rateTechnician,
   rescheduleJob,
 };

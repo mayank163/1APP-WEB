@@ -1,3 +1,4 @@
+import TechnicianRatingForm, { emptyFeedback, RATING_LABELS, RATING_CRITERIA } from '../components/TechnicianRatingForm';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import JobInvitationModal from '../components/JobInvitationModal';
@@ -26,9 +27,17 @@ import {
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 // ─── Helpers ───────────────────────────────────────────────────────────────────
-const TimelineDistance = ({ meters }) => {
-  const recorded = typeof meters === 'number' && Number.isFinite(meters) && meters >= 0;
-  return <span className="tj-timeline-distance">Distance from job site: {recorded ? `${meters.toLocaleString('en-IN', { maximumFractionDigits: 1 })} m` : 'Not recorded'}</span>;
+const TimelineDistanceMiles = ({ miles, legacyMeters }) => {
+  const distanceMiles = miles ?? (legacyMeters == null ? null : legacyMeters / 1609.344);
+  const recorded = typeof distanceMiles === 'number' && Number.isFinite(distanceMiles) && distanceMiles >= 0;
+  return <span className="tj-timeline-distance">Distance from job site: {recorded ? `${distanceMiles.toFixed(2)} miles` : 'Not recorded'}</span>;
+};
+
+const formatDistanceMiles = (miles, legacyMeters) => {
+  const distanceMiles = miles ?? (legacyMeters == null ? null : legacyMeters / 1609.344);
+  return typeof distanceMiles === 'number' && Number.isFinite(distanceMiles) && distanceMiles >= 0
+    ? `${distanceMiles.toFixed(2)} miles`
+    : 'Not recorded';
 };
 
 const formatDuration = (minutes) => {
@@ -76,6 +85,7 @@ const STATUS_CONFIG = {
   cancelled:   { label: 'Cancelled',   cls: 'status-cancelled'  },
 };
 
+const canRescheduleJob = job => ['draft', 'open'].includes(job?.status);
 const getStatusCls  = (s) => STATUS_CONFIG[s]?.cls   || 'status-pending';
 const getStatusLbl  = (s) => STATUS_CONFIG[s]?.label || (s || 'Pending');
 
@@ -372,10 +382,12 @@ const RescheduleModal = ({ show, job, onClose, onReschedule, rescheduling }) => 
 
 // ─── PayWalletModal ────────────────────────────────────────────────────────────
 const PayWalletModal = ({ show, job, onClose, onPay, paying }) => {
+  const [feedback, setFeedback] = useState(emptyFeedback);
   const [discount, setDiscount] = useState('0');
   const [note, setNote] = useState('');
   useEffect(() => {
     if (show) {
+      setFeedback(emptyFeedback());
       setDiscount('0');
       setNote('');
     }
@@ -386,7 +398,7 @@ const PayWalletModal = ({ show, job, onClose, onPay, paying }) => {
   const finalPrice = basePrice - discountAmount;
   return (
     <div className="tj-modal-backdrop" onClick={onClose}>
-      <div className="tj-modal-box" onClick={(e) => e.stopPropagation()}>
+      <div className="tj-modal-box lg" onClick={(e) => e.stopPropagation()}>
         <div className="tj-modal-header">
           <h5 className="tj-modal-title"><FaWallet className="me-2" style={{ color: '#16a34a' }} />Approve Technician Payment</h5>
           <button className="tj-modal-close" onClick={onClose}><FaTimes /></button>
@@ -400,9 +412,11 @@ const PayWalletModal = ({ show, job, onClose, onPay, paying }) => {
           <div className="tj-pay-info-row mb-3"><FaCheckCircle style={{ color: '#16a34a' }} /><span>Final price: <strong>${finalPrice.toLocaleString()}</strong></span></div>
           <label className="tj-label">Note (optional)</label>
           <textarea className="form-control tj-input mb-3" rows={2} placeholder="Approval note…" value={note} onChange={(e) => setNote(e.target.value)} />
+          <TechnicianRatingForm value={feedback} onChange={setFeedback} disabled={paying} />
+          {!feedback.score && <p className="text-muted small">Rating is optional. You can rate this technician from the paid work order later.</p>}
           <div className="d-flex gap-2 justify-content-end">
             <button className="btn tj-btn-ghost" onClick={onClose} disabled={paying}>Cancel</button>
-            <button className="btn tj-btn-pay" disabled={paying || basePrice <= 0 || discountAmount > basePrice} onClick={() => onPay(job._id, discountAmount, note)}>{paying ? <><span className="spinner-border spinner-border-sm me-2" />Processing…</> : <><FaWallet className="me-2" />Approve Payment</>}</button>
+            <button className="btn tj-btn-pay" disabled={paying || basePrice <= 0 || discountAmount > basePrice} onClick={() => onPay(job._id, discountAmount, note, feedback.score ? feedback : undefined)}>{paying ? <><span className="spinner-border spinner-border-sm me-2" />Processing…</> : <><FaWallet className="me-2" />Approve Payment</>}</button>
           </div>
         </div>
       </div>
@@ -538,6 +552,9 @@ const TechnicianJobs = () => {
   const [showAddModal, setShowAddModal]   = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewPanel, setShowViewPanel] = useState(false);
+  const [ratingJob, setRatingJob] = useState(null);
+  const [feedback, setFeedback] = useState(emptyFeedback);
+  const [ratingSaving, setRatingSaving] = useState(false);
   const [showPayModal, setShowPayModal]   = useState(false);
   const [payModalJob, setPayModalJob]     = useState(null);
 
@@ -562,7 +579,9 @@ const TechnicianJobs = () => {
     setLoading(true);
     try {
       const [jobsRes, reqRes] = await Promise.all([adminApi.getTechnicianJobs(), adminApi.getTechnicianRequests()]);
-      setJobs(jobsRes.data?.jobs || []);
+      const loadedJobs = jobsRes.data?.jobs || [];
+      setJobs(loadedJobs);
+      setSelectedJob(previous => previous ? loadedJobs.find(job => job._id === previous._id) || previous : previous);
       setRequests(reqRes.data?.requests || []);
     } catch { toast.error('Failed to load data'); }
     finally { setLoading(false); }
@@ -747,10 +766,37 @@ const TechnicianJobs = () => {
   const handleAdd = async (e) => { e.preventDefault(); setSaving(true); try { await adminApi.createTechnicianJob(buildPayload(form)); toast.success('Job created!'); setShowAddModal(false); setForm(emptyForm); await loadData(); } catch (err) { toast.error(err.response?.data?.message || 'Failed to create job'); } finally { setSaving(false); } };
   const openEditModal = (job) => {
     setEditingJobId(job._id);
-    setForm({ scheduledDate: templateToJobForm(job, emptyForm).scheduledDate, visibleTo: job.visibleTo || 'technicians', title: job.title || '', location: job.location || '', city: job.city || '', state: job.state || '', zipCode: job.zipCode || '', coordinates: job.coordinates?.lat ? job.coordinates : null, pay: { type: job.pay?.type || 'fixed', fixedAmount: job.pay?.fixedAmount ?? '', hourlyRate: job.pay?.hourlyRate ?? '', maxHours: job.pay?.maxHours ?? '', perDeviceRate: job.pay?.perDeviceRate ?? '', maxDevices: job.pay?.maxDevices ?? '', blendedFixedAmount: job.pay?.blendedFixedAmount ?? '', blendedFixedHours: job.pay?.blendedFixedHours ?? '', blendedHourlyRate: job.pay?.blendedHourlyRate ?? '', blendedMaxAddlHours: job.pay?.blendedMaxAddlHours ?? '', approxHours: job.pay?.approxHours || '' }, description: job.description || '', preferredSkills: (job.preferredSkills || []).join(', '), requirements: (job.requirements || []).join(', '), tasks: (job.tasks || []).map(t => ({ _id: t._id, title: t.title || '', group: t.group || 'Prep', order: t.order || 0, isDone: t.isDone || false, requiresNote: Boolean(t.requiresNote), requiresImage: Boolean(t.requiresImage), requiresSignature: Boolean(t.requiresSignature), requirementReason: t.requirementReason || '', completionNote: t.completionNote, completionImage: t.completionImage, completionSignature: t.completionSignature, checkedAt: t.checkedAt || null, technicianLat: t.technicianLat || null, technicianLng: t.technicianLng || null, distanceMeters: t.distanceMeters || null })), workTypeId: job.workType?._id || '', workTypeSubId: job.workType?.subType?._id || '', additionalWorkTypeId: job.additionalWorkType?._id || '', additionalWorkTypeSubId: job.additionalWorkType?.subType?._id || '', serviceTypeId: job.serviceType?._id || '', jobDate: templateToJobForm(job, emptyForm).jobDate });
+    setForm({ scheduledDate: templateToJobForm(job, emptyForm).scheduledDate, visibleTo: job.visibleTo || 'technicians', title: job.title || '', location: job.location || '', city: job.city || '', state: job.state || '', zipCode: job.zipCode || '', coordinates: job.coordinates?.lat ? job.coordinates : null, pay: { type: job.pay?.type || 'fixed', fixedAmount: job.pay?.fixedAmount ?? '', hourlyRate: job.pay?.hourlyRate ?? '', maxHours: job.pay?.maxHours ?? '', perDeviceRate: job.pay?.perDeviceRate ?? '', maxDevices: job.pay?.maxDevices ?? '', blendedFixedAmount: job.pay?.blendedFixedAmount ?? '', blendedFixedHours: job.pay?.blendedFixedHours ?? '', blendedHourlyRate: job.pay?.blendedHourlyRate ?? '', blendedMaxAddlHours: job.pay?.blendedMaxAddlHours ?? '', approxHours: job.pay?.approxHours || '' }, description: job.description || '', preferredSkills: (job.preferredSkills || []).join(', '), requirements: (job.requirements || []).join(', '), tasks: (job.tasks || []).map(t => ({ _id: t._id, title: t.title || '', group: t.group || 'Prep', order: t.order || 0, isDone: t.isDone || false, requiresNote: Boolean(t.requiresNote), requiresImage: Boolean(t.requiresImage), requiresSignature: Boolean(t.requiresSignature), requirementReason: t.requirementReason || '', completionNote: t.completionNote, completionImage: t.completionImage, completionSignature: t.completionSignature, checkedAt: t.checkedAt || null, technicianLat: t.technicianLat || null, technicianLng: t.technicianLng || null, distanceMiles: t.distanceMiles ?? null, distanceMeters: t.distanceMeters ?? null })), workTypeId: job.workType?._id || '', workTypeSubId: job.workType?.subType?._id || '', additionalWorkTypeId: job.additionalWorkType?._id || '', additionalWorkTypeSubId: job.additionalWorkType?.subType?._id || '', serviceTypeId: job.serviceType?._id || '', jobDate: templateToJobForm(job, emptyForm).jobDate });
     setShowEditModal(true);
   };
-  const handleEdit = async (e) => { e.preventDefault(); setSaving(true); try { await adminApi.updateTechnicianJob(editingJobId, buildPayload(form)); toast.success('Job updated!'); setShowEditModal(false); setForm(emptyForm); setEditingJobId(null); await loadData(); } catch (err) { toast.error(err.response?.data?.message || 'Failed to update job'); } finally { setSaving(false); } };
+  const handleEdit = async (e) => {
+    e.preventDefault();
+    const shouldPublish = e.nativeEvent.submitter?.value === 'publish';
+    setSaving(true);
+    let editsSaved = false;
+    try {
+      await adminApi.updateTechnicianJob(editingJobId, buildPayload(form));
+      editsSaved = true;
+      if (shouldPublish) {
+        await adminApi.updateTechnicianJobStatus(editingJobId, {
+          status: 'open',
+          note: 'Work order reviewed and published.',
+        });
+      }
+      toast.success(shouldPublish ? 'Work order saved and published!' : 'Job updated!');
+      setShowEditModal(false);
+      setForm(emptyForm);
+      setEditingJobId(null);
+      await loadData();
+    } catch (err) {
+      const message = err.response?.data?.message;
+      toast.error(shouldPublish && editsSaved
+        ? `Edits saved, but publishing failed: ${message || 'Please try again.'}`
+        : message || 'Failed to update job');
+    } finally {
+      setSaving(false);
+    }
+  };
   const handleDelete = async (jobId) => { if (!window.confirm('Delete this job? This cannot be undone.')) return; try { await adminApi.deleteTechnicianJob(jobId); toast.success('Job deleted'); if (selectedJob?._id === jobId) setShowViewPanel(false); await loadData(); } catch (err) { toast.error(err.response?.data?.message || 'Delete failed'); } };
   const openViewPanel = (job) => { setSelectedJob(job); setShowViewPanel(true); };
   useEffect(() => {
@@ -758,7 +804,7 @@ const TechnicianJobs = () => {
     const job = jobs.find(item => item._id === jobId);
     if (job) openViewPanel(job);
   }, [searchParams, jobs]);
-  const openRescheduleModal = (job) => { setRescheduleJob(job); setShowRescheduleModal(true); };
+  const openRescheduleModal = (job) => { if (!canRescheduleJob(job)) return; setRescheduleJob(job); setShowRescheduleModal(true); };
   const handleReschedule = async (jobId, jobDateFrom, jobDateTo, reason) => { setRescheduling(true); try { await adminApi.rescheduleJob(jobId, { jobDateFrom, jobDateTo, reason }); toast.success('Job rescheduled!'); setShowRescheduleModal(false); setRescheduleJob(null); await loadData(); if (selectedJob?._id === jobId) setSelectedJob(p => p ? { ...p, jobDate: { from: jobDateFrom, to: jobDateTo }, scheduledDate: jobDateFrom } : p); } catch (err) { toast.error(err.response?.data?.message || 'Reschedule failed'); } finally { setRescheduling(false); } };
   const handleStatusUpdate = async (status, note) => { setUpdatingStatus(true); try { await adminApi.updateTechnicianJobStatus(selectedJob._id, { status, note: note || '' }); toast.success('Status updated!'); setStatusModal({ show: false, targetStatus: '' }); setSelectedJob(p => ({ ...p, status, statusHistory: [...(p.statusHistory || []), { status, note: note || '', changedAt: new Date().toISOString() }] })); await loadData(); } catch (err) { toast.error(err.response?.data?.message || 'Update failed'); } finally { setUpdatingStatus(false); } };
   const handlePublishWorkOrder = async (job) => {
@@ -782,7 +828,20 @@ const TechnicianJobs = () => {
   };
   const handleUnassign = async reason => { setUnassigning(true); try { const res = await adminApi.unassignTechnicianJob(unassignJob._id, { reason: reason.trim() }); toast.success(res.message || 'Technician unassigned.'); setUnassignJob(null); await loadData(); if (selectedJob?._id === res.data?.job?._id) setSelectedJob(res.data.job); } catch (err) { toast.error(err.response?.data?.message || 'Could not unassign technician.'); } finally { setUnassigning(false); } };
   const openPayModal = (job) => { setPayModalJob(job); setShowPayModal(true); };
-  const handlePayWallet = async (jobId, discount, note) => { setPaying(true); try { const res = await adminApi.payTechnician(jobId, { discount, note }); toast.success(res.message || 'Payment approved!'); setShowPayModal(false); setPayModalJob(null); await loadData(); if (selectedJob?._id === jobId && res.data?.job) setSelectedJob(res.data.job); } catch (err) { toast.error(err.response?.data?.message || 'Payment failed'); } finally { setPaying(false); } };
+  const handlePayWallet = async (jobId, discount, note, feedback) => { setPaying(true); try { const res = await adminApi.payTechnician(jobId, { discount, note, feedback }); toast.success(res.message || 'Payment approved!'); if (res.data?.ratingWarning) toast.warning(res.data.ratingWarning); setShowPayModal(false); setPayModalJob(null); await loadData(); if (selectedJob?._id === jobId && res.data?.job) setSelectedJob(res.data.job); } catch (err) { toast.error(err.response?.data?.message || 'Payment failed'); } finally { setPaying(false); } };
+
+  const openRating = job => { setRatingJob(job); setFeedback(emptyFeedback()); };
+  const saveRating = async () => {
+    setRatingSaving(true);
+    try {
+      const res = await adminApi.rateTechnician(ratingJob._id, feedback);
+      if (selectedJob?._id === ratingJob._id) setSelectedJob(res.data.job);
+      toast.success('Technician feedback saved!');
+      setRatingJob(null);
+      await loadData();
+    } catch (error) { toast.error(error.response?.data?.message || 'Could not save feedback.'); }
+    finally { setRatingSaving(false); }
+  };
 
   // ── Socket room helpers ───────────────────────────────────────────────────────
   const openConversation = (req) => { setActiveConvReq(req); setAdminReply(''); setAdminCounterAmount(''); setLiveConversation(req.conversation || []); setConvTab('chat'); setLiveChargesStatus(req.chargesStatus || 'none'); activeReqIdRef.current = req._id; socket.emit('request:join', req._id); };
@@ -1010,7 +1069,8 @@ const TechnicianJobs = () => {
                               <FaBell />
                               {pendingReqCount > 0 && <span className="tj-action-badge">{pendingReqCount}</span>}
                             </button>
-                            <button className="tj-action-btn reschedule" title="Reschedule" onClick={() => openRescheduleModal(job)}><FaRedoAlt /></button>
+                            {canRescheduleJob(job) && (<button className="tj-action-btn reschedule" title="Reschedule" onClick={() => openRescheduleModal(job)}><FaRedoAlt /></button>)}
+                            {job.status === 'completed' && job.payment?.status === 'paid' && !job.technicianRating?.score && <button className="tj-action-btn" title="Rate technician" disabled={!can('technician_jobs', 'write')} onClick={() => openRating(job)}>★</button>}
                             {job.status === 'checkout' && <button className="tj-action-btn pay" title="Approve Payment" onClick={() => openPayModal(job)}><FaWallet /></button>}
                           </div>
                         </td>
@@ -1040,7 +1100,7 @@ const TechnicianJobs = () => {
         <JobForm form={form} setForm={setForm} onSubmit={handleAdd} onCancel={() => setShowAddModal(false)} isEditing={false} saving={saving} workTypes={workTypes} serviceTypes={serviceTypes} />
       </Modal>
       <Modal show={showEditModal} onClose={() => setShowEditModal(false)} title="Edit Job" size="lg">
-        <JobForm form={form} setForm={setForm} onSubmit={handleEdit} onCancel={() => setShowEditModal(false)} isEditing={true} saving={saving} workTypes={workTypes} serviceTypes={serviceTypes} />
+        <JobForm form={form} setForm={setForm} onSubmit={handleEdit} canPublish={jobs.find(job => job._id === editingJobId)?.status === 'draft'} onCancel={() => setShowEditModal(false)} isEditing={true} saving={saving} workTypes={workTypes} serviceTypes={serviceTypes} />
       </Modal>
 
       {/* ── RESCHEDULE MODAL ─────────────────────────────────────────────────── */}
@@ -1048,6 +1108,15 @@ const TechnicianJobs = () => {
 
       {/* ── STATUS UPDATE MODAL ──────────────────────────────────────────────── */}
       <StatusUpdateModal show={statusModal.show} targetStatus={statusModal.targetStatus} job={selectedJob} onClose={() => setStatusModal({ show: false, targetStatus: '' })} onConfirm={handleStatusUpdate} saving={updatingStatus} />
+
+      <Modal show={Boolean(ratingJob)} onClose={() => { if (!ratingSaving) setRatingJob(null); }} title="Rate technician" size="lg">
+        <p>{ratingJob?.title} · {ratingJob?.assignedTechnician?.name}</p>
+        <TechnicianRatingForm value={feedback} onChange={setFeedback} disabled={ratingSaving} />
+        <div className="d-flex gap-2 justify-content-end mt-3">
+          <button className="btn tj-btn-ghost" disabled={ratingSaving} onClick={() => setRatingJob(null)}>Cancel</button>
+          <button className="btn tj-btn-primary-gold" disabled={ratingSaving || !feedback.score} onClick={saveRating}>{ratingSaving ? 'Saving…' : 'Save Feedback'}</button>
+        </div>
+      </Modal>
 
       {/* ── PAY WALLET MODAL ─────────────────────────────────────────────────── */}
       <PayWalletModal show={showPayModal} job={payModalJob} onClose={() => { setShowPayModal(false); setPayModalJob(null); }} onPay={handlePayWallet} paying={paying} />
@@ -1067,9 +1136,9 @@ const TechnicianJobs = () => {
                 <button className="tj-btn-outline-sm" onClick={() => { setShowViewPanel(false); openEditModal(selectedJob); }}>
                   <FaEdit style={{ marginRight: 6 }} />Edit
                 </button>
-                <button className="tj-btn-outline-sm danger" onClick={() => { setShowViewPanel(false); openRescheduleModal(selectedJob); }}>
+                {canRescheduleJob(selectedJob) && (<button className="tj-btn-outline-sm danger" onClick={() => { setShowViewPanel(false); openRescheduleModal(selectedJob); }}>
                   <FaRedoAlt style={{ marginRight: 6 }} />Reschedule
-                </button>
+                </button>)}
                 <button className="tj-modal-close" onClick={() => setShowViewPanel(false)}><FaTimes /></button>
               </div>
             </div>
@@ -1165,8 +1234,8 @@ const TechnicianJobs = () => {
                 <div className="tj-overview-card">
                   <div className="tj-overview-card-title"><FaClock style={{ color: '#A5732F', marginRight: 6 }} />Job Timeline</div>
                   <div className="tj-timeline">
-                    {selectedJob.reachedAt && <div className="tj-timeline-row"><span className="tj-timeline-dot reached" /><div><div className="tj-timeline-label">Technician Reached</div><div className="tj-timeline-time">{fmtDT(selectedJob.reachedAt)}</div><TimelineDistance meters={selectedJob.reachedStatus?.distanceMeters} /></div></div>}
-                    {selectedJob.jobCompletedAt && <div className="tj-timeline-row"><span className="tj-timeline-dot completed" /><div><div className="tj-timeline-label">Job Completed</div><div className="tj-timeline-time">{fmtDT(selectedJob.jobCompletedAt)}</div><TimelineDistance meters={selectedJob.completedStatus?.distanceMeters} /></div></div>}
+                    {selectedJob.reachedAt && <div className="tj-timeline-row"><span className="tj-timeline-dot reached" /><div><div className="tj-timeline-label">Technician Reached</div><div className="tj-timeline-time">{fmtDT(selectedJob.reachedAt)}</div>{selectedJob.reachedStatus?.siteStatus && <div className="tj-timeline-time">{selectedJob.reachedStatus.siteStatus === 'onsite' ? 'Onsite' : 'Offsite'}</div>}<TimelineDistanceMiles miles={selectedJob.reachedStatus?.distanceMiles} /></div></div>}
+                    {selectedJob.jobCompletedAt && <div className="tj-timeline-row"><span className="tj-timeline-dot completed" /><div><div className="tj-timeline-label">Job Completed</div><div className="tj-timeline-time">{fmtDT(selectedJob.jobCompletedAt)}</div>{selectedJob.completedStatus?.siteStatus && <div className="tj-timeline-time">{selectedJob.completedStatus.siteStatus === 'onsite' ? 'Onsite' : 'Offsite'}</div>}<TimelineDistanceMiles miles={selectedJob.completedStatus?.distanceMiles} legacyMeters={selectedJob.completedStatus?.distanceMeters} /></div></div>}
                     {selectedJob.jobDurationMinutes != null && <div className="tj-timeline-row"><span className="tj-timeline-dot duration" /><div><div className="tj-timeline-label">Total Duration</div><div className="tj-timeline-time tj-duration-value">{formatDuration(selectedJob.jobDurationMinutes)}</div></div></div>}
                   </div>
                 </div>
@@ -1209,8 +1278,16 @@ const TechnicianJobs = () => {
                               </div>
                               {task.isDone && (
                                 <div style={{ margin: '0 0 0.35rem 1.9rem', padding: '0.65rem 0.75rem', background: '#fff', border: '1px solid #e8ecef', borderRadius: 7 }}>
-                                  {task.completionNote && (
-                                    <div style={{ marginBottom: completionImage || completionSignature ? '0.65rem' : 0 }}>
+                                {(task.distanceMiles != null || task.distanceMeters != null) && (
+                                  <div style={{ marginBottom: task.completionNote || completionImage || completionSignature ? '0.65rem' : 0 }}>
+                                    <div className="tj-ov-label">DISTANCE FROM JOB SITE</div>
+                                    <div style={{ color: '#495057', fontSize: '0.82rem' }}>
+                                      {formatDistanceMiles(task.distanceMiles, task.distanceMeters)}
+                                    </div>
+                                  </div>
+                                )}
+                                {task.completionNote && (
+                                  <div style={{ marginBottom: completionImage || completionSignature ? '0.65rem' : 0 }}>
                                       <div className="tj-ov-label">TECHNICIAN NOTE</div>
                                       <div style={{ color: '#495057', fontSize: '0.82rem', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{task.completionNote}</div>
                                     </div>
@@ -1265,10 +1342,20 @@ const TechnicianJobs = () => {
                 </div>
               )}
 
+              {selectedJob.status === 'completed' && selectedJob.payment?.status === 'paid' && (
+                <div className="tj-overview-card">
+                  <div className="tj-overview-card-title">Technician rating</div>
+                  {selectedJob.technicianRating?.score ? <p>★ {selectedJob.technicianRating.score}/5 — {RATING_LABELS[selectedJob.technicianRating.score - 1]}</p>
+                    : <button className="tj-btn-primary-gold" disabled={!can('technician_jobs', 'write')} onClick={() => openRating(selectedJob)}>Rate technician</button>}
+                  {selectedJob.privateTechnicianFeedback?.note && <p className="text-muted">Team note: {selectedJob.privateTechnicianFeedback.note.replace(/<[^>]*>/g, ' ').trim()}</p>}
+                  {selectedJob.privateTechnicianFeedback?.criteria && <div className="tj-rating-criteria">{RATING_CRITERIA.filter(([key]) => selectedJob.privateTechnicianFeedback.criteria[key]).map(([key, label]) => <div key={key}>{selectedJob.privateTechnicianFeedback.criteria[key] === 'up' ? '👍' : '👎'} {label}</div>)}</div>}
+                </div>
+              )}
+
               {/* Admin actions */}
               <div className="tj-admin-actions-card">
                 <div className="tj-overview-card-title">Admin actions</div>
-                <button className="tj-admin-action-link" onClick={() => { setShowViewPanel(false); openRescheduleModal(selectedJob); }}><FaRedoAlt style={{ marginRight: 8 }} />Reschedule</button>
+                {canRescheduleJob(selectedJob) && (<button className="tj-admin-action-link" onClick={() => { setShowViewPanel(false); openRescheduleModal(selectedJob); }}><FaRedoAlt style={{ marginRight: 8 }} />Reschedule</button>)}
                 <button className="tj-admin-action-link" onClick={() => { setShowViewPanel(false); openEditModal(selectedJob); }}><FaEdit style={{ marginRight: 8 }} />Edit job</button>
                 {selectedJob.status === 'checkout' && <button className="tj-admin-action-link" onClick={() => openPayModal(selectedJob)}><FaWallet style={{ marginRight: 8 }} />Approve payment</button>}
                 <button className="tj-admin-action-link danger" onClick={() => handleDelete(selectedJob._id)}><FaTrash style={{ marginRight: 8 }} />Cancel job</button>
@@ -1299,9 +1386,9 @@ const TechnicianJobs = () => {
                         <FaExchangeAlt style={{ marginRight: 8 }} />Unassign technician
                       </button>
                     )}
-                    <button className="tj-admin-action-link" onClick={() => { setShowViewPanel(false); openRescheduleModal(selectedJob); }}>
+                    {canRescheduleJob(selectedJob) && (<button className="tj-admin-action-link" onClick={() => { setShowViewPanel(false); openRescheduleModal(selectedJob); }}>
                       <FaCalendarAlt style={{ marginRight: 8, color: '#A5732F' }} />Reschedule
-                    </button>
+                    </button>)}
                     <button className="tj-admin-action-link" onClick={() => { setShowViewPanel(false); openEditModal(selectedJob); }}>
                       <FaEdit style={{ marginRight: 8, color: '#A5732F' }} />Edit job
                     </button>
@@ -1320,20 +1407,20 @@ const TechnicianJobs = () => {
                 <div className="tj-overview-card">
                   <div className="tj-overview-card-title" style={{ color: '#A5732F' }}>⏱ Timeline</div>
                   <div className="tj-sidebar-timeline">
-                    <div className="tj-stl-row"><span className="tj-stl-dot" />Job created{selectedJob.createdAt && <span className="tj-stl-time">{fmtDT(selectedJob.createdAt)}</span>}</div>
+                    <div className="tj-stl-row"><span className="tj-stl-dot" /><span className="tj-stl-label">Job created</span>{selectedJob.createdAt && <span className="tj-stl-time">{fmtDT(selectedJob.createdAt)}</span>}</div>
                     {selectedJob.assignedTechnician?.name && (
                       <div className="tj-stl-row"><span className="tj-stl-dot assigned" />
-                        <span>Tech <span style={{ color: '#A5732F', fontWeight: 600 }}>{selectedJob.assignedTechnician.name}</span> assigned</span>
+                        <span className="tj-stl-label">Tech <span style={{ color: '#A5732F', fontWeight: 600 }}>{selectedJob.assignedTechnician.name}</span> assigned</span>
                       </div>
                     )}
-                    {selectedJob.reachedAt && <div className="tj-stl-row"><span className="tj-stl-dot reached" />Arrived<span className="tj-stl-time">{fmtDT(selectedJob.reachedAt)}<TimelineDistance meters={selectedJob.reachedStatus?.distanceMeters} /></span></div>}
-                    {selectedJob.jobStartedAt && <div className="tj-stl-row"><span className="tj-stl-dot inprogress" />Service started<span className="tj-stl-time">{fmtDT(selectedJob.jobStartedAt)}</span></div>}
-                    {selectedJob.jobCompletedAt && <div className="tj-stl-row"><span className="tj-stl-dot completed" />Completed<span className="tj-stl-time">{fmtDT(selectedJob.jobCompletedAt)}<TimelineDistance meters={selectedJob.completedStatus?.distanceMeters} /></span></div>}
+                    {selectedJob.reachedAt && <div className="tj-stl-row"><span className="tj-stl-dot reached" /><span className="tj-stl-label">Arrived</span><span className="tj-stl-time">{fmtDT(selectedJob.reachedAt)}<TimelineDistanceMiles miles={selectedJob.reachedStatus?.distanceMiles} /></span></div>}
+                    {selectedJob.jobStartedAt && <div className="tj-stl-row"><span className="tj-stl-dot inprogress" /><span className="tj-stl-label">Service started</span><span className="tj-stl-time">{fmtDT(selectedJob.jobStartedAt)}</span></div>}
+                    {selectedJob.jobCompletedAt && <div className="tj-stl-row"><span className="tj-stl-dot completed" /><span className="tj-stl-label">Completed</span><span className="tj-stl-time">{fmtDT(selectedJob.jobCompletedAt)}{selectedJob.completedStatus?.siteStatus && <span> · {selectedJob.completedStatus.siteStatus === 'onsite' ? 'Onsite' : 'Offsite'}</span>}<TimelineDistanceMiles miles={selectedJob.completedStatus?.distanceMiles} legacyMeters={selectedJob.completedStatus?.distanceMeters} /></span></div>}
                     {!selectedJob.reachedAt && !selectedJob.jobCompletedAt && (
                       <>
-                        <div className="tj-stl-row muted"><span className="tj-stl-dot muted" />On the Way<span className="tj-stl-note">NA</span></div>
-                        <div className="tj-stl-row muted"><span className="tj-stl-dot muted" />Service started<span className="tj-stl-note">NA</span></div>
-                        <div className="tj-stl-row muted"><span className="tj-stl-dot muted" />Completed<span className="tj-stl-note">NA</span></div>
+                        <div className="tj-stl-row muted"><span className="tj-stl-dot muted" /><span className="tj-stl-label">On the Way</span><span className="tj-stl-note">NA</span></div>
+                        <div className="tj-stl-row muted"><span className="tj-stl-dot muted" /><span className="tj-stl-label">Service started</span><span className="tj-stl-note">NA</span></div>
+                        <div className="tj-stl-row muted"><span className="tj-stl-dot muted" /><span className="tj-stl-label">Completed</span><span className="tj-stl-note">NA</span></div>
                       </>
                     )}
                   </div>

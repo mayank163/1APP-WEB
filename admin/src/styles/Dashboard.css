@@ -3,7 +3,7 @@
    ========================================================================== */
 
 .dashboard-page {
-    background: #f7f1e8;
+    /* background: #f7f1e8; */
     min-height: 100%;
     padding-bottom: 24px;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -552,7 +552,7 @@
 
 /* ── Dashboard composition ────────────────────────────────────────────── */
 .dashboard-page {
-    background: #fff;
+    /* background: #fff; */
     min-height: 100%;
     padding: 0 0 24px;
 }

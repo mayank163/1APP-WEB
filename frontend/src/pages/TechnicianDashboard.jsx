@@ -392,6 +392,7 @@ const JobDetailModal = ({ jobId, onClose }) => {
                 {job.estimatedTime && <span>⏱ Est. time: <strong>{job.estimatedTime}</strong></span>}
                 {job.serviceDate && <span>📅 Service: <strong>{fmtDT(job.serviceDate)}</strong></span>}
                 <span>Status: {reqStatusBadge(job.status)}</span>
+                {job.technicianRating?.score && <span>★ Work order rating: {job.technicianRating.score}/5</span>}
               </div>
             </div>
 
@@ -1193,6 +1194,8 @@ const TechnicianDashboard = () => {
       if (dashRes.data.success) {
         const tech = dashRes.data.data.technician;
         setSummary({
+          rating: tech.rating ?? null,
+          ratingCount: tech.ratingCount || 0,
           totalJobsDone: tech.totalJobsDone || 0,
           totalEarnings: tech.totalEarnings || 0,
           totalWithdrawn: tech.totalWithdrawn || 0,
@@ -1364,6 +1367,7 @@ const TechnicianDashboard = () => {
 
     socket.on('job:invitation', refreshRequests);
     socket.on('job:availability', loadData);
+    socket.on('job:updated', loadData);
     socket.on('job:new', onJobNew);
     socket.on('request:message', onRequestMessage);
     socket.on('request:status', onRequestStatus);
@@ -1377,6 +1381,7 @@ const TechnicianDashboard = () => {
     return () => {
       socket.off('job:invitation', refreshRequests);
       socket.off('job:availability', loadData);
+      socket.off('job:updated', loadData);
       socket.off('job:new', onJobNew);
       socket.off('request:message', onRequestMessage);
       socket.off('request:status', onRequestStatus);
@@ -1739,6 +1744,7 @@ const TechnicianDashboard = () => {
       {/* ── Stats row ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 12, marginBottom: 16 }}>
         {[
+          { label: 'Average Rating', value: summary.rating == null ? 'Not yet rated' : `${Number(summary.rating).toFixed(2)}/5 (${summary.ratingCount} ratings)`, color: '#A5732F' },
           { label: 'Total Jobs', value: summary.totalJobsDone, color: '#1a1208' },
           { label: 'Total Earned', value: `₹${summary.totalEarnings.toLocaleString()}`, color: '#A5732F' },
           { label: 'Withdrawn', value: `₹${summary.totalWithdrawn.toLocaleString()}`, color: '#dc3545' },
@@ -1811,6 +1817,7 @@ const TechnicianDashboard = () => {
                     <div>
                       <div style={{ fontWeight: 700, fontSize: '1rem', color: '#1a1208' }}>{job.title}</div>
                       <div style={{ fontSize: '0.8rem', color: '#6c757d' }}>{job.category} · {job.location}</div>
+                      {job.technicianRating?.score && <div style={{ color: '#A5732F', marginTop: 6 }}>★ Work order rating: {job.technicianRating.score}/5</div>}
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontWeight: 800, color: '#A5732F', fontSize: '1.05rem' }}>₹{job.budget}</div>
@@ -1865,6 +1872,7 @@ const TechnicianDashboard = () => {
                     <div>
                       <div style={{ fontWeight: 700, fontSize: '1rem', color: '#1a1208' }}>{job.title}</div>
                       <div style={{ fontSize: '0.8rem', color: '#6c757d' }}>{job.category} · {job.location}</div>
+                      {job.technicianRating?.score && <div style={{ color: '#A5732F', marginTop: 6 }}>★ Work order rating: {job.technicianRating.score}/5</div>}
                     </div>
                     <span style={S.badge(
                       job.status === 'inprogress' ? '#2563eb' : job.status === 'completed' ? '#16a34a' : '#A5732F',
@@ -1883,10 +1891,30 @@ const TechnicianDashboard = () => {
                         margin: '8px 0', border: '1px solid #f0e8dc', fontSize: '0.8rem',
                         display: 'flex', flexDirection: 'column', gap: 4 }}>
                       {alreadyReached && (
-                        <div><b style={{ color: '#2563eb' }}>📍 Reached:</b> {fmtDT(job.reachedAt)}</div>
+                        <>
+                          <div><b style={{ color: '#2563eb' }}>📍 Reached:</b> {fmtDT(job.reachedAt)}</div>
+                          {job.reachedStatus?.siteStatus && (
+                            <div>
+                              <b style={{ color: job.reachedStatus.siteStatus === 'onsite' ? '#16a34a' : '#dc3545' }}>
+                                Site status:
+                              </b>{' '}
+                              {job.reachedStatus.siteStatus === 'onsite' ? 'Onsite' : 'Offsite'}
+                            </div>
+                          )}
+                        </>
                       )}
                       {alreadyCompleted && (
-                        <div><b style={{ color: '#16a34a' }}>✅ Completed:</b> {fmtDT(job.jobCompletedAt)}</div>
+                        <>
+                          <div><b style={{ color: '#16a34a' }}>✅ Completed:</b> {fmtDT(job.jobCompletedAt)}</div>
+                          {job.completedStatus?.siteStatus && (
+                            <div>
+                              <b style={{ color: job.completedStatus.siteStatus === 'onsite' ? '#16a34a' : '#dc3545' }}>
+                                Completion site status:
+                              </b>{' '}
+                              {job.completedStatus.siteStatus === 'onsite' ? 'Onsite' : 'Offsite'}
+                            </div>
+                          )}
+                        </>
                       )}
                       {job.jobDurationMinutes != null && (
                         <div><b style={{ color: '#A5732F' }}>⏱ Duration:</b> {formatDuration(job.jobDurationMinutes)}</div>
@@ -1985,13 +2013,14 @@ const TechnicianDashboard = () => {
                                               { hour: '2-digit', minute: '2-digit' })}
                                           </span>
                                         )}
-                                        {t.distanceMeters != null && (
+                                        {(t.distanceMiles != null || t.distanceMeters != null) && (
                                           <span style={{ fontSize: '0.65rem', fontWeight: 700,
-                                              color: t.distanceMeters <= 200 ? '#16a34a'
-                                                : t.distanceMeters <= 1000 ? '#b45309' : '#dc3545' }}>
-                                            📏 {t.distanceMeters >= 1000
-                                              ? `${(t.distanceMeters / 1000).toFixed(1)} km`
-                                              : `${t.distanceMeters} m`}
+                                              color: (t.distanceMiles ?? t.distanceMeters / 1609.344) <= 0.124274
+                                                ? '#16a34a'
+                                                : (t.distanceMiles ?? t.distanceMeters / 1609.344) <= 0.621371
+                                                  ? '#b45309'
+                                                  : '#dc3545' }}>
+                                            📏 {(t.distanceMiles ?? t.distanceMeters / 1609.344).toFixed(2)} mi
                                           </span>
                                         )}
                                       </div>

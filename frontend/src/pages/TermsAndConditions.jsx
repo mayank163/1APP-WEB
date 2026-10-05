@@ -1,26 +1,180 @@
 import React, { useState, useEffect, useRef } from 'react';
+import './PrivacyPolicy.css';
 
-const SECTIONS = [
-    { id: 'services', title: '1. SERVICES', content: `(a) The Services include the provision of the Platform that enables you to arrange and schedule different home-based services with independent third-party service providers of those services ("Service Professionals"). As a part of the Services, 1APP facilitates the transfer of payments to Service Professionals for the services they render to you and collects payments on behalf of such Service Professionals.\n\n(b) The services rendered by Service Professionals are referred to as "Pro Services". The term "Services" does not include the Pro Services. 1APP does not provide the Pro Services. Unless expressly stated otherwise, Service Professionals are solely liable and responsible for the Pro Services that they offer or otherwise provide through the Platform. 1APP and its affiliates do not provide the Pro Services. Service Professionals are not employees of 1APP or its affiliates. Service Professionals are not the agents, contractors, or partners of 1APP or its affiliates. Service Professionals do not have the authority to bind or represent 1APP.\n\n(c) The Platform is for your personal and non-commercial use only, unless otherwise agreed upon us in accordance with the terms of a separate agreement. Please note that the Platform is intended for use only within India. You agree that if you install the app/use the Services on the Platform from a legal jurisdiction other than the territory of India, you will be deemed to have accepted the net terms and conditions applicable in that jurisdiction.\n\n(d) The Services are made available under various brands owned by or otherwise licensed to 1APP and its affiliates.\n\n(e) A key part of the Services is 1APP's ability to send you text messages, electronic mails, or WhatsApp messages, including in connection with your bookings, your utilization of the Services, or as a part of its promotional and marketing strategies. While you may opt out of receiving these text messages by contacting us at privacy@1app.com or through the in-Platform settings, you agree and acknowledge that this may impact 1APP's ability to provide the Services (or a part of the Services) to you.\n\n(f) In certain instances, you may be required to furnish identification proof to avail the Services or the Pro Services, and hereby agree to do so. A failure to comply with this request may result in your inability to use the Services or Pro Services.\n\n(g) 1APP Credits:\n\ni. 1APP may, in its sole discretion, offer promotional codes that may be redeemed for credits, other features, or benefits related to the Services, and/or Pro Services, subject to any additional terms that 1APP may apply on a promotional order ("1APP Credits").\n\nii. You agree that (i) you shall use 1APP Credits in a lawful manner, and only for the purposes specified by such 1APP Credits, (ii) you shall not duplicate, sell, or transfer the 1APP Credits in any manner (including by posting such codes on a public forum) unless you have 1APP's express prior consent to do so, (iii) 1APP Credits may be disabled by 1APP at any time for any reason without any liability to 1APP, (iv) 1APP Credits are not valid for cash, and (v) 1APP Credits may expire prior to your use.` },
-    { id: 'account', title: '2. ACCOUNT CREATION', content: `(a) To avail the Services, you will be required to create an account on the Platform ("Account"). For this Account, you may be required to furnish certain details, including but not limited to your phone number. To create an Account, you must be at least 18 years of age.\n\n(b) You warrant that all information furnished in connection with your Account is and shall remain accurate and true. You agree to promptly update your details on the Platform in the event of any change to or modification of this information.\n\n(c) You are solely responsible for maintaining the security and confidentiality of your Account and agree to immediately notify us of any disclosure or unauthorised use of your Account or any other breach of security with respect to your Account.\n\n(d) You are liable and accountable for all activities that take place through your Account, including activities performed by persons other than you. We shall not be liable for any unauthorised access to your Account.` },
-    { id: 'user-content', title: '3. USER CONTENT', content: `(a) Our Platform may contain interactive features or services that allow users who have created an Account with us to post, upload, publish, display, transmit, or submit comments, reviews, suggestions, feedback, ideas, or other content on or through the Platform ("User Content").\n\n(b) As part of the effective provision of the Services and quality control purposes, we may request reviews from you about Service Professionals and you agree and acknowledge that Service Professionals may provide reviews about you to us. You must not knowingly provide false, inaccurate, or misleading information in respect of the reviews. Reviews will be used by us for quality control purposes and to determine whether Customers and Service Professionals are appropriate users of the Platform.\n\n(c) You grant us a non-exclusive, worldwide, perpetual, irrevocable, transferable, sublicensable, and royalty-free licence to (i) use, publish, display, store, host, transfer, process, communicate, distribute, make available, modify, adapt, translate, and create derivative works of, the User Content, for the functioning of, and in connection with, the Services and (ii) use the User Content for the purposes of advertising and promoting the Services, or furnishing evidence before a court or authority of competent jurisdiction under applicable laws.` },
-    { id: 'consent', title: '4. CONSENT TO USE DATA', content: `(a) You agree that we may, in accordance with our Privacy Policy, collect and use your personal data. The Privacy Policy is available at https://1app.com/privacy-policy and it explains the categories of personal data that we collect or otherwise process about you and the manner in which we process such data.\n\n(b) In addition to any consent you may provide pursuant to the Privacy Policy, you hereby consent to us sharing your information with our affiliates or other third-party service providers. We may use information and data pertaining to your use of the Services for provision of the Services, analytics, trend identification, and purposes of statistics to further enhance the effectiveness and efficiency of our Services, and provision of beneficial proposals, and other services by us or any third parties.` },
-    { id: 'bookings', title: '5. BOOKINGS', content: `(a) Orders: The Platform permits you to request various Pro Services at a time of your choosing based on availability. To make a booking, you should follow the instructions on the Platform and provide necessary information. We will make reasonable efforts to find a Service Professional who is able to provide your chosen service at the requested time.\n\n(b) Confirmation: Once you place a request we will provide confirmation of the booking via SMS, email, or a push notification. Once your booking has been confirmed, you will be required to make the payment in accordance with these Terms or as indicated on the Platform.\n\n(c) Cancellations: Bookings that are cancelled before confirmation on the Platform will not be charged, or in conditions as per the applicable cancellation policy.` },
-    { id: 'pricing', title: '6. PRICING, FEES, AND PAYMENT TERMS', content: `(a) 1APP reserves the right to charge you for the different Services you may avail and/or for any other facilities you may use on, from time to time, on or via the Platform.\n\n(b) Charges and Fees in respect of Pro Services:\n\ni. In respect of Pro Services that you seek to avail through the Platform, you shall be required to pay Service Professionals the amount indicated on the Platform as well as upfront amounts towards (a) any additional Pro Services you may avail, (b) out-of-pocket expenses incurred by the Service Professional, and (c) expenses arising out of the purchase of goods required to provide the Pro Services ("Charges").\n\nii. 1APP shall notify you of the applicable Charges, Fees, and payment methods at the time of booking. Generally, you may make payments for Pro Services through credit cards, debit cards, net banking, wallets, UPI or COD.` },
-    { id: 'conduct', title: '7. CUSTOMER CONDUCT', content: `1APP prohibits discrimination against Service Professionals on the basis of race, religion, caste, national origin, disability, sexual orientation, sex, marital status, gender identity, age or any other characteristic that may be protected under applicable law. You agree to treat Service Professionals with courtesy and respect.` },
-    { id: 'third-party', title: '8. THIRD PARTY SERVICES', content: `The Platform may include services, content, documents, and information owned by, licensed to, or otherwise made available by a third party ("Third Party Services") or contain links to Third Party Services.` },
-    { id: 'responsibilities', title: '9. YOUR RESPONSIBILITIES', content: `You are responsible for ensuring that your use of the Platform and the Services complies with all applicable laws and regulations. You agree not to misuse the Platform or help anyone else do so.` },
-    { id: 'ip', title: '10. OUR INTELLECTUAL PROPERTY', content: `All intellectual property rights in the Platform and the Services are owned by or licensed to 1APP. You may not use our intellectual property without our prior written consent.` },
-    { id: 'termination', title: '11. TERM AND TERMINATION', content: `These Terms shall remain in effect until terminated. 1APP may terminate or suspend your access to the Platform at any time, with or without cause, with or without notice.` },
-    { id: 'disclaimers', title: '12. DISCLAIMERS AND WARRANTIES', content: `The Platform and Services are provided on an "as is" and "as available" basis without any warranties of any kind, either express or implied.` },
-    { id: 'indemnity', title: '13. INDEMNITY', content: `You agree to indemnify and hold harmless 1APP and its officers, directors, employees, and agents from any claims, damages, losses, liabilities, and expenses arising out of your use of the Platform or violation of these Terms.` },
-    { id: 'jurisdiction', title: '14. JURISDICTION AND DISPUTE RESOLUTION', content: `These Terms shall be governed by the laws of India. Any disputes arising out of or in connection with these Terms shall be subject to the exclusive jurisdiction of the courts in New Delhi, India.` },
-    { id: 'grievance', title: '15. GRIEVANCE REDRESSAL', content: `If you have any grievances regarding the Services, you may contact our Grievance Officer at grievance@1appcompany.com. We will endeavour to resolve your grievance within 30 days of receipt.` },
-    { id: 'miscellaneous', title: '16. MISCELLANEOUS PROVISIONS', content: `These Terms constitute the entire agreement between you and 1APP with respect to the subject matter hereof. If any provision of these Terms is found to be invalid or unenforceable, the remaining provisions shall continue in full force and effect.` },
-];
+const TERMS_TEXT = `1App ("1App", "we", "us", or "our") provides a mobile application and website that allows customers to discover, book, manage, and pay for technology-related services and support (the "Services"). These Terms and Conditions ("Terms") govern your access to and use of the 1App application, website, and associated services.
+
+By creating an account or using the Services, you confirm that you have read, understood, and agree to be bound by these Terms and our Privacy Policy, as updated from time to time.
+
+**1. ACCEPTANCE OF TERMS**
+
+These Terms form a legally binding agreement between you and 1App.
+
+By accessing or using the Services, you represent that you are at least 18 years of age, have full legal capacity to enter into this agreement, and are authorized to act on behalf of any entity for which you are using the Services.
+
+If you do not agree to these Terms, you must not use the Services.
+
+**2. PLATFORM DESCRIPTION**
+
+1App operates as a technology marketplace that connects customers with service professionals and support providers.
+
+The platform may facilitate booking, scheduling, technician assignment, customer support, payment processing, communication, service updates, and related administrative services.
+
+1App does not itself provide all services listed through the platform. Service professionals and support providers are independent parties and are solely responsible for the quality, safety, and completion of the services they provide.
+
+**3. ACCOUNT REGISTRATION**
+
+To use certain features of the platform, you may need to create an account.
+
+You agree to provide accurate, current, and complete information during registration and to update that information promptly when it changes.
+
+You are responsible for safeguarding your account credentials and for all activity that occurs through your account, whether or not authorized by you.
+
+We reserve the right to suspend or terminate accounts that are inaccurate, fraudulent, abusive, or otherwise in violation of these Terms.
+
+**4. BOOKINGS AND APPOINTMENTS**
+
+You may request services through the platform by selecting a service, time, date, location, and any relevant requirements.
+
+1App will attempt to match your request with an available service professional or provider. Availability is subject to the service provider's schedule, location, and operational constraints.
+
+Once a booking is accepted or confirmed, the booking becomes subject to the applicable service terms, payment requirements, and scheduling conditions.
+
+You agree to provide accurate service details, access information, and any required instructions that may affect the service.
+
+**5. PRICING, FEES, AND PAYMENT**
+
+The price of services, charges, and fees may be displayed on the platform before confirmation of a booking.
+
+You agree to pay all amounts due for the services selected, including applicable taxes, service charges, or additional fees communicated at the time of booking or service completion.
+
+Payments may be processed through authorized payment methods supported by 1App, including card payments or other approved methods. Payment processing may involve third-party providers.
+
+If a payment fails, is disputed, or is otherwise not processed, 1App may suspend or cancel the related service request until the issue is resolved.
+
+**6. CANCELLATIONS, RESCHEDULING, AND REFUNDS**
+
+Cancellations or rescheduling may be subject to the platform's cancellation policy, the service provider's terms, and the timing of the request.
+
+If a booking is cancelled before confirmation or within the applicable free cancellation window, the amount charged may be refunded or reversed in accordance with the policy presented at the time of booking.
+
+Refunds, credits, or adjustments for completed services are determined based on the circumstances of the service, the applicable policy, and any dispute resolution process available through the platform.
+
+**7. SERVICE STANDARDS AND PROFESSIONAL RESPONSIBILITIES**
+
+Service providers are responsible for the services they provide and must comply with applicable laws, professional standards, and platform requirements.
+
+You agree to treat service professionals respectfully and to provide a safe and suitable environment for the service to be completed.
+
+If a service is not performed as described, is delayed materially, or fails to meet agreed standards, you may submit a complaint or request support through the platform.
+
+1App may review disputes and determine reasonable remedies, but 1App does not guarantee the outcome of any service provider's work.
+
+**8. CUSTOMER CONDUCT**
+
+You agree not to use the Services for unlawful, abusive, fraudulent, or harmful purposes.
+
+You must not harass, threaten, discriminate against, or otherwise mistreat service professionals, other customers, or 1App staff.
+
+You agree not to interfere with the operation of the platform, attempt to bypass restrictions, or misuse communication features, support channels, or payment systems.
+
+**9. USER CONTENT AND COMMUNICATIONS**
+
+You may submit reviews, feedback, chat messages, photos, support requests, or other content through the platform.
+
+You represent that any content you provide is accurate, lawful, and does not infringe the rights of others.
+
+You grant 1App a non-exclusive, worldwide, royalty-free license to use, store, process, display, and communicate content that is necessary to provide the Services and improve the platform.
+
+1App may moderate, review, store, or remove content that violates these Terms, applicable law, or the platform's policies.
+
+**10. LOCATION, DEVICE, AND ACCESS PERMISSIONS**
+
+Certain features may require access to device hardware or location information, including your location, camera, microphone, photo files, or notifications.
+
+By enabling the relevant permissions, you consent to the use of such features as necessary to provide the requested service, support experience, or booking process.
+
+You acknowledge that disabling required permissions may prevent certain platform features from working correctly.
+
+**11. INTELLECTUAL PROPERTY**
+
+All content, branding, software, design, features, and materials used in or related to the platform are the property of 1App or its licensors.
+
+You may not reproduce, distribute, modify, reverse engineer, or commercially exploit the platform or any content without prior written permission.
+
+**12. PRIVACY AND DATA USE**
+
+Your use of the Services is also governed by our Privacy Policy.
+
+We may collect, process, and share personal information for account management, service execution, support, payment verification, fraud prevention, communication, analytics, and compliance with applicable law.
+
+By using the Services, you consent to the collection, use, and disclosure of your information as described in the Privacy Policy.
+
+**13. LIMITATION OF LIABILITY**
+
+To the maximum extent permitted by applicable law, 1App shall not be liable for indirect, incidental, special, consequential, or punitive damages arising out of or relating to the use of the Services.
+
+1App does not guarantee uninterrupted availability, error-free operation, or the completion of any service by a third-party provider.
+
+Our total liability for any claim arising from the Services shall not exceed the amount actually paid by you to 1App for the relevant service, if any.
+
+**14. INDEMNIFICATION**
+
+You agree to indemnify and hold harmless 1App, its affiliates, officers, directors, employees, and agents from any claims, damages, liabilities, losses, or expenses arising out of your use of the Services, your violation of these Terms, or your infringement of any third-party rights.
+
+**15. TERM AND TERMINATION**
+
+These Terms remain in effect until terminated.
+
+1App may suspend or terminate your access to the Services at any time if you breach these Terms, fail to pay amounts due, engage in fraudulent activity, or otherwise create legal, operational, or security risk.
+
+Upon termination, your right to use the Services will end immediately, although any obligations that survive termination will continue to apply.
+
+**16. DISPUTE RESOLUTION AND GOVERNING LAW**
+
+These Terms are governed by the laws of the Republic of India, without regard to conflict-of-law principles.
+
+Any disputes arising out of or relating to these Terms or the Services shall first be attempted to be resolved amicably through the support and communication channels available on the platform.
+
+If a dispute cannot be resolved informally, it shall be subject to the exclusive jurisdiction of the competent courts located in New Delhi, India.
+
+**17. GRIEVANCE REDRESSAL**
+
+If you have questions, complaints, or concerns regarding the Services or these Terms, you may contact us through the support channels available in the application or through the official support contact listed on the platform.
+
+We will make reasonable efforts to address your concern promptly and in accordance with applicable law.
+
+**18. MISCELLANEOUS**
+
+These Terms, together with the Privacy Policy and any supplemental policies, constitute the entire agreement between you and 1App regarding your use of the Services.
+
+If any provision of these Terms is found to be invalid, unenforceable, or illegal, the remaining provisions shall remain in full force and effect.
+
+1App may revise these Terms from time to time. The most recent version will be posted on the platform and will be effective as of the date of publication.
+
+By continuing to use the Services after changes are made, you agree to the updated Terms.`;
+
+const firstSectionIndex = TERMS_TEXT.indexOf('**1. ACCEPTANCE OF TERMS');
+const INTRO = TERMS_TEXT.slice(0, firstSectionIndex).trim();
+const SECTIONS = TERMS_TEXT.slice(firstSectionIndex).split(/(?=^\*\*\d+\. )/m).map(section => {
+    const [heading, ...body] = section.split('\n');
+    const title = heading.replace(/^\*\*|\*\*$/g, '');
+    const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    return { id, title, content: body.join('\n').trim() };
+});
+
+const renderInline = (text) => text.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\(https?:\/\/[^)]+\))/g).map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) return <strong key={index}>{part.slice(2, -2)}</strong>;
+    const link = part.match(/^\[([^\]]+)\]\((https?:\/\/[^)]+)\)$/);
+    if (link) return <a key={index} href={link[2]} target="_blank" rel="noreferrer" style={{ color: '#000000' }}>{link[1]}</a>;
+    return part;
+});
+
+const renderParagraphs = (content, style) => content.split(/\n\s*\n/).filter(Boolean).map((paragraph, index) => (
+    <p key={index} style={{ ...style, whiteSpace: 'pre-line' }}>{renderInline(paragraph)}</p>
+));
 
 export default function TermsAndConditions() {
-    const [active, setActive] = useState('services');
+    const [active, setActive] = useState(SECTIONS[0]?.id || '');
     const sectionRefs = useRef({});
 
     useEffect(() => {
@@ -32,54 +186,36 @@ export default function TermsAndConditions() {
         return () => observer.disconnect();
     }, []);
 
-    const scrollTo = (id) => {
-        sectionRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    };
+    const scrollTo = (id) => sectionRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     return (
-        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 20px', display: 'grid', gridTemplateColumns: '1fr 280px', gap: 40, alignItems: 'start' }}>
-
-            {/* Left: Content */}
-            <div>
-                <h1 style={{ fontWeight: 900, fontSize: '2rem', marginBottom: 6 }}>TERMS AND CONDITIONS</h1>
-                <p style={{ color: '#888', fontStyle: 'italic', marginBottom: 24 }}>Last Updated: 11th April, 2023</p>
-
-                <p style={{ fontSize: '14px', lineHeight: 1.8, color: '#333', marginBottom: 16 }}>
-                    These terms and conditions ("Terms") govern the use of software made available on or through, and/or services provided by, 1APP Company (the "Company", "we", "us", or "1APP"), including the "Platform" and various sub-services made available on or through the Platform. The "Services", These Terms also include our privacy policy available at{' '}
-                    <a href="/privacy-policy" style={{ color: '#000000' }}>https://1app.com/privacy-policy</a>{' '}
-                    ("Privacy Policy"), and any guidelines, additional, or supplemental terms, policies, and disclaimers made available or issued by us from time to time ("Supplemental Terms"). The Privacy Policy and the Supplemental Terms form an integral part of these Terms. In the event of a conflict between these Terms and the Privacy Policy or the Supplemental Terms, the Privacy Policy or the Supplemental Terms shall prevail.
-                </p>
-                <p style={{ fontSize: '14px', lineHeight: 1.8, color: '#333', marginBottom: 16 }}>
-                    The Terms constitute a binding and enforceable legal contract between 1APP Company (indeed, a company incorporated under the Companies Act, 2013 with its registered address at Unit No. 101, Ground Floor, Splendor Forum, Plot No. 3, Jasola District Centre, New Delhi - 110025, India) and its group of firms or its affiliates (the "1APP", "we", "us", or "our") and you, a user of the Services, or any legal entity that access the Services (defined below) on behalf of such user ("you" or "Customer"). By using the Services, you represent and warrant that you have full legal capacity and authority to agree to and bind yourself to these Terms.
-                </p>
-                <p style={{ fontSize: '14px', lineHeight: 1.8, color: '#333', marginBottom: 32 }}>
-                    By using the Services, you agree that you have read, understood, and are bound by, these Terms, as amended from time to time, and that you will comply with the requirements listed here. These Terms expressly supersede any prior written agreements with you. If you do not agree to these Terms, or comply with the requirements listed here, please do not use the Services.
-                </p>
+        <div className="privacy-policy-layout" style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 20px' }}>
+            <div className="privacy-policy-content">
+                <h1 style={{ fontWeight: 800, fontSize: '1.8rem', marginBottom: 4 }}>Terms & Conditions</h1>
+                <p style={{ color: '#888', fontStyle: 'italic', marginBottom: 24, fontSize: '14px' }}>Last updated: October 2, 2026</p>
+                {renderParagraphs(INTRO, { fontSize: '14px', lineHeight: 1.8, color: '#333', marginBottom: 12 })}
 
                 {SECTIONS.map(sec => (
-                    <div key={sec.id} id={sec.id} ref={el => sectionRefs.current[sec.id] = el} style={{ marginBottom: 36 }}>
-                        <h2 style={{ fontWeight: 800, fontSize: '1rem', marginBottom: 12 }}>{sec.title}</h2>
-                        {sec.content.split('\n\n').map((para, i) => (
-                            <p key={i} style={{ fontSize: '14px', lineHeight: 1.8, color: '#333', marginBottom: 12 }}>{para}</p>
-                        ))}
+                    <div key={sec.id} id={sec.id} ref={el => sectionRefs.current[sec.id] = el} style={{ marginBottom: 32 }}>
+                        <h2 style={{ fontWeight: 800, fontSize: '0.95rem', marginBottom: 10 }}>{sec.title}</h2>
+                        {renderParagraphs(sec.content, { fontSize: '14px', lineHeight: 1.8, color: '#333', marginBottom: 10 })}
                     </div>
                 ))}
             </div>
 
-            {/* Right: Sticky TOC */}
-            <div style={{ position: 'sticky', top: 80 }}>
+            <div className="privacy-policy-toc">
                 <div style={{ border: '1px solid #e0e0e0', borderRadius: 12, padding: '20px', marginBottom: 16 }}>
-                    <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', color: '#888', marginBottom: 14 }}>TERMS AND CONDITIONS</div>
+                    <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', color: '#888', marginBottom: 14 }}>TERMS & CONDITIONS</div>
                     {SECTIONS.map(sec => (
-                        <div key={sec.id}
-                            onClick={() => scrollTo(sec.id)}
-                            style={{ fontSize: '13px', padding: '6px 0', cursor: 'pointer', color: active === sec.id ? '#000000' : '#444', fontWeight: active === sec.id ? 700 : 400, borderLeft: active === sec.id ? '2px solid #000000' : '2px solid transparent', paddingLeft: 10, marginBottom: 2 }}>
+                        <div key={sec.id} onClick={() => scrollTo(sec.id)}
+                            style={{ fontSize: '12px', padding: '5px 0 5px 10px', cursor: 'pointer', color: active === sec.id ? '#000000' : '#444', fontWeight: active === sec.id ? 700 : 400, borderLeft: active === sec.id ? '2px solid #000000' : '2px solid transparent', marginBottom: 2 }}>
                             {sec.title}
                         </div>
                     ))}
                 </div>
                 <div style={{ border: '1px solid #e0e0e0', borderRadius: 12, padding: '20px' }}>
-                    <p style={{ fontSize: '13px', color: '#555', marginBottom: 14 }}>Need help understanding our terms? Our support team is available 24/7.</p>
+                    <p style={{ fontSize: '13px', fontWeight: 700, marginBottom: 6 }}>Need help?</p>
+                    <p style={{ fontSize: '13px', color: '#555', marginBottom: 14 }}>If you have any questions about these Terms, please contact us.</p>
                     <a href="/contact" style={{ display: 'block', background: '#000000', color: '#fff', textAlign: 'center', padding: '12px', borderRadius: 8, fontWeight: 700, fontSize: '14px', textDecoration: 'none' }}>Contact Support</a>
                 </div>
             </div>

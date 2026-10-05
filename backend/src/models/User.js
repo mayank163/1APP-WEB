@@ -134,6 +134,13 @@ const userSchema = new mongoose.Schema({
             rejectionReason: { type: String, default: null }
         }]
     },
+    rating: { type: Number, default: null },
+    ratingCount: { type: Number, default: 0 },
+    workOrderRatings: [{
+        job: { type: mongoose.Schema.Types.ObjectId, ref: 'TechnicianJob' },
+        score: { type: Number, min: 1, max: 5 },
+        ratedAt: Date
+    }],
     totalJobsDone: {
         type: Number,
         default: 0

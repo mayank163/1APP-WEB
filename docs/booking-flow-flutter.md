@@ -1,5 +1,7 @@
 # 1App Booking and Payment Flow (Flutter)
 
+For the current Stripe/PayPal selector, provider payloads, and mobile approval requirements, use [README-flutter-payments.md](README-flutter-payments.md). This earlier overview omits PayPal.
+
 This guide documents the current customer booking API. A `Booking` is created only after the backend confirms that the payment provider reports a completed payment. Starting checkout creates a separate internal payment attempt, which is not returned by the booking-list APIs.
 
 ## Request setup
