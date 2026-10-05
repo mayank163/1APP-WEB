@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import adminApi from '../services/adminApi';
 import { connectAdminSocket } from '../services/socket';
@@ -14,6 +14,17 @@ import {
 const MainLayout = () => {
     const navigate = useNavigate();
     const [collapsed, setCollapsed] = useState(false);
+    const headerRef = useRef(null);
+    const [headerHeight, setHeaderHeight] = useState(0);
+    useLayoutEffect(() => {
+        const header = headerRef.current;
+        if (!header) return;
+        const updateHeight = () => setHeaderHeight(header.getBoundingClientRect().height);
+        updateHeight();
+        const observer = new ResizeObserver(updateHeight);
+        observer.observe(header);
+        return () => observer.disconnect();
+    }, []);
     const { admin, can, clearAdmin } = useAdminAuth();
 
     React.useEffect(() => {
@@ -52,13 +63,13 @@ const MainLayout = () => {
     return (
         <div
             className="d-flex"
-            style={{ height: "100vh", overflow: "hidden", background: "#f8f9fa" }}
+            style={{ "--admin-header-height": `${headerHeight}px`, "--sidebar-width": collapsed ? "64px" : "260px", height: "100vh", overflow: "hidden", background: "#f8f9fa" }}
         >
             {/* Sidebar */}
             <aside
                 className="d-flex flex-column"
                 style={{
-                    width: collapsed ? "64px" : "260px",
+                    width: "var(--sidebar-width)",
                     flexShrink: 0,
                     transition: "width 0.25s ease",
                     height: "100vh",
@@ -145,7 +156,7 @@ const MainLayout = () => {
                 }}
             >
                 {/* Topbar Header */}
-                <header className="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center" style={{ borderBottomColor: "#f0e8dc !important" }}>
+                <header ref={headerRef} className="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center" style={{ flexShrink: 0, borderBottomColor: "#f0e8dc !important" }}>
                     <div className="d-flex align-items-center gap-3">
                         <button
                             onClick={() => setCollapsed(c => !c)}

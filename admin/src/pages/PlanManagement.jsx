@@ -106,9 +106,32 @@ const PlanManagement = () => {
             </div>
 
             <div className="btn-group mb-4" role="group" aria-label="Plan sections">
-                <button type="button" className={`btn ${tab === 'plans' ? 'btn-dark' : 'btn-outline-secondary'}`} onClick={() => setTab('plans')}>Catalog</button>
-                <button type="button" className={`btn ${tab === 'purchases' ? 'btn-dark' : 'btn-outline-secondary'}`} onClick={() => setTab('purchases')}>Purchases ({purchases.length})</button>
-            </div>
+    <button
+        type="button"
+        className="btn"
+        style={{
+            backgroundColor: tab === 'plans' ? '#a5732f' : 'transparent',
+            borderColor: '#a5732f',
+            color: tab === 'plans' ? '#fff' : '#a5732f',
+        }}
+        onClick={() => setTab('plans')}
+    >
+        Catalog
+    </button>
+
+    <button
+        type="button"
+        className="btn"
+        style={{
+            backgroundColor: tab === 'purchases' ? '#a5732f' : 'transparent',
+            borderColor: '#a5732f',
+            color: tab === 'purchases' ? '#fff' : '#a5732f',
+        }}
+        onClick={() => setTab('purchases')}
+    >
+        Purchases ({purchases.length})
+    </button>
+</div>
 
             {showForm && tab === 'plans' && (
                 <form onSubmit={savePlan} className="card border-0 shadow-sm p-4 mb-4">

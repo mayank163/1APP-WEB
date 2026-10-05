@@ -1976,13 +1976,12 @@
    FULL-SCREEN JOB DETAIL MODAL
    ══════════════════════════════════════════════════════════════════════════ */
 
-/* Backdrop — covers the entire viewport */
+/* Overview fills the content area beside the admin sidebar. */
 .tj-fullscreen-overlay {
   position: fixed;
-  /* Start after the sidebar — the admin sidebar is typically 220px wide.
-     This keeps the left nav fully accessible when the detail view is open. */
-  top: 0;
-  left: var(--sidebar-width, 220px);
+  top: var(--admin-header-height, 73px);
+  left: var(--sidebar-width, 260px);
+  transition: left 0.25s ease;
   right: 0;
   bottom: 0;
   background: transparent;
@@ -2030,7 +2029,9 @@
 /* ── Two-column body ─────────────────────────────────────────────────────── */
 .tj-fullscreen-body {
   display: grid;
-  grid-template-columns: 1fr 300px;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  min-width: 0;
+  min-height: 0;
   gap: 0;
   flex: 1;
   overflow: hidden;
@@ -2038,6 +2039,9 @@
 
 /* Left: scrollable main content */
 .tj-fullscreen-left {
+  min-width: 0;
+  min-height: 0;
+  overflow-wrap: anywhere;
   overflow-y: auto;
   padding: 0;
   border-right: 1px solid #f0e8dc;
@@ -2053,6 +2057,8 @@
 
 /* Right: sticky sidebar */
 .tj-fullscreen-right {
+  min-width: 0;
+  min-height: 0;
   overflow-y: auto;
   padding: 1.25rem 1.25rem;
   background: #fff;
@@ -2185,6 +2191,12 @@
 .tj-cta-full-btn.gold:hover {
   background: #8c5f25;
   box-shadow: 0 4px 14px rgba(165,115,47,0.35);
+}
+
+@media (max-width: 1100px) {
+  .tj-fullscreen-body { display: block; overflow-y: auto; }
+  .tj-fullscreen-left, .tj-fullscreen-right { overflow: visible; }
+  .tj-fullscreen-right { border-top: 1px solid #f0e8dc; }
 }
 
 /* ── Responsive: collapse to single column on small screens ──────────────── */
@@ -3015,3 +3027,11 @@
 .tj-rating-criteria button { border: 1px solid #ddd; background: white; border-radius: 5px; padding: 4px 6px; }
 .tj-rating-criteria button[aria-pressed="true"] { border-color: #795629; background: #f3e7d5; }
 .tj-rating-form .ql-editor { min-height: 100px; }
+
+.tj-overview-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+.tj-overview-link:hover { color: #795629; text-decoration: underline; }
+.tj-overview-link:focus-visible { outline: 2px solid #A5732F; outline-offset: 3px; border-radius: 3px; }

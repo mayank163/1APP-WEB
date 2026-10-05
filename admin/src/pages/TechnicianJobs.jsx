@@ -1,6 +1,6 @@
 import TechnicianRatingForm, { emptyFeedback, RATING_LABELS, RATING_CRITERIA } from '../components/TechnicianRatingForm';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import JobInvitationModal from '../components/JobInvitationModal';
 import Pagination from '../components/Pagination';
 import JobForm from '../components/TechnicianJobForm';
@@ -799,6 +799,12 @@ const TechnicianJobs = () => {
   };
   const handleDelete = async (jobId) => { if (!window.confirm('Delete this job? This cannot be undone.')) return; try { await adminApi.deleteTechnicianJob(jobId); toast.success('Job deleted'); if (selectedJob?._id === jobId) setShowViewPanel(false); await loadData(); } catch (err) { toast.error(err.response?.data?.message || 'Delete failed'); } };
   const openViewPanel = (job) => { setSelectedJob(job); setShowViewPanel(true); };
+  const handleOverviewLinkClick = (event, job) => {
+    event.stopPropagation();
+    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    openViewPanel(job);
+  };
   useEffect(() => {
     const jobId = searchParams.get('jobId');
     const job = jobs.find(item => item._id === jobId);
@@ -1014,10 +1020,10 @@ const TechnicianJobs = () => {
                     return (
                       <tr key={job._id} onClick={() => openViewPanel(job)} style={{ cursor: 'pointer' }}>
                         <td>
-                          <div className="tj-job-id">JB-{jobIdShort}</div>
+                          <Link className="tj-job-id tj-overview-link" to={`/technician-jobs?jobId=${encodeURIComponent(job._id)}`} onClick={event => handleOverviewLinkClick(event, job)}>JB-{jobIdShort}</Link>
                         </td>
                         <td>
-                          <div className="tj-job-title">{job.title}</div>
+                          <Link className="tj-job-title tj-overview-link" to={`/technician-jobs?jobId=${encodeURIComponent(job._id)}`} onClick={event => handleOverviewLinkClick(event, job)}>{job.title}</Link>
                           {job.workType?.name && <div className="tj-job-cat">{job.workType.name}</div>}
                         </td>
                         <td>
