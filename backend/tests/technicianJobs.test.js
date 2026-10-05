@@ -4,14 +4,25 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-const createController = () => {
+const createController = ({ assignedTo = 'signed-in-technician', missing = false } = {}) => {
   const calls = [];
   const job = {
     _id: 'job-1',
+    assignedTechnician: { _id: assignedTo },
     technicianRating: { score: 4 },
     privateTechnicianFeedback: { note: 'Good work', criteria: { workQuality: 'up' } },
   };
   const TechnicianJob = {
+    findById(id) {
+      const call = { id, selection: null };
+      calls.push(call);
+      return {
+        select(selection) { call.selection = selection; return this; },
+        async populate() {
+          return missing ? null : { ...job, toObject: () => ({ ...job }) };
+        },
+      };
+    },
     find(query) {
       const call = { query, selection: null };
       calls.push(call);
@@ -37,7 +48,7 @@ const createController = () => {
     },
   };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../src/controllers/technicianController.js'), 'utf8'), context);
-  return { controller: context.module.exports.getJobsForTechnicians, calls };
+  return { controller: context.module.exports.getJobsForTechnicians, detailsController: context.module.exports.getDetailsByJobId, calls };
 };
 
 const getJobs = async (filter) => {
@@ -64,4 +75,38 @@ test('the default new-jobs feed does not opt into private feedback', async () =>
   assert.equal(calls[0].query.status, 'open');
   assert.equal(calls[0].selection, null);
   assert.equal(response.data.jobs[0].privateTechnicianFeedback, undefined);
+});
+
+
+const getDetails = async options => {
+  const { detailsController, calls } = createController(options);
+  let status;
+  let response;
+  await detailsController({ params: { jobId: 'job-1' }, user: { _id: 'signed-in-technician' } }, {
+    status(code) { status = code; return this; },
+    json(body) { response = body; return this; },
+  }, error => { throw error; });
+  return { status, response, calls };
+};
+
+test('job details include private feedback for the assigned technician', async () => {
+  const { status, response, calls } = await getDetails();
+  assert.equal(status, 200);
+  assert.equal(calls[0].selection, '+privateTechnicianFeedback');
+  assert.equal(response.data.job.privateTechnicianFeedback.note, 'Good work');
+  assert.equal(response.data.job.privateTechnicianFeedback.criteria.workQuality, 'up');
+  assert.equal(response.data.job.technicianRating.score, 4);
+});
+
+test('job details hide private feedback from another technician', async () => {
+  const { status, response } = await getDetails({ assignedTo: 'another-technician' });
+  assert.equal(status, 200);
+  assert.equal(response.data.job.privateTechnicianFeedback, undefined);
+  assert.equal(response.data.job.technicianRating.score, 4);
+});
+
+test('job details still return 404 for missing jobs', async () => {
+  const { status, response } = await getDetails({ missing: true });
+  assert.equal(status, 404);
+  assert.equal(response.message, 'Job not found');
 });

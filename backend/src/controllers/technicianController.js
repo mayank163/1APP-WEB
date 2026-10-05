@@ -2864,7 +2864,7 @@ const getDetailsByJobId = async (
     const job =
       await TechnicianJob.findById(
         jobId
-      ).populate(
+      ).select('+privateTechnicianFeedback').populate(
         'assignedTechnician',
         'name email phone skills experienceLevel'
       );
@@ -2877,11 +2877,16 @@ const getDetailsByJobId = async (
       });
     }
 
+    const jobDetails = job.toObject();
+    const isAssignedTechnician = job.assignedTechnician?._id &&
+      String(job.assignedTechnician._id) === String(req.user._id);
+    if (!isAssignedTechnician) delete jobDetails.privateTechnicianFeedback;
+
     return res.status(200).json({
       success: true,
 
       data: {
-        job,
+        job: jobDetails,
       },
     });
 
