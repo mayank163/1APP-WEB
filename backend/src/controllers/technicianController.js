@@ -285,7 +285,9 @@ const getJobsForTechnicians = async (req, res, next) => {
             },
           },
         ],
-      }).sort('-completedAt');
+      })
+        .select('+privateTechnicianFeedback')
+        .sort('-completedAt');
     }
 
     else if (filter === 'checkout') {
