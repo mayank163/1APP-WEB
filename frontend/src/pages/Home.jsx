@@ -19,6 +19,36 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { HomeShimmer } from '../components/Shimmer';
 import HeroBookingBar from '../components/HeroBookingBar';
 import Plans from './Plans';
+import barkLogo from '../assets/brands/bark.png';
+import thumbtackLogo from '../assets/brands/thumbtack.svg';
+import googleAdsLogo from '../assets/brands/google-ads.svg';
+import akkoLogo from '../assets/brands/akko.svg';
+import carboniteLogo from '../assets/brands/carbonite.svg';
+import angiLogo from '../assets/brands/angi.png';
+
+const homeBrands = [
+    { name: 'Angi', logo: angiLogo, wordmark: true },
+    { name: 'Bark', logo: barkLogo, wordmark: true },
+    { name: 'Thumbtack', logo: thumbtackLogo },
+    { name: 'Google Ads', logo: googleAdsLogo },
+    { name: 'AKKO', logo: akkoLogo, wordmark: true },
+    { name: 'Carbonite', logo: carboniteLogo, wordmark: true },
+];
+
+const HomeBrandLogos = ({ brands }) => (
+    <div className="home-brand-logos">
+        {brands.map(({ name, logo, wordmark }) => (
+            <div className="home-brand-logo" key={name}>
+                <img src={logo} alt={wordmark ? name : ''} loading="lazy"
+                    onError={(event) => {
+                        event.currentTarget.style.display = 'none';
+                        event.currentTarget.nextElementSibling.hidden = false;
+                    }} />
+                <span hidden={wordmark}>{name}</span>
+            </div>
+        ))}
+    </div>
+);
 
 const Home = () => {
     const navigate = useNavigate();
@@ -171,6 +201,52 @@ const Home = () => {
     return (
         <div className="home-page">
             <style>{`
+                .home-brand-band {
+                    display: grid;
+                    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+                    align-items: center;
+                    gap: 28px;
+                }
+                .home-brand-logos {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 24px;
+                }
+                .home-brand-logo {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 10px;
+                    min-height: 48px;
+                    font-size: 20px;
+                    font-weight: 600;
+                    color: #343434;
+                    line-height: 1.3;
+                }
+                .home-brand-logo img {
+                    width: auto;
+                    height: 48px;
+                    max-width: 180px;
+                    max-height: 48px;
+                    object-fit: contain;
+                }
+                .home-brand-logo span[hidden] { display: none; }
+                .home-brand-title {
+                    font-size: clamp(100px, 19vw, 260px);
+                    font-weight: 900;
+                    letter-spacing: -8px;
+                    background: linear-gradient(to bottom, #e6e6e6, #000);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                }
+                @media (max-width: 767px) {
+                    .home-brand-band { gap: 12px; }
+                    .home-brand-title { font-size: clamp(70px, 17vw, 130px); letter-spacing: -4px; }
+                    .home-brand-logos { gap: 18px; }
+                    .home-brand-logo { flex-direction: column; gap: 4px; font-size: 12px; min-height: 48px; }
+                    .home-brand-logo img { height: 32px; max-width: 92px; max-height: 32px; }
+                }
                 .hero-three-col {
                     position: relative;
                     z-index: 2;
@@ -1370,32 +1446,10 @@ const Home = () => {
                                 lineHeight: 0.82,
                             }}
                         >
-                            {/* <div
-                                style={{
-                                    fontSize: "clamp(120px,22vw,260px)",
-                                    fontWeight: 900,
-                                    letterSpacing: "-8px",
-                                    background:
-                                        "linear-gradient(to bottom,#e6e6e6,#9c9c9c)",
-                                    WebkitBackgroundClip: "text",
-                                    WebkitTextFillColor: "transparent",
-                                }}
-                            >
-                                ONE
-                            </div> */}
-
-                            <div
-                                style={{
-                                    fontSize: "clamp(120px,22vw,260px)",
-                                    fontWeight: 900,
-                                    letterSpacing: "-8px",
-                                    background:
-                                        "linear-gradient(to bottom,#e6e6e6,#000)",
-                                    WebkitBackgroundClip: "text",
-                                    WebkitTextFillColor: "transparent",
-                                }}
-                            >
-                                1APP
+                            <div className="home-brand-band">
+                                <HomeBrandLogos brands={homeBrands.slice(0, 3)} />
+                                <div className="home-brand-title">1APP</div>
+                                <HomeBrandLogos brands={homeBrands.slice(3)} />
                             </div>
                         </div>
 

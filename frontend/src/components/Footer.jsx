@@ -14,7 +14,7 @@ const LINKS = [
     { label: 'Terms & Conditions', to: '/terms' },
     { label: 'Privacy Policy', to: '/privacy-policy' },
     { label: 'Anti Discrimination Policy', to: '/anti-discrimination' },
-    { label: 'Reviews', to: '/reviews' },
+    // { label: 'Reviews', to: '/reviews' },
     { label: 'Blogs', to: '/blogs' },
     { label: 'Contact Us', to: '/contact' },
 ];
@@ -86,21 +86,9 @@ export default function Footer() {
                     maxWidth: '1350px',
                     margin: '0 auto',
                     padding: '45px 30px 35px',
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                    gap: '30px',
-                    alignItems: 'start',
                 }}
             >
-                <div
-                    className="footer-links-grid"
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(7, 1fr)',
-                        gap: '15px',
-                        alignItems: 'center',
-                    }}
-                >
+                <nav className="footer-links-grid" aria-label="Footer navigation">
                     {LINKS.map((link) => (
                         <FooterLink
                             key={link.label}
@@ -108,7 +96,7 @@ export default function Footer() {
                             to={link.to}
                         />
                     ))}
-                </div>
+                </nav>
             </div>
 
 
@@ -382,14 +370,34 @@ export default function Footer() {
             <style>
                 {`
                     .footer-links-grid {
-                        grid-template-columns: repeat(7, 1fr) !important;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        gap: 24px;
+                        width: 100%;
+                    }
+
+                    .footer-links-grid > a {
+                        flex-shrink: 0;
+                        text-align: center;
+                        white-space: nowrap;
+                    }
+
+                    .footer-links-grid > a:focus-visible {
+                        outline: 2px solid #fff;
+                        outline-offset: 6px;
                     }
 
                     @media (max-width: 1000px) {
 
                         .footer-links-grid {
-                            grid-template-columns: repeat(4, 1fr) !important;
-                            row-gap: 18px !important;
+                            display: grid;
+                            grid-template-columns: repeat(3, minmax(0, 1fr));
+                            gap: 18px 24px;
+                        }
+
+                        .footer-links-grid > a {
+                            white-space: normal;
                         }
 
                         .footer-app-section {
@@ -415,7 +423,7 @@ export default function Footer() {
                         }
 
                         .footer-links-grid {
-                            grid-template-columns: repeat(2, 1fr) !important;
+                            grid-template-columns: repeat(2, minmax(0, 1fr));
                             row-gap: 18px !important;
                         }
 
@@ -459,7 +467,7 @@ export default function Footer() {
                     @media (max-width: 480px) {
 
                         .footer-links-grid {
-                            grid-template-columns: 1fr !important;
+                            grid-template-columns: minmax(0, 1fr);
                         }
 
                         .footer-app-content h2 {

@@ -1,0 +1,64 @@
+.profile-page { padding-bottom: 32px !important; }
+.profile-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    grid-template-areas: 'overview info' 'delete addresses';
+    gap: 24px;
+    align-items: stretch;
+}
+.profile-layout.profile-has-plans { grid-template-areas: 'overview info' 'delete addresses' 'plans plans'; }
+.profile-panel { min-width: 0; margin: 0; }
+.profile-overview { grid-area: overview; }
+.profile-info { grid-area: info; }
+.profile-addresses { grid-area: addresses; }
+.profile-delete { grid-area: delete; }
+.profile-plans { grid-area: plans; }
+.profile-overview h4 { overflow-wrap: anywhere; }
+.profile-contact-row, .profile-phone-row { gap: 12px; min-width: 0; }
+.profile-contact-row > svg, .profile-phone-row svg { flex-shrink: 0; }
+.profile-contact-row span, .profile-phone-row .small { overflow-wrap: anywhere; min-width: 0; }
+.profile-phone-row > div { min-width: 0; }
+.profile-phone-row > .badge { flex-shrink: 0; }
+.profile-info form { display: flex; flex-direction: column; flex: 1; }
+.profile-info .form-control, .profile-info .form-select { min-height: 42px; width: 100%; min-width: 0; }
+.profile-info .form-label { display: block; }
+.profile-info form > button { align-self: flex-start; }
+.profile-delete > .btn { margin-top: auto; width: 100%; }
+.profile-address-header { gap: 16px; }
+.profile-address-header > button { flex-shrink: 0; }
+.profile-address-row { gap: 16px; }
+.profile-address-content { min-width: 0; flex: 1; }
+.profile-address-content > div:last-child { min-width: 0; }
+.profile-address-content p { overflow-wrap: anywhere; }
+.profile-address-content .mb-1.d-flex { flex-wrap: wrap; }
+.profile-address-actions { flex-wrap: wrap; justify-content: flex-end; }
+@media (max-width: 991.98px) {
+    .profile-layout {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas: 'overview' 'info' 'addresses' 'delete';
+        gap: 20px;
+    }
+    .profile-layout.profile-has-plans { grid-template-areas: 'overview' 'info' 'addresses' 'plans' 'delete'; }
+}
+@media (max-width: 575.98px) {
+    .profile-page { padding-inline: 16px; }
+    .profile-panel { padding: 20px !important; }
+    .profile-address-header { align-items: flex-start !important; flex-wrap: wrap; gap: 12px; }
+    .profile-address-row { flex-direction: column; gap: 12px; }
+    .profile-address-actions { margin-left: 0 !important; align-self: flex-end; }
+    .profile-phone-row { flex-wrap: wrap; }
+    .profile-info form > button { width: 100%; justify-content: center; }
+}
+.profile-address-dialog { max-width: 560px; }
+.profile-address-dialog .modal-content { border: none; border-radius: 16px; box-shadow: 0 20px 60px #0003; }
+.profile-address-dialog .modal-header { padding: 20px 24px; border-bottom: 1px solid #edf0f3; }
+.profile-address-dialog .modal-title { font-size: 20px; font-weight: 700; }
+.profile-address-dialog .modal-body { padding: 20px 24px 24px; }
+.profile-address-dialog .form-control { min-height: 42px; }
+.profile-address-dialog .modal-body form > .row { --bs-gutter-y: 14px; }
+@media (max-width: 575.98px) {
+    .profile-address-dialog { margin: 12px; }
+    .profile-address-dialog .modal-header, .profile-address-dialog .modal-body { padding: 18px; }
+}
+/* Google Places adds its suggestion list to the document body. */
+body:has(.profile-address-dialog) .pac-container { z-index: 1060 !important; }

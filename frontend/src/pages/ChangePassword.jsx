@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaEye, FaEyeSlash, FaLock } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import API from '../services/api';
+import { ResetAuthPanel } from './AuthPanel';
+import '../styles/ChangePassword.css';
 
 const initialPasswords = {
     oldPassword: '',
@@ -51,32 +53,39 @@ const ChangePassword = () => {
     };
 
     return (
-        <main className="container py-5">
-            <section className="bg-white border rounded-3 shadow-sm p-4 p-md-5 mx-auto" style={{ maxWidth: 520 }}>
-                <Link to="/profile" className="d-inline-flex align-items-center gap-2 text-secondary text-decoration-none small mb-4">
-                    <FaArrowLeft size={12} /> Back to profile
+        <main className="change-password-page">
+            <div className="change-password-illustration" aria-hidden="true"><ResetAuthPanel /></div>
+            <section className="change-password-form-panel">
+                <div className="change-password-form-content">
+                <Link to="/profile" className="change-password-back">
+                    <FaArrowLeft size={12} /> Back to Profile
                 </Link>
-                <h1 className="h3 fw-bold mb-2">Change password</h1>
-                <p className="text-secondary mb-4">Enter your current password, then choose a new one.</p>
+                <div className="change-password-heading">
+                    <h1>Change Password</h1>
+                    <p>Enter your current password, then choose a new one to keep your account secure.</p>
+                    <div className="change-password-heading-line" />
+                </div>
 
                 <form onSubmit={handleSubmit}>
                     {passwordFields.map(field => (
-                        <div className="mb-3" key={field.name}>
-                            <label className="form-label fw-semibold" htmlFor={field.name}>{field.label}</label>
-                            <div className="input-group">
-                                <span className="input-group-text bg-white"><FaLock className="text-secondary" /></span>
+                        <div className="change-password-field" key={field.name}>
+                            <label className="change-password-label" htmlFor={field.name}>{field.label}</label>
+                            <div className="change-password-input">
+                                <FaLock className="change-password-lock" size={14} aria-hidden="true" />
                                 <input
                                     id={field.name}
-                                    className="form-control"
                                     type={visibleFields[field.name] ? 'text' : 'password'}
                                     autoComplete={field.autoComplete}
+                                    placeholder={field.name === 'oldPassword' ? 'Enter your current password' : field.name === 'newPassword' ? 'Enter your new password' : 'Confirm your new password'}
+                                    aria-invalid={field.name === 'confirmPassword' && Boolean(passwordsMismatch)}
+                                    aria-describedby={field.name === 'confirmPassword' && passwordsMismatch ? 'change-password-error' : undefined}
                                     required
                                     minLength={field.name === 'oldPassword' ? undefined : 6}
                                     value={passwords[field.name]}
                                     onChange={event => setPasswords(previous => ({ ...previous, [field.name]: event.target.value }))}
                                 />
                                 <button
-                                    className="btn btn-outline-secondary"
+                                    className="change-password-visibility"
                                     type="button"
                                     aria-label={`${visibleFields[field.name] ? 'Hide' : 'Show'} ${field.label.toLowerCase()}`}
                                     onClick={() => setVisibleFields(previous => ({ ...previous, [field.name]: !previous[field.name] }))}
@@ -87,11 +96,14 @@ const ChangePassword = () => {
                         </div>
                     ))}
 
-                    {passwordsMismatch && <div className="small text-danger mb-3">New passwords do not match.</div>}
-                    <button className="btn btn-dark w-100 py-2 fw-semibold" type="submit" disabled={loading || Boolean(passwordsMismatch)}>
-                        {loading ? 'Updating password...' : 'Update password'}
+                    {passwordsMismatch && <div id="change-password-error" className="small text-danger mb-3" role="alert">New passwords do not match.</div>}
+                    <button className="change-password-submit" type="submit" disabled={loading || Boolean(passwordsMismatch)}>
+                        {loading ? 'Updating password...' : 'Update Password'} <span aria-hidden="true">→</span>
                     </button>
                 </form>
+                <div className="change-password-divider"><span /><strong>OR</strong><span /></div>
+                <p className="change-password-help">Forgot your current password? <Link to="/forgot-password">Reset Password</Link></p>
+                </div>
             </section>
         </main>
     );

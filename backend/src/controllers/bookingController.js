@@ -435,7 +435,7 @@ exports.getMyBookings = async (req, res, next) => {
         if (status && status !== 'all') query.status = status;
         const [bookings, total] = await Promise.all([
             Booking.find(query)
-                .populate('services.service', 'name')
+                .populate('services.service', 'name featuredImage')
                 .sort('-createdAt')
                 .skip(skip)
                 .limit(limit),

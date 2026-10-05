@@ -1,0 +1,55 @@
+.service-review-dialog { max-width: 640px; }
+.service-review-dialog .modal-content { border: none; border-radius: 22px; box-shadow: 0 24px 64px #0005; background: #fff; }
+.service-review-dialog .modal-body { padding: 16px 24px 14px; color: #191919; }
+.service-review-handle { width: 48px; height: 5px; border-radius: 6px; background: #e5e5e5; margin: 0 auto 24px; }
+.service-review-close { position: absolute; top: 16px; right: 24px; border: 0; background: #f5f5f5; color: #666; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 24px; line-height: 1; }
+.service-review-header { text-align: center; margin-bottom: 18px; }
+.service-review-header h2 { font-size: 22px; font-weight: 800; letter-spacing: -.7px; margin: 0 0 6px; }
+.service-review-header p { color: #777; font-size: 14px; margin: 0; }
+.service-review-preview { display: flex; align-items: center; gap: 12px; border: 1px solid #f0f0f0; border-radius: 12px; padding: 12px; box-shadow: 0 1px 2px #00000006; }
+.service-review-photo { position: relative; flex: 0 0 90px; height: 64px; border-radius: 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f1f5f9; color: #94a3b8; font-size: 28px; }
+.service-review-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.service-review-service-info { min-width: 0; }
+.service-review-service-info h3 { font-size: 18px; font-weight: 700; line-height: 1.2; margin: 0 0 8px; overflow-wrap: anywhere; }
+.service-review-completed { display: flex; align-items: center; gap: 8px; text-transform: uppercase; color: #777; font-size: 12px; font-weight: 600; letter-spacing: .5px; }
+.service-review-completed span { width: 10px; height: 10px; border-radius: 50%; background: #00ac77; flex-shrink: 0; }
+.service-review-existing { font-size: 12px; color: #047857; margin-top: 5px; }
+.service-review-rating-section { margin-top: 18px; padding-top: 18px; border-top: 1px solid #f2f2f2; margin-bottom: 18px; }
+.service-review-rating-section h3 { font-size: 17px; font-weight: 700; margin: 0 0 4px; }
+.service-review-rating-section p { font-size: 14px; color: #777; margin: 0; }
+.service-review-stars { display: flex; gap: 16px; margin-top: 12px; }
+.service-review-stars button { display: flex; align-items: center; justify-content: center; border: 0; background: transparent; padding: 4px; font-size: 30px; color: #a3a3a3; }
+.service-review-stars button.filled { color: #f59e0b; }
+.service-review-comment-label { font-size: 17px; font-weight: 700; margin-bottom: 8px; display: block; }
+.service-review-comment-label span { font-size: 14px; font-weight: 400; color: #a1a1a1; }
+.service-review-comment-box { position: relative; }
+.service-review-comment-box textarea { width: 100%; display: block; padding: 12px 14px 26px; height: 104px; min-height: 104px; border: 1px solid #e0e0e0; border-radius: 16px; resize: vertical; font-family: inherit; font-size: 15px; color: #333; }
+.service-review-comment-box textarea::placeholder { color: #aaa; }
+.service-review-count { position: absolute; right: 12px; bottom: 7px; font-size: 12px; color: #a1a1a1; pointer-events: none; }
+.service-review-submit { display: flex; justify-content: center; align-items: center; gap: 10px; width: 100%; margin-top: 20px; padding: 12px; border: 0; border-radius: 12px; background: #000; color: #fff; font-weight: 600; font-size: 15px; box-shadow: 0 3px 4px #0002; }
+.service-review-submit svg { font-size: 18px; }
+.service-review-submit:hover { background: #222; }
+.service-review-submit:disabled { opacity: .5; cursor: not-allowed; }
+.service-review-footer { margin: 10px 0 0; color: #888; font-size: 12px; text-align: center; }
+.service-review-progress { text-align: center; font-size: 12px; color: #777; margin: 12px 0 0; }
+.service-review-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; }
+.service-review-tabs button { border: 1px solid #ddd; background: #fff; color: #555; border-radius: 20px; padding: 7px 12px; font-size: 12px; white-space: nowrap; }
+.service-review-tabs button.active { background: #111; color: #fff; border-color: #111; }
+.service-review-message { padding: 40px 12px; text-align: center; color: #777; }
+.service-review-dialog button:focus-visible, .service-review-dialog textarea:focus-visible { outline: 2px solid #333; outline-offset: 3px; }
+@media (max-width: 575.98px) {
+    .service-review-dialog { margin: 12px; }
+    .service-review-dialog .modal-content { border-radius: 22px; }
+    .service-review-dialog .modal-body { padding: 18px 20px 16px; }
+    .service-review-handle { margin-bottom: 24px; }
+    .service-review-close { right: 16px; top: 12px; }
+    .service-review-header h2 { font-size: 22px; }
+    .service-review-header p { font-size: 12px; }
+    .service-review-photo { flex-basis: 76px; height: 70px; }
+    .service-review-service-info h3 { font-size: 16px; }
+    .service-review-completed { font-size: 10px; }
+    .service-review-preview { gap: 12px; padding: 12px; }
+    .service-review-stars { gap: 14px; }
+    .service-review-stars button { font-size: 28px; }
+    .service-review-comment-label { font-size: 15px; }
+}

@@ -1,16 +1,18 @@
 import React, { useContext, useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Modal from 'react-bootstrap/Modal';
 import { AuthContext } from '../context/AuthContext';
 import { ProfileShimmer } from '../components/Shimmer';
 import LocationPicker from '../components/LocationPicker';
 import {
     FaEnvelope, FaPhone, FaCheckCircle, FaExclamationTriangle,
     FaCheckDouble, FaUpload, FaPhoneAlt, FaCamera,
-    FaMapMarkerAlt, FaPlus, FaTrash, FaEdit, FaStar, FaHome, FaBriefcase, FaTimes, FaCheck
+    FaMapMarkerAlt, FaPlus, FaTrash, FaEdit, FaStar, FaHome, FaBriefcase, FaCheck
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { resolveImageUrl } from '../services/api';
 import planService from '../services/planService';
+import '../styles/Profile.css';
 
 // Label → icon mapping
 const labelIcon = (label = '') => {
@@ -253,15 +255,12 @@ const Profile = () => {
     if (loading) return <ProfileShimmer />;
 
     return (
-        <div className="container py-4">
+        <div className="container profile-page py-4">
             <h1 className="fw-extrabold text-dark mb-1" style={{ fontSize: '2rem' }}>My Profile</h1>
             <div className="mb-4" style={{ width: '152px', height: '4px', background: '#000000', borderRadius: '2px' }} />
 
-            <div className="row g-4">
-                {/* ── Left: profile overview ── */}
-                <div className="col-lg-4">
-                    <div className="d-flex flex-column gap-4">
-                        <div className="card border-0 shadow-sm rounded-4 bg-white p-4 text-center">
+            <div className={`profile-layout${planPurchases.length ? ' profile-has-plans' : ''}`}>
+                        <div className="profile-panel profile-overview card border-0 shadow-sm rounded-4 bg-white p-4 text-center">
                             {/* Avatar */}
                             <div
                                 className="mx-auto mb-3 position-relative"
@@ -288,11 +287,11 @@ const Profile = () => {
                             {/* <span className="badge text-uppercase mb-4" style={{ background: '#d8f3dc', color: '#000000', fontSize: '0.7rem', padding: '5px 10px' }}>{user?.role}</span> */}
 
                             <div className="text-start d-flex flex-column gap-3 pt-3 border-top w-100">
-                                <div className="d-flex align-items-center gap-2 text-muted">
+                                <div className="profile-contact-row d-flex align-items-center gap-2 text-muted">
                                     <FaEnvelope size={14} />
                                     <span className="small">{user?.email}</span>
                                 </div>
-                                <div className="d-flex align-items-center justify-content-between text-muted">
+                                <div className="profile-phone-row d-flex align-items-center justify-content-between text-muted">
                                     <div className="d-flex align-items-center gap-2">
                                         <FaPhoneAlt size={14} />
                                         <span className="small">{user?.phone}</span>
@@ -330,42 +329,8 @@ const Profile = () => {
                             )}
                         </div>
 
-                        {planPurchases.length > 0 && (
-                            <div className="card border-0 shadow-sm rounded-4 bg-white p-4">
-                                {loadingPlans ? <div className="small text-muted">Loading your plan...</div> : (
-                                    <div className="d-flex flex-column gap-3">
-                                        {planPurchases.map(purchase => (
-                                            <div key={purchase._id} className="border rounded-3 p-3">
-                                                <div className="d-flex justify-content-between align-items-start gap-2">
-                                                    <div>
-                                                        <div className="fw-bold">{purchase.planName}</div>
-                                                        <div className="small text-muted">
-                                                            {purchase.durationMonths} months · ${Number(purchase.price).toFixed(2)}
-                                                        </div>
-                                                    </div>
-                                                    <span className={`badge ${purchase.status === 'active' ? 'bg-success' : ['expired', 'replaced'].includes(purchase.status) ? 'bg-secondary' : 'bg-warning text-dark'}`}>{purchase.status}</span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
-                        <div className="card border-0 shadow-sm rounded-4 bg-white p-4">
-                            <h5 className="fw-bold text-danger mb-2">Delete Account</h5>
-                            <p className="small text-muted mb-3">Your account data will be retained, but you will be signed out and unable to use this account.</p>
-                            <button type="button" disabled={deletingAccount} onClick={handleDeleteAccount} className="btn btn-outline-danger fw-bold px-4 py-2" style={{ borderRadius: 8 }}>
-                                {deletingAccount ? 'Deleting...' : 'Delete My Account'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* ── Right: edit info + addresses ── */}
-                <div className="col-lg-8 d-flex flex-column gap-4">
                     {/* Personal info */}
-                    <div className="card border-0 shadow-sm rounded-4 bg-white p-4">
+                    <div className="profile-panel profile-info card border-0 shadow-sm rounded-4 bg-white p-4">
                         <h5 className="fw-bold mb-4">Edit Personal Information</h5>
                         <form onSubmit={handleSaveInfo}>
                             <div className="row g-3">
@@ -402,8 +367,8 @@ const Profile = () => {
                     </div>
 
                     {/* Saved addresses */}
-                    <div className="card border-0 shadow-sm rounded-4 bg-white p-4">
-                        <div className="d-flex align-items-center justify-content-between mb-4">
+                    <div className="profile-panel profile-addresses card border-0 shadow-sm rounded-4 bg-white p-4">
+                        <div className="profile-address-header d-flex align-items-center justify-content-between mb-4">
                             <h5 className="fw-bold mb-0">Saved Addresses</h5>
                             <button
                                 onClick={openAdd}
@@ -414,13 +379,128 @@ const Profile = () => {
                             </button>
                         </div>
 
-                        {/* Inline add/edit form */}
-                        {addrMode && (
-                            <div className="mb-4 p-3 rounded-3 border" style={{ background: '#f8fffe', borderColor: '#b7e4c7 !important' }}>
-                                <div className="d-flex align-items-center justify-content-between mb-3">
-                                    <span className="fw-bold small text-dark">{addrMode === 'add' ? 'New Address' : 'Edit Address'}</span>
-                                    <button type="button" onClick={closeAddrPanel} className="btn btn-sm btn-light p-1"><FaTimes size={12} /></button>
-                                </div>
+                        {/* Address list */}
+                        {addresses.length === 0 ? (
+                            <div className="text-center py-4 text-muted">
+                                <FaMapMarkerAlt size={28} className="mb-2 opacity-50" />
+                                <p className="small mb-0">No saved addresses yet. Add one to speed up checkout!</p>
+                            </div>
+                        ) : (
+                            <div className="d-flex flex-column gap-3">
+                                {addresses.map(addr => (
+                                    <div
+                                        key={addr._id}
+                                        className="profile-address-row d-flex align-items-start justify-content-between p-3 rounded-3"
+                                        style={{
+                                            background: addr.isDefault ? '#f0fff4' : '#f8f9fa',
+                                            border: `1.5px solid ${addr.isDefault ? '#b7e4c7' : '#e9ecef'}`,
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        <div className="profile-address-content d-flex align-items-start gap-3">
+                                            {/* Icon badge */}
+                                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: addr.isDefault ? '#d8f3dc' : '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: addr.isDefault ? '#000000' : '#6c757d' }}>
+                                                {labelIcon(addr.label)}
+                                            </div>
+                                            <div>
+                                                <div className="d-flex align-items-center gap-2 mb-1">
+                                                    <span className="badge d-flex align-items-center gap-1" style={{ background: '#e9ecef', color: '#495057', fontSize: '0.65rem', fontWeight: 600 }}>
+                                                        {labelIcon(addr.label)} {addr.label || 'Home'}
+                                                    </span>
+                                                    {addr.isDefault && (
+                                                        <span className="badge d-flex align-items-center gap-1" style={{ background: '#d8f3dc', color: '#000000', fontSize: '0.65rem' }}>
+                                                            <FaStar size={8} /> Default
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                {addr.name && (
+                                                    <div className="fw-bold small text-dark mb-1">{addr.name}</div>
+                                                )}
+                                                <p className="mb-0 small text-muted lh-sm">
+                                                    {addr.addressLine}
+                                                    {addr.city && `, ${addr.city}`}
+                                                    {addr.state && `, ${addr.state}`}
+                                                    {addr.zipcode && ` – ${addr.zipcode}`}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Actions */}
+                                        <div className="profile-address-actions d-flex align-items-center gap-1 ms-2 flex-shrink-0">
+                                            {!addr.isDefault && (
+                                                <button
+                                                    onClick={() => handleSetDefault(addr._id)}
+                                                    className="btn btn-sm"
+                                                    title="Set as default"
+                                                    style={{ background: 'transparent', color: '#000000', border: '1px solid #b7e4c7', borderRadius: 6, padding: '4px 8px', fontSize: 11 }}
+                                                >
+                                                    Set Default
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={() => openEdit(addr)}
+                                                className="btn btn-sm btn-light"
+                                                title="Edit"
+                                                style={{ padding: '5px 8px' }}
+                                            >
+                                                <FaEdit size={12} color="#555" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteAddress(addr._id)}
+                                                disabled={deletingId === addr._id}
+                                                className="btn btn-sm"
+                                                title="Remove"
+                                                style={{ padding: '5px 8px', background: '#fff3f3', border: '1px solid #f8d7da', borderRadius: 6, color: '#dc3545' }}
+                                            >
+                                                {deletingId === addr._id
+                                                    ? <div className="spinner-border spinner-border-sm" style={{ width: 12, height: 12, borderWidth: 2 }} role="status" />
+                                                    : <FaTrash size={11} />}
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                        <div className="profile-panel profile-delete card border-0 shadow-sm rounded-4 bg-white p-4">
+                            <h5 className="fw-bold text-danger mb-2">Delete Account</h5>
+                            <p className="small text-muted mb-3">Your account data will be retained, but you will be signed out and unable to use this account.</p>
+                            <button type="button" disabled={deletingAccount} onClick={handleDeleteAccount} className="btn btn-outline-danger fw-bold px-4 py-2" style={{ borderRadius: 8 }}>
+                                {deletingAccount ? 'Deleting...' : 'Delete My Account'}
+                            </button>
+                        </div>
+                        {planPurchases.length > 0 && (
+                            <div className="profile-panel profile-plans card border-0 shadow-sm rounded-4 bg-white p-4">
+                                {loadingPlans ? <div className="small text-muted">Loading your plan...</div> : (
+                                    <div className="d-flex flex-column gap-3">
+                                        {planPurchases.map(purchase => (
+                                            <div key={purchase._id} className="border rounded-3 p-3">
+                                                <div className="d-flex justify-content-between align-items-start gap-2">
+                                                    <div>
+                                                        <div className="fw-bold">{purchase.planName}</div>
+                                                        <div className="small text-muted">
+                                                            {purchase.durationMonths} months · ${Number(purchase.price).toFixed(2)}
+                                                        </div>
+                                                    </div>
+                                                    <span className={`badge ${purchase.status === 'active' ? 'bg-success' : ['expired', 'replaced'].includes(purchase.status) ? 'bg-secondary' : 'bg-warning text-dark'}`}>{purchase.status}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+            </div>
+            {/* Add/edit address popup */}
+            {addrMode && (
+                <Modal show onHide={() => { if (!savingAddr) closeAddrPanel(); }} centered scrollable
+                    backdrop={savingAddr ? 'static' : true} keyboard={!savingAddr}
+                    dialogClassName="profile-address-dialog" aria-labelledby="profile-address-title">
+                    <Modal.Header closeButton={!savingAddr}>
+                        <Modal.Title id="profile-address-title">{addrMode === 'add' ? 'Add Address' : 'Edit Address'}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
                                 <form onSubmit={handleSaveAddress}>
                                     <div className="d-flex flex-wrap gap-2 mb-2">
                                                 {LABEL_OPTIONS.map(opt => (
@@ -459,37 +539,37 @@ const Profile = () => {
 
                                         {/* Address line */}
                                         <div className="col-12">
-                                            <label className="form-label fw-semibold small text-dark mb-1">Address Line <span className="text-danger">*</span></label>
+                                            <label htmlFor="profile-address-line" className="form-label fw-semibold small text-dark mb-1">Address Line <span className="text-danger">*</span></label>
                                             <input
                                                 type="text"
                                                 required
                                                 className="form-control"
                                                 style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }}
                                                 placeholder="Flat / House No., Building, Street..."
-                                                value={addrForm.addressLine}
+                                                id="profile-address-line" value={addrForm.addressLine}
                                                 onChange={patchField('addressLine')}
                                             />
                                         </div>
 
                                         {/* City & State */}
                                         <div className="col-md-6">
-                                            <label className="form-label fw-semibold small text-dark mb-1">City</label>
-                                            <input type="text" className="form-control" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }} placeholder="City" value={addrForm.city} onChange={patchField('city')} />
+                                            <label htmlFor="profile-address-city" className="form-label fw-semibold small text-dark mb-1">City</label>
+                                            <input type="text" className="form-control" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }} placeholder="City" id="profile-address-city" value={addrForm.city} onChange={patchField('city')} />
                                         </div>
                                         <div className="col-md-6">
-                                            <label className="form-label fw-semibold small text-dark mb-1">State</label>
-                                            <input type="text" className="form-control" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }} placeholder="State" value={addrForm.state} onChange={patchField('state')} />
+                                            <label htmlFor="profile-address-state" className="form-label fw-semibold small text-dark mb-1">State</label>
+                                            <input type="text" className="form-control" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }} placeholder="State" id="profile-address-state" value={addrForm.state} onChange={patchField('state')} />
                                         </div>
 
                                         {/* Zipcode */}
                                         <div className="col-md-6">
-                                            <label className="form-label fw-semibold small text-dark mb-1">ZIP / Postal Code</label>
-                                            <input type="text" className="form-control" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }} placeholder="e.g. 10001" value={addrForm.zipcode} onChange={patchField('zipcode')} />
+                                            <label htmlFor="profile-address-zipcode" className="form-label fw-semibold small text-dark mb-1">ZIP / Postal Code</label>
+                                            <input type="text" className="form-control" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }} placeholder="e.g. 10001" id="profile-address-zipcode" value={addrForm.zipcode} onChange={patchField('zipcode')} />
                                         </div>
 
                                         {/* ── Save as ── */}
                                         <div className="col-12 mt-1 pt-2 border-top">
-                                            <label className="form-label fw-semibold small text-dark mb-1">Save as</label>
+                                            <label htmlFor="profile-address-name" className="form-label fw-semibold small text-dark mb-1">Save as</label>
                                             {/* Type pills */}
                                             
                                             {/* Custom nickname */}
@@ -498,7 +578,7 @@ const Profile = () => {
                                                 className="form-control"
                                                 style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }}
                                                 placeholder={`e.g. My ${addrForm.label}, Friend's ${addrForm.label}…`}
-                                                value={addrForm.name}
+                                                id="profile-address-name" value={addrForm.name}
                                                 maxLength={40}
                                                 onChange={patchField('name')}
                                             />
@@ -508,100 +588,15 @@ const Profile = () => {
                                             <button type="submit" disabled={savingAddr} className="btn fw-bold d-flex align-items-center gap-2" style={{ background: '#000', color: '#fff', borderRadius: 8, padding: '8px 18px' }}>
                                                 <FaCheck size={12} /> {savingAddr ? 'Saving...' : (addrMode === 'add' ? 'Add Address' : 'Update Address')}
                                             </button>
-                                            <button type="button" onClick={closeAddrPanel} className="btn btn-light fw-semibold" style={{ borderRadius: 8, padding: '8px 18px' }}>
+                                            <button type="button" disabled={savingAddr} onClick={closeAddrPanel} className="btn btn-light fw-semibold" style={{ borderRadius: 8, padding: '8px 18px' }}>
                                                 Cancel
                                             </button>
                                         </div>
                                     </div>
                                 </form>
-                            </div>
-                        )}
-
-                        {/* Address list */}
-                        {addresses.length === 0 ? (
-                            <div className="text-center py-4 text-muted">
-                                <FaMapMarkerAlt size={28} className="mb-2 opacity-50" />
-                                <p className="small mb-0">No saved addresses yet. Add one to speed up checkout!</p>
-                            </div>
-                        ) : (
-                            <div className="d-flex flex-column gap-3">
-                                {addresses.map(addr => (
-                                    <div
-                                        key={addr._id}
-                                        className="d-flex align-items-start justify-content-between p-3 rounded-3"
-                                        style={{
-                                            background: addr.isDefault ? '#f0fff4' : '#f8f9fa',
-                                            border: `1.5px solid ${addr.isDefault ? '#b7e4c7' : '#e9ecef'}`,
-                                            transition: 'all 0.2s'
-                                        }}
-                                    >
-                                        <div className="d-flex align-items-start gap-3">
-                                            {/* Icon badge */}
-                                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: addr.isDefault ? '#d8f3dc' : '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: addr.isDefault ? '#000000' : '#6c757d' }}>
-                                                {labelIcon(addr.label)}
-                                            </div>
-                                            <div>
-                                                <div className="d-flex align-items-center gap-2 mb-1">
-                                                    <span className="badge d-flex align-items-center gap-1" style={{ background: '#e9ecef', color: '#495057', fontSize: '0.65rem', fontWeight: 600 }}>
-                                                        {labelIcon(addr.label)} {addr.label || 'Home'}
-                                                    </span>
-                                                    {addr.isDefault && (
-                                                        <span className="badge d-flex align-items-center gap-1" style={{ background: '#d8f3dc', color: '#000000', fontSize: '0.65rem' }}>
-                                                            <FaStar size={8} /> Default
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                {addr.name && (
-                                                    <div className="fw-bold small text-dark mb-1">{addr.name}</div>
-                                                )}
-                                                <p className="mb-0 small text-muted lh-sm">
-                                                    {addr.addressLine}
-                                                    {addr.city && `, ${addr.city}`}
-                                                    {addr.state && `, ${addr.state}`}
-                                                    {addr.zipcode && ` – ${addr.zipcode}`}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        {/* Actions */}
-                                        <div className="d-flex align-items-center gap-1 ms-2 flex-shrink-0">
-                                            {!addr.isDefault && (
-                                                <button
-                                                    onClick={() => handleSetDefault(addr._id)}
-                                                    className="btn btn-sm"
-                                                    title="Set as default"
-                                                    style={{ background: 'transparent', color: '#000000', border: '1px solid #b7e4c7', borderRadius: 6, padding: '4px 8px', fontSize: 11 }}
-                                                >
-                                                    Set Default
-                                                </button>
-                                            )}
-                                            <button
-                                                onClick={() => openEdit(addr)}
-                                                className="btn btn-sm btn-light"
-                                                title="Edit"
-                                                style={{ padding: '5px 8px' }}
-                                            >
-                                                <FaEdit size={12} color="#555" />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeleteAddress(addr._id)}
-                                                disabled={deletingId === addr._id}
-                                                className="btn btn-sm"
-                                                title="Remove"
-                                                style={{ padding: '5px 8px', background: '#fff3f3', border: '1px solid #f8d7da', borderRadius: 6, color: '#dc3545' }}
-                                            >
-                                                {deletingId === addr._id
-                                                    ? <div className="spinner-border spinner-border-sm" style={{ width: 12, height: 12, borderWidth: 2 }} role="status" />
-                                                    : <FaTrash size={11} />}
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
+                    </Modal.Body>
+                </Modal>
+            )}
         </div>
     );
 };
