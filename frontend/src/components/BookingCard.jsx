@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import Modal from 'react-bootstrap/Modal';
 import { FaStar } from 'react-icons/fa';
 import bookingService from '../services/bookingService';
+import InvoicePreview from './invoice/InvoicePreview';
 import { resolveImageUrl } from '../services/api';
 import { FiCalendar, FiMapPin, FiUser, FiArrowRight, FiStar, FiTool } from "react-icons/fi";
 
@@ -150,7 +151,7 @@ const BookingCard = ({ booking, onCancelled }) => {
     const [showDetails, setShowDetails] = useState(false);
     const [showReview, setShowReview] = useState(false);
 
-    const [downloading, setDownloading] = useState(false);
+    const [showInvoice, setShowInvoice] = useState(false);
     const status = (booking.status || 'pending').toLowerCase();
     const isCompleted = status === 'completed';
     const isCancelled = status === 'cancelled';
@@ -162,25 +163,6 @@ const BookingCard = ({ booking, onCancelled }) => {
     const date = new Date(booking.serviceDate);
     const serviceTime = !Number.isNaN(date.getTime()) && (date.getHours() || date.getMinutes())
         ? date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
-
-    const handleInvoice = async () => {
-        setDownloading(true);
-        try {
-            const invoice = await bookingService.downloadInvoice(booking._id);
-            const url = URL.createObjectURL(invoice);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `invoice-${booking._id}.txt`;
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            setTimeout(() => URL.revokeObjectURL(url), 1000);
-        } catch (err) {
-            toast.error('Unable to download invoice. Please try again.');
-        } finally {
-            setDownloading(false);
-        }
-    };
 
     const serviceDateFormatted = new Date(booking.serviceDate).toLocaleDateString('en-US', {
         weekday: 'short', day: 'numeric', month: 'short',
@@ -258,8 +240,8 @@ const BookingCard = ({ booking, onCancelled }) => {
                     </div>
                 </div>
                 <div className="booking-card-actions">
-                    <button className="booking-action-primary" disabled={downloading} onClick={isCompleted ? handleInvoice : () => setShowDetails(true)}>
-                        {isCompleted ? (downloading ? 'Downloading…' : 'Download Invoice') : technician.name ? 'View Specialist & Booking Details' : 'View Booking Details'} <FiArrowRight />
+                    <button className="booking-action-primary" onClick={isCompleted ? () => setShowInvoice(true) : () => setShowDetails(true)}>
+                        {isCompleted ? 'Download Invoice' : technician.name ? 'View Specialist & Booking Details' : 'View Booking Details'} <FiArrowRight />
                     </button>
                     {isCompleted && <div className="booking-card-secondary-actions">
                         <button className="booking-action-secondary" onClick={() => setShowDetails(true)}>View Details</button>
@@ -270,6 +252,7 @@ const BookingCard = ({ booking, onCancelled }) => {
             </article>
 
             {/* Review popup */}
+            {showInvoice && <InvoicePreview bookingId={booking._id} onClose={() => setShowInvoice(false)} />}
             {showReview && (
                 <ReviewPopup
                     bookingId={booking._id}

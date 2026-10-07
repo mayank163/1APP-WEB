@@ -55,6 +55,8 @@ const serviceSchema = new mongoose.Schema({
     longDescription: { type: String, trim: true },
     category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: [true, 'Category is required'] },
     subcategory: { type: mongoose.Schema.Types.ObjectId, ref: 'SubCategory', required: [true, 'Subcategory is required'] },
+    skillsRequired: [{ type: String, trim: true }],
+    serviceArea: { type: String, trim: true, default: 'City-wide Standard' },
     serviceType: { type: String, trim: true, default: '' },
     status: { type: String, enum: ['active', 'inactive', 'draft'], default: 'active' },
     isFeatured: { type: Boolean, default: false },

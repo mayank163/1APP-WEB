@@ -20,6 +20,8 @@ const subCategorySchema = new mongoose.Schema({
         default: null
     },
     startingFromPrice: { type: Number, default: 0, min: 0 },
+    description: { type: String, trim: true, default: '' },
+    status: { type: String, enum: ['active', 'inactive', 'draft'] },
     isActive: { type: Boolean, default: true }
 }, { timestamps: true });
 

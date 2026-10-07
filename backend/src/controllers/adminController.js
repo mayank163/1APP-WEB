@@ -2,6 +2,10 @@ const Booking = require('../models/Booking');
 const User = require('../models/User');
 const Admin = require('../models/Admin');
 const PlanPurchase = require('../models/PlanPurchase');
+const Review = require('../models/Review');
+const Service = require('../models/Service');
+const TechnicianJob = require('../models/TechnicianJob');
+const AdditionalCharge = require('../models/AdditionalCharge');
 const { RESOURCES, ADMIN_ROLES } = require('../models/Admin');
 const jwt = require('jsonwebtoken');
 const { sendBookingStatusUpdated } = require('../utils/emailService');
@@ -146,7 +150,7 @@ exports.getDashboardStats = async (req, res, next) => {
  */
 exports.getAllBookings = async (req, res, next) => {
     try {
-        const { status, paymentStatus, search } = req.query;
+        const { status, paymentStatus, search, sort = 'newest' } = req.query;
         const { page, limit, skip } = getPagination(req.query);
         const query = {};
 
@@ -156,8 +160,11 @@ exports.getAllBookings = async (req, res, next) => {
         if (search) {
             const searchRegex = new RegExp(search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
             const matchingUsers = await User.find({ role: 'user', $or: [{ name: searchRegex }, { email: searchRegex }] }).select('_id');
+            const matchingServices = await Service.find({ name: searchRegex }).select('_id');
             const searchConditions = [
-                { address: searchRegex },
+                { 'address.addressLine': searchRegex },
+                { 'address.city': searchRegex },
+                { 'services.service': { $in: matchingServices.map(service => service._id) } },
                 { phone: searchRegex },
                 { user: { $in: matchingUsers.map(user => user._id) } }
             ];
@@ -169,14 +176,21 @@ exports.getAllBookings = async (req, res, next) => {
         const bookings = await Booking.find(query)
             .populate('user')
             .populate('services.service')
-            .sort('-createdAt')
+            .sort(({ oldest: { createdAt: 1 }, appointment: { serviceDate: 1 }, 'amount-desc': { totalAmount: -1 }, 'amount-asc': { totalAmount: 1 } })[sort] || { createdAt: -1 })
             .skip(skip)
             .limit(limit);
 
+        const jobs = await TechnicianJob.find({ sourceBooking: { $in: bookings.map(b => b._id) } }).select('sourceBooking statusHistory jobDate');
+        const charges = await AdditionalCharge.find({ job: { $in: jobs.map(job => job._id) } }).select('job label description requestedAmount agreedAmount status');
+        const jobByBooking = new Map(jobs.map(job => [String(job.sourceBooking), job]));
+        const bookingData = bookings.map(booking => {
+            const job = jobByBooking.get(String(booking._id));
+            return { ...booking.toObject(), tracking: job || null, additionalCharges: job ? charges.filter(charge => String(charge.job) === String(job._id)) : [] };
+        });
         res.status(200).json({
             success: true,
             count: total,
-            data: { bookings },
+            data: { bookings: bookingData },
             pagination: getPaginationMeta({ page, limit, total })
         });
     } catch (err) {
@@ -291,12 +305,25 @@ exports.updateBookingStatus = async (req, res, next) => {
  */
 exports.getAllUsers = async (req, res, next) => {
     try {
-        const { search, sort = 'newest' } = req.query;
+        const { search, sort = 'newest', status, registration, activity, membership } = req.query;
         const { page, limit, skip } = getPagination(req.query);
         const query = { role: 'user' };
+        if (status === 'active') query.accountStatus = 'active';
+        if (status === 'blocked') query.accountStatus = { $in: ['inactive', 'blocked', 'suspended'] };
+        if (['30', '90', '365'].includes(registration)) query.createdAt = { $gte: new Date(Date.now() - Number(registration) * 86400000) };
+        if (activity === 'has' || activity === 'none') {
+            const ids = await Booking.distinct('user');
+            query._id = activity === 'has' ? { $in: ids } : { $nin: ids };
+        }
+        if (['active', 'expired', 'none'].includes(membership)) {
+            const planQuery = membership === 'active' ? { status: 'active', $or: [{ expiresAt: { $gt: new Date() } }, { expiresAt: null }] } : membership === 'expired' ? { $or: [{ status: 'expired' }, { expiresAt: { $lte: new Date() } }] } : {};
+            const ids = await PlanPurchase.distinct('user', planQuery);
+            query.$and = [{ _id: membership === 'none' ? { $nin: ids } : { $in: ids } }];
+        }
         if (search) {
             const searchRegex = new RegExp(search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
             query.$or = [{ name: searchRegex }, { email: searchRegex }, { phone: searchRegex }];
+            if (/^[a-f\d]{24}$/i.test(search.trim())) query.$or.push({ _id: search.trim() });
         }
         const total = await User.countDocuments(query);
         const users = await User.find(query)
@@ -311,9 +338,25 @@ exports.getAllUsers = async (req, res, next) => {
             if (!purchasesByUser.has(key)) purchasesByUser.set(key, []);
             purchasesByUser.get(key).push(purchase);
         });
+        const bookings = await Booking.find({ user: { $in: userIds } }).populate('services.service', 'name image').sort({ serviceDate: -1 });
+        const bookingsByUser = new Map();
+        bookings.forEach(booking => {
+            const key = String(booking.user);
+            if (!bookingsByUser.has(key)) bookingsByUser.set(key, []);
+            bookingsByUser.get(key).push(booking);
+        });
+        const reviews = await Review.find({ user: { $in: userIds } }).populate('service', 'name').sort({ createdAt: -1 });
+        const reviewsByUser = new Map();
+        reviews.forEach(review => {
+            const key = String(review.user);
+            if (!reviewsByUser.has(key)) reviewsByUser.set(key, []);
+            reviewsByUser.get(key).push(review);
+        });
         const usersWithPlans = users.map(user => ({
             ...user.toObject(),
-            planPurchases: purchasesByUser.get(String(user._id)) || []
+            planPurchases: purchasesByUser.get(String(user._id)) || [],
+            bookings: bookingsByUser.get(String(user._id)) || [],
+            reviews: reviewsByUser.get(String(user._id)) || []
         }));
         res.status(200).json({
             success: true,
@@ -330,6 +373,34 @@ exports.getAllUsers = async (req, res, next) => {
  * @desc    Change a customer's account status
  * @route   PATCH /api/admin/users/:id/status
  */
+exports.createCustomer = async (req, res, next) => {
+    try {
+        const { name, email, phone, password } = req.body;
+        if (!name?.trim() || !email?.trim() || !phone?.trim() || !password || password.length < 6) return res.status(400).json({ success: false, message: 'Name, email, phone and a password of at least six characters are required.' });
+        if (await User.exists({ email: email.trim().toLowerCase() })) return res.status(409).json({ success: false, message: 'Email already in use.' });
+        const user = await User.create({ name, email, phone, password, role: 'user', accountStatus: 'active' });
+        const safeUser = user.toObject();
+        delete safeUser.password;
+        res.status(201).json({ success: true, data: { user: safeUser } });
+    } catch (err) { next(err); }
+};
+
+exports.updateCustomer = async (req, res, next) => {
+    try {
+        const updates = {};
+        for (const key of ['name', 'email', 'phone', 'dateOfBirth', 'addresses']) {
+            if (req.body[key] !== undefined) updates[key] = key === 'dateOfBirth' ? req.body[key] || null : req.body[key];
+        }
+        if (updates.email) {
+            updates.email = updates.email.trim().toLowerCase();
+            if (await User.exists({ email: updates.email, _id: { $ne: req.params.id } })) return res.status(409).json({ success: false, message: 'Email already in use.' });
+        }
+        const user = await User.findOneAndUpdate({ _id: req.params.id, role: 'user' }, { $set: updates }, { new: true, runValidators: true });
+        if (!user) return res.status(404).json({ success: false, message: 'Customer not found.' });
+        res.json({ success: true, data: { user } });
+    } catch (err) { next(err); }
+};
+
 exports.updateUserAccountStatus = async (req, res, next) => {
     try {
         const { status } = req.body;

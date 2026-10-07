@@ -8,6 +8,8 @@ const upload = require('../middleware/upload');
 const { uploadServiceMedia, uploadCategoryMedia } = require('../middleware/upload');
 
 // ─── CATEGORY ─────────────────────────────────────────────────────────────────
+router.get('/categories/admin', protect, checkPermission('categories', 'read'), categoryController.getAdminCategories);
+router.get('/subcategories/admin', protect, checkPermission('subcategories', 'read'), categoryController.getAdminSubCategories);
 router.get('/categories', categoryController.getAllCategories);
 router.get('/categories/subcategories',categoryController.getCategoriesWithRecentSubCategories);
 router.post('/categories', protect, checkPermission('categories', 'write'), upload.single('image'), categoryController.createCategory);

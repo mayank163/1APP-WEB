@@ -12,5 +12,6 @@ router.patch('/conversations/:technicianId/read', chatController.markRead);
 router.get('/conversations/:participantType/:participantId/messages', chatController.getMessages);
 router.post('/conversations/:participantType/:participantId/messages', uploadChatMedia, chatController.sendMessage);
 router.patch('/conversations/:participantType/:participantId/read', chatController.markRead);
+router.get('/conversations/:participantType/:participantId/unread-count', chatController.getUnreadCount);
 
 module.exports = router;

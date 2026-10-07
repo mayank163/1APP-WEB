@@ -1,4 +1,5 @@
 const Booking = require('../models/Booking');
+const Admin = require('../models/Admin');
 const PaymentAttempt = require('../models/PaymentAttempt');
 const Service = require('../models/Service');
 const razorpayInstance = require('../config/razorpay');
@@ -582,7 +583,10 @@ exports.downloadInvoice = async (req, res, next) => {
             });
         }
 
-        if (booking.user._id.toString() !== req.user.id && req.user.role !== 'admin') {
+        const ownerId = booking.user?._id || booking.user;
+        const isAdmin = req.user instanceof Admin && req.user.isActive !== false;
+        const isOwner = ownerId != null && String(ownerId) === String(req.user.id || req.user._id);
+        if (!isOwner && !isAdmin) {
             return res.status(403).json({
                 success: false,
                 message: 'Unauthorized access'

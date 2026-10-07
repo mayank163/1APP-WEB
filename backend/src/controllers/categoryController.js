@@ -25,6 +25,19 @@ const cleanupCategoryImage = async key => {
     }
 };
 
+const catalogFields = body => {
+    const fields = {};
+    if (body.description !== undefined) fields.description = body.description;
+    if (body.status !== undefined) {
+        fields.status = body.status;
+        fields.isActive = body.status === 'active';
+    } else if (body.isActive !== undefined) {
+        fields.isActive = body.isActive === true || body.isActive === 'true';
+        fields.status = fields.isActive ? 'active' : 'inactive';
+    }
+    return fields;
+};
+
 // ─── CATEGORY ────────────────────────────────────────────────────────────────
 
 exports.getAllCategories = async (req, res, next) => {
@@ -78,7 +91,7 @@ exports.getCategoriesWithRecentSubCategories = async (req, res, next) => {
 exports.createCategory = async (req, res, next) => {
     try {
         if (!req.body?.name) return res.status(400).json({ success: false, message: 'Category name is required' });
-        const data = { name: req.body.name };
+        const data = { name: req.body.name, ...catalogFields(req.body) };
         if (req.file) {
             const uploaded = await uploadFile(req.file, "categories");
             data.image = uploaded.key;
@@ -94,7 +107,7 @@ exports.updateCategory = async (req, res, next) => {
         const existing = await Category.findById(req.params.id);
         if (!existing) return res.status(404).json({ success: false, message: 'Category not found' });
 
-        const update = {};
+        const update = catalogFields(req.body);
         if (req.body.name) update.name = req.body.name;
 
         if (req.file) {
@@ -117,10 +130,13 @@ exports.deleteCategory = async (req, res, next) => {
     try {
         const category = await Category.findById(req.params.id);
         if (!category) return res.status(404).json({ success: false, message: 'Category not found' });
+        const serviceCount = await require('../models/Service').countDocuments({ category: category._id });
+        if (serviceCount > 0) return res.status(409).json({ success: false, message: 'Category in use', serviceCount });
         if (category.image) {
             await cleanupCategoryImage(category.image);
         }
         category.isActive = false;
+        category.status = 'inactive';
         await category.save();
         emitCategoryEvent('category:deleted', { categoryId: req.params.id });
         res.status(200).json({ success: true, message: 'Category deactivated successfully' });
@@ -144,7 +160,7 @@ exports.getAllSubCategories = async (req, res, next) => {
 
 exports.createSubCategory = async (req, res, next) => {
     try {
-        const data = { name: req.body.name, category: req.body.categoryId };
+        const data = { name: req.body.name, category: req.body.categoryId, ...catalogFields(req.body) };
         if (req.files?.image?.[0]) {
             const uploadedImage = await uploadFile(
             req.files.image[0],
@@ -169,7 +185,7 @@ exports.createSubCategory = async (req, res, next) => {
 
 exports.updateSubCategory = async (req, res, next) => {
     try {
-        const update = {};
+        const update = catalogFields(req.body);
         if (req.body.name) update.name = req.body.name;
         if (req.body.categoryId) update.category = req.body.categoryId;
         if (req.files?.image?.[0]) {
@@ -228,8 +244,35 @@ exports.toggleSubCategoryStatus = async (req, res, next) => {
         const subcategory = await SubCategory.findById(req.params.id);
         if (!subcategory) return res.status(404).json({ success: false, message: 'SubCategory not found' });
         subcategory.isActive = req.body.isActive;
+        subcategory.status = req.body.isActive ? 'active' : 'inactive';
         await subcategory.save();
         emitCategoryEvent('subcategory:updated', { subcategory });
         res.status(200).json({ success: true, data: { subcategory } });
     } catch (err) { next(err); }
 };
+
+// Protected catalog listings include inactive records for admin management.
+const getAdminCatalog = (Model, key, serviceField) => async (req, res, next) => {
+    try {
+        const { page, limit, skip } = getPagination(req.query);
+        const [total, records] = await Promise.all([
+            Model.countDocuments({}),
+            Model.find({}).sort({ name: 1 }).skip(skip).limit(limit).lean()
+        ]);
+        const Service = require('../models/Service');
+        const counts = await Service.aggregate([
+            { $match: { [serviceField]: { $in: records.map(record => record._id) } } },
+            { $group: { _id: `$${serviceField}`, count: { $sum: 1 } } }
+        ]);
+        const countMap = new Map(counts.map(entry => [String(entry._id), entry.count]));
+        if (key === 'subcategories') await SubCategory.populate(records, { path: 'category', select: 'name' });
+        if (key === 'categories') {
+            const children = await SubCategory.find({ category: { $in: records.map(record => record._id) } }).select('name category').lean();
+            records.forEach(record => { record.subcategories = children.filter(child => String(child.category) === String(record._id)); });
+        }
+        records.forEach(record => { record.serviceCount = countMap.get(String(record._id)) || 0; });
+        res.json({ success: true, data: { [key]: records }, pagination: getPaginationMeta({ page, limit, total }) });
+    } catch (err) { next(err); }
+};
+exports.getAdminCategories = getAdminCatalog(Category, 'categories', 'category');
+exports.getAdminSubCategories = getAdminCatalog(SubCategory, 'subcategories', 'subcategory');

@@ -1,11 +1,11 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import adminApi from '../services/adminApi';
 import { connectAdminSocket } from '../services/socket';
 import NotificationBell from '../components/NotificationBell';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import {
-    FaChartBar, FaTasks, FaWrench, FaFolderOpen,
+    FaChartBar, FaTasks, FaFolderOpen,
     FaUsers, FaTag, FaSignOutAlt, FaTools,
     FaLayerGroup, FaBlog, FaHardHat, FaCheckCircle, FaComments,
     FaBars, FaChevronLeft, FaUserShield, FaSitemap, FaCogs, FaGem
@@ -13,6 +13,7 @@ import {
 
 const MainLayout = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [collapsed, setCollapsed] = useState(false);
     const headerRef = useRef(null);
     const [headerHeight, setHeaderHeight] = useState(0);
@@ -40,8 +41,7 @@ const MainLayout = () => {
     const allNavItems = [
         { to: "/", icon: <FaChartBar size={14} />, label: "Dashboard", end: true, resource: 'dashboard' },
         { to: "/bookings", icon: <FaTasks size={14} />, label: "Bookings", resource: 'bookings' },
-        { to: "/categories", icon: <FaWrench size={14} />, label: "Categories", resource: 'categories' },
-        { to: "/subcategories", icon: <FaFolderOpen size={14} />, label: "Sub-Categories", resource: 'subcategories' },
+        { to: can('categories', 'read') ? "/categories" : "/subcategories", icon: <FaLayerGroup size={14} />, label: "Service Management", resources: ['categories', 'subcategories'], activePaths: ['/categories', '/subcategories'] },
         { to: "/services", icon: <FaLayerGroup size={14} />, label: "Services", resource: 'services' },
         { to: "/users", icon: <FaUsers size={14} />, label: "Users", resource: 'users' },
         { to: "/offers", icon: <FaTag size={14} />, label: "Offers & Coupons", resource: 'offers' },
@@ -58,7 +58,7 @@ const MainLayout = () => {
     ];
 
     // Show nav item if super admin OR has at least read permission
-    const navItems = allNavItems.filter(item => can(item.resource, 'read'));
+    const navItems = allNavItems.filter(item => item.resources ? item.resources.some(resource => can(resource, 'read')) : can(item.resource, 'read'));
 
     return (
         <div
@@ -101,18 +101,18 @@ const MainLayout = () => {
                 <div className="p-3 flex-grow-1" style={{ overflowY: "auto" }}>
                     {!collapsed && <p className="text-uppercase fw-bold fs-8 mb-2 px-2" style={{ color: "rgba(255,255,255,0.35)", letterSpacing: "0.08em" }}>Navigation</p>}
                     <ul className="nav nav-pills flex-column gap-1">
-                        {navItems.map(({ to, icon, label, end }) => (
+                        {navItems.map(({ to, icon, label, end, activePaths }) => (
                             <li key={to} className="nav-item">
                                 <NavLink
                                     to={to}
                                     end={end}
                                     title={collapsed ? label : undefined}
                                     className={({ isActive }) =>
-                                        `nav-link d-flex align-items-center py-2 px-3 rounded-3 fw-medium ${isActive ? 'active-nav-link' : 'inactive-nav-link'}`
+                                        `nav-link d-flex align-items-center py-2 px-3 rounded-3 fw-medium ${(isActive || activePaths?.includes(location.pathname)) ? 'active-nav-link' : 'inactive-nav-link'}`
                                     }
                                     style={({ isActive }) => ({
-                                        backgroundColor: isActive ? "#A5732F" : "transparent",
-                                        color: isActive ? "#fff" : "rgba(255,255,255,0.65)",
+                                        backgroundColor: (isActive || activePaths?.includes(location.pathname)) ? "#A5732F" : "transparent",
+                                        color: (isActive || activePaths?.includes(location.pathname)) ? "#fff" : "rgba(255,255,255,0.65)",
                                         transition: "all 0.2s ease",
                                         justifyContent: collapsed ? "center" : "flex-start",
                                         gap: collapsed ? 0 : "0.75rem",

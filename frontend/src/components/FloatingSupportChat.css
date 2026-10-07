@@ -1,0 +1,300 @@
+.floating-support {
+    position: fixed;
+    right: 28px;
+    bottom: 28px;
+    z-index: 1050;
+    color: #16191d;
+    font-family: Arial, sans-serif
+}
+
+.floating-support-launcher {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 72px;
+    height: 72px;
+    padding: 9px;
+    border: 1px solid #e2e7e8;
+    border-radius: 50px;
+    background: linear-gradient(135deg, #fff, #eef2f3);
+    color: #000;
+    box-shadow: 0 12px 32px #163d3b35;
+    cursor: pointer;
+    overflow: hidden;
+    transition: width .25s ease
+}
+
+.floating-support-icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 52px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #000;
+    color: #fff;
+    box-shadow: 0 3px 7px #0003
+}
+
+.floating-support-icon svg {
+    width: 25px;
+    height: 25px;
+    stroke-width: 2.4
+}
+
+.floating-support-label {
+    white-space: nowrap;
+    font-size: 18px;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity .2s
+}
+
+.floating-support-unread {
+    position: absolute;
+    top: -4px;
+    left: 48px;
+    display: grid;
+    place-items: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 5px;
+    border: 2px solid #fff;
+    border-radius: 20px;
+    background: #dc2626;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    box-shadow: 0 2px 6px #0002;
+    pointer-events: none
+}
+
+.floating-support-launcher:hover,
+.floating-support-launcher:focus-visible {
+    width: 264px
+}
+
+.floating-support-launcher:hover .floating-support-label,
+.floating-support-launcher:focus-visible .floating-support-label {
+    opacity: 1
+}
+
+.floating-support button:focus-visible,
+.floating-support a:focus-visible {
+    outline: 3px solid #169985;
+    outline-offset: 4px
+}
+
+.floating-support-panel {
+    position: absolute;
+    bottom: 88px;
+    right: 0;
+    width: min(380px, calc(100vw - 32px));
+    height: min(540px, calc(100dvh - 132px));
+    overflow: hidden;
+    border: 1px solid #e4e9e9;
+    border-radius: 26px;
+    background: linear-gradient(#fff, #edf1f2);
+    box-shadow: 0 18px 60px #163d3b40
+}
+
+.floating-support-conversation {
+    height: 100%;
+    color: #16191d
+}
+
+.floating-support-conversation .support-chat-shell {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none
+}
+
+.floating-support-conversation .support-chat-header {
+    min-height: 80px;
+    padding: 14px 16px;
+    border: 0;
+    background: transparent
+}
+
+.floating-support-conversation .support-chat-avatar {
+    flex-basis: 48px;
+    width: 48px;
+    height: 48px;
+    background: #000;
+    color: #fff
+}
+
+.floating-support-conversation .support-chat-person {
+    min-width: 0;
+    margin-left: 12px
+}
+
+.floating-support-conversation .support-chat-person h1 {
+    font-size: 18px;
+    color: #000
+}
+
+.floating-support-conversation .support-chat-person p {
+    font-size: 12px;
+    color: #60726d
+}
+
+.floating-support-conversation .support-chat-new {
+    flex-shrink: 0;
+    color: #56616b
+}
+
+.floating-support-conversation .tech-chat-thread {
+    padding: 10px 22px;
+    background: transparent
+}
+
+.floating-support-conversation .tech-chat-bubble {
+    max-width: 88%;
+    padding: 12px 14px 8px;
+    background: #eee;
+    border: 0;
+    box-shadow: 0 1px 2px #0002;
+    border-radius: 18px 18px 18px 4px
+}
+
+.floating-support-conversation .tech-chat-message.mine .tech-chat-bubble {
+    background: #ccc;
+    border: 0;
+    border-radius: 18px 18px 4px 18px
+}
+
+.floating-support-conversation .tech-chat-bubble p {
+    font-size: 14px;
+    color: #202329
+}
+
+.floating-support-conversation .tech-chat-bubble time {
+    font-size: 10px;
+    color: #697386
+}
+
+.floating-support-conversation .tech-chat-composer {
+    min-height: 50px;
+    margin: 10px 18px 22px;
+    padding: 6px;
+    border: 0;
+    border-radius: 32px;
+    background: #fff
+}
+
+.floating-support-conversation .tech-chat-composer>input {
+    height: 42px;
+    padding: 0 4px;
+    border: 0;
+    background: transparent;
+    font-size: 14px
+}
+
+.floating-support-conversation .tech-chat-composer>button {
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+    background: #000
+}
+
+.floating-support-conversation .tech-chat-attach {
+    background: transparent;
+    color: #596274
+}
+
+.floating-support-conversation .tech-chat-attachment {
+    margin: 0 18px;
+    border-radius: 10px;
+    overflow-wrap: anywhere
+}
+
+.floating-support-signin {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 32px;
+    text-align: center
+}
+
+.floating-support-signin h2 {
+    margin-top: 24px;
+    font-size: 24px;
+    font-weight: 700
+}
+
+.floating-support-signin p {
+    color: #66717e;
+    line-height: 1.6
+}
+
+.floating-support-signin a {
+    margin-top: 12px;
+    padding: 12px 24px;
+    border-radius: 24px;
+    background: #000;
+    color: #fff;
+    text-decoration: none
+}
+
+.floating-support-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    border-radius: 50%;
+    background: #dce3e5;
+    color: #47515b
+}
+
+@media(max-width:600px) {
+    .floating-support {
+        right: 16px;
+        bottom: max(16px, env(safe-area-inset-bottom))
+    }
+
+    .floating-support-launcher {
+        width: 64px;
+        height: 64px;
+        padding: 7px
+    }
+
+    .floating-support-icon {
+        flex-basis: 48px;
+        width: 48px;
+        height: 48px
+    }
+
+    .floating-support-panel {
+        bottom: 78px;
+        height: min(500px, calc(100dvh - 112px));
+        border-radius: 26px
+    }
+
+    .floating-support-launcher:hover,
+    .floating-support-launcher:focus-visible {
+        width: 250px
+    }
+
+    .floating-support-label {
+        font-size: 17px
+    }
+}
+
+@media(prefers-reduced-motion:reduce) {
+
+    .floating-support-launcher,
+    .floating-support-label {
+        transition: none
+    }
+}

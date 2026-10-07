@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const bookingController = require('../controllers/bookingController');
+const invoiceController = require('../controllers/invoiceController');
 const reviewController  = require('../controllers/reviewController');
 const { protect } = require('../middleware/auth');
 const { validateBooking } = require('../middleware/validation');
@@ -14,6 +15,7 @@ router.get('/my-bookings',                      bookingController.getMyBookings)
 router.get('/:id',                              bookingController.getBookingDetails);
 router.post('/:id/cancel',                      bookingController.cancelBooking);
 router.get('/:id/invoice',                      bookingController.downloadInvoice);
+router.get('/:id/invoice/details',              invoiceController.getInvoice);
 router.get('/:bookingId/reviewable-services',   reviewController.getReviewableServices);
 
 module.exports = router;

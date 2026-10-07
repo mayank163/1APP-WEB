@@ -52,6 +52,7 @@ API.interceptors.response.use(
 export default API;
 
 export const chatApi = {
+    getUnreadCount: (participantType, participantId) => API.get(`/chat/conversations/${participantType}/${participantId}/unread-count`),
     getMessages: (technicianId, params = {}) => API.get(`/chat/conversations/${technicianId}/messages`, { params }),
     markRead: (technicianId) => API.patch(`/chat/conversations/${technicianId}/read`),
     sendMedia: (technicianId, formData) => API.post(`/chat/conversations/${technicianId}/messages`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),

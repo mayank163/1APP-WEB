@@ -18,7 +18,7 @@ const {Server} = require('socket.io');
 const jwt = require('jsonwebtoken');
 const User = require('./models/User');
 const Admin = require('./models/Admin');
-const ChatMessage = require('./models/ChatMessage');
+const { registerChatHandlers } = require('./socket/chatHandlers');
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
@@ -242,49 +242,7 @@ io.on("connection", (socket) => {
         message: "Welcome from Backend"
     });
 
-    const canAccessChat = (technicianId) =>
-        socket.userRole === 'admin' || String(socket.user._id) === String(technicianId);
-
-    socket.on('chat:join', (technicianId) => {
-        if (technicianId && canAccessChat(technicianId)) {
-            socket.join(`chat:technician:${technicianId}`);
-        }
-    });
-
-    socket.on('chat:leave', (technicianId) => {
-        if (technicianId) socket.leave(`chat:technician:${technicianId}`);
-    });
-
-    socket.on('chat:typing', ({ technicianId, isTyping } = {}) => {
-        if (!technicianId || !canAccessChat(technicianId)) return;
-        socket.to(`chat:technician:${technicianId}`).emit('chat:typing', {
-            technicianId,
-            userId: socket.user._id,
-            senderRole: socket.userRole,
-            isTyping: Boolean(isTyping)
-        });
-    });
-
-    socket.on('chat:send', async ({ technicianId, text, receiverId } = {}, acknowledge) => {
-        try {
-            const messageText = String(text || '').trim();
-            if (!technicianId || !canAccessChat(technicianId) || !messageText || messageText.length > 4000) {
-                throw new Error('Invalid chat message');
-            }
-            const message = await ChatMessage.create({
-                technicianId,
-                senderId: socket.user._id,
-                senderRole: socket.userRole,
-                receiverId: socket.userRole === 'technician' ? (receiverId || null) : technicianId,
-                messageType: 'text',
-                text: messageText
-            });
-            io.to(`chat:technician:${technicianId}`).emit('chat:message', { message });
-            if (typeof acknowledge === 'function') acknowledge({ success: true, message });
-        } catch (error) {
-            if (typeof acknowledge === 'function') acknowledge({ success: false, message: error.message });
-        }
-    });
+    registerChatHandlers(io, socket);
 
     // Listen for message from frontend
     socket.on("sendMessage", (data) => {

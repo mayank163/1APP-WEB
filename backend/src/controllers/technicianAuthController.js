@@ -64,23 +64,89 @@ const sendTokenResponse = (user, statusCode, res) => {
     });
 };
 
-// Public registration always verifies the mobile number. No request flag can bypass it.
+const getOtpType = (body) => {
+  const requestedType = body.type || body.channel;
+  if (requestedType) return requestedType;
+  return body.email && !body.phone ? 'email' : 'phone';
+};
+
+// Public registration verifies either the mobile number or the email address.
 exports.sendOTP = async (req, res, next) => {
   try {
+    const type = getOtpType(req.body);
+    if (!['phone', 'email'].includes(type)) {
+      return res.status(400).json({ success: false, message: 'Choose phone or email verification.' });
+    }
+
+    if (type === 'email') {
+      const email = String(req.body.email || '').trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ success: false, message: 'Enter a valid email address.' });
+      }
+      if (await User.findOne({ email, accountStatus: { $ne: 'inactive' } })) {
+        return res.status(409).json({ success: false, message: 'This email is already registered.' });
+      }
+
+      pendingRegistrations.delete(`email:${email}`);
+      await otpService.sendEmailOTP(email, 'technician-signup');
+      return res.json({
+        success: true,
+        message: 'OTP sent to your email address.',
+        type: 'email',
+        ...(otpService.simulationEnabled() &&
+          otpService.getLastEmailOTP(email, 'technician-signup') && {
+            devOtp: otpService.getLastEmailOTP(email, 'technician-signup'),
+          }),
+      });
+    }
+
     const phone = normalizePhone(req.body.phone);
     if (await User.findOne({ ...phoneQuery(phone), accountStatus: { $ne: 'inactive' } })) return res.status(409).json({ success: false, message: 'This number is already registered. Use account activation if an admin added you.' });
-    pendingRegistrations.delete(phone);
+    pendingRegistrations.delete(`phone:${phone}`);
     await otpService.sendOTP(phone, 'technician-signup');
-    res.json({ success: true, message: 'OTP sent to your mobile number.', type: 'phone' });
+    res.json({
+      success: true,
+      message: 'OTP sent to your mobile number.',
+      type: 'phone',
+      ...(otpService.simulationEnabled() &&
+        otpService.getLastOTP(phone, 'technician-signup') && {
+          devOtp: otpService.getLastOTP(phone, 'technician-signup'),
+        }),
+    });
   } catch (error) { next(error); }
 };
 
 exports.verifyOTP = async (req, res, next) => {
   try {
+    const type = getOtpType(req.body);
+    if (!['phone', 'email'].includes(type)) {
+      return res.status(400).json({ success: false, message: 'Choose phone or email verification.' });
+    }
+
+    if (type === 'email') {
+      const email = String(req.body.email || '').trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ success: false, message: 'Enter a valid email address.' });
+      }
+      if (!otpService.verifyEmailOTP(email, req.body.otp, 'technician-signup')) {
+        return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
+      }
+
+      for (const [key, value] of pendingRegistrations) {
+        if (value.expires < Date.now()) pendingRegistrations.delete(key);
+      }
+      pendingRegistrations.set(`email:${email}`, {
+        verified: true,
+        type: 'email',
+        expires: Date.now() + TTL,
+      });
+      return res.json({ success: true, message: 'Email address verified.', type: 'email' });
+    }
+
     const phone = normalizePhone(req.body.phone);
     if (!otpService.verifyOTP(phone, req.body.otp, 'technician-signup')) return res.status(400).json({ success: false, message: 'Invalid or expired OTP.' });
     for (const [key, value] of pendingRegistrations) if (value.expires < Date.now()) pendingRegistrations.delete(key);
-    pendingRegistrations.set(phone, { verified: true, expires: Date.now() + TTL });
+    pendingRegistrations.set(`phone:${phone}`, { verified: true, type: 'phone', expires: Date.now() + TTL });
     res.json({ success: true, message: 'Mobile number verified.', type: 'phone' });
   } catch (error) { next(error); }
 };
@@ -92,13 +158,37 @@ exports.completeSignup = async (req, res, next) => {
     const name = String(req.body.name || '').trim();
     const email = String(req.body.email || '').trim().toLowerCase();
     if (!name || typeof password !== 'string' || password.length < 8 || password !== confirmPassword) return res.status(400).json({ success: false, message: 'Name and matching passwords of at least 8 characters are required.' });
-    const pending = pendingRegistrations.get(phone);
-    if (!pending?.verified || pending.expires < Date.now()) return res.status(400).json({ success: false, message: 'Verify this mobile number before creating your account.' });
+    const requestedType = req.body.type || req.body.channel;
+    if (requestedType && !['phone', 'email'].includes(requestedType)) {
+      return res.status(400).json({ success: false, message: 'Choose phone or email verification.' });
+    }
+    const phoneKey = `phone:${phone}`;
+    const emailKey = `email:${email}`;
+    const phonePending = pendingRegistrations.get(phoneKey);
+    const pendingKey = requestedType === 'email'
+      ? emailKey
+      : requestedType === 'phone'
+        ? phoneKey
+        : phonePending?.verified && phonePending.expires >= Date.now()
+          ? phoneKey
+          : emailKey;
+    const pending = pendingRegistrations.get(pendingKey);
+    if (!pending?.verified || pending.expires < Date.now()) return res.status(400).json({ success: false, message: 'Verify your phone number or email address before creating your account.' });
+    if (pending.type === 'email' && !email) return res.status(400).json({ success: false, message: 'Provide the verified email address to create your account.' });
     const alternatives = [phoneQuery(phone), ...(email ? [{ email }] : [])];
     if (await User.findOne({ $or: alternatives, accountStatus: { $ne: 'inactive' } })) return res.status(409).json({ success: false, message: 'Mobile number or email already registered.' });
-    const technician = new User({ name, phone, ...(email && { email }), password, role: 'technician', isPhoneVerified: true, isEmailVerified: false, profileCompleted: false });
+    const technician = new User({
+      name,
+      phone,
+      ...(email && { email }),
+      password,
+      role: 'technician',
+      isPhoneVerified: pending.type === 'phone',
+      isEmailVerified: pending.type === 'email',
+      profileCompleted: false,
+    });
     await technician.validate();
-    pendingRegistrations.delete(phone);
+    pendingRegistrations.delete(pendingKey);
     await technician.save();
     await saveFcmToken(technician, req.body.fcmToken);
     sendTokenResponse(technician, 201, res);

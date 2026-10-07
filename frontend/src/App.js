@@ -78,7 +78,7 @@ const AppShell = () => {
           <Route path="/blogs/:id" element={<BlogDetail />} />
         </Routes>
       </main>
-      {!isAuth && <Footer />}
+      <Footer widgetOnly={isAuth} />
       <ToastContainer position="bottom-right" autoClose={3000} />
     </div>
   );

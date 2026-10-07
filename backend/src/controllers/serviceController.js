@@ -67,6 +67,8 @@ const buildServiceData = async (
         category: body.category,
         subcategory: body.subcategory,
         serviceType: body.serviceType || '',
+        ...(body.skillsRequired !== undefined && { skillsRequired: parseJSON(body.skillsRequired, []) }),
+        ...(body.serviceArea !== undefined && { serviceArea: body.serviceArea }),
         status: body.status || 'active',
         isFeatured: body.isFeatured === 'true' || body.isFeatured === true,
         serviceDuration: Math.floor(parseFloat(body.serviceDuration) || 0),

@@ -1,11 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
+import CatalogManagementLayout, { loadCatalog } from '../components/CatalogManagementLayout';
+import CatalogModal, { IconUpload, StatusChoices } from '../components/CatalogModal';
 import adminApi from '../services/adminApi';
-import { ShimmerSubcategoryTable } from '../components/Shimmer';
-import AdminImage from '../components/AdminImage';
-import { FaPlus, FaEdit, FaTrash, FaFolder, FaImage } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { getImageUrl } from '../utils/helpers';
-import Pagination from '../components/Pagination';
 
 const CategoryManagement = () => {
     const [subcategories, setSubcategories] = useState([]);
@@ -20,27 +18,24 @@ const CategoryManagement = () => {
     const [iconFile, setIconFile] = useState(null);
     const [iconPreview, setIconPreview] = useState(null);
     const [startingFromPrice, setStartingFromPrice] = useState('');
+    const [description, setDescription] = useState('');
+    const [status, setStatus] = useState('active');
     const [submitting, setSubmitting] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [sortOrder, setSortOrder] = useState('asc');
-    const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
-    const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
-    const formRef = useRef(null);
     const tableRef = useRef(null);
 
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [catRes, subRes] = await Promise.all([
-                adminApi.getCategories({ limit: 100 }),
-                adminApi.getSubCategories('', { page, limit: pageSize, search: searchTerm, sort: sortOrder })
+            const [categoryItems, subcategoryItems] = await Promise.all([
+                loadCatalog(adminApi.getCategories, 'categories'),
+                loadCatalog(adminApi.getAdminSubCategories, 'subcategories')
             ]);
-            if (catRes.success) setCategories(catRes.data.categories);
-            if (subRes.success) {
-                setSubcategories(subRes.data.subcategories);
-                setPagination(subRes.pagination || { page, limit: pageSize, total: subRes.count || 0, totalPages: Math.max(1, Math.ceil((subRes.count || 0) / pageSize)) });
-            }
+            const categoryOptions = new Map(categoryItems.map(item => [item._id, item]));
+            subcategoryItems.forEach(item => {
+                if (item.category?._id && !categoryOptions.has(item.category._id)) categoryOptions.set(item.category._id, item.category);
+            });
+            setCategories([...categoryOptions.values()]);
+            setSubcategories(subcategoryItems);
         } catch {
             toast.error('Failed to load data');
         } finally {
@@ -48,12 +43,14 @@ const CategoryManagement = () => {
         }
     };
 
-    useEffect(() => { fetchData(); }, [page, pageSize, searchTerm, sortOrder]);
+    useEffect(() => { fetchData(); }, []);
 
     const handleOpenCreate = () => {
         setEditingId(null);
         setSelectedCategoryId('');
         setSubcategoryName('');
+        setDescription('');
+        setStatus('draft');
         setImageFile(null);
         setImagePreview(null);
         setIconFile(null);
@@ -66,13 +63,14 @@ const CategoryManagement = () => {
         setEditingId(sub._id);
         setSelectedCategoryId(sub.category?._id || '');
         setSubcategoryName(sub.name);
+        setDescription(sub.description || '');
+        setStatus(sub.status || (sub.isActive ? 'active' : 'inactive'));
         setImageFile(null);
         setImagePreview(sub.image ? getImageUrl(sub.image) : null);
         setIconFile(null);
         setIconPreview(sub.icon ? getImageUrl(sub.icon) : null);
         setStartingFromPrice(sub.startingFromPrice?.toString() || '');
         setShowForm(true);
-        setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
     };
 
     const handleImageChange = (e) => {
@@ -108,7 +106,7 @@ const CategoryManagement = () => {
             const res = await adminApi.toggleSubCategoryStatus(id, isActive);
             if (res.success) {
                 toast.success(`SubCategory marked ${isActive ? 'Active' : 'Inactive'}`);
-                setSubcategories(prev => prev.map(s => s._id === id ? { ...s, isActive } : s));
+                setSubcategories(prev => prev.map(s => s._id === id ? { ...s, isActive, status: isActive ? 'active' : 'inactive' } : s));
             }
         } catch { toast.error('Status update failed'); }
     };
@@ -123,6 +121,8 @@ const CategoryManagement = () => {
         try {
             const formData = new FormData();
             formData.append('name', subcategoryName);
+            formData.append('description', description);
+            formData.append('status', status);
             formData.append('categoryId', selectedCategoryId);
             if (startingFromPrice) formData.append('startingFromPrice', startingFromPrice);
             if (imageFile) formData.append('image', imageFile);
@@ -146,227 +146,26 @@ const CategoryManagement = () => {
         }
     };
 
-    const filteredSubcategories = subcategories;
 
     return (
-        <div>
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h1 className="fw-extrabold text-dark mb-1">Sub-Category Management</h1>
-                    <p className="text-muted">Add subcategories of selected categories</p>
-                </div>
-                {!showForm && (
-                    <button onClick={handleOpenCreate} className="btn btn-brand fw-bold d-flex align-items-center gap-2 px-4 shadow-sm">
-                        <FaPlus /><span>Add Sub-Category</span>
-                    </button>
-                )}
-            </div>
-
-            {showForm && (
-                <div ref={formRef} className="card border-0 shadow-sm rounded-3 bg-white p-4 mb-4">
-                    <h5 className="fw-bold mb-4 border-bottom pb-2">
-                        {editingId ? 'Edit Sub-Category' : 'Create New Sub-Category'}
-                    </h5>
-                    <form onSubmit={handleSubmit}>
-                        <div className="row g-3 mb-4">
-                            <div className="col-md-6">
-                                <label className="form-label text-muted small fw-bold">Select Category *</label>
-                                <select
-                                    required
-                                    className="form-select bg-light border-0"
-                                    value={selectedCategoryId}
-                                    onChange={(e) => setSelectedCategoryId(e.target.value)}
-                                >
-                                    <option value="">Choose a category...</option>
-                                    {categories.map(cat => (
-                                        <option key={cat._id} value={cat._id}>{cat.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="col-md-6">
-                                <label className="form-label text-muted small fw-bold">Sub-Category Name *</label>
-                                <input
-                                    type="text"
-                                    required
-                                    className="form-control bg-light border-0"
-                                    placeholder="e.g., Cleaning, Wiring, Repair"
-                                    value={subcategoryName}
-                                    onChange={(e) => setSubcategoryName(e.target.value)}
-                                />
-                            </div>
-                            <div className="col-md-6">
-                                <label className="form-label text-muted small fw-bold">Starting From Price ($)</label>
-                                <input
-                                    type="number"
-                                    min="0"
-                                    className="form-control bg-light border-0"
-                                    placeholder="e.g., 299"
-                                    value={startingFromPrice}
-                                    onChange={(e) => setStartingFromPrice(e.target.value)}
-                                />
-                            </div>
-                            <div className="col-md-6">
-                                <label className="form-label text-muted small fw-bold">Upload Image</label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="form-control bg-light border-0"
-                                    onChange={handleImageChange}
-                                />
-                            </div>
-                            <div className="col-md-6">
-                                <label className="form-label text-muted small fw-bold">Upload Icon</label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="form-control bg-light border-0"
-                                    onChange={handleIconChange}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="d-flex gap-4 mb-4">
-                            {imagePreview && (
-                                <div>
-                                    <label className="text-muted small fw-bold d-block mb-2">Image Preview:</label>
-                                    <img src={imagePreview} alt="Preview" className="img-thumbnail" style={{ maxWidth: '150px' }} />
-                                </div>
-                            )}
-                            {iconPreview && (
-                                <div>
-                                    <label className="text-muted small fw-bold d-block mb-2">Icon Preview:</label>
-                                    <img src={iconPreview} alt="Icon Preview" className="img-thumbnail" style={{ maxWidth: '60px' }} />
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="d-flex gap-2 justify-content-end">
-                            <button type="button" onClick={() => setShowForm(false)} className="btn btn-outline-secondary px-4 py-2">Cancel</button>
-                            <button type="submit" disabled={submitting} className="btn btn-brand fw-bold px-4 py-2 shadow-sm">
-                                {submitting ? 'Saving...' : 'Save Sub-Category'}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            )}
-
-            <div ref={tableRef} className="card border-0 shadow-sm rounded-3 bg-white p-4">
-
-    <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-
-        <input
-            type="text"
-            className="form-control"
-            placeholder="Search category or sub-category..."
-            style={{ maxWidth: "350px" }}
-            value={searchTerm}
-            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-        />
-
-        <select
-            className="form-select"
-            style={{ width: "180px" }}
-            value={sortOrder}
-            onChange={(e) => { setSortOrder(e.target.value); setPage(1); }}
-        >
-            <option value="asc">
-                Ascending (A-Z)
-            </option>
-
-            <option value="desc">
-                Descending (Z-A)
-            </option>
-        </select>
-
-    </div>
-                {loading ? <ShimmerSubcategoryTable rows={7} /> : (
-                    <div className="table-responsive">
-                        <table className="table table-hover align-middle">
-                            <thead className="table-light border-0">
-                                <tr>
-                                    <th>Image</th>
-                                    <th>Icon</th>
-                                    <th>Category</th>
-                                    <th>Sub-Category</th>
-                                    <th>Starting Price</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredSubcategories.map((sub) => (
-                                    <tr key={sub._id}>
-                                        <td>
-                                            {sub.image ? (
-                                                <AdminImage
-                                                    src={getImageUrl(sub.image)}
-                                                    alt={sub.name}
-                                                    width={50}
-                                                    height={50}
-                                                    radius={6}
-                                                    imgClassName="img-thumbnail"
-                                                    imgStyle={{ border: 'none', padding: 0 }}
-                                                />
-                                            ) : (
-                                                <div className="bg-light text-muted d-flex align-items-center justify-content-center" style={{ width: '50px', height: '50px', borderRadius: 6 }}>
-                                                    <FaImage size={16} />
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td>
-                                            {sub.icon ? (
-                                                <AdminImage
-                                                    src={getImageUrl(sub.icon)}
-                                                    alt={`${sub.name} icon`}
-                                                    width={35}
-                                                    height={35}
-                                                    radius={4}
-                                                    objectFit="contain"
-                                                    imgClassName="img-thumbnail"
-                                                    imgStyle={{ border: 'none', padding: 0 }}
-                                                />
-                                            ) : (
-                                                <div className="bg-light text-muted d-flex align-items-center justify-content-center" style={{ width: '35px', height: '35px', borderRadius: 4 }}>
-                                                    <FaImage size={12} />
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td className="fw-bold text-dark">
-                                            <FaFolder style={{ color: "#A5732F" }} className="me-2" />{sub.category?.name || '—'}
-                                        </td>
-                                        <td className="fw-semibold">{sub.name}</td>
-                                        <td className="fw-bold" style={{ color: "#A5732F" }}>
-                                            {sub.startingFromPrice ? `$${sub.startingFromPrice}` : '—'}
-                                        </td>
-                                        <td>
-                                            <select
-                                                className={`form-select form-select-sm border-0 fw-bold ${ sub.isActive ? 'text-success' : 'text-danger'}`}
-                                                style={{ width: '110px', backgroundColor: sub.isActive ? '#d1f5e0' : '#fde8e8' }}
-                                                value={sub.isActive ? 'active' : 'inactive'}
-                                                onChange={(e) => handleToggleStatus(sub._id, e.target.value === 'active')}
-                                            >
-                                                <option value="active">Active</option>
-                                                <option value="inactive">Inactive</option>
-                                            </select>
-                                        </td>
-                                        <td>
-                                            <div className="d-flex gap-1">
-                                                <button onClick={() => handleOpenEdit(sub)} className="btn btn-sm btn-light border" style={{ color: "#A5732F" }} title="Edit"><FaEdit /></button>
-                                                <button onClick={() => handleDelete(sub._id)} className="btn btn-sm btn-light border text-danger" title="Delete"><FaTrash /></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {filteredSubcategories.length === 0 && (
-                                    <tr><td colSpan="7" className="text-center py-5 text-muted">No sub-categories found. Create your first sub-category!</td></tr>
-                                )}
-                            </tbody>
-                        </table>
+        <CatalogManagementLayout kind="subcategories" items={subcategories} categories={categories} loading={loading}
+            onCreate={handleOpenCreate} onEdit={handleOpenEdit} onDelete={handleDelete} onToggle={handleToggleStatus} showForm={showForm}>
+            {showForm && <CatalogModal title={editingId ? 'Edit sub category' : 'Create sub category'} onClose={() => setShowForm(false)} busy={submitting}>
+                <form onSubmit={handleSubmit}>
+                    <IconUpload label={editingId ? 'Edit icon' : 'Icon'} onChange={handleIconChange} preview={iconPreview} />
+                    <div className="catalog-modal-grid">
+                        <label className="catalog-modal-field"><span>Sub category name</span><input autoFocus required placeholder="e.g. Smart Lighting" value={subcategoryName} onChange={event => setSubcategoryName(event.target.value)} /></label>
+                        <label className="catalog-modal-field"><span>Category</span><select required value={selectedCategoryId} onChange={event => setSelectedCategoryId(event.target.value)}><option value="">Choose category</option>{categories.map(item => <option key={item._id} value={item._id}>{item.name}</option>)}</select></label>
                     </div>
-                )}
-                {!loading && <Pagination {...pagination} page={page} limit={pageSize} onPageChange={setPage} onLimitChange={size => { setPageSize(size); setPage(1); }} />}
-            </div>
-        </div>
+                    <label className="catalog-modal-field"><span>Description</span><textarea rows={2} placeholder="What does this sub category cover?" value={description} onChange={event => setDescription(event.target.value)} /></label>
+                    <label className="catalog-modal-field"><span>Starting price (USD)</span><input type="number" min="0" step="0.01" value={startingFromPrice} onChange={event => setStartingFromPrice(event.target.value)} placeholder="0" /></label>
+                    <IconUpload label="Image" onChange={handleImageChange} preview={imagePreview} />
+                    <StatusChoices value={status} onChange={setStatus} />
+                    <div className="catalog-modal-footer"><button type="button" disabled={submitting} className="catalog-modal-cancel" onClick={() => setShowForm(false)}>Cancel</button><button disabled={submitting} className="catalog-modal-save">{submitting ? 'Saving…' : editingId ? 'Save Changes' : 'Create sub category'}</button></div>
+                </form>
+            </CatalogModal>}
+            <div ref={tableRef} />
+        </CatalogManagementLayout>
     );
 };
 

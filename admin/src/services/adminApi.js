@@ -48,6 +48,8 @@ const adminApi = {
 
     // ─── Bookings ──────────────────────────────────────────────────────────────
     getBookings: async (params = {}) => (await API.get('/admin/bookings', { params })).data,
+    getBookingInvoice: async (id) => (await API.get(`/bookings/${id}/invoice/details`)).data,
+    downloadBookingInvoice: async (id) => (await API.get(`/bookings/${id}/invoice`, { responseType: 'blob' })).data,
     updateBooking: async (id, data) => (await API.put(`/admin/bookings/${id}`, data)).data,
 
     getTechnicians: async () => (await API.get('/admin/technicians')).data,
@@ -93,6 +95,8 @@ const adminApi = {
     updateDocumentStatus: async (technicianId, documentId, payload) => (await API.patch(`/admin/technician-verifications/${technicianId}/documents/${documentId}`, payload)).data,
 
     // ─── Users ─────────────────────────────────────────────────────────────────
+    createCustomer: async (data) => (await API.post('/admin/users', data)).data,
+    updateCustomer: async (id, data) => (await API.put(`/admin/users/${id}`, data)).data,
     getUsers: async (params = {}) => (await API.get('/admin/users', { params })).data,
     updateUserAccount: async (id, status) => (await API.patch(`/admin/users/${id}/status`, { status })).data,
 
@@ -102,6 +106,9 @@ const adminApi = {
     updatePlan: async (id, payload) => (await API.put(`/plans/admin/plans/${id}`, payload)).data,
     updatePlanStatus: async (id, isActive) => (await API.patch(`/plans/admin/plans/${id}/status`, { isActive })).data,
     getPlanPurchases: async () => (await API.get('/plans/admin/purchases')).data,
+
+    getAdminCategories: async (params = {}) => (await API.get('/services/categories/admin', { params })).data,
+    getAdminSubCategories: async (params = {}) => (await API.get('/services/subcategories/admin', { params })).data,
 
     // ─── Categories ────────────────────────────────────────────────────────────
     getCategories: async (params = {}) => (await API.get('/services/categories', { params: Object.keys(params).length ? params : { limit: 100 } })).data,

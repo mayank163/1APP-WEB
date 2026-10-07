@@ -142,6 +142,13 @@ const markRead = async (req, res, next) => {
             { ...conversationQuery, 'readBy.userId': { $ne: req.user._id }, senderId: { $ne: req.user._id } },
             { $push: { readBy: { userId: req.user._id, readAt: new Date() } } }
         );
+        try {
+            getIO().to(roomFor(participantType, participantId)).emit('chat:read', {
+                participantType, participantId, userId: String(req.user._id)
+            });
+        } catch (socketError) {
+            console.warn('[Chat] read broadcast failed:', socketError.message);
+        }
         res.json({ success: true, message: 'Messages marked as read.' });
     } catch (error) {
         next(error);
@@ -183,4 +190,20 @@ const getInbox = async (req, res, next) => {
     }
 };
 
-module.exports = { sendMessage, getMessages, markRead, getInbox };
+const getUnreadCount = async (req, res, next) => {
+    try {
+        const { participantType, participantId } = participantParams(req);
+        const participant = await findParticipant(req, participantType, participantId);
+        if (!participant) return res.status(403).json({ success: false, message: 'You cannot access this conversation.' });
+        const conversationQuery = participantType === 'technician'
+            ? { $or: [{ technicianId: participant._id }, { participantId: participant._id, participantType }] }
+            : { participantId: participant._id, participantType };
+        const unreadCount = await ChatMessage.countDocuments({
+            ...conversationQuery, senderRole: 'admin', 'readBy.userId': { $ne: req.user._id }
+        });
+        res.setHeader('Cache-Control', 'private, no-store');
+        res.json({ success: true, data: { unreadCount } });
+    } catch (error) { next(error); }
+};
+
+module.exports = { sendMessage, getMessages, markRead, getInbox, getUnreadCount };

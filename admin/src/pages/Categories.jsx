@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import CatalogManagementLayout, { loadCatalog } from '../components/CatalogManagementLayout';
+import CatalogModal, { IconUpload, StatusChoices } from '../components/CatalogModal';
+import { FiAlertTriangle } from 'react-icons/fi';
 import adminApi from '../services/adminApi';
-import { ShimmerCategoryTable } from '../components/Shimmer';
-import AdminImage from '../components/AdminImage';
-import { FaPlus, FaEdit, FaTrash, FaImage, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { getImageUrl } from '../utils/helpers';
 
@@ -14,15 +14,15 @@ const Categories = () => {
     const [categoryName, setCategoryName] = useState('');
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
+    const [description, setDescription] = useState('');
+    const [status, setStatus] = useState('active');
+    const [inUse, setInUse] = useState(null);
     const [submitting, setSubmitting] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [sortOrder, setSortOrder] = useState('asc');
 
     const fetchData = async () => {
         setLoading(true);
         try {
-            const res = await adminApi.getCategories();
-            if (res.success) setCategories(res.data.categories);
+            setCategories(await loadCatalog(adminApi.getAdminCategories, 'categories'));
         } catch {
             toast.error('Failed to load categories');
         } finally {
@@ -35,15 +35,18 @@ const Categories = () => {
     const handleOpenCreate = () => {
         setEditingId(null);
         setCategoryName('');
+        setDescription('');
+        setStatus('draft');
         setImageFile(null);
         setImagePreview(null);
         setShowForm(true);
     };
 
     const handleOpenEdit = (cat) => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
         setEditingId(cat._id);
         setCategoryName(cat.name);
+        setDescription(cat.description || '');
+        setStatus(cat.status || (cat.isActive ? 'active' : 'inactive'));
         setImageFile(null);
         setImagePreview(cat.image ? getImageUrl(cat.image) : null);
         setShowForm(true);
@@ -62,11 +65,27 @@ const Categories = () => {
     };
 
     const handleDelete = async (id) => {
+        const category = categories.find(item => item._id === id);
+        if (category?.serviceCount > 0) { setInUse(category); return; }
         if (!window.confirm('Delete this category?')) return;
         try {
             const res = await adminApi.deleteCategory(id);
             if (res.success) { toast.success('Category deleted!'); fetchData(); }
-        } catch { toast.error('Deletion failed'); }
+        } catch (err) {
+            if (err.response?.status === 409) setInUse({ ...category, serviceCount: err.response.data.serviceCount });
+            else toast.error('Deletion failed');
+        }
+    };
+
+    const handleToggleStatus = async (id, isActive) => {
+        try {
+            const data = new FormData();
+            data.append('isActive', String(isActive));
+            const res = await adminApi.updateCategory(id, data);
+            if (!res.success) throw new Error('Status update failed');
+            setCategories(previous => previous.map(item => item._id === id ? { ...item, isActive, status: isActive ? 'active' : 'inactive' } : item));
+            toast.success(`Category marked ${isActive ? 'Active' : 'Inactive'}`);
+        } catch { toast.error('Status update failed'); }
     };
 
     const handleSubmit = async (e) => {
@@ -79,6 +98,8 @@ const Categories = () => {
         try {
             const formData = new FormData();
             formData.append('name', categoryName);
+            formData.append('description', description);
+            formData.append('status', status);
             if (imageFile) {
                 formData.append('image', imageFile);
             }
@@ -93,7 +114,6 @@ const Categories = () => {
             }
             setShowForm(false);
             fetchData();
-            if (editingId) window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to save category');
         } finally {
@@ -101,166 +121,23 @@ const Categories = () => {
         }
     };
 
-    const filteredcategories = [...categories]
-    .filter((cat) =>
-        cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cat.category?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .sort((a, b) => {
-        const first = a.name.toLowerCase();
-        const second = b.name.toLowerCase();
-
-        return sortOrder === 'asc'
-            ? first.localeCompare(second)
-            : second.localeCompare(first);
-    });
-
     return (
-        <div>
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h1 className="fw-extrabold text-dark mb-1">Category Management</h1>
-                    <p className="text-muted">Add and manage service categories with images</p>
-                </div>
-                {!showForm && (
-                    <button onClick={handleOpenCreate} className="btn btn-brand fw-bold d-flex align-items-center gap-2 px-4 shadow-sm">
-                        <FaPlus /><span>Add Category</span>
-                    </button>
-                )}
-            </div>
-
-            {showForm && (
-                <div className="card border-0 shadow-sm rounded-3 bg-white p-4 mb-4">
-                    <h5 className="fw-bold mb-4 border-bottom pb-2">
-                        {editingId ? 'Edit Category' : 'Create New Category'}
-                    </h5>
-                    <form onSubmit={handleSubmit}>
-                        <div className="row g-3 mb-4">
-                            <div className="col-md-6">
-                                <label className="form-label text-muted small fw-bold">Category Name *</label>
-                                <input
-                                    type="text"
-                                    required
-                                    className="form-control bg-light border-0"
-                                    placeholder="e.g., Home Services, IT Support"
-                                    value={categoryName}
-                                    onChange={(e) => setCategoryName(e.target.value)}
-                                />
-                            </div>
-                            <div className="col-md-6">
-                                <label className="form-label text-muted small fw-bold">Upload Image</label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    className="form-control bg-light border-0"
-                                    onChange={handleImageChange}
-                                />
-                            </div>
-                        </div>
-
-                        {imagePreview && (
-                            <div className="mb-4">
-                                <label className="text-muted small fw-bold d-block mb-2">Image Preview:</label>
-                                <img src={imagePreview} alt="Preview" className="img-thumbnail" style={{ maxWidth: '200px' }} />
-                            </div>
-                        )}
-
-                        <div className="d-flex gap-2 justify-content-end">
-                            <button type="button" onClick={() => setShowForm(false)} className="btn btn-outline-secondary px-4 py-2">Cancel</button>
-                            <button type="submit" disabled={submitting} className="btn btn-brand fw-bold px-4 py-2 shadow-sm">
-                                {submitting ? 'Saving...' : 'Save Category'}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            )}
-
-            <div className="card border-0 shadow-sm rounded-3 bg-white p-4">
-
-    <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-
-        <input
-            type="text"
-            className="form-control"
-            placeholder="Search category or sub-category..."
-            style={{ maxWidth: "350px" }}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-        />
-
-        <select
-            className="form-select"
-            style={{ width: "180px" }}
-            value={sortOrder}
-            onChange={(e) => setSortOrder(e.target.value)}
-        >
-            <option value="asc">
-                Ascending (A-Z)
-            </option>
-
-            <option value="desc">
-                Descending (Z-A)
-            </option>
-        </select>
-
-    </div>
-                {loading ? <ShimmerCategoryTable rows={6} /> : (
-                    <div className="table-responsive">
-                        <table className="table table-hover align-middle">
-                            <thead className="table-light border-0">
-                                <tr>
-                                    <th>Image</th>
-                                    <th>Category Name</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredcategories.map((cat) => (
-                                
-                                    <tr key={cat._id}>
-                                        <td>
-                                            {cat.image ? (
-                                                <AdminImage
-                                                    src={getImageUrl(cat.image)}
-                                                    alt={cat.name}
-                                                    width={60}
-                                                    height={60}
-                                                    radius={6}
-                                                    imgClassName="img-thumbnail"
-                                                    imgStyle={{ maxWidth: '60px', border: 'none', padding: 0 }}
-                                                />
-                                            ) : (
-                                                <div className="bg-light text-muted d-flex align-items-center justify-content-center" style={{ width: '60px', height: '60px', borderRadius: 6 }}>
-                                                    <FaImage size={20} />
-                                                </div>
-                                            )}
-                                        </td>
-                                        <td className="fw-bold text-dark">{cat.name}</td>
-                                        <td>
-                                            {cat.isActive ? (
-                                                <span className="text-success d-flex align-items-center gap-1 small fw-bold"><FaCheckCircle /><span>Active</span></span>
-                                            ) : (
-                                                <span className="text-danger d-flex align-items-center gap-1 small fw-bold"><FaTimesCircle /><span>Inactive</span></span>
-                                            )}
-                                        </td>
-                                        <td>
-                                            <div className="d-flex gap-1">
-                                                <button onClick={() => handleOpenEdit(cat)} className="btn btn-sm btn-light border" style={{ color: "#A5732F" }} title="Edit"><FaEdit /></button>
-                                                <button onClick={() => handleDelete(cat._id)} className="btn btn-sm btn-light border text-danger" title="Delete"><FaTrash /></button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {filteredcategories.length === 0 && (
-                                    <tr><td colSpan="4" className="text-center py-5 text-muted">No categories found. Create your first category!</td></tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-            </div>
-        </div>
+        <CatalogManagementLayout kind="categories" items={categories} categories={categories} loading={loading}
+            onCreate={handleOpenCreate} onEdit={handleOpenEdit} onDelete={handleDelete} onToggle={handleToggleStatus} showForm={showForm}>
+            {showForm && <CatalogModal title={editingId ? 'Edit category' : 'Create category'} onClose={() => setShowForm(false)} busy={submitting}>
+                <form onSubmit={handleSubmit}>
+                    <IconUpload label={editingId ? 'Edit icon' : 'Icon'} onChange={handleImageChange} preview={imagePreview} />
+                    <label className="catalog-modal-field"><span>Category name</span><input autoFocus required placeholder="e.g. Smart Home" value={categoryName} onChange={event => setCategoryName(event.target.value)} /></label>
+                    <label className="catalog-modal-field"><span>Description</span><textarea rows={2} placeholder="What does this category cover?" value={description} onChange={event => setDescription(event.target.value)} /></label>
+                    <StatusChoices value={status} onChange={setStatus} />
+                    <div className="catalog-modal-footer"><button type="button" disabled={submitting} className="catalog-modal-cancel" onClick={() => setShowForm(false)}>Cancel</button><button disabled={submitting} className="catalog-modal-save">{submitting ? 'Saving…' : editingId ? 'Save Changes' : 'Create category'}</button></div>
+                </form>
+            </CatalogModal>}
+            {inUse && <CatalogModal alert title={<><FiAlertTriangle />Category in use</>} onClose={() => setInUse(null)}>
+                <p>Can't delete "{inUse.name}" — {inUse.serviceCount} {inUse.serviceCount === 1 ? 'service still belongs' : 'services still belong'} to it.<br />Move or delete those services first.</p>
+                <div className="catalog-modal-footer"><button className="catalog-modal-save" onClick={() => setInUse(null)}>Close</button></div>
+            </CatalogModal>}
+        </CatalogManagementLayout>
     );
 };
 

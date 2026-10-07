@@ -1,4 +1,5 @@
 import React from 'react';
+import FloatingSupportChat from './FloatingSupportChat';
 import { useNavigate } from 'react-router-dom';
 
 const tryHeroImg = (filename) => {
@@ -59,13 +60,15 @@ function FooterLink({ label, to }) {
     );
 }
 
-export default function Footer() {
+export default function Footer({ widgetOnly = false }) {
     const navigate = useNavigate();
 
     const goHome = () => {
         navigate('/');
         scrollTop();
     };
+
+    if (widgetOnly) return <FloatingSupportChat />;
 
     return (
         <footer
@@ -482,6 +485,7 @@ export default function Footer() {
                 `}
             </style>
 
+            <FloatingSupportChat />
         </footer>
     );
 }

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import CatalogModal, { StatusChoices } from '../components/CatalogModal';
 import adminApi from '../services/adminApi';
 import { ShimmerServiceTable } from '../components/Shimmer';
 import AdminImage from '../components/AdminImage';
@@ -33,6 +34,9 @@ const SubcategoryManagement = () => {
     const [shortDescriptionPoints, setShortDescriptionPoints] = useState([]);
     const [newShortDescriptionPoint, setNewShortDescriptionPoint] = useState('');
     const [longDescription, setLongDescription] = useState('');
+    const [skillsRequired, setSkillsRequired] = useState([]);
+    const [skillInput, setSkillInput] = useState('');
+    const [serviceArea, setServiceArea] = useState('City-wide Standard');
     const [serviceType, setServiceType] = useState('');
     const [status, setStatus] = useState('active');
     const [isFeatured, setIsFeatured] = useState(false);
@@ -141,7 +145,7 @@ const SubcategoryManagement = () => {
     useEffect(() => {
         if (selectedCategoryId) {
             setFilteredSubcategories(subcategories.filter(s => s.category?._id === selectedCategoryId));
-            setSelectedSubcategoryId('');
+            setSelectedSubcategoryId(current => subcategories.some(item => item._id === current && item.category?._id === selectedCategoryId) ? current : '');
         } else {
             setFilteredSubcategories([]);
         }
@@ -180,15 +184,18 @@ const SubcategoryManagement = () => {
         setSelectedCategoryId('');
         setSelectedSubcategoryId('');
         setServiceName('');
+        setSkillsRequired([]);
+        setSkillInput('');
+        setServiceArea('City-wide Standard');
         setShortDescriptionPoints([]);
         setNewShortDescriptionPoint('');
         setLongDescription('');
         setServiceType('');
-        setStatus('active');
+        setStatus('draft');
         setIsFeatured(false);
         setServiceDuration('');
         setHasVariants(false);
-        setActualPrice('');
+        setActualPrice('0');
         setDiscountPercentage('');
         setOfferPrice('');
         setVariants([]);
@@ -234,6 +241,9 @@ const SubcategoryManagement = () => {
     setFilteredSubcategories(subcategories.filter(s => s.category?._id === catId));
     setSelectedSubcategoryId(svc.subcategory?._id || '');
     setServiceName(svc.name || '');
+    setSkillsRequired(svc.skillsRequired || []);
+    setSkillInput('');
+    setServiceArea(svc.serviceArea || 'City-wide Standard');
     setShortDescriptionPoints(svc.shortDescription || []);
     setNewShortDescriptionPoint('');
     setLongDescription(svc.longDescription || '');
@@ -628,6 +638,8 @@ const SubcategoryManagement = () => {
         formData.append('category', selectedCategoryId);
         formData.append('subcategory', selectedSubcategoryId);
         formData.append('serviceType', serviceType || '');
+        formData.append('skillsRequired', JSON.stringify([...new Set([...skillsRequired, ...(skillInput.trim() ? [skillInput.trim()] : [])])]));
+        formData.append('serviceArea', serviceArea);
         formData.append('status', status);
         formData.append('isFeatured', isFeatured);
         formData.append('serviceDuration', serviceDuration || 0);
@@ -767,24 +779,27 @@ const SubcategoryManagement = () => {
             </div>
 
             {showForm && (
-                <div ref={formRef} className="card border-0 shadow-sm rounded-3 bg-white p-4 mb-4">
-                    <h5 className="fw-bold mb-4 border-bottom pb-2">
-                        {editingId ? 'Edit Service' : 'Create New Service'}
-                    </h5>
+                <CatalogModal title={editingId ? 'Edit service' : 'Add service'} onClose={() => setShowForm(false)} busy={submitting}>
                     <form onSubmit={handleSubmit}>
+                        <div className="catalog-modal-grid">
+                            <label className="catalog-modal-field"><span>Service name</span><input autoFocus required placeholder="e.g. Mesh WiFi Setup" value={serviceName} onChange={event => setServiceName(event.target.value)} /></label>
+                            <label className="catalog-modal-field"><span>Category</span><select required value={selectedCategoryId} onChange={event => setSelectedCategoryId(event.target.value)}><option value="">Choose category</option>{categories.map(item => <option key={item._id} value={item._id}>{item.name}</option>)}</select></label>
+                        </div>
+                        <label className="catalog-modal-field"><span>Description</span><textarea rows={2} placeholder="What's included in this service?" value={shortDescriptionPoints.join('\n')} onChange={event => setShortDescriptionPoints(event.target.value ? event.target.value.split('\n').slice(0, 3) : [])} /></label>
+                        <label className="catalog-modal-field"><span>Skills required</span><input placeholder="Type a skill and press Enter" value={skillInput} onChange={event => setSkillInput(event.target.value)} onKeyDown={event => {
+                            if (event.key === 'Enter') { event.preventDefault(); if (skillInput.trim()) setSkillsRequired(previous => [...new Set([...previous, skillInput.trim()])]); setSkillInput(''); }
+                        }} /><span className="catalog-skills">{skillsRequired.map(skill => <span key={skill}>{skill}<button type="button" aria-label={`Remove ${skill}`} onClick={() => setSkillsRequired(previous => previous.filter(item => item !== skill))}>×</button></span>)}</span></label>
+                        <div className="catalog-modal-grid">
+                            <label className="catalog-modal-field"><span>Service area</span><input value={serviceArea} onChange={event => setServiceArea(event.target.value)} placeholder="City-wide Standard" /></label>
+                            <label className="catalog-modal-field"><span>Base price (USD)</span><input type="number" min="0" step="1" disabled={hasVariants} required={!hasVariants} value={actualPrice} onChange={event => setActualPrice(event.target.value)} placeholder="0" /></label>
+                        </div>
+                        <label className="catalog-modal-field"><span>Sub category</span><select required disabled={!selectedCategoryId} value={selectedSubcategoryId} onChange={event => setSelectedSubcategoryId(event.target.value)}><option value="">Choose sub category</option>{filteredSubcategories.map(item => <option key={item._id} value={item._id}>{item.name}</option>)}</select></label>
+                        <StatusChoices value={status} onChange={setStatus} />
+                        <details><summary>Additional service options</summary>
+
                         {/* Basic Information */}
                         <div className="row g-3 mb-4">
-                            <div className="col-md-6">
-                                <label className="form-label text-muted small fw-bold">Service Name *</label>
-                                <input
-                                    type="text"
-                                    required
-                                    className="form-control bg-light border-0"
-                                    placeholder="e.g., Deep Cleaning Service"
-                                    value={serviceName}
-                                    onChange={(e) => setServiceName(e.target.value)}
-                                />
-                            </div>
+
                             <div className="col-md-6">
                                 <label className="form-label text-muted small fw-bold">Service Type</label>
                                 <input
@@ -795,47 +810,9 @@ const SubcategoryManagement = () => {
                                     onChange={(e) => setServiceType(e.target.value)}
                                 />
                             </div>
-                            <div className="col-md-4">
-                                <label className="form-label text-muted small fw-bold">Category *</label>
-                                <select
-                                    required
-                                    className="form-select bg-light border-0"
-                                    value={selectedCategoryId}
-                                    onChange={(e) => setSelectedCategoryId(e.target.value)}
-                                >
-                                    <option value="">Choose category...</option>
-                                    {categories.map(cat => (
-                                        <option key={cat._id} value={cat._id}>{cat.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="col-md-4">
-                                <label className="form-label text-muted small fw-bold">Sub-Category *</label>
-                                <select
-                                    required
-                                    className="form-select bg-light border-0"
-                                    value={selectedSubcategoryId}
-                                    onChange={(e) => setSelectedSubcategoryId(e.target.value)}
-                                    disabled={!selectedCategoryId}
-                                >
-                                    <option value="">Choose sub-category...</option>
-                                    {filteredSubcategories.map(sub => (
-                                        <option key={sub._id} value={sub._id}>{sub.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="col-md-4">
-                                <label className="form-label text-muted small fw-bold">Status</label>
-                                <select
-                                    className="form-select bg-light border-0"
-                                    value={status}
-                                    onChange={(e) => setStatus(e.target.value)}
-                                >
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
-                                    <option value="draft">Draft</option>
-                                </select>
-                            </div>
+
+
+
                             
                             {/* Short Description Points */}
                             <div className="col-md-12">
@@ -891,12 +868,11 @@ const SubcategoryManagement = () => {
                             
                             <div className="col-md-4">
                                 <label className="form-label text-muted small fw-bold">
-                                    <FaClock className="me-1" /> Service Duration (Minutes) *
+                                    <FaClock className="me-1" /> Service Duration (Minutes)
                                 </label>
                                 <input
                                     type="number"
-                                    required
-                                    min="1"
+                                    min="0"
                                     className="form-control bg-light border-0"
                                     placeholder="e.g., 60"
                                     value={serviceDuration}
@@ -1657,14 +1633,13 @@ const SubcategoryManagement = () => {
                             )}
                         </div>
 
-                        <div className="d-flex gap-2 justify-content-end">
-                            <button type="button" onClick={() => setShowForm(false)} className="btn btn-outline-secondary px-4 py-2">Cancel</button>
-                            <button type="submit" disabled={submitting} className="btn btn-brand fw-bold px-4 py-2 shadow-sm">
-                                {submitting ? 'Saving...' : 'Save Service'}
-                            </button>
+                        </details>
+                        <div className="catalog-modal-footer">
+                            <button type="button" disabled={submitting} onClick={() => setShowForm(false)} className="catalog-modal-cancel">Cancel</button>
+                            <button type="submit" disabled={submitting} className="catalog-modal-save">{submitting ? 'Saving…' : editingId ? 'Save Changes' : 'Add service'}</button>
                         </div>
                     </form>
-                </div>
+                </CatalogModal>
             )}
 
             {/* Services List */}

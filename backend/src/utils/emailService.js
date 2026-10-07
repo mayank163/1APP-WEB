@@ -191,6 +191,21 @@ const forgotPasswordTemplate = (user, otp) => ({
         `Your 1APP password reset OTP: ${otp}`),
 });
 
+const sendVerificationOTPEmail = async (email, otp) => {
+    const html = layout(`
+    ${hero('ACCOUNT VERIFICATION', 'Verify your email address', 'Use the one-time code below to verify your 1APP email address.', '&#128274;', 'action')}
+    <p class="text">This verification code expires in <strong>5 minutes</strong>. Do not share it with anyone.</p>
+    <div class="otp">${escapeHtml(otp)}</div>
+    <p class="text">If you did not request this code, you can ignore this email.</p>`,
+        `Your 1APP verification OTP: ${otp}`);
+
+    return sendEmail({
+        to: email,
+        subject: '1APP — Your Email Verification OTP',
+        html,
+    });
+};
+
 /** 4. Password reset success */
 const passwordResetSuccessTemplate = (user) => ({
     subject: '1APP — Your Password Has Been Reset',
@@ -344,6 +359,7 @@ module.exports = {
     sendWelcomeEmail,
     sendLoginNotification,
     sendForgotPasswordEmail,
+    sendVerificationOTPEmail,
     sendPasswordResetSuccess,
     sendBookingConfirmed,
     sendBookingStatusUpdated,

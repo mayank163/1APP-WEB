@@ -1,0 +1,56 @@
+.catalog-management { --catalog-gold: #a5732f; font-size: 14px; color: #172030; background: #fff; border-radius: 24px; padding: 24px; }
+.catalog-breadcrumb { display: flex; align-items: center; gap: 7px; color: #98a2b3; font-size: 14px; margin-bottom: 5px; }
+.catalog-breadcrumb span { color: var(--catalog-gold); font-weight: 600; }
+.catalog-management h1 { font-size: 26px; font-weight: 750; color: #202020; margin: 0 0 8px; }
+.catalog-description { color: #777; font-size: 15px; margin-bottom: 24px; }
+.catalog-filters { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 22px; padding: 24px 16px; border: 1px solid #d69a54; background: #fff8f2; border-radius: 16px; }
+.catalog-filters label { flex: 1 1 135px; min-width: 0; color: var(--catalog-gold); font-size: 14px; font-weight: 600; }
+.catalog-filters select, .catalog-search input { width: 100%; border: 1px solid #e0e4eb; background: #fff; border-radius: 24px; min-height: 38px; color: #80521e; padding: 6px 12px; font-size: 14px; font-weight: 400; }
+.catalog-filters label select { display: block; margin-top: 2px; }
+.catalog-search { flex: 2.5 1 290px; position: relative; }
+.catalog-search input { padding: 8px 44px 8px 16px; }
+.catalog-search input::placeholder { color: #a5732f; }
+.catalog-search-icon { position: absolute; right: 0; top: 0; width: 40px; height: 40px; background: var(--catalog-gold); border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 20px; pointer-events: none; }
+.catalog-sort { display: flex; align-items: center; background: #fff; border: 1px solid #e0e4eb; border-radius: 24px; color: var(--catalog-gold); padding-left: 12px; }
+.catalog-sort select { border: none; padding-left: 6px; width: 112px; background: transparent; }
+.catalog-reset, .catalog-create { display: inline-flex; align-items: center; justify-content: center; gap: 8px; color: #fff; background: var(--catalog-gold); border: 0; border-radius: 30px; padding: 8px 16px; white-space: nowrap; }
+.catalog-create { font-weight: 650; padding: 12px 18px; font-size: 14px; }
+.catalog-create svg { font-size: 22px; }
+.catalog-tabs { display: flex; flex-wrap: wrap; gap: 20px; margin: 24px 0; }
+.catalog-tabs a { background: #ffe5be; color: #765023; text-decoration: none; padding: 9px 22px; min-width: 135px; text-align: center; font-weight: 600; border-radius: 28px; font-size: 14px; }
+.catalog-tabs a.active { color: #fff; background: var(--catalog-gold); }
+.catalog-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 0 0 22px; padding-left: 8px; color: #444; }
+.catalog-table-container { border: 1px solid var(--catalog-gold); border-radius: 24px; overflow: auto; }
+.catalog-table { width: 100%; border-collapse: collapse; min-width: 760px; }
+.catalog-table thead { background: var(--catalog-gold); color: white; }
+.catalog-table th { padding: 24px 20px; font-weight: 700; text-transform: uppercase; font-size: 14px; white-space: nowrap; }
+.catalog-table td { padding: 14px 20px; border-top: 2px solid #e4e5e9; height: 104px; }
+.catalog-table th:first-child { width: 20%; }
+.catalog-table th:nth-child(2) { width: 21%; }
+.catalog-table th:last-child { width: 95px; }
+.catalog-icon { display: grid; place-items: center; width: 72px; height: 72px; background: #f3f4f6; border-radius: 6px; color: #64748b; font-size: 27px; }
+.catalog-name { font-size: 16px; font-weight: 600; max-width: 220px; overflow-wrap: anywhere; line-height: 1.3; }
+.catalog-count { background: #f3f4f6; border-radius: 6px; padding: 3px 7px; font-size: 15px; font-weight: 600; color: #505b6c; white-space: nowrap; }
+.catalog-service-count { display: block; margin-top: 6px; font-size: 13px; font-weight: 400; color: #64748b; }
+.catalog-switch { display: block; width: 36px; height: 20px; background: #e4e6eb; padding: 2px; border: none; border-radius: 20px; }
+.catalog-switch span { display: block; height: 16px; width: 16px; border-radius: 50%; background: #fff; transition: transform .15s; }
+.catalog-switch.is-active { background: #28c953; }
+.catalog-switch.is-active span { transform: translateX(16px); }
+.catalog-switch:disabled { opacity: .55; cursor: wait; }
+.catalog-status { display: inline-block; border-radius: 5px; padding: 3px 7px; font-size: 14px; font-weight: 600; white-space: nowrap; }
+.catalog-status.is-active { color: #008a35; background: #ecfdf5; }
+.catalog-status.is-inactive { color: #bc1c23; background: #fff2f3; }
+.catalog-actions { display: flex; gap: 8px; }
+.catalog-actions button { display: grid; place-items: center; background: #f3f4f6; color: #505b6c; border: 0; border-radius: 6px; width: 27px; height: 27px; padding: 5px; }
+.catalog-actions button:hover { background: #ffe5be; color: #80521e; }
+.catalog-empty { text-align: center; color: #64748b; }
+.catalog-pagination { margin-top: 24px; }
+.catalog-pagination small { font-size: 14px; color: #64748b !important; }
+.catalog-pagination .btn { border-color: #edcfa9 !important; color: #80521e; background: #fff; }
+.catalog-pagination .btn-brand { background: var(--catalog-gold); color: #fff; }
+.catalog-pagination select { border-radius: 28px; padding: 10px 32px 10px 12px; border-color: var(--catalog-gold); color: #80521e; font-size: 14px; }
+.catalog-management button:focus-visible, .catalog-management a:focus-visible, .catalog-management input:focus-visible, .catalog-management select:focus-visible { outline: 3px solid #d69a54; outline-offset: 3px; }
+@media (max-width: 900px) { .catalog-management { padding: 18px; } .catalog-filters { gap: 14px; } .catalog-search { flex-basis: calc(100% - 150px); } .catalog-table th:first-child { width: auto; } }
+@media (max-width: 576px) { .catalog-management { padding: 12px; border-radius: 16px; } .catalog-management h1 { font-size: 23px; } .catalog-description { font-size: 14px; } .catalog-filters { padding: 16px 12px; } .catalog-search { flex-basis: 100%; } .catalog-toolbar { flex-wrap: wrap; padding-left: 0; } .catalog-tabs { gap: 10px; } .catalog-table td, .catalog-table th { padding: 14px; } }
+
+.catalog-status.is-draft { color: #374151; background: #f3f4f6; }

@@ -14,6 +14,8 @@ router.use(protect);
 router.get('/stats', checkPermission('dashboard', 'read'), adminController.getDashboardStats);
 router.get('/bookings', checkPermission('bookings', 'read'), adminController.getAllBookings);
 router.put('/bookings/:id', checkPermission('bookings', 'write'), adminController.updateBookingStatus);
+router.post('/users', checkPermission('users', 'write'), adminController.createCustomer);
+router.put('/users/:id', checkPermission('users', 'write'), adminController.updateCustomer);
 router.get('/users', checkPermission('users', 'read'), adminController.getAllUsers);
 router.patch('/users/:id/status', checkPermission('users', 'write'), adminController.updateUserAccountStatus);
 
