@@ -39,7 +39,6 @@ const MainLayout = () => {
     };
 
     const allNavItems = [
-        
         { to: "/", icon: <FaChartBar size={14} />, label: "Dashboard", end: true, resource: 'dashboard' },
         { to: "/bookings", icon: <FaTasks size={14} />, label: "Bookings", resource: 'bookings' },
         { to: can('categories', 'read') ? "/categories" : "/subcategories", icon: <FaLayerGroup size={14} />, label: "Service Management", resources: ['categories', 'subcategories'], activePaths: ['/categories', '/subcategories'] },
@@ -51,7 +50,7 @@ const MainLayout = () => {
         { to: "/technician-jobs", icon: <FaHardHat size={14} />, label: "Technician Jobs", resource: 'technician_jobs' },
         { to: "/technician-overview", icon: <FaUsers size={14} />, label: "Technicians", resource: 'technician_jobs' },
         { to: "/technician-chat", icon: <FaComments size={14} />, label: "Legacy Chat", resource: 'technician_jobs' },
-        { to: "/support", icon: <FaComments size={14} />, label: "Support Dashboard", resource: 'support' },
+        { to: "/support", icon: <FaComments size={14} />, label: "Support Ticket", resource: 'support' },
         { to: "/technician-verification", icon: <FaCheckCircle size={14} />, label: "Verification", resource: 'technician_verification' },
         { to: "/blogs", icon: <FaBlog size={14} />, label: "Blogs", resource: 'blogs' },
         { to: "/sub-admins", icon: <FaUserShield size={14} />, label: "Sub-Admins", resource: 'sub_admins' },

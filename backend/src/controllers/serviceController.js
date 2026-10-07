@@ -267,11 +267,17 @@ exports.getAllServices = async (req, res, next) => {
         const total = await Service.countDocuments(query);
         const services = await Service.find(query)
             .populate(POPULATE)
-            .sort({ createdAt: -1 })
+            .sort(req.query.sort === 'asc' ? { name: 1, _id: 1 } : req.query.sort === 'desc' ? { name: -1, _id: 1 } : req.query.sort === 'updated' ? { updatedAt: -1, _id: 1 } : { createdAt: -1 })
             .skip(skip)
             .limit(limit);
 
-        res.json({ success: true, count: total, data: { services }, pagination: getPaginationMeta({ page, limit, total }) });
+        let summary;
+        if (req.query.includeSummary === 'true') {
+            const counts = await Service.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]);
+            summary = { total: 0, active: 0, inactive: 0, draft: 0 };
+            counts.forEach(({ _id, count }) => { summary.total += count; if (Object.prototype.hasOwnProperty.call(summary, _id)) summary[_id] = count; });
+        }
+        res.json({ success: true, count: total, data: { services, ...(summary ? { summary } : {}) }, pagination: getPaginationMeta({ page, limit, total }) });
     } catch (err) { next(err); }
 };
 
