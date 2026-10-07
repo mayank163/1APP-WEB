@@ -16,7 +16,7 @@ export default function FloatingSupportChat() {
     const [unreadCount, setUnreadCount] = useState(0);
     const userId = user?._id;
     const participantType = user?.role === 'technician' ? 'technician' : 'user';
-    const chatVisible = open || pathname === (participantType === 'technician' ? '/technician-chat' : '/support-chat');
+    const chatVisible = open || pathname === (participantType === 'technician' ? '/legacy-technician-chat' : '/legacy-support-chat');
     useEffect(() => {
         setUnreadCount(0);
         if (!userId) return undefined;
@@ -71,7 +71,7 @@ export default function FloatingSupportChat() {
     }, [open]);
     return createPortal(<aside className="floating-support" aria-label="Support">
         {open && <section ref={panel} id="floating-support-panel" className="floating-support-panel" role="dialog" aria-label="Chat with Support">
-            {user?._id ? <UserChat key={user._id} embedded onClose={close} manageRoom={pathname !== (user.role === 'technician' ? '/technician-chat' : '/support-chat')} /> : <div className="floating-support-signin">
+            {user?._id ? <UserChat key={user._id} embedded onClose={close} manageRoom={pathname !== (user.role === 'technician' ? '/legacy-technician-chat' : '/legacy-support-chat')} /> : <div className="floating-support-signin">
                 <button className="floating-support-close" onClick={close} aria-label="Close support chat"><FiX /></button>
                 <span className="floating-support-icon"><FiMessageCircle /></span>
                 <h2>Chat with Support</h2><p>Sign in to chat with our team about your bookings and get help.</p>

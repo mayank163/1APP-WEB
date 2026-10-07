@@ -7,6 +7,7 @@ import {
     FaClock, FaUsers, FaArrowRight, FaChartLine, FaMagic
 } from 'react-icons/fa';
 import heroImage from '../assets/hero/image.png';
+import technicianImage from '../assets/hero/technician_image.png';
 
 const ECOSYSTEM = [
     { icon: <FaHome size={22} />, title: 'Home', desc: 'Premium quality solutions tailored for your home requirements.' },
@@ -184,20 +185,12 @@ export default function AboutUs() {
                         ))}
                     </div>
                     {/* Photo */}
-                    <div style={{ borderRadius: 24, overflow: 'hidden', background: '#e8e0d8', height: 380, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <svg viewBox="0 0 400 380" width="100%" height="100%">
-                            <rect width="400" height="380" fill="#d4c8bc" />
-                            {/* Two people talking */}
-                            <circle cx="160" cy="130" r="50" fill="#c8a888" />
-                            <rect x="110" y="180" width="100" height="120" rx="12" fill="#5a6a7a" />
-                            <circle cx="280" cy="150" r="40" fill="#b89878" />
-                            <rect x="240" y="190" width="80" height="100" rx="10" fill="#2d4a3e" />
-                            <rect x="80" y="280" width="240" height="100" rx="0" fill="#c8b8a8" />
-                            {/* Glasses on person 1 */}
-                            <rect x="138" y="125" width="20" height="12" rx="5" fill="none" stroke="#333" strokeWidth="2" />
-                            <rect x="162" y="125" width="20" height="12" rx="5" fill="none" stroke="#333" strokeWidth="2" />
-                            <line x1="158" y1="131" x2="162" y2="131" stroke="#333" strokeWidth="2" />
-                        </svg>
+                    <div style={{ borderRadius: 24, overflow: 'hidden', height: 380 }}>
+                        <img
+                            src={technicianImage}
+                            alt="1App service professional"
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
                     </div>
                 </div>
             </div>
@@ -226,7 +219,7 @@ export default function AboutUs() {
 
             {/* ── CTA Cards ── */}
             <div style={{ background: '#f5f5f0', padding: '0 0 72px' }}>
-                <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 40px' }}>
+                <div style={{ maxWidth: 1100, margin: '0 auto', padding: '50px 40px 0px' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
                         {CTA.map((c, i) => (
                             <div key={i} style={{ background: c.dark ? '#111' : '#f0ece8', borderRadius: 20, padding: '32px 28px', display: 'flex', flexDirection: 'column', gap: 12 }}>

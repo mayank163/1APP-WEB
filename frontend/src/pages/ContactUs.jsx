@@ -111,14 +111,14 @@ export default function ContactUs() {
                 <InfoCard title="Still facing issues?">
                     <p style={{ fontSize: '14px', color: '#555', lineHeight: 1.7 }}>
                         If you've already tried chatting with us and are not satisfied with the resolution - please send us an email on{' '}
-                        <strong>contact@1appweb.com</strong>. We will get back to you within 24-48 hours.
+                        <strong>contact@1app.com</strong>. We will get back to you within 24-48 hours.
                     </p>
                 </InfoCard>
 
                 <InfoCard title="Media inquiries">
                     <p style={{ fontSize: '14px', color: '#555', lineHeight: 1.7 }}>
                         For media inquiries, you can send us an email on{' '}
-                        <a href="mailto:contact@1appweb.com" style={{ color: '#000', fontWeight: 700, textDecoration: 'none' }}>contact@1appweb.com</a>
+                        <a href="mailto:contact@1app.com" style={{ color: '#000', fontWeight: 700, textDecoration: 'none' }}>contact@1app.com</a>
                     </p>
                 </InfoCard>
 

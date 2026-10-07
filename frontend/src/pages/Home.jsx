@@ -35,6 +35,30 @@ const homeBrands = [
     { name: 'Carbonite', logo: carboniteLogo, wordmark: true },
 ];
 
+const customerReviews = [
+    {
+        name: 'Cheryl Keller',
+        initial: 'C',
+        age: '1 year ago',
+        color: '#f4511e',
+        text: 'Excellent service techs, patient, knowledgeable, and always available to help. Thanks to Jack and Kevin and others for being there always solving problems.',
+    },
+    {
+        name: 'Larry Drbal',
+        initial: 'L',
+        age: '1 year ago',
+        color: '#8624a8',
+        text: 'Very helpful and very knowledgeable.',
+    },
+    {
+        name: 'James Keenan',
+        initial: 'J',
+        age: '1 year ago',
+        color: '#0866a8',
+        text: 'Great help and service at a reasonable price.',
+    },
+];
+
 const HomeBrandLogos = ({ brands }) => (
     <div className="home-brand-logos">
         {brands.map(({ name, logo, wordmark }) => (
@@ -58,6 +82,8 @@ const Home = () => {
     const [categoriesWithSubs, setCategoriesWithSubs] = useState([]);
     const [featuredServices, setFeaturedServices] = useState([]);
     const [mostBooked, setMostBooked] = useState([]);
+    const [reviewStart, setReviewStart] = useState(0);
+    const [expandedReview, setExpandedReview] = useState(null);
 
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [popupCategory, setPopupCategory] = useState(null);
@@ -1419,6 +1445,8 @@ const Home = () => {
                     </div>
                 </div>
             </section>
+
+            
 
             {/* Stay Tuned / ONE APP Section */}
             <section

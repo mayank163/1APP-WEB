@@ -36,6 +36,8 @@ import TechnicianDashboard from './pages/TechnicianDashboard';
 import TechnicianActivation from './pages/TechnicianActivation';
 import TechnicianChat from './pages/TechnicianChat';
 import UserChat from './pages/UserChat';
+import SupportCenter from './pages/SupportCenter';
+import { useSocket } from './context/SocketContext';
 
 const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
 
@@ -43,6 +45,7 @@ const AUTH_PATHS = ['/login', '/signup', '/technician-activate'];
 
 const AppShell = () => {
   const { pathname } = useLocation();
+  const { socket } = useSocket();
   const isAuth = AUTH_PATHS.includes(pathname);
 
   return (
@@ -65,8 +68,11 @@ const AppShell = () => {
           <Route path="/checkout" element={<Navigate to="/cart" replace />} />
           <Route path="/bookings" element={<PrivateRoute><Bookings /></PrivateRoute>} />
           <Route path="/technician" element={<PrivateRoute><TechnicianDashboard /></PrivateRoute>} />
-          <Route path="/technician-chat" element={<PrivateRoute><TechnicianChat /></PrivateRoute>} />
-          <Route path="/support-chat" element={<PrivateRoute><UserChat /></PrivateRoute>} />
+          <Route path="/technician-chat" element={<PrivateRoute><SupportCenter socket={socket} /></PrivateRoute>} />
+          <Route path="/legacy-technician-chat" element={<PrivateRoute><TechnicianChat /></PrivateRoute>} />
+          <Route path="/support-chat" element={<PrivateRoute><SupportCenter socket={socket} /></PrivateRoute>} />
+          <Route path="/support" element={<PrivateRoute><SupportCenter socket={socket} /></PrivateRoute>} />
+          <Route path="/legacy-support-chat" element={<PrivateRoute><UserChat /></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
           <Route path="/terms" element={<TermsAndConditions />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
@@ -78,7 +84,7 @@ const AppShell = () => {
           <Route path="/blogs/:id" element={<BlogDetail />} />
         </Routes>
       </main>
-      <Footer widgetOnly={isAuth} />
+      <Footer widgetOnly={isAuth || ['/support', '/support-chat', '/technician-chat'].includes(pathname)} />
       <ToastContainer position="bottom-right" autoClose={3000} />
     </div>
   );

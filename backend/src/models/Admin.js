@@ -5,7 +5,7 @@ const RESOURCES = [
     'dashboard', 'bookings', 'categories', 'subcategories',
     'services', 'users', 'offers', 'technician_jobs',
     'technician_verification', 'blogs', 'sub_admins',
-    'work_types', 'service_types'
+    'work_types', 'service_types', 'support'
 ];
 
 const ADMIN_ROLES = [

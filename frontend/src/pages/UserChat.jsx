@@ -4,11 +4,16 @@ import {
   FiMessageCircle,
   FiPaperclip,
   FiPlus,
+  FiPhone,
+  FiSmile,
+  FiShield,
+  FiCheck,
   FiSend,
   FiVideo,
   FiX,
 } from 'react-icons/fi';
 
+import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useSocket } from '../context/SocketContext';
 import { chatApi } from '../services/api';
@@ -44,6 +49,8 @@ export default function UserChat({ embedded = false, onClose, manageRoom = true 
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const composerRef = useRef(null);
   const endRef = useRef(null);
   const typingTimer = useRef(null);
   const userId = user?._id;
@@ -182,6 +189,11 @@ export default function UserChat({ embedded = false, onClose, manageRoom = true 
   };
 
   const image = avatarValue(user);
+  const draftReply = value => { setText(value); composerRef.current?.focus(); };
+  const dayLabel = value => {
+    const day = new Date(value);
+    return day.toDateString() === new Date().toDateString() ? 'Today' : day.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  };
 
   return (
     <div className={embedded ? 'floating-support-conversation' : 'tech-chat-page support-chat-page'}>
@@ -189,7 +201,7 @@ export default function UserChat({ embedded = false, onClose, manageRoom = true 
         <header className="support-chat-header">
           <div className="support-chat-avatar">
             {embedded ? (
-              <FiMessageCircle />
+              <span className="support-agent-monogram"><FiMessageCircle /></span>
             ) : image ? (
               <img src={image} alt="" />
             ) : (
@@ -198,10 +210,10 @@ export default function UserChat({ embedded = false, onClose, manageRoom = true 
           </div>
 
           <div className="support-chat-person">
-            <h1>{embedded ? 'OneApp Support' : user?.name || 'Customer'}</h1>
+            <div className="support-agent-title"><h1>{embedded ? 'OneApp Support' : user?.name || 'Customer'}</h1>{embedded && <span className={`support-active-badge ${connected ? '' : 'reconnecting'}`}>{connected ? 'Active Support' : 'Connecting'}</span>}</div>
             <p>
               {embedded ? (
-                connected ? 'Connected · Booking assistance & help' : 'Connecting to support…'
+                'Booking Assistance & Help'
               ) : (
                 <>
                   Customer <span>·</span> {user?.email || 'Support conversation'}
@@ -211,14 +223,10 @@ export default function UserChat({ embedded = false, onClose, manageRoom = true 
           </div>
 
           {embedded ? (
-            <button
-              className="support-chat-new"
-              type="button"
-              onClick={onClose}
-              aria-label="Close support chat"
-            >
-              <FiX />
-            </button>
+            <div className="support-header-actions">
+              <Link className="support-contact-action" to="/contact" title="Contact support" aria-label="Contact support" onClick={onClose}><FiPhone /></Link>
+              <button className="support-chat-new" type="button" onClick={onClose} aria-label="Close support chat"><FiX /></button>
+            </div>
           ) : (
             <button className="support-chat-new" type="button" title="New message">
               <FiPlus />
@@ -232,7 +240,9 @@ export default function UserChat({ embedded = false, onClose, manageRoom = true 
           ) : !messages.length ? (
             <p className="tech-chat-empty">Your support conversation will appear here.</p>
           ) : (
-            messages.map((message) => (
+            messages.map((message, index) => (
+              <React.Fragment key={messageKey(message)}>
+              {embedded && (index === 0 || new Date(messages[index - 1].createdAt).toDateString() !== new Date(message.createdAt).toDateString()) && <div className="support-date-divider"><span>{dayLabel(message.createdAt)}, {formatTime(message.createdAt)}</span></div>}
               <article
                 className={`tech-chat-message ${message.senderRole === participantType ? 'mine' : ''}`}
                 key={messageKey(message)}
@@ -245,14 +255,11 @@ export default function UserChat({ embedded = false, onClose, manageRoom = true 
                     <video controls src={message.media?.url} />
                   )}
                   {message.text && <p>{message.text}</p>}
-                  <time>
-                    {formatTime(message.createdAt)}{' '}
-                    {message.senderRole === participantType && (
-                      <span className="support-chat-check">✓</span>
-                    )}
-                  </time>
+                  {!embedded && <time>{formatTime(message.createdAt)}{message.senderRole === participantType && <span className="support-chat-check"> ✓</span>}</time>}
                 </div>
+                {embedded && <time className="support-message-time">{formatTime(message.createdAt)}{message.senderRole === participantType && <span className={`support-delivery ${message.readBy?.some(reader => String(reader.userId) !== String(userId)) ? 'read' : ''}`} title={message.readBy?.some(reader => String(reader.userId) !== String(userId)) ? 'Read' : 'Sent'}><FiCheck /><FiCheck /></span>}</time>}
               </article>
+              </React.Fragment>
             ))
           )}
 
@@ -280,6 +287,8 @@ export default function UserChat({ embedded = false, onClose, manageRoom = true 
           </div>
         )}
 
+        {embedded && <div className="support-quick-replies" aria-label="Quick replies">{['Yes, please reschedule to 2 PM 👍', 'Check other dates', 'Talk to an agent'].map(reply => <button type="button" key={reply} onClick={() => draftReply(reply)}>{reply}</button>)}</div>}
+        {embedded && emojiOpen && <div className="support-emoji-picker" aria-label="Choose emoji">{['😊', '👍', '🙏', '❤️', '👋', '✅'].map(emoji => <button key={emoji} type="button" onClick={() => { draftReply((text + emoji).slice(0, 4000)); setEmojiOpen(false); }}>{emoji}</button>)}</div>}
         <form className="tech-chat-composer" onSubmit={send}>
           <label className="tech-chat-attach" title="Attach image or video">
             <FiPaperclip />
@@ -291,6 +300,7 @@ export default function UserChat({ embedded = false, onClose, manageRoom = true 
           </label>
 
           <input
+            ref={composerRef}
             value={text}
             onChange={onTextChange}
             placeholder={embedded ? 'Type your message to Support...' : 'Write a message...'}
@@ -298,13 +308,14 @@ export default function UserChat({ embedded = false, onClose, manageRoom = true 
             aria-label="Message"
           />
 
+          {embedded && <button className="support-emoji-toggle" type="button" aria-label="Choose emoji" aria-expanded={emojiOpen} onClick={() => setEmojiOpen(!emojiOpen)}><FiSmile /></button>}
           <button type="submit" disabled={sending || (!text.trim() && !file)} title="Send message">
             <FiSend />
           </button>
         </form>
 
         <small className="tech-chat-hint">
-          <FiVideo /> Images up to 5 MB, videos up to 50 MB
+          {embedded ? <><FiShield /> Live Support · Your conversation stays in your account</> : <><FiVideo /> Images up to 5 MB, videos up to 50 MB</>}
         </small>
       </section>
     </div>

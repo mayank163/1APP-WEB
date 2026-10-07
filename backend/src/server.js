@@ -136,6 +136,8 @@ io.use(async (socket, next) => {
         if (account.role === 'technician' && ['invited', 'suspended', 'blocked'].includes(account.accountStatus)) {
             return next(new Error('Technician account is not active'));
         }
+        if (decoded.role === 'admin' && !account.isActive) return next(new Error('Admin account is inactive'));
+        if ((account.tokenVersion || 0) > 0 && decoded.tokenVersion !== account.tokenVersion) return next(new Error('Session has been logged out'));
         socket.user = account;
         socket.userRole = decoded.role === 'admin' ? 'admin' : account.role;
         next();
@@ -191,6 +193,7 @@ app.use('/api/technician', technicianRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/technician-auth', technicianAuthRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/support', require('./routes/supportRoutes'));
 app.use('/api/blogs', blogRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/work-types', workTypeRoutes);
@@ -243,6 +246,11 @@ io.on("connection", (socket) => {
     });
 
     registerChatHandlers(io, socket);
+    if (socket.userRole === 'admin') {
+        if (socket.user.isActive && (socket.user.isSuperAdmin || socket.user.permissions.some(p => p.resource === 'support' && ['read', 'both'].includes(p.access)))) socket.join('support:admins');
+    } else if (['user', 'technician'].includes(socket.userRole)) {
+        socket.join(`support:user:${socket.user._id}`);
+    }
 
     // Listen for message from frontend
     socket.on("sendMessage", (data) => {

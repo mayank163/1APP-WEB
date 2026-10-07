@@ -169,3 +169,5 @@ const adminApi = {
 };
 
 export default adminApi;
+
+export { API };

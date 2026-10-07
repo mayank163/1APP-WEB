@@ -4,12 +4,12 @@ import { toast } from 'react-toastify';
 import adminApi from '../services/adminApi';
 import '../styles/SubAdminManagement.css';
 
-const RESOURCE_LABELS = { dashboard: 'Dashboard', bookings: 'Bookings', categories: 'Categories', subcategories: 'Sub-Categories', services: 'Services', users: 'Users', offers: 'Offers & Coupons', technician_jobs: 'Technician Jobs', technician_verification: 'Technician Verification', blogs: 'Blogs', sub_admins: 'Sub-Admin Management', work_types: 'Work Types', service_types: 'Service Types' };
+const RESOURCE_LABELS = { support: 'Support Tickets & FAQs', dashboard: 'Dashboard', bookings: 'Bookings', categories: 'Categories', subcategories: 'Sub-Categories', services: 'Services', users: 'Users', offers: 'Offers & Coupons', technician_jobs: 'Technician Jobs', technician_verification: 'Technician Verification', blogs: 'Blogs', sub_admins: 'Sub-Admin Management', work_types: 'Work Types', service_types: 'Service Types' };
 const ALL_RESOURCES = Object.keys(RESOURCE_LABELS);
 const ROLE_DEFINITIONS = {
     admin: { label: 'Admin', description: 'Broad access to manage platform operations, users, services, and reports.', permissions: ALL_RESOURCES.map(resource => `${resource}:both`) },
     operations_dispatch: { label: 'Operations / Dispatch', description: 'Technician and job operations, assignment, monitoring, exceptions.', permissions: ['technician_jobs:both', 'dashboard:read', 'users:read'] },
-    support_agents: { label: 'Support / Agents', description: 'Customer tickets, internal chats, and the support knowledge base.', permissions: ['users:both', 'bookings:both', 'dashboard:read'] },
+    support_agents: { label: 'Support / Agents', description: 'Customer tickets, internal chats, and the support knowledge base.', permissions: ['support:both', 'users:both', 'bookings:both', 'dashboard:read'] },
     read_only_analyst: { label: 'Read-only / Analyst', description: 'View-only access across metrics, job lists, and system reports.', permissions: ['dashboard:read', 'bookings:read', 'users:read', 'technician_jobs:read', 'technician_verification:read'] }
 };
 const ROLE_CARDS = [{ key: 'super', label: 'Super Admin', description: 'Full access to every module, including admin users and configuration.' }, ...Object.entries(ROLE_DEFINITIONS).map(([key, role]) => ({ key, ...role }))];

@@ -24,6 +24,8 @@ import SubAdminManagement from './pages/SubAdminManagement';
 import WorkTypeManagement from './pages/WorkTypeManagement';
 import ServiceTypeManagement from './pages/ServiceTypeManagement';
 import TechnicianChat from './pages/TechnicianChat';
+import SupportCenter from './pages/SupportCenter';
+import socket from './services/socket';
 import PlanManagement from './pages/PlanManagement';
 
 const AdminPrivateRoute = ({ children }) => {
@@ -48,6 +50,7 @@ const PermRoute = ({ resource, access = 'read', children }) => {
 };
 
 function AppRoutes() {
+  const { can } = useAdminAuth();
   return (
     <BrowserRouter>
       <Routes>
@@ -61,6 +64,7 @@ function AppRoutes() {
           }
         >
           <Route index element={<PermRoute resource="dashboard" access="read"><Dashboard /></PermRoute>} />
+          <Route path="support" element={<PermRoute resource="support"><SupportCenter adminMode socket={socket} canWrite={can('support', 'write')} /></PermRoute>} />
           <Route path="bookings" element={<PermRoute resource="bookings" access="read"><BookingManagement /></PermRoute>} />
           <Route path="services" element={<PermRoute resource="services" access="read"><SubcategoryManagement /></PermRoute>} />
           <Route path="categories" element={<PermRoute resource="categories" access="read"><Categories /></PermRoute>} />
