@@ -43,7 +43,7 @@ export default function Blogs() {
     // No duplicates — use real data only
     const gridRow1 = filteredBlogs.slice(0, 5);
     const gridRow2 = filteredBlogs.slice(5, 10);
-    const featuredTwo = filteredBlogs.slice(0, 2);
+    const featuredTwo = filteredBlogs.filter(blog => blog.isFeatured).slice(0, 2);
     const otherBlogs = filteredBlogs.slice(0, 5);
 
     const scroll = (ref, dir) => ref.current?.scrollBy({ left: dir * 220, behavior: 'smooth' });
@@ -57,7 +57,7 @@ export default function Blogs() {
             <div className="ui-blogs-3" >
                 <img className="ui-blogs-4"
                     src={resolveImg(blog.featuredImage)}
-                    alt={blog.title}
+                    alt={blog.imageAltText || blog.title}
 
                     onError={e => { e.target.src = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600'; }}
                 />
@@ -76,7 +76,7 @@ export default function Blogs() {
 
                 >
                     {items.map((b, i) => (
-                        <BlogCard key={b._id + i} blog={b} onClick={() => navigate(`/blogs/${b._id}`)} />
+                        <BlogCard key={b._id + i} blog={b} onClick={() => navigate(`/blogs/${b.slug || b._id}`)} />
                     ))}
                 </div>
                 {items.length > 4 && (
@@ -122,7 +122,7 @@ export default function Blogs() {
             {filteredBlogs.length > 0 && (
                 <div className="ui-blogs-19" >
                     {hero && (
-                        <div className="ui-blogs-20" onClick={() => navigate(`/blogs/${hero._id}`)} >
+                        <div className="ui-blogs-20" onClick={() => navigate(`/blogs/${hero.slug || hero._id}`)} >
                             <div className="ui-blogs-21" >
                                 <img className="ui-blogs-22"
                                     src={resolveImg(hero.featuredImage)}
@@ -138,7 +138,7 @@ export default function Blogs() {
                     )}
                     <div className="ui-blogs-25" >
                         {sideBlogs.map(b => (
-                            <div className="ui-blogs-26" key={b._id} onClick={() => navigate(`/blogs/${b._id}`)} >
+                            <div className="ui-blogs-26" key={b._id} onClick={() => navigate(`/blogs/${b.slug || b._id}`)} >
                                 <div className="ui-blogs-27" >
                                     <img className="ui-blogs-28"
                                         src={resolveImg(b.featuredImage)}
@@ -188,7 +188,7 @@ export default function Blogs() {
             {featuredTwo.length >= 2 && (
                 <div className="ui-blogs-35" >
                     {featuredTwo.map(b => (
-                        <div className="ui-blogs-36" key={b._id} onClick={() => navigate(`/blogs/${b._id}`)} >
+                        <div className="ui-blogs-36" key={b._id} onClick={() => navigate(`/blogs/${b.slug || b._id}`)} >
                             <div className="ui-blogs-37" >
                                 <img className="ui-blogs-38"
                                     src={resolveImg(b.featuredImage)}

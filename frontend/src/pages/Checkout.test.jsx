@@ -1,0 +1,34 @@
+import React from 'react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
+import Checkout from './Checkout';
+import { CartContext } from '../context/CartContext';
+import { AuthContext } from '../context/AuthContext';
+import bookingService from '../services/bookingService';
+jest.mock('../context/CartContext', () => ({ CartContext: require('react').createContext() }));
+jest.mock('../context/AuthContext', () => ({ AuthContext: require('react').createContext() }));
+jest.mock('react-router-dom', () => ({ useNavigate: () => jest.fn() }));
+jest.mock('../services/bookingService', () => ({ getAvailableOffers: jest.fn(), validateCoupon: jest.fn() }));
+jest.mock('../components/LocationPicker', () => () => null);
+jest.mock('../components/PayPalPayment', () => () => null);
+jest.mock('@stripe/stripe-js', () => ({ loadStripe: jest.fn() }));
+jest.mock('@stripe/react-stripe-js', () => ({ Elements: () => null, PaymentElement: () => null, useElements: jest.fn(), useStripe: jest.fn() }));
+
+test('cart summary shows coupon adjustments and removes them when the coupon is removed', async () => {
+    bookingService.getAvailableOffers.mockResolvedValue({ data: { offers: [] } });
+    bookingService.validateCoupon.mockResolvedValue({ data: { code: 'SAVE10', subtotal: 224, discount: 10, total: 214 } });
+    render(<AuthContext.Provider value={{ user: { phone: '1234567890', addresses: [] }, updateProfile: jest.fn() }}><CartContext.Provider value={{ cartItems: [{ service: { _id: 'service1', name: 'Camera installation', price: 224 }, quantity: 1 }], getCartTotal: () => 224, clearCart: jest.fn(), updateQuantity: jest.fn(), removeFromCart: jest.fn() }}><Checkout /></CartContext.Provider></AuthContext.Provider>);
+    const summary = within(screen.getByText('Payment Summary').parentElement);
+    expect(summary.queryByText(/Adjustments/)).toBeNull();
+    fireEvent.change(screen.getByLabelText('Have a coupon?'), { target: { value: 'SAVE10' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+    await screen.findByText(/SAVE10 applied/);
+    expect(summary.getByText('Subtotal')).toBeTruthy();
+    expect(summary.getByText(/Coupon: SAVE10/)).toBeTruthy();
+    expect(summary.getByText('-$10.00')).toBeTruthy();
+    expect(summary.getByText('$214.00')).toBeTruthy();
+    expect(summary.queryByText('Free service offer')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Remove', exact: true }));
+    expect(summary.queryByText(/Adjustments/)).toBeNull();
+    expect(summary.queryByText('$214.00')).toBeNull();
+    expect(summary.getAllByText('$224.00').length).toBeGreaterThan(0);
+});

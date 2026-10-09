@@ -1,3 +1,4 @@
+const offerService = require('../services/offerService');
 const Booking = require('../models/Booking');
 const Admin = require('../models/Admin');
 const PaymentAttempt = require('../models/PaymentAttempt');
@@ -34,6 +35,8 @@ const resolveAddressLine = (address) => {
  * @route   POST /api/bookings
  */
 exports.createBookingOrder = async (req, res, next) => {
+    let reservedAttempt;
+    let providerCreated = false;
     try {
         const { services, address, phone, specialInstructions, paymentProvider } = req.body;
         if (paymentProvider && !['stripe', 'paypal'].includes(paymentProvider)) {
@@ -104,13 +107,49 @@ exports.createBookingOrder = async (req, res, next) => {
             });
         }
 
-        const amountInSmallestUnit = Math.round(calculatedTotal * 100);
+        if (stripe && paymentProvider !== 'paypal' && !(process.env.STRIPE_PUBLISHABLE_KEY || '').startsWith('pk_')) return res.status(503).json({ success: false, message: 'Stripe is not configured.' });
         const paymentAttemptId = new PaymentAttempt()._id.toString();
+        let coupon;
+        if (req.body.couponCode) {
+            const lines = await offerService.priceLines(services);
+            coupon = await offerService.reserve(req.body.couponCode, req.user._id, lines, paymentAttemptId, paymentProvider === 'paypal' ? paypal.currency() : stripe ? (process.env.STRIPE_CURRENCY || 'usd').toUpperCase() : 'USD');
+            reservedAttempt = paymentAttemptId;
+            calculatedTotal = Math.round((coupon.subtotal - coupon.discount) * 100) / 100;
+            if (calculatedTotal <= 0) { await offerService.settle(paymentAttemptId); reservedAttempt = null; return res.status(400).json({ success: false, message: 'The discount must leave a positive payment amount.' }); }
+        }
+        const amountInSmallestUnit = Math.round(calculatedTotal * 100);
+        await PaymentAttempt.create({
+            _id: paymentAttemptId,
+            user: req.user.id,
+            services: populatedServices,
+            totalAmount: calculatedTotal,
+            coupon,
+            address: {
+                label:       bookingAddress.label       || 'Home',
+                name:        bookingAddress.name        || '',
+                addressLine,
+                city:        bookingAddress.city        || '',
+                state:       bookingAddress.state       || '',
+                zipcode:     bookingAddress.zipcode     || '',
+                coordinates: bookingAddress.coordinates?.lat
+                    ? { lat: bookingAddress.coordinates.lat, lng: bookingAddress.coordinates.lng }
+                    : { lat: null, lng: null }
+            },
+            phone,
+            serviceDate,
+            specialInstructions,
+            paymentDetails: {
+                provider: paymentProvider === 'paypal' ? 'paypal' : stripe ? 'stripe' : 'razorpay',
+                orderId: `initializing_${paymentAttemptId}`,
+                currency: paymentProvider === 'paypal' ? paypal.currency() : stripe ? (process.env.STRIPE_CURRENCY || 'usd').toUpperCase() : 'USD'
+            }
+        });
         let paymentOrder;
 
         if (paymentProvider === 'paypal') {
             try {
                 const order = await paypal.createOrder({ attemptId: paymentAttemptId, amount: amountInSmallestUnit });
+                providerCreated = true;
                 paymentOrder = {
                     provider: 'paypal', id: order.id, amount: amountInSmallestUnit,
                     currency: paypal.currency(), clientId: process.env.PAYPAL_CLIENT_ID
@@ -139,6 +178,7 @@ exports.createBookingOrder = async (req, res, next) => {
                     }
                 });
 
+                providerCreated = true;
                 paymentOrder = {
                     provider: 'stripe',
                     id: paymentIntent.id,
@@ -163,6 +203,7 @@ exports.createBookingOrder = async (req, res, next) => {
                     notes: { paymentAttemptId }
                 });
 
+                providerCreated = true;
                 paymentOrder = {
                     provider: 'razorpay',
                     ...order
@@ -183,31 +224,8 @@ exports.createBookingOrder = async (req, res, next) => {
             });
         }
 
-        const paymentAttempt = await PaymentAttempt.create({
-            _id: paymentAttemptId,
-            user: req.user.id,
-            services: populatedServices,
-            totalAmount: calculatedTotal,
-            address: {
-                label:       bookingAddress.label       || 'Home',
-                name:        bookingAddress.name        || '',
-                addressLine,
-                city:        bookingAddress.city        || '',
-                state:       bookingAddress.state       || '',
-                zipcode:     bookingAddress.zipcode     || '',
-                coordinates: bookingAddress.coordinates?.lat
-                    ? { lat: bookingAddress.coordinates.lat, lng: bookingAddress.coordinates.lng }
-                    : { lat: null, lng: null }
-            },
-            phone,
-            serviceDate,
-            specialInstructions,
-            paymentDetails: {
-                provider: paymentOrder.provider,
-                orderId: paymentOrder.id,
-                currency: paymentOrder.currency.toUpperCase()
-            }
-        });
+        providerCreated = true;
+        const paymentAttempt = await PaymentAttempt.findByIdAndUpdate(paymentAttemptId, { $set: { paymentDetails: { provider: paymentOrder.provider, orderId: paymentOrder.id, currency: paymentOrder.currency.toUpperCase() } } }, { new: true });
 
         res.status(201).json({
             success: true,
@@ -215,6 +233,7 @@ exports.createBookingOrder = async (req, res, next) => {
                 paymentAttempt: {
                     _id: paymentAttempt._id,
                     totalAmount: paymentAttempt.totalAmount,
+                    coupon: paymentAttempt.coupon,
                     serviceDate: paymentAttempt.serviceDate
                 },
                 paymentOrder
@@ -222,6 +241,11 @@ exports.createBookingOrder = async (req, res, next) => {
         });
     } catch (err) {
         next(err);
+    } finally {
+        if (reservedAttempt && !providerCreated) {
+            await PaymentAttempt.updateOne({ _id: reservedAttempt }, { $set: { status: 'Cancelled' } }).catch(() => {});
+            await offerService.settle(reservedAttempt).catch(error => console.error('Coupon reservation release failed:', error.message));
+        }
     }
 };
 
@@ -230,6 +254,7 @@ exports.createBookingOrder = async (req, res, next) => {
  * @route   POST /api/bookings/verify
  */
 exports.verifyPayment = async (req, res, next) => {
+    let lease;
     try {
         const { paymentAttemptId, razorpayOrderId, razorpayPaymentId, stripePaymentIntentId, paypalOrderId } = req.body;
         if (!paymentAttemptId) {
@@ -249,6 +274,7 @@ exports.verifyPayment = async (req, res, next) => {
 
         const savedBooking = await Booking.findOne({ 'paymentDetails.orderId': paymentAttempt.paymentDetails.orderId });
         if (savedBooking) {
+            if (paymentAttempt.coupon?.offer) await offerService.settle(paymentAttempt._id, savedBooking._id);
             paymentAttempt.status = 'Completed';
             paymentAttempt.booking = savedBooking._id;
             await paymentAttempt.save();
@@ -262,6 +288,33 @@ exports.verifyPayment = async (req, res, next) => {
             });
         }
 
+        const claimedAttempt = await PaymentAttempt.findOneAndUpdate(
+            {
+                _id: paymentAttempt._id,
+                $or: [
+                    { status: 'Pending' },
+                    { status: 'Processing', updatedAt: { $lt: new Date(Date.now() - 60_000) } }
+                ]
+            },
+            { $set: { status: 'Processing' } },
+            { new: true }
+        );
+        if (!claimedAttempt) {
+            const latestAttempt = await PaymentAttempt.findById(paymentAttempt._id);
+            if (latestAttempt?.status === 'Completed' && latestAttempt.booking) {
+                const existingBooking = await Booking.findById(latestAttempt.booking)
+                    .populate('user')
+                    .populate('services.service');
+                return res.status(200).json({
+                    success: true,
+                    message: 'Payment was already verified',
+                    data: { booking: existingBooking }
+                });
+            }
+            return res.status(409).json({ success: false, message: 'Payment verification is already in progress' });
+        }
+
+        lease = { _id: claimedAttempt._id, updatedAt: claimedAttempt.updatedAt };
         let paymentId;
         const orderId = paymentAttempt.paymentDetails.orderId;
 
@@ -345,38 +398,13 @@ exports.verifyPayment = async (req, res, next) => {
             paymentId = payment.id;
         }
 
-        const claimedAttempt = await PaymentAttempt.findOneAndUpdate(
-            {
-                _id: paymentAttempt._id,
-                $or: [
-                    { status: 'Pending' },
-                    { status: 'Processing', updatedAt: { $lt: new Date(Date.now() - 60_000) } }
-                ]
-            },
-            { $set: { status: 'Processing' } },
-            { new: true }
-        );
-        if (!claimedAttempt) {
-            const latestAttempt = await PaymentAttempt.findById(paymentAttempt._id);
-            if (latestAttempt?.status === 'Completed' && latestAttempt.booking) {
-                const existingBooking = await Booking.findById(latestAttempt.booking)
-                    .populate('user')
-                    .populate('services.service');
-                return res.status(200).json({
-                    success: true,
-                    message: 'Payment was already verified',
-                    data: { booking: existingBooking }
-                });
-            }
-            return res.status(409).json({ success: false, message: 'Payment verification is already in progress' });
-        }
-
         let booking;
         try {
             booking = await Booking.create({
                 user: claimedAttempt.user,
                 services: claimedAttempt.services,
                 totalAmount: claimedAttempt.totalAmount,
+                coupon: claimedAttempt.coupon,
                 address: claimedAttempt.address,
                 phone: claimedAttempt.phone,
                 serviceDate: claimedAttempt.serviceDate,
@@ -390,6 +418,7 @@ exports.verifyPayment = async (req, res, next) => {
                     transactionId: paymentId
                 }
             });
+            if (claimedAttempt.coupon?.offer) await offerService.settle(claimedAttempt._id, booking._id);
             claimedAttempt.status = 'Completed';
             claimedAttempt.booking = booking._id;
             await claimedAttempt.save();
@@ -413,6 +442,8 @@ exports.verifyPayment = async (req, res, next) => {
         });
     } catch (err) {
         next(err);
+    } finally {
+        if (lease) await PaymentAttempt.updateOne({ ...lease, status: 'Processing' }, { $set: { status: 'Pending' } }).catch(error => console.error('Payment lease release failed:', error.message));
     }
 };
 
@@ -600,5 +631,38 @@ exports.downloadInvoice = async (req, res, next) => {
         res.status(200).send(invoiceText);
     } catch (err) {
         next(err);
+    }
+};
+
+// Cancel the provider intent before releasing coupon capacity. A paid intent
+// retains its claim so delayed verification can still create the booking.
+exports.cancelPaymentAttempt = async (req, res, next) => {
+    let attempt;
+    try {
+        attempt = await PaymentAttempt.findOneAndUpdate({ _id: req.params.id, user: req.user._id, $or: [{ status: 'Pending' }, { status: 'Cancelling', updatedAt: { $lt: new Date(Date.now() - 60000) } }] }, { $set: { status: 'Cancelling' } }, { new: true });
+        if (!attempt) {
+            const existing = await PaymentAttempt.findOne({ _id: req.params.id, user: req.user._id });
+            if (existing?.status === 'Cancelled') { if (existing.coupon?.offer) await offerService.settle(existing._id); return res.json({ success: true }); }
+            return res.status(409).json({ success: false, message: 'Payment is completed or verification is in progress. Please verify the payment before continuing.' });
+        }
+        const orderId = attempt.paymentDetails.orderId;
+        if (attempt.paymentDetails.provider === 'stripe') {
+            const intent = await stripe.paymentIntents.retrieve(orderId);
+            if (intent.status !== 'canceled') await stripe.paymentIntents.cancel(orderId);
+        } else if (attempt.paymentDetails.provider === 'paypal') {
+            const order = await paypal.getOrder(orderId);
+            if (order.status === 'COMPLETED' || order.purchase_units?.some(unit => unit.payments?.captures?.length)) throw new Error('Payment has been captured. Please verify it.');
+            // PayPal captures happen only in verifyPayment, guarded by the attempt lease.
+        } else {
+            throw new Error('This payment provider does not support cancellation. Please contact support.');
+        }
+        attempt.status = 'Cancelled';
+        await attempt.save();
+        if (attempt.coupon?.offer) await offerService.settle(attempt._id);
+        res.json({ success: true });
+    } catch (error) {
+        if (attempt && attempt.status !== 'Cancelled') await PaymentAttempt.updateOne({ _id: attempt._id, status: 'Cancelling' }, { $set: { status: 'Pending' } });
+        error.statusCode = error.statusCode || 409;
+        next(error);
     }
 };

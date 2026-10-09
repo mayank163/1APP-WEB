@@ -50,7 +50,7 @@ const CatalogManagementLayout = ({ kind, items, categories, loading, onCreate, o
         finally { setPending(previous => previous.filter(id => id !== item._id)); }
     };
     return (
-        <section className="catalog-management">
+        <section className={`catalog-management${isCategory ? ' catalog-categories' : ''}`}>
             <div className="catalog-breadcrumb">Customer Management <FiChevronRight /> <span>Services</span></div>
             <h1>Service Management</h1>
             <p className="catalog-description">Customer-facing catalog: pricing, quote type, and availability</p>
@@ -69,7 +69,7 @@ const CatalogManagementLayout = ({ kind, items, categories, loading, onCreate, o
                 <table className="catalog-table">
                     <thead><tr><th>Icon</th><th>Category</th>{!isCategory && <th>Sub Category</th>}<th>{isCategory ? 'Services under it' : 'Starting price'}</th><th>Active</th><th>Status</th><th>Action</th></tr></thead>
                     <tbody>{loading ? <tr><td colSpan={isCategory ? 6 : 7} className="catalog-empty">Loading {label}…</td></tr> : visible.map(item => <tr key={item._id}>
-                        <td><div className="catalog-icon">{item.icon || item.image ? <AdminImage key={item.icon || item.image} src={getImageUrl(item.icon || item.image)} alt={item.name} width={64} height={64} objectFit="contain" className="admin-catalog-management-layout-1"  /> : <FiGrid />}</div></td>
+                        <td><div className={`catalog-icon${isCategory ? ' catalog-icon-small' : ''}`}>{item.icon || item.image ? <AdminImage key={item.icon || item.image} src={getImageUrl(item.icon || item.image)} alt={item.name} width={isCategory ? 32 : 64} height={isCategory ? 32 : 64} objectFit="contain" className="admin-catalog-management-layout-1"  /> : <FiGrid />}</div></td>
                         <td className="catalog-name">{isCategory ? item.name : item.category?.name || '—'}</td>
                         {!isCategory && <td className="catalog-name">{item.name}<small className="catalog-service-count">{item.serviceCount || 0} {(item.serviceCount || 0) === 1 ? 'service' : 'services'}</small></td>}
                         <td>{isCategory ? <span className="catalog-count">{item.serviceCount || 0} {(item.serviceCount || 0) === 1 ? 'service' : 'services'}</span> : <span className="catalog-count">{item.startingFromPrice ? `$${item.startingFromPrice}` : '—'}</span>}</td>

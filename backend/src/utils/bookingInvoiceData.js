@@ -35,6 +35,7 @@ const buildBookingInvoice = booking => {
         company: { name: 'OneApp', website: 'www.1app.com', email: 'support@1app.com', phone: '+1 (253) 3667 557' },
         customer: { name: user.name || 'Valued Customer', email: user.email || '', phone: booking.phone || user.phone || '', address },
         services,
+        coupon: booking.coupon?.code ? { code: booking.coupon.code, discount: round(booking.coupon.discount) } : null,
         totals: { subtotal, adjustments: round(totalAmount - subtotal), totalAmount, paidAmount, balanceDue: round(totalAmount - paidAmount) },
         download: { url: `/api/bookings/${bookingId}/invoice`, contentType: 'text/plain', filename: `invoice-${bookingId}.txt` }
     };

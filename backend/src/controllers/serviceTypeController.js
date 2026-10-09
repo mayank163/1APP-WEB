@@ -17,9 +17,9 @@ exports.getAllServiceTypes = async (req, res, next) => {
  */
 exports.createServiceType = async (req, res, next) => {
     try {
-        const { name, description } = req.body;
+        const { name, description, isActive } = req.body;
         if (!name?.trim()) return res.status(400).json({ success: false, message: 'Service type name is required' });
-        const serviceType = await ServiceType.create({ name: name.trim(), description: description?.trim() || '' });
+        const serviceType = await ServiceType.create({ name: name.trim(), description: description?.trim() || '', isActive: isActive ?? true });
         res.status(201).json({ success: true, data: { serviceType } });
     } catch (err) {
         if (err.code === 11000) return res.status(400).json({ success: false, message: 'A service type with this name already exists' });

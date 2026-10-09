@@ -240,8 +240,8 @@ const BookingCard = ({ booking, onCancelled }) => {
                     <div className="booking-card-info-row">
                         <span className="booking-card-info-icon"><FiUser /></span>
                         <div><span className="booking-card-info-label">Technician Assigned</span>
-                            <div className={`booking-card-info-value ${technician.name || technician.phone ? 'strong' : 'awaiting'}`}>
-                                {technician.name || (technician.phone ? 'Technician assigned' : 'Awaiting assignment')}{technician.phone && ` • ${technician.phone}`}
+                            <div className={`booking-card-info-value ${technician.name ? 'strong' : 'awaiting'}`}>
+                                {technician.name || 'Awaiting assignment'}
                             </div>
                         </div>
                     </div>

@@ -43,6 +43,7 @@ SERVICES ORDERED:
         invoice += `${index + 1}. ${name.padEnd(25)} x${item.quantity}   $${itemTotal.toFixed(2)}\n`;
     });
 
+    if (booking.coupon?.code) invoice += `Coupon: ${booking.coupon.code}   Discount: -$${Number(booking.coupon.discount).toFixed(2)}\n`;
     invoice += `-----------------------------------------
 TOTAL AMOUNT:                   $${booking.totalAmount.toFixed(2)}
 =========================================

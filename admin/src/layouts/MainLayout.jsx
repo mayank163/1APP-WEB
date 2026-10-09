@@ -9,7 +9,7 @@ import {
     FaChartBar, FaTasks, FaFolderOpen,
     FaUsers, FaTag, FaSignOutAlt,
     FaLayerGroup, FaBlog, FaHardHat, FaCheckCircle, FaComments,
-    FaBars, FaChevronLeft, FaUserShield, FaSitemap, FaCogs, FaGem
+    FaBars, FaChevronLeft, FaUserShield, FaSitemap, FaGem
 } from 'react-icons/fa';
 
 const MainLayout = () => {
@@ -44,8 +44,7 @@ const MainLayout = () => {
         { to: "/bookings", icon: <FaTasks size={14} />, label: "Bookings", resource: 'bookings' },
         { to: "/technician-jobs", icon: <FaHardHat size={14} />, label: "Technician Jobs", resource: 'technician_jobs' },
         { to: "/job-templates", icon: <FaFolderOpen size={14} />, label: "Job Templates", resource: 'technician_jobs' },
-        { to: "/work-types", icon: <FaSitemap size={14} />, label: "Work Types", resource: 'work_types' },
-        { to: "/service-types", icon: <FaCogs size={14} />, label: "Service Types", resource: 'service_types' },
+        { to: can('work_types', 'read') ? "/work-types" : "/service-types", icon: <FaSitemap size={14} />, label: "Work & Service Types", resources: ['work_types', 'service_types'], activePaths: ['/work-types', '/service-types'] },
         { to: can('categories', 'read') ? "/categories" : "/subcategories", icon: <FaLayerGroup size={14} />, label: "Service Management", resources: ['categories', 'subcategories'], activePaths: ['/categories', '/subcategories'] },
         { to: "/services", icon: <FaLayerGroup size={14} />, label: "Services", resource: 'services' },
         { to: "/users", icon: <FaUsers size={14} />, label: "Users", resource: 'users' },
@@ -87,7 +86,6 @@ const MainLayout = () => {
                 </div>
 
                 <div className="p-3 flex-grow-1 admin-main-layout-8" >
-                    {!collapsed && <p className="text-uppercase fw-bold fs-8 mb-2 px-2 admin-main-layout-9" >Navigation</p>}
                     <ul className="nav nav-pills flex-column gap-1">
                         {navItems.map(({ to, icon, label, end, activePaths }) => (
                             <li key={to} className="nav-item">

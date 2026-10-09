@@ -3,34 +3,63 @@ import adminApi from '../services/adminApi';
 import { ShimmerBlogTable } from '../components/Shimmer';
 import AdminImage from '../components/AdminImage';
 import { toast } from 'react-toastify';
-import { FaPlus, FaEdit, FaTrash, FaImage, FaArrowUp, FaArrowDown, FaEye, FaSave, FaTimes } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaImage, FaEye, FaTimes } from 'react-icons/fa';
+import { FiSearch, FiFilter, FiChevronLeft, FiChevronRight, FiMoreHorizontal, FiStar, FiCopy, FiArchive, FiClock, FiArrowUpCircle, FiAlertCircle } from 'react-icons/fi';
+import { Modal } from 'react-bootstrap';
 import '../styles/BlogManagement.css';
 import { getImageUrl } from '../utils/helpers';
 
-const emptyBlock = () => ({ title: '', text: '', imageFile: null, imagePreview: '', image: null });
+import BlogEditor from '../components/BlogEditor';
 
 const BlogManagement = () => {
     const [blogs, setBlogs] = useState([]);
     const [categories, setCategories] = useState([]);
     const [subcategories, setSubcategories] = useState([]);
-    const [filteredSubcategories, setFilteredSubcategories] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showForm, setShowForm] = useState(false);
-    const [editingId, setEditingId] = useState(null);
-    const [submitting, setSubmitting] = useState(false);
+    const [editor, setEditor] = useState(null);
+    const showForm = !!editor;
+    const handleOpenCreate = () => setEditor({ blog: null });
+    const handleOpenEdit = blog => setEditor({ blog });
 
-    // Form state
-    const [title, setTitle] = useState('');
-    const [subtitle, setSubtitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [categoryId, setCategoryId] = useState('');
-    const [subcategoryId, setSubcategoryId] = useState('');
-    const [isPublished, setIsPublished] = useState(true);
-    const [featuredImageFile, setFeaturedImageFile] = useState(null);
-    const [featuredImagePreview, setFeaturedImagePreview] = useState('');
-    const [blocks, setBlocks] = useState([emptyBlock()]);
-    const [metaTitle, setMetaTitle] = useState('');
-    const [metaDescription, setMetaDescription] = useState('');
+    const [search, setSearch] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
+    const [categoryFilter, setCategoryFilter] = useState('');
+    const [sort, setSort] = useState('newest');
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [menuId, setMenuId] = useState(null);
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    const setPreview = blog => setEditor({ blog, readOnly: true });
+    const [scheduleTarget, setScheduleTarget] = useState(null);
+    const [scheduleDate, setScheduleDate] = useState('');
+    const [actionBusy, setActionBusy] = useState(false);
+    const statusOf = b => b.isArchived ? 'Archived' : b.scheduledAt && new Date(b.scheduledAt) > new Date() ? 'Scheduled' : b.isPublished ? 'Published' : 'Draft';
+    const filtered = blogs.filter(b => (!statusFilter || statusOf(b) === statusFilter) && (!categoryFilter || b.subcategory?.category?._id === categoryFilter) && `${b.title} ${b.description} ${b.subcategory?.name || ''}`.toLowerCase().includes(search.toLowerCase())).sort((a, b) => sort === 'title' ? a.title.localeCompare(b.title) : sort === 'oldest' ? new Date(a.updatedAt || a.createdAt) - new Date(b.updatedAt || b.createdAt) : new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
+    const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
+    const currentPage = Math.min(page, pages);
+    const visibleBlogs = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+    useEffect(() => { setPage(1); }, [search, statusFilter, categoryFilter, sort, pageSize]);
+    useEffect(() => {
+        const close = () => setMenuId(null);
+        const escape = e => { if (e.key === 'Escape') close(); };
+        document.addEventListener('click', close);
+        document.addEventListener('keydown', escape);
+        return () => { document.removeEventListener('click', close); document.removeEventListener('keydown', escape); };
+    }, []);
+    const updateStatus = async (blog, values) => {
+        setActionBusy(true);
+        try {
+            const fd = new FormData();
+            Object.entries(values).forEach(([key, value]) => fd.append(key, value));
+            const res = await adminApi.updateBlog(blog._id, fd);
+            if (!res.success) throw new Error('Unable to update blog');
+            setScheduleTarget(null);
+            await fetchData();
+            toast.success('Blog updated successfully');
+        } catch (err) { toast.error(err.response?.data?.message || err.message); }
+        finally { setActionBusy(false); }
+    };
+    const duplicateBlog = blog => { setEditor({ blog, duplicate: true }); setMenuId(null); };
 
     const fetchData = async () => {
         setLoading(true);
@@ -53,769 +82,76 @@ const BlogManagement = () => {
 
     useEffect(() => { fetchData(); }, []);
 
-    // Filter subcategories when category changes
-    useEffect(() => {
-        if (categoryId) {
-            setFilteredSubcategories(subcategories.filter(s => s.category?._id === categoryId));
-            // Don't reset subcategoryId here — edit handler sets it manually after setting categoryId
-        } else {
-            setFilteredSubcategories([]);
-        }
-    }, [categoryId, subcategories]);
-
-    const resetForm = () => {
-        setEditingId(null);
-        setTitle('');
-        setSubtitle('');
-        setDescription('');
-        setCategoryId('');
-        setSubcategoryId('');
-        setIsPublished(true);
-        setFeaturedImageFile(null);
-        setFeaturedImagePreview('');
-        setBlocks([emptyBlock()]);
-        setMetaTitle('');
-        setMetaDescription('');
-    };
-
-    const handleOpenCreate = () => {
-        resetForm();
-        setShowForm(true);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    const handleOpenEdit = (blog) => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        setEditingId(blog._id);
-        setTitle(blog.title);
-        setSubtitle(blog.subtitle || '');
-        setDescription(blog.description);
-
-        // Set category first, then subcategory
-        const catId = blog.subcategory?.category?._id || '';
-        setCategoryId(catId);
-        setFilteredSubcategories(subcategories.filter(s => s.category?._id === catId));
-        setSubcategoryId(blog.subcategory?._id || '');
-
-        setIsPublished(blog.isPublished);
-        setFeaturedImageFile(null);
-        setFeaturedImagePreview(blog.featuredImage ? getImageUrl(blog.featuredImage) : '');
-        setBlocks(
-            blog.contentBlocks?.length
-                ? blog.contentBlocks.map(b => ({
-                    title: b.title || '',
-                    text: b.text || '',
-                    imageFile: null,
-                    imagePreview: b.image ? getImageUrl(b.image) : '',
-                    image: b.image || null
-                }))
-                : [emptyBlock()]
-        );
-        setMetaTitle(blog.metaTitle || '');
-        setMetaDescription(blog.metaDescription || '');
-        setShowForm(true);
-    };
-
     const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this blog? This action cannot be undone.')) return;
+        setActionBusy(true);
         try {
             const res = await adminApi.deleteBlog(id);
             if (res.success) {
+                setDeleteTarget(null);
                 toast.success('Blog deleted successfully');
                 fetchData();
             }
         } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to delete blog');
-        }
+        } finally { setActionBusy(false); }
     };
 
-    // Block handlers
-    const handleBlockTextChange = (i, val) => {
-        setBlocks(prev => prev.map((b, idx) => idx === i ? { ...b, text: val } : b));
-    };
-
-    const handleBlockTitleChange = (i, val) => {
-        setBlocks(prev => prev.map((b, idx) => idx === i ? { ...b, title: val } : b));
-    };
-
-    const handleBlockImageChange = (i, file) => {
-        if (!file) return;
-        if (!file.type.startsWith('image/')) {
-            toast.error('Please select an image file');
-            return;
-        }
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error('Image size should be less than 5MB');
-            return;
-        }
-        const preview = URL.createObjectURL(file);
-        setBlocks(prev => prev.map((b, idx) => idx === i ? { ...b, imageFile: file, imagePreview: preview } : b));
-    };
-
-    const handleRemoveBlockImage = (i) => {
-        setBlocks(prev => prev.map((b, idx) => idx === i ? { ...b, imageFile: null, imagePreview: '', image: null } : b));
-    };
-
-    const handleAddBlock = () => setBlocks(prev => [...prev, emptyBlock()]);
-
-    const handleRemoveBlock = (i) => {
-        if (blocks.length === 1) {
-            toast.warning('At least one content block is required');
-            return;
-        }
-        setBlocks(prev => prev.filter((_, idx) => idx !== i));
-    };
-
-    const handleMoveBlock = (i, dir) => {
-        const newBlocks = [...blocks];
-        const target = i + dir;
-        if (target < 0 || target >= newBlocks.length) return;
-        [newBlocks[i], newBlocks[target]] = [newBlocks[target], newBlocks[i]];
-        setBlocks(newBlocks);
-    };
-
-    const handleFeaturedImageChange = (file) => {
-        if (!file) return;
-        if (!file.type.startsWith('image/')) {
-            toast.error('Please select an image file');
-            return;
-        }
-        if (file.size > 5 * 1024 * 1024) {
-            toast.error('Image size should be less than 5MB');
-            return;
-        }
-        setFeaturedImageFile(file);
-        setFeaturedImagePreview(URL.createObjectURL(file));
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        // Validation
-        if (!title.trim()) {
-            toast.error('Please enter blog title');
-            return;
-        }
-        if (!description.trim()) {
-            toast.error('Please enter blog description');
-            return;
-        }
-        if (!categoryId) {
-            toast.error('Please select a category');
-            return;
-        }
-        if (!subcategoryId) {
-            toast.error('Please select a subcategory');
-            return;
-        }
-
-        // Check if at least one block has content
-        const hasContent = blocks.some(b => b.text.trim() || b.imageFile || b.image);
-        if (!hasContent) {
-            toast.error('Please add at least one content block with text or image');
-            return;
-        }
-
-        setSubmitting(true);
-        try {
-            const fd = new FormData();
-            fd.append('title', title.trim());
-            fd.append('subtitle', subtitle.trim());
-            fd.append('description', description.trim());
-            fd.append('subcategory', subcategoryId);
-            fd.append('isPublished', isPublished);
-            fd.append('metaTitle', metaTitle.trim());
-            fd.append('metaDescription', metaDescription.trim());
-
-            if (featuredImageFile) {
-                fd.append('featuredImage', featuredImageFile);
-            }
-
-            // Serialize blocks metadata (preserve existing image filenames for blocks without new file)
-            const blocksMeta = blocks.map((b, i) => ({
-                title: b.title.trim(),
-                text: b.text.trim(),
-                order: i,
-                image: b.imageFile ? null : (b.image || null)
-            }));
-            fd.append('contentBlocks', JSON.stringify(blocksMeta));
-
-            // Append block image files in order
-            blocks.forEach((b) => {
-                if (b.imageFile) {
-                    fd.append('blockImages', b.imageFile);
-                }
-            });
-
-            let res;
-            if (editingId) {
-                res = await adminApi.updateBlog(editingId, fd);
-                if (res.success) toast.success('Blog updated successfully!');
-            } else {
-                res = await adminApi.createBlog(fd);
-                if (res.success) toast.success('Blog created successfully!');
-            }
-
-            setShowForm(false);
-            resetForm();
-            fetchData();
-        } catch (err) {
-            console.error(err);
-            toast.error(err.response?.data?.message || 'Failed to save blog');
-        } finally {
-            setSubmitting(false);
-        }
-    };
+    if (editor) return <BlogEditor {...editor} categories={categories} subcategories={subcategories} onClose={() => setEditor(null)} onSaved={() => { setEditor(null); fetchData(); }} />;
 
     return (
         <div className="blog-management">
-            <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className="blog-page-heading">
                 <div>
-                    <h1 className="fw-bold text-dark mb-1">Blog Management</h1>
+                    <div className="blog-breadcrumb">Content Management <span>›</span> <strong>Blogs</strong></div>
+                    <h1 className="fw-bold text-dark mb-1">Blogs Management</h1>
                     <p className="text-muted mb-0">Create and manage blog posts with rich content blocks</p>
                 </div>
                 {!showForm && (
                     <button
                         onClick={handleOpenCreate}
-                        className="btn btn-brand fw-bold d-flex align-items-center gap-2 px-4"
+                        className="blog-create-button"
                     >
-                        <FaPlus /><span>Create New Blog</span>
+                        <FaPlus /><span>Create Blog</span>
                     </button>
                 )}
             </div>
 
-            {showForm && (
-                <div className="card border-0 shadow-sm rounded-3 bg-white p-4 mb-4">
-                    <div className="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
-                        <h5 className="fw-bold mb-0">
-                            {editingId ? '✏️ Edit Blog Post' : '📝 Create New Blog Post'}
-                        </h5>
-                        <button
-                            type="button"
-                            onClick={() => { setShowForm(false); resetForm(); }}
-                            className="btn btn-outline-secondary btn-sm"
-                        >
-                            <FaTimes className="me-1" /> Cancel
-                        </button>
-                    </div>
-
-                    <form onSubmit={handleSubmit}>
-                        {/* Basic Info Section */}
-                        <div className="mb-4">
-                            <h6 className="fw-bold text-dark mb-3">
-                                <span className="badge me-2 admin-blog-management-1" >1</span>Basic Information
-                            </h6>
-                            <div className="row g-3">
-                                <div className="col-md-6">
-                                    <label className="form-label text-muted small fw-bold">
-                                        Blog Title <span className="text-danger">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        required
-                                        className="form-control form-control-lg bg-light border-0"
-                                        placeholder="Enter an engaging blog title..."
-                                        value={title}
-                                        onChange={e => setTitle(e.target.value)}
-                                        maxLength={200}
-                                    />
-                                    <div className="text-muted small mt-1">{title.length}/200 characters</div>
-                                </div>
-                                <div className="col-md-6">
-                                    <label className="form-label text-muted small fw-bold">
-                                        Subtitle <span className="text-muted fw-normal">(Optional)</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        className="form-control form-control-lg bg-light border-0"
-                                        placeholder="A short supporting line under the title..."
-                                        value={subtitle}
-                                        onChange={e => setSubtitle(e.target.value)}
-                                        maxLength={300}
-                                    />
-                                    <div className="text-muted small mt-1">{subtitle.length}/300 characters</div>
-                                </div>
-                                <div className="col-md-3">
-                                    <label className="form-label text-muted small fw-bold">
-                                        Category <span className="text-danger">*</span>
-                                    </label>
-                                    <select
-                                        required
-                                        className="form-select form-select-lg bg-light border-0"
-                                        value={categoryId}
-                                        onChange={e => {
-                                            setCategoryId(e.target.value);
-                                            setSubcategoryId('');
-                                        }}
-                                    >
-                                        <option value="">Select category...</option>
-                                        {categories.map(cat => (
-                                            <option key={cat._id} value={cat._id}>{cat.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="col-md-3">
-                                    <label className="form-label text-muted small fw-bold">
-                                        Subcategory <span className="text-danger">*</span>
-                                    </label>
-                                    <select
-                                        required
-                                        className="form-select form-select-lg bg-light border-0"
-                                        value={subcategoryId}
-                                        onChange={e => setSubcategoryId(e.target.value)}
-                                        disabled={!categoryId}
-                                    >
-                                        <option value="">Select subcategory...</option>
-                                        {filteredSubcategories.map(s => (
-                                            <option key={s._id} value={s._id}>{s.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="col-md-6">
-                                    <label className="form-label text-muted small fw-bold">
-                                        Short Description <span className="text-danger">*</span>
-                                    </label>
-                                    <textarea
-                                        required
-                                        rows="3"
-                                        className="form-control bg-light border-0"
-                                        placeholder="Write a compelling description that summarizes your blog post..."
-                                        value={description}
-                                        onChange={e => setDescription(e.target.value)}
-                                        maxLength={500}
-                                    />
-                                    <div className="text-muted small mt-1">{description.length}/500 characters</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Featured Image Section */}
-                        <div className="mb-4">
-                            <h6 className="fw-bold text-dark mb-3">
-                                <span className="badge me-2 admin-blog-management-2" >2</span>Featured Image
-                            </h6>
-                            <div className="row g-3">
-                                <div className="col-md-6">
-                                    <label className="form-label text-muted small fw-bold">
-                                        Upload Featured Image (Optional)
-                                    </label>
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        className="form-control bg-light border-0"
-                                        onChange={e => handleFeaturedImageChange(e.target.files[0])}
-                                    />
-                                    <div className="text-muted small mt-1">
-                                        Recommended size: 1200x630px • Max 5MB
-                                    </div>
-                                </div>
-                                <div className="col-md-6">
-                                    {featuredImagePreview && (
-                                        <div className="position-relative d-inline-block">
-                                            <img
-                                                src={featuredImagePreview}
-                                                alt="featured"
-                                                className="rounded border admin-blog-management-3"
-
-                                            />
-                                            <button
-                                                type="button"
-                                                className="btn btn-danger btn-sm position-absolute top-0 end-0 m-2"
-                                                onClick={() => {
-                                                    setFeaturedImageFile(null);
-                                                    setFeaturedImagePreview('');
-                                                }}
-                                            >
-                                                <FaTimes />
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Content Blocks Section */}
-                        <div className="mb-4">
-                            <div className="d-flex justify-content-between align-items-center mb-3">
-                                <h6 className="fw-bold text-dark mb-0">
-                                    <span className="badge me-2 admin-blog-management-4" >3</span>
-                                    Content Blocks ({blocks.length})
-                                </h6>
-                                <button
-                                    type="button"
-                                    onClick={handleAddBlock}
-                                    className="btn btn-sm btn-brand d-flex align-items-center gap-1"
-                                >
-                                    <FaPlus size={12} /> Add Content Block
-                                </button>
-                            </div>
-
-                            <div className="alert py-2 px-3 small mb-3 admin-blog-management-5" >
-                                <strong>💡 Tip:</strong> Each content block can contain an image and text. Add multiple blocks to create rich, engaging blog posts with alternating images and content.
-                            </div>
-
-                            <div className="content-blocks-container">
-                                {blocks.map((block, i) => (
-                                    <div
-                                        key={i}
-                                        className="card border-0 shadow-sm rounded-3 p-4 mb-3 bg-white admin-blog-management-6"
-
-                                    >
-                                        <div className="d-flex justify-content-between align-items-center mb-3">
-                                            <div className="d-flex align-items-center gap-2">
-                                                <span className="badge fs-6 admin-blog-management-7" >Block {i + 1}</span>
-                                                <span className="text-muted small">
-                                                    {block.text.length > 0 && `${block.text.length} characters`}
-                                                    {block.text.length > 0 && (block.imageFile || block.image) && ' • '}
-                                                    {(block.imageFile || block.image) && '📷 Image attached'}
-                                                </span>
-                                            </div>
-                                            <div className="d-flex gap-2">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleMoveBlock(i, -1)}
-                                                    className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
-                                                    disabled={i === 0}
-                                                    title="Move up"
-                                                >
-                                                    <FaArrowUp size={12} />
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleMoveBlock(i, 1)}
-                                                    className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
-                                                    disabled={i === blocks.length - 1}
-                                                    title="Move down"
-                                                >
-                                                    <FaArrowDown size={12} />
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleRemoveBlock(i)}
-                                                    className="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
-                                                    disabled={blocks.length === 1}
-                                                    title="Remove block"
-                                                >
-                                                    <FaTrash size={12} />
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {/* Block Title */}
-                                        <div className="mb-3">
-                                            <label className="form-label text-muted small fw-bold">
-                                                Block Title <span className="text-muted fw-normal">(Optional)</span>
-                                            </label>
-                                            <input
-                                                type="text"
-                                                className="form-control bg-light border-0"
-                                                placeholder="e.g. Why This Matters, Step 1: Preparation..."
-                                                value={block.title}
-                                                onChange={e => handleBlockTitleChange(i, e.target.value)}
-                                                maxLength={150}
-                                            />
-                                            <div className="text-muted small mt-1">{block.title.length}/150 characters</div>
-                                        </div>
-
-                                        <div className="row g-3">
-                                            {/* Image Upload Column */}
-                                            <div className="col-md-5">
-                                                <label className="form-label text-muted small fw-bold">
-                                                    <FaImage className="me-1" />Block Image (Optional)
-                                                </label>
-                                                <div className="border border-2 border-dashed rounded-3 p-3 text-center bg-light">
-                                                    {block.imagePreview ? (
-                                                        <div className="position-relative d-inline-block">
-                                                            <img
-                                                                src={block.imagePreview}
-                                                                alt={`block-${i}`}
-                                                                className="rounded w-100 admin-blog-management-8"
-
-                                                            />
-                                                            <button
-                                                                type="button"
-                                                                className="btn btn-danger btn-sm position-absolute top-0 end-0 m-2"
-                                                                onClick={() => handleRemoveBlockImage(i)}
-                                                            >
-                                                                <FaTimes />
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="py-4">
-                                                            <FaImage size={32} className="text-muted mb-2" />
-                                                            <p className="text-muted small mb-2">No image uploaded</p>
-                                                            <input
-                                                                type="file"
-                                                                accept="image/*"
-                                                                className="form-control form-control-sm bg-white"
-                                                                onChange={e => handleBlockImageChange(i, e.target.files[0])}
-                                                            />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                {!block.imagePreview && (
-                                                    <div className="text-muted small mt-1">
-                                                        Max 5MB • JPG, PNG, GIF
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            {/* Content Column */}
-                                            <div className="col-md-7">
-                                                <label className="form-label text-muted small fw-bold">
-                                                    Block Content
-                                                </label>
-                                                <textarea
-                                                    rows="9"
-                                                    className="form-control bg-light border-0 admin-blog-management-9"
-                                                    placeholder="Write your content here... You can describe, explain, or provide details related to the image."
-                                                    value={block.text}
-                                                    onChange={e => handleBlockTextChange(i, e.target.value)}
-
-                                                />
-                                                <div className="text-muted small mt-1">
-                                                    {block.text.length} characters
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <button
-                                type="button"
-                                onClick={handleAddBlock}
-                                className="btn btn-outline-dark btn-sm w-100 py-2 fw-bold"
-                            >
-                                <FaPlus className="me-2" /> Add Another Content Block
-                            </button>
-                        </div>
-
-                        {/* SEO / Meta Section */}
-                        <div className="mb-4">
-                            <h6 className="fw-bold text-dark mb-3">
-                                <span className="badge me-2 admin-blog-management-10" >4</span>SEO &amp; Meta
-                            </h6>
-                            <div className="alert alert-light border py-2 px-3 small mb-3">
-                                🔍 These fields control how the blog appears in search engine results. Leave blank to auto-use the title and description.
-                            </div>
-                            <div className="row g-3">
-                                <div className="col-12">
-                                    <label className="form-label text-muted small fw-bold">Meta Title</label>
-                                    <input
-                                        type="text"
-                                        className="form-control bg-light border-0"
-                                        placeholder="SEO title shown in search results (50–60 chars recommended)..."
-                                        value={metaTitle}
-                                        onChange={e => setMetaTitle(e.target.value)}
-                                        maxLength={160}
-                                    />
-                                    <div className={`small mt-1 ${metaTitle.length > 60 ? 'text-warning' : 'text-muted'}`}>
-                                        {metaTitle.length}/160 · Ideal: 50–60
-                                    </div>
-                                </div>
-                                <div className="col-12">
-                                    <label className="form-label text-muted small fw-bold">Meta Description</label>
-                                    <textarea
-                                        rows="2"
-                                        className="form-control bg-light border-0"
-                                        placeholder="Brief summary shown under the title in search results (120–160 chars recommended)..."
-                                        value={metaDescription}
-                                        onChange={e => setMetaDescription(e.target.value)}
-                                        maxLength={320}
-                                    />
-                                    <div className={`small mt-1 ${metaDescription.length > 160 ? 'text-warning' : 'text-muted'}`}>
-                                        {metaDescription.length}/320 · Ideal: 120–160
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Publishing Options */}
-                        <div className="mb-4">
-                            <h6 className="fw-bold text-dark mb-3">
-                                <span className="badge me-2 admin-blog-management-11" >5</span>Publishing Options
-                            </h6>
-                            <div className="form-check form-switch">
-                                <input
-                                    type="checkbox"
-                                    className="form-check-input admin-blog-management-12"
-                                    id="isPublished"
-                                    checked={isPublished}
-                                    onChange={e => setIsPublished(e.target.checked)}
-
-                                />
-                                <label className="form-check-label fw-semibold ms-2" htmlFor="isPublished">
-                                    {isPublished ? '✅ Publish Immediately' : '📝 Save as Draft'}
-                                </label>
-                            </div>
-                            <div className="text-muted small mt-2">
-                                {isPublished
-                                    ? 'This blog will be visible to all users immediately after saving.'
-                                    : 'This blog will be saved as a draft and won\'t be visible to users until published.'}
-                            </div>
-                        </div>
-
-                        {/* Form Actions */}
-                        <div className="d-flex gap-3 justify-content-end pt-3 border-top">
-                            <button
-                                type="button"
-                                onClick={() => { setShowForm(false); resetForm(); }}
-                                className="btn btn-outline-secondary px-4 py-2"
-                                disabled={submitting}
-                            >
-                                <FaTimes className="me-2" />Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={submitting}
-                                className="btn btn-brand fw-bold px-5 py-2"
-                            >
-                                {submitting ? (
-                                    <>
-                                        <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                        Saving...
-                                    </>
-                                ) : (
-                                    <>
-                                        <FaSave className="me-2" />
-                                        {editingId ? 'Update Blog' : 'Create Blog'}
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            )}
-
-            {/* Blog List */}
-            <div className="card border-0 shadow-sm rounded-3 bg-white p-4">
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h6 className="fw-bold mb-0">Published Blogs ({blogs.length})</h6>
-                    <div className="text-muted small">
-                        {blogs.filter(b => b.isPublished).length} Published • {blogs.filter(b => !b.isPublished).length} Drafts
-                    </div>
-                </div>
-
-                {loading ? (
-                    <ShimmerBlogTable rows={5} />
-                ) : (
-                    <div className="table-responsive">
-                        <table className="table table-hover align-middle">
-                            <thead className="table-light">
-                                <tr>
-                                    <th className="admin-blog-management-13" >Featured</th>
-                                    <th>Title & Description</th>
-                                    <th className="admin-blog-management-14" >Category</th>
-                                    <th className="admin-blog-management-15" >Subcategory</th>
-                                    <th  className="text-center admin-blog-management-16">Blocks</th>
-                                    <th className="admin-blog-management-17" >Status</th>
-                                    <th className="admin-blog-management-18" >Created</th>
-                                    <th  className="text-center admin-blog-management-19">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {blogs.length === 0 ? (
-                                    <tr>
-                                        <td colSpan="8" className="text-center py-5">
-                                            <div className="text-muted">
-                                                <FaPlus size={32} className="mb-3 opacity-50" />
-                                                <p className="mb-2">No blogs yet</p>
-                                                <p className="small">Create your first blog post to get started!</p>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    blogs.map(blog => (
-                                        <tr key={blog._id}>
-                                            <td>
-                                                {blog.featuredImage ? (
-                                                    <AdminImage
-                                                        src={getImageUrl(blog.featuredImage)}
-                                                        alt="featured"
-                                                        width={60}
-                                                        height={45}
-                                                        radius={6}
-                                                        className="admin-blog-management-20"
-                                                    />
-                                                ) : (
-                                                    <div
-                                                        className="rounded bg-light d-flex align-items-center justify-content-center admin-blog-management-21"
-
-                                                    >
-                                                        <FaImage className="text-muted" />
-                                                    </div>
-                                                )}
-                                            </td>
-                                            <td>
-                                                <div className="fw-semibold text-dark mb-1">{blog.title}</div>
-                                                <div
-                                                    className="text-muted small admin-blog-management-22"
-
-                                                >
-                                                    {blog.description}
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span className="fw-semibold text-dark small">
-                                                    {blog.subcategory?.category?.name || '—'}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span className="badge bg-light text-dark border">
-                                                    {blog.subcategory?.name || '—'}
-                                                </span>
-                                            </td>
-                                            <td className="text-center">
-                                                <span className="badge bg-secondary">
-                                                    {blog.contentBlocks?.length || 0}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                {blog.isPublished ? (
-                                                    <span className="badge bg-success">
-                                                        <FaEye className="me-1" size={10} />
-                                                        Published
-                                                    </span>
-                                                ) : (
-                                                    <span className="badge bg-warning text-dark">
-                                                        📝 Draft
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="text-muted small">
-                                                {new Date(blog.createdAt).toLocaleDateString('en-US', {
-                                                    month: 'short',
-                                                    day: 'numeric',
-                                                    year: 'numeric'
-                                                })}
-                                            </td>
-                                            <td>
-                                                <div className="d-flex gap-2 justify-content-center">
-                                                    <button
-                                                        onClick={() => handleOpenEdit(blog)}
-                                                        className="btn btn-sm btn-light border text-brand"
-                                                        title="Edit blog"
-                                                    >
-                                                        <FaEdit />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDelete(blog._id)}
-                                                        className="btn btn-sm btn-light border text-danger"
-                                                        title="Delete blog"
-                                                    >
-                                                        <FaTrash />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
+            <div className="blog-stat-grid">
+                {[['Total Blogs', blogs.length, ''], ['Published Blogs', blogs.filter(b => statusOf(b) === 'Published').length, 'Published'], ['Scheduled', blogs.filter(b => statusOf(b) === 'Scheduled').length, 'Scheduled'], ['Drafted', blogs.filter(b => statusOf(b) === 'Draft').length, 'Draft'], ['Archived', blogs.filter(b => statusOf(b) === 'Archived').length, 'Archived']].map(([label, count, status]) => <button key={label} className={`blog-stat ${statusFilter === status ? 'active' : ''}`} onClick={() => setStatusFilter(status)}><strong>{count}</strong><span>{label}</span></button>)}
             </div>
+            <div className="blog-filters">
+                <div className="blog-search"><input aria-label="Search blogs" placeholder="Search by blog title, description or subcategory" value={search} onChange={e => setSearch(e.target.value)} /><span><FiSearch /></span></div>
+                <label className="blog-filter-select"><FiFilter /><select aria-label="Sort blogs" value={sort} onChange={e => setSort(e.target.value)}><option value="newest">Sort: Newest</option><option value="oldest">Oldest first</option><option value="title">Title A–Z</option></select></label>
+                <select aria-label="Filter by status" value={statusFilter} onChange={e => setStatusFilter(e.target.value)}><option value="">Status</option>{['Published', 'Scheduled', 'Draft', 'Archived'].map(status => <option key={status}>{status}</option>)}</select>
+                <select aria-label="Filter by category" value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}><option value="">Category</option>{categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}</select>
+                <button className="blog-reset" onClick={() => { setSearch(''); setStatusFilter(''); setCategoryFilter(''); setSort('newest'); setPage(1); }}><FaTimes /> Reset</button>
+            </div>
+            {loading ? <ShimmerBlogTable rows={5} /> : <div className="blog-table-shell"><table className="blog-table"><thead><tr>{['Image', 'Blog title', 'Category', 'Subcategory', 'Content', 'Featured', 'Status', 'Updated', 'Actions'].map(h => <th key={h}>{h}</th>)}</tr></thead><tbody>
+                {visibleBlogs.length === 0 && <tr><td colSpan="9" className="blog-empty">{blogs.length ? 'No blogs match your filters.' : 'No blogs yet. Create your first blog to get started.'}</td></tr>}
+                {visibleBlogs.map(blog => <tr key={blog._id}>
+                    <td>{blog.featuredImage ? <AdminImage src={getImageUrl(blog.featuredImage)} alt={blog.title} width={56} height={44} radius={7} /> : <span className="blog-image-placeholder"><FaImage /></span>}</td>
+                    <td><div className="blog-row-title" title={blog.title}>{blog.title}</div><div className="blog-row-description">{blog.description}</div></td>
+                    <td>{blog.subcategory?.category?.name || '—'}</td><td>{blog.subcategory?.name || '—'}</td>
+                    <td><span className="blog-block-count">{blog.contentBlocks?.length || 0} {blog.contentBlocks?.length === 1 ? 'block' : 'blocks'}</span></td>
+                    <td><span className={`blog-featured ${blog.isFeatured ? 'selected' : ''}`}><FiStar /> {blog.isFeatured ? 'Featured' : 'Not featured'}</span></td>
+                    <td><span className={`blog-status ${statusOf(blog).toLowerCase()}`}>• {statusOf(blog)}</span>{statusOf(blog) === 'Scheduled' && <small className="blog-schedule-date">{new Date(blog.scheduledAt).toLocaleDateString('en-GB')}</small>}</td>
+                    <td className="blog-updated">{new Date(blog.updatedAt || blog.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                    <td><div className="blog-row-actions"><button aria-label={`Preview ${blog.title}`} onClick={() => setPreview(blog)}><FaEye /></button><button aria-label={`Edit ${blog.title}`} onClick={() => handleOpenEdit(blog)}><FaEdit /></button><button aria-label={`Actions for ${blog.title}`} aria-expanded={menuId === blog._id} onClick={e => { e.stopPropagation(); setMenuId(menuId === blog._id ? null : blog._id); }}><FiMoreHorizontal /></button></div>
+                    {menuId === blog._id && <div className="blog-action-menu" onClick={e => e.stopPropagation()}>
+                        <button onClick={() => { setPreview(blog); setMenuId(null); }}><FaEye />Preview Blog</button>
+                        <button onClick={() => { handleOpenEdit(blog); setMenuId(null); }}><FaEdit />Edit Blog</button>
+                        <button disabled={actionBusy} onClick={() => { setMenuId(null); updateStatus(blog, { isPublished: true, isArchived: false, scheduledAt: '' }); }}><FiArrowUpCircle />Publish Now</button>
+                        <button onClick={() => { setScheduleTarget(blog); setScheduleDate(''); setMenuId(null); }}><FiClock />Schedule Publication</button>
+                        <button onClick={() => duplicateBlog(blog)}><FiCopy />Duplicate Blog</button>
+                        <button disabled={actionBusy} onClick={() => { setMenuId(null); updateStatus(blog, { isArchived: true, isPublished: false, scheduledAt: '' }); }}><FiArchive />Archive Blog</button>
+                        <button className="blog-delete-action" onClick={() => { setDeleteTarget(blog); setMenuId(null); }}><FaTrash />Delete Blog</button>
+                    </div>}</td>
+                </tr>)}
+            </tbody></table></div>}
+            <div className="blog-pagination"><span>Showing {filtered.length ? (currentPage - 1) * pageSize + 1 : 0} to {Math.min(currentPage * pageSize, filtered.length)} of {filtered.length} blogs</span><nav aria-label="Blog pagination"><button disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)} aria-label="Previous page"><FiChevronLeft /></button>{Array.from({ length: pages }, (_, i) => i + 1).filter(n => n === 1 || n === pages || Math.abs(n - currentPage) < 2).map((n, i, nums) => <React.Fragment key={n}>{i > 0 && n - nums[i - 1] > 1 && <span>…</span>}<button className={n === currentPage ? 'active' : ''} onClick={() => setPage(n)}>{n}</button></React.Fragment>)}<button disabled={currentPage === pages} onClick={() => setPage(currentPage + 1)} aria-label="Next page"><FiChevronRight /></button></nav><select aria-label="Blogs per page" value={pageSize} onChange={e => setPageSize(Number(e.target.value))}>{[10, 25, 50].map(n => <option key={n} value={n}>{n} per page</option>)}</select></div>
+            <Modal show={!!deleteTarget} onHide={() => !actionBusy && setDeleteTarget(null)} centered dialogClassName="blog-delete-modal"><Modal.Body><button className="blog-modal-close" aria-label="Close" disabled={actionBusy} onClick={() => setDeleteTarget(null)}><FaTimes /></button><div className="blog-delete-message"><span><FiAlertCircle /></span><div><h5>Delete Blog</h5><p>Are you sure you want to delete this blog? This action cannot be undone.</p></div></div><div className="blog-modal-buttons"><button disabled={actionBusy} onClick={() => setDeleteTarget(null)}>Cancel</button><button className="danger" disabled={actionBusy} onClick={() => handleDelete(deleteTarget._id)}>{actionBusy ? 'Deleting…' : 'Delete'}</button></div></Modal.Body></Modal>
+            <Modal show={!!scheduleTarget} onHide={() => !actionBusy && setScheduleTarget(null)} centered><Modal.Header closeButton><Modal.Title>Schedule Publication</Modal.Title></Modal.Header><Modal.Body><form onSubmit={e => { e.preventDefault(); if (new Date(scheduleDate) <= new Date()) { toast.error('Choose a future date and time'); return; } updateStatus(scheduleTarget, { scheduledAt: new Date(scheduleDate).toISOString(), isPublished: false, isArchived: false }); }}><label htmlFor="blog-schedule-time" className="form-label">Publication date and time (your local time)</label><input id="blog-schedule-time" className="form-control" type="datetime-local" required value={scheduleDate} onChange={e => setScheduleDate(e.target.value)} /><button className="blog-create-button mt-3" disabled={actionBusy} type="submit">{actionBusy ? 'Saving…' : 'Schedule Publication'}</button></form></Modal.Body></Modal>
+
         </div>
     );
 };

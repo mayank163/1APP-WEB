@@ -22,6 +22,10 @@ const paymentAttemptSchema = new mongoose.Schema({
         }],
         price: { type: Number, required: true }
     }],
+    coupon: {
+        offer: { type: mongoose.Schema.Types.ObjectId, ref: 'Offer' },
+        code: String, discount: { type: Number, min: 0 }, subtotal: { type: Number, min: 0 }
+    },
     totalAmount: { type: Number, required: true, min: 0 },
     address: {
         label: { type: String, default: 'Home' },
@@ -45,7 +49,7 @@ const paymentAttemptSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['Pending', 'Processing', 'Completed'],
+        enum: ['Pending', 'Processing', 'Completed', 'Cancelling', 'Cancelled'],
         default: 'Pending'
     },
     booking: {

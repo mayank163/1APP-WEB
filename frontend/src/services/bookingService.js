@@ -1,6 +1,10 @@
 import API from './api';
 
 const bookingService = {
+    validateCoupon: async payload => (await API.post('/offers/validate', payload)).data,
+    getAvailableOffers: async () => (await API.get('/offers')).data,
+    cancelPaymentAttempt: async id => (await API.post(`/bookings/payment-attempts/${id}/cancel`)).data,
+
     createBooking: async (bookingData) => {
         const response = await API.post('/bookings', bookingData);
         return response.data;

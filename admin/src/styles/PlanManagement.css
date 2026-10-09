@@ -95,7 +95,7 @@
 .membership-table th {
     background: var(--admin-color--fff8f2);
     color: var(--admin-color--80521e);
-    padding: var(--admin-space-20px) var(--admin-space-24px);
+    padding: var(--admin-space-12px) var(--admin-space-16px);
     font-size: var(--admin-font-size-13px);
     line-height: 1.2;
     font-weight: 700;
@@ -105,8 +105,8 @@
 
 .membership-table td {
     border-top: 1px solid var(--admin-color--edcfa9);
-    padding: var(--admin-space-24px);
-    height: 118px;
+    padding: var(--admin-space-12px) var(--admin-space-16px);
+    height: auto;
     vertical-align: middle;
     color: var(--admin-color--172030);
 }
@@ -232,10 +232,6 @@
         flex-grow: 1;
     }
 
-    .membership-table th,
-    .membership-table td {
-        padding: var(--admin-space-18px);
-    }
 }
 
 .catalog-modal.membership-plan-modal {

@@ -10,6 +10,7 @@ const { validateBooking } = require('../middleware/validation');
 router.use(protect);
 
 router.post('/',               validateBooking, bookingController.createBookingOrder);
+router.post('/payment-attempts/:id/cancel', bookingController.cancelPaymentAttempt);
 router.post('/verify',                          bookingController.verifyPayment);
 router.get('/my-bookings',                      bookingController.getMyBookings);
 router.get('/:id',                              bookingController.getBookingDetails);

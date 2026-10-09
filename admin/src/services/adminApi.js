@@ -25,6 +25,14 @@ API.interceptors.response.use(
 const multipart = { headers: { 'Content-Type': 'multipart/form-data' } };
 
 const adminApi = {
+    getOffers: async () => (await API.get('/offers/admin')).data,
+    getOfferOptions: async (params = {}) => (await API.get('/offers/admin/options', { params })).data,
+    createOffer: async payload => (await API.post('/offers/admin', payload)).data,
+    updateOffer: async (id, payload) => (await API.put(`/offers/admin/${id}`, payload)).data,
+    deactivateOffer: async id => (await API.patch(`/offers/admin/${id}/status`, { publicationStatus: 'inactive' })).data,
+    uploadOfferImage: async payload => (await API.post('/offers/admin/image', payload, multipart)).data,
+    getOfferRedemptions: async (id, page = 1) => (await API.get(`/offers/admin/${id}/redemptions`, { params: { page } })).data,
+
     // ─── Auth ──────────────────────────────────────────────────────────────────
     login: async (email, password) => {
         const fcmToken = localStorage.getItem('1app_fcm_token');
@@ -147,8 +155,9 @@ const adminApi = {
     deleteSubAdmin: async (id) => (await API.delete(`/admin/sub-admins/${id}`)).data,
 
     // ─── Blogs ─────────────────────────────────────────────────────────────────
-    getBlogs: async () => (await API.get('/blogs')).data,
-    getBlogById: async (id) => (await API.get(`/blogs/${id}`)).data,
+    getBlogAuthors: async () => (await API.get('/blogs/admin/authors')).data,
+    getBlogs: async () => (await API.get('/blogs/admin')).data,
+    getBlogById: async (id) => (await API.get(`/blogs/admin/${id}`)).data,
     createBlog: async (fd) => (await API.post('/blogs', fd, multipart)).data,
     updateBlog: async (id, fd) => (await API.put(`/blogs/${id}`, fd, multipart)).data,
     deleteBlog: async (id) => (await API.delete(`/blogs/${id}`)).data,

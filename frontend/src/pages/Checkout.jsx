@@ -117,12 +117,32 @@ const Checkout = () => {
 
     const [phone, setPhone] = useState(user?.phone || '');
     const [instructions, setInstructions] = useState('');
+    const [couponCode, setCouponCode] = useState('');
+    const [couponQuote, setCouponQuote] = useState(null);
+    const [couponBusy, setCouponBusy] = useState(false);
+    const [couponError, setCouponError] = useState('');
+    const [availableOffers, setAvailableOffers] = useState([]);
+    useEffect(() => { bookingService.getAvailableOffers().then(result => setAvailableOffers(result.data.offers)).catch(() => {}); }, []);
+    useEffect(() => { setCouponQuote(null); setCouponError(''); }, [cartItems]);
+    const couponServices = () => cartItems.map(item => ({ service: item.service._id, quantity: item.quantity, variantId: item.variantId, addonIds: (item.selectedAddons || []).map(addon => addon.addonId) }));
+    const applyCoupon = async () => {
+        setCouponBusy(true); setCouponError(''); setCouponQuote(null);
+        try { const result = await bookingService.validateCoupon({ code: couponCode, services: couponServices(), paymentProvider }); setCouponQuote(result.data); }
+        catch (error) { setCouponError(error.response?.data?.message || 'Unable to apply coupon.'); }
+        finally { setCouponBusy(false); }
+    };
     const [submitting, setSubmitting] = useState(false);
 
     const [paymentProvider, setPaymentProvider] = useState('stripe');
+    useEffect(() => { setCouponQuote(null); setCouponError(''); }, [paymentProvider]);
     const [paymentAttempt, setPaymentAttempt] = useState(null);
     const [paymentOrder, setPaymentOrder] = useState(null);
     const [showGateway, setShowGateway] = useState(false);
+
+    const handleCancelPayment = async () => {
+        try { await bookingService.cancelPaymentAttempt(paymentAttempt._id); setShowGateway(false); setPaymentAttempt(null); setPaymentOrder(null); }
+        catch (error) { toast.error(error.response?.data?.message || 'Unable to cancel payment.'); }
+    };
 
     const stripePromiseRef = useRef(null);
 
@@ -219,7 +239,8 @@ const Checkout = () => {
                 phone,
                 serviceDate: bookingDate,
                 specialInstructions: instructions,
-                paymentProvider
+                paymentProvider,
+                couponCode: couponQuote?.code || undefined
             });
 
             if (res.success) {
@@ -259,7 +280,7 @@ const Checkout = () => {
                     </div>
                     {paymentOrder?.provider === 'paypal' ? (
                         <PayPalPayment paymentAttempt={paymentAttempt} paymentOrder={paymentOrder}
-                            onSuccess={handlePaymentSuccess} onCancel={() => setShowGateway(false)} />
+                            onSuccess={handlePaymentSuccess} onCancel={handleCancelPayment} />
                     ) : stripeReady ? (
                         <Elements stripe={stripePromiseRef.current} options={{ clientSecret: paymentOrder.clientSecret, appearance: { theme: 'stripe' } }}>
                             <StripePaymentForm
@@ -267,7 +288,7 @@ const Checkout = () => {
                                 paymentOrder={paymentOrder}
                                 amount={paymentAttempt?.totalAmount ?? total}
                                 onSuccess={handlePaymentSuccess}
-                                onCancel={() => setShowGateway(false)}
+                                onCancel={handleCancelPayment}
                             />
                         </Elements>
                     ) : (
@@ -481,6 +502,14 @@ const Checkout = () => {
                                         />
                                     </div>
 
+                                    <div className="checkout-coupon">
+                                        <label htmlFor="checkout-coupon-code">Have a coupon?</label>
+                                        <div><input id="checkout-coupon-code" maxLength={30} placeholder="Enter coupon code" value={couponCode} onChange={event => { setCouponCode(event.target.value.toUpperCase()); setCouponQuote(null); setCouponError(''); }} /><button type="button" disabled={couponBusy || !couponCode.trim()} onClick={applyCoupon}>{couponBusy ? 'Checking…' : 'Apply'}</button></div>
+                                        {availableOffers.length > 0 && <details><summary>Available offers</summary>{availableOffers.map(offer => <button type="button" key={offer._id} onClick={() => { setCouponCode(offer.code); setCouponQuote(null); }}>{offer.code} — {offer.title}{offer.eligibility === 'new' ? ' (new customers)' : ''}</button>)}</details>}
+                                        {couponError && <p role="alert">{couponError}</p>}
+                                        {couponQuote && <p role="status">{couponQuote.code} applied · Discount: {couponQuote.discount.toFixed(2)} <button type="button" onClick={() => { setCouponQuote(null); setCouponCode(''); }}>Remove</button></p>}
+                                    </div>
+
                                     <fieldset className="ui-checkout-74" >
                                         <legend className="ui-checkout-75" >Payment method</legend>
                                         <div className="ui-checkout-76" >
@@ -556,14 +585,20 @@ const Checkout = () => {
                                         </div>
                                     </div>
                                 ))}
-                                <div className="ui-checkout-102" >
-                                    <span className="ui-checkout-103" >Free service offer</span>
-                                    <span className="ui-checkout-104" >-$0.00</span>
-                                </div>
+                                {couponQuote && <>
+                                    <div className="ui-checkout-102">
+                                        <span className="ui-checkout-103">Subtotal</span>
+                                        <span className="ui-checkout-104">${couponQuote.subtotal.toFixed(2)}</span>
+                                    </div>
+                                    <div className="ui-checkout-102">
+                                        <span className="ui-checkout-103">Adjustments <small>(Coupon: {couponQuote.code})</small></span>
+                                        <span className="ui-checkout-104">-${couponQuote.discount.toFixed(2)}</span>
+                                    </div>
+                                </>}
                                 <hr className="ui-checkout-105"  />
                                 <div className="ui-checkout-106" >
                                     <span className="ui-checkout-107" >Amount to pay</span>
-                                    <span className="ui-checkout-108" >${total.toFixed(2)}</span>
+                                    <span className="ui-checkout-108" >${(couponQuote?.total ?? total).toFixed(2)}</span>
                                 </div>
                             </div>
                         </div>

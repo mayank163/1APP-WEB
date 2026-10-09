@@ -1,153 +1,66 @@
 import '../styles/BlogDetail.css';
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import { FiClock, FiUser } from 'react-icons/fi';
 import axios from 'axios';
 import { resolveImageUrl } from '../services/api';
 import { BlogDetailShimmer } from '../components/Shimmer';
 
 export default function BlogDetail() {
     const { id } = useParams();
-    const navigate = useNavigate();
     const [blog, setBlog] = useState(null);
     const [blogLoading, setBlogLoading] = useState(true);
 
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_API_URL}/blogs`)
-            .then(res => {
-                if (res.data.success) {
-                    const found = res.data.data.blogs.find(b => b._id === id);
-                    setBlog(found || null);
-                }
-            })
-            .catch(() => {})
-            .finally(() => setBlogLoading(false));
+        let active = true;
+        setBlogLoading(true);
+        setBlog(null);
+        axios.get(`${process.env.REACT_APP_API_URL}/blogs/${encodeURIComponent(id)}`)
+            .then(res => { if (active && res.data.success) setBlog(res.data.data.blog); })
+            .catch(() => { if (active) setBlog(null); })
+            .finally(() => { if (active) setBlogLoading(false); });
+        return () => { active = false; };
     }, [id]);
 
-    const resolveImg = (img) => {
-        if (!img) return 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800';
-        if (img.startsWith('http')) return img;
-        return resolveImageUrl(img);
-    };
+    useEffect(() => {
+        if (!blog) return;
+        const oldTitle = document.title;
+        document.title = blog.metaTitle || blog.title;
+        let meta = document.querySelector('meta[name="description"]');
+        const created = !meta;
+        if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta); }
+        const oldDescription = meta.getAttribute('content');
+        meta.setAttribute('content', blog.metaDescription || blog.description || '');
+        return () => { document.title = oldTitle; if (created) meta.remove(); else if (oldDescription === null) meta.removeAttribute('content'); else meta.setAttribute('content', oldDescription); };
+    }, [blog]);
 
     if (blogLoading) return <BlogDetailShimmer />;
-    if (!blog) return <div className="ui-blogdetail-1" >Blog not found.</div>;
+    if (!blog) return <div className="blog-article-empty"><h1>Blog not found</h1><Link to="/blogs">Back to blogs</Link></div>;
 
     const blocks = blog.contentBlocks || [];
-
-    // Layout patterns cycling through blocks
+    const wordCount = [blog.description, ...blocks.flatMap(b => [b.title, ...(b.type?.includes('list') && b.items?.length ? b.items : [b.text])])].filter(Boolean).join(' ').trim().split(/\s+/).filter(Boolean).length;
+    const readMinutes = Math.max(1, Math.ceil(wordCount / 200));
+    const date = blog.publishedAt || blog.createdAt;
+    const validDate = date && !Number.isNaN(new Date(date).getTime());
     const renderBlock = (block, index) => {
-        const isEven = index % 4;
-        const img = resolveImg(block.image);
-        const lines = block.text?.split('\n') || [];
-        const heading = lines[0] || '';
-        const body = lines.slice(1).join('\n').trim();
-        const orderLabel = `0${index + 1} — ${heading.replace(/^\d+\.\s*/, '').split(' ').slice(0, 3).join(' ').toUpperCase()}`;
-        const title = heading.replace(/^\d+\.\s*/, '');
-
-        // Pattern 0: full-width image above, text below
-        if (isEven === 0) {
-            return (
-                <div className="ui-blogdetail-2" key={index} >
-                    <div className="ui-blogdetail-3" >
-                        <img className="ui-blogdetail-4" src={img} alt={title}  />
-                    </div>
-                    <div className="ui-blogdetail-5" >{orderLabel}</div>
-                    <h2 className="ui-blogdetail-6" >{title}</h2>
-                    <p className="ui-blogdetail-7" >{body}</p>
-                </div>
-            );
-        }
-
-        // Pattern 1: image left, text right (light bg card)
-        if (isEven === 1) {
-            return (
-                <div className="ui-blogdetail-8" key={index} >
-                    <div className="ui-blogdetail-9" >
-                        <img className="ui-blogdetail-10" src={img} alt={title}  />
-                    </div>
-                    <div className="ui-blogdetail-11" >
-                        <div className="ui-blogdetail-12" >{orderLabel}</div>
-                        <h2 className="ui-blogdetail-13" >{title}</h2>
-                        <p className="ui-blogdetail-14" >{body}</p>
-                    </div>
-                </div>
-            );
-        }
-
-        // Pattern 2: text center, full-width image below
-        if (isEven === 2) {
-            return (
-                <div className="ui-blogdetail-15" key={index} >
-                    <div className="ui-blogdetail-16" >{orderLabel}</div>
-                    <h2 className="ui-blogdetail-17" >{title}</h2>
-                    <p className="ui-blogdetail-18" >{body}</p>
-                    <div className="ui-blogdetail-19" >
-                        <img className="ui-blogdetail-20" src={img} alt={title}  />
-                    </div>
-                </div>
-            );
-        }
-
-        // Pattern 3: text left, image right (dark bg card)
-        return (
-            <div className="ui-blogdetail-21" key={index} >
-                <div className="ui-blogdetail-22" >
-                    <div className="ui-blogdetail-23" >{orderLabel}</div>
-                    <h2 className="ui-blogdetail-24" >{title}</h2>
-                    <p className="ui-blogdetail-25" >{body}</p>
-                    <button className="ui-blogdetail-26" >
-                        Enquire About This
-                    </button>
-                </div>
-                <div className="ui-blogdetail-27" >
-                    <img className="ui-blogdetail-28" src={img} alt={title}  />
-                    <div className="ui-blogdetail-29" >
-                        "Quality speaks for itself."
-                    </div>
-                </div>
-            </div>
-        );
+        const type = block.type || (block.image ? 'text-image' : 'text');
+        const image = block.image && <figure className="blog-article-block-image"><img src={resolveImageUrl(block.image)} alt={block.altText || ''} loading="lazy" />{block.caption && <figcaption>{block.caption}</figcaption>}</figure>;
+        const items = block.items?.length ? block.items : (block.text || '').split('\n').filter(line => line.trim());
+        const heading = block.title && <h2>{block.title}</h2>;
+        if (type === 'heading') return <h2 className="blog-article-heading" key={index}>{block.title || block.text}</h2>;
+        if (type === 'quote') return <section className="blog-article-block" key={index}>{heading}<blockquote>{block.text}{block.attribution && <cite>— {block.attribution}</cite>}</blockquote></section>;
+        if (type === 'bullet-list' || type === 'numbered-list') { const List = type === 'numbered-list' ? 'ol' : 'ul'; return <section className="blog-article-block" key={index}>{heading}<List>{items.map((item, i) => <li key={i}>{item}</li>)}</List></section>; }
+        if (type === 'callout') return <aside className={`blog-article-callout ${block.calloutType || 'note'}`} key={index}>{heading}<strong>{block.calloutType || 'Note'}</strong><p>{block.text}</p></aside>;
+        return <section className={`blog-article-block ${type === 'text-image' && block.image ? 'blog-article-media-row' : ''}`} key={index}>{image}<div>{heading}{type !== 'image' && block.text && <p>{block.text}</p>}</div></section>;
     };
-
-    return (
-        <div className="ui-blogdetail-30" >
-
-            {/* Breadcrumb */}
-            <div className="ui-blogdetail-31" >
-                <span className="ui-blogdetail-32"  onClick={() => navigate('/blogs')}>Blogs</span>
-                <span className="ui-blogdetail-33" >›</span>
-                <span>{blog.subcategory?.category?.name || 'Home'}</span>
-            </div>
-
-            {/* Title */}
-            <h1 className="ui-blogdetail-34" >{blog.title}</h1>
-
-            {/* Description */}
-            <p className="ui-blogdetail-35" >
-                {blog.description?.slice(0, 180)}
-            </p>
-
-            {/* Divider */}
-            <div className="ui-blogdetail-36"  />
-
-            {/* Content Blocks */}
-            {blocks.map((block, i) => renderBlock(block, i))}
-
-            {/* CTA Footer */}
-            <div className="ui-blogdetail-37" >
-                <h2 className="ui-blogdetail-38" >Ready to get started?</h2>
-                <p className="ui-blogdetail-39" >
-                    Consult with our 1APP experts to find the perfect solution for your needs.
-                </p>
-                <div className="ui-blogdetail-40" >
-                    <button className="ui-blogdetail-41" >
-                        Get a Free Quote
-                    </button>
-                    <button className="ui-blogdetail-42" onClick={() => navigate('/services')} >
-                        View All Services
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
+    return <main className="blog-article-page"><article className="blog-article">
+        {blog.featuredImage && <div className="blog-article-cover"><img src={resolveImageUrl(blog.featuredImage)} alt={blog.imageAltText || blog.title} loading="eager" /></div>}
+        <div className="blog-article-tags">{blog.subcategory?.category?.name && <Link to="/blogs" className="blog-article-category">{blog.subcategory.category.name}</Link>}{blog.subcategory?.name && <span className="blog-article-subcategory">{blog.subcategory.name}</span>}</div>
+        <header className="blog-article-header"><h1>{blog.title}</h1>{blog.subtitle && <p className="blog-article-subtitle">{blog.subtitle}</p>}
+            <div className="blog-article-meta"><span><FiUser aria-hidden="true" /> By <strong>{blog.author || '1APP Team'}</strong></span>{validDate && <><span aria-hidden="true">•</span><time dateTime={new Date(date).toISOString()}>{new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' })}</time></>}<span aria-hidden="true">•</span><span><FiClock aria-hidden="true" /> {readMinutes} min read</span></div>
+        </header>
+        {blog.description && <p className="blog-article-intro">{blog.description}</p>}
+        <div className="blog-article-content">{blocks.map(renderBlock)}</div>
+        <footer className="blog-article-footer"><Link to="/blogs">← Back to blogs</Link></footer>
+    </article></main>;
 }

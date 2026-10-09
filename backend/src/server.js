@@ -50,6 +50,11 @@ dns.setServers(['1.1.1.1', '8.8.8.8']);
 mongoose.connect(process.env.MONGODB_URI)
     .then(async () => {
         console.log('✅ MongoDB connected successfully');
+        require('./utils/blogPublication').startBlogPublication();
+        await require('./models/Offer').init();
+        await require('./models/OfferUsage').init();
+        await require('./models/OfferRedemption').init();
+        require('./services/offerReservationCleanup').startOfferReservationCleanup();
 
         // Drop stale unique service name index
         try {
@@ -199,6 +204,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/work-types', workTypeRoutes);
 app.use('/api/service-types', serviceTypeRoutes);
 app.use('/api/plans', planRoutes);
+app.use('/api/offers', require('./routes/offerRoutes'));
 app.use(
   "/api/routes",
   routeRoutes

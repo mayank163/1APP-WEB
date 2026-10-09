@@ -22,8 +22,7 @@ import JobTemplates from './pages/JobTemplates';
 import TechnicianVerification from './pages/TechnicianVerification';
 import TechnicianOverview from './pages/TechnicianOverview';
 import SubAdminManagement from './pages/SubAdminManagement';
-import WorkTypeManagement from './pages/WorkTypeManagement';
-import ServiceTypeManagement from './pages/ServiceTypeManagement';
+import TypeManagement from './pages/TypeManagement';
 import TechnicianChat from './pages/TechnicianChat';
 import SupportCenter from './pages/SupportCenter';
 import socket from './services/socket';
@@ -80,8 +79,8 @@ function AppRoutes() {
           <Route path="technician-verification" element={<PermRoute resource="technician_verification" access="read"><TechnicianVerification /></PermRoute>} />
           <Route path="blogs" element={<PermRoute resource="blogs" access="read"><BlogManagement /></PermRoute>} />
           <Route path="sub-admins" element={<PermRoute resource="sub_admins" access="read"><SubAdminManagement /></PermRoute>} />
-          <Route path="work-types" element={<PermRoute resource="work_types" access="read"><WorkTypeManagement /></PermRoute>} />
-          <Route path="service-types" element={<PermRoute resource="service_types" access="read"><ServiceTypeManagement /></PermRoute>} />
+          <Route path="work-types" element={<PermRoute resource="work_types" access="read"><TypeManagement /></PermRoute>} />
+          <Route path="service-types" element={<PermRoute resource="service_types" access="read"><TypeManagement /></PermRoute>} />
         </Route>
       </Routes>
       <ToastContainer position="bottom-right" autoClose={3000} />

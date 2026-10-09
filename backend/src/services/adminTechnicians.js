@@ -35,6 +35,9 @@ const serializeTechnician = user => ({
   serviceArea: user.serviceArea || user.address || '',
   serviceRadius: user.serviceRadius || 15,
   yearsOfExperience: user.technicianProfile?.yearsOfExperience || 0,
+  previousCompanyName: user.technicianProfile?.previousCompanyName || '',
+  certificateImages: user.technicianProfile?.certificateImages || [],
+  professionalBio: user.technicianProfile?.professionalBio || '',
   verificationStatus: user.technicianProfile?.verificationStatus || 'not-started',
   documents: user.technicianProfile?.documents || [],
   photoUrl: user.technicianProfile?.photoUrl || user.profileImage?.url || '',
@@ -155,7 +158,7 @@ exports.getTechnicians = async (req, res, next) => {
   try {
     const technicians = await User.find({
       role: 'technician'
-    }).select('+technicianAdminNote gender address customerBookingRatings name email phone dateOfBirth primaryService skills serviceArea serviceRadius address technicianProfile.yearsOfExperience technicianProfile.verificationStatus technicianProfile.documents technicianProfile.photoUrl profileImage.url isOnline totalJobsDone rating ratingCount workOrderRatings accountStatus isPhoneVerified createdAt technicianId').populate('customerBookingRatings.customer', 'name').sort('-createdAt');
+    }).select('+technicianAdminNote gender address customerBookingRatings name email phone dateOfBirth primaryService skills serviceArea serviceRadius technicianProfile.yearsOfExperience technicianProfile.previousCompanyName technicianProfile.certificateImages technicianProfile.professionalBio technicianProfile.verificationStatus technicianProfile.documents technicianProfile.photoUrl profileImage.url isOnline totalJobsDone rating ratingCount workOrderRatings accountStatus isPhoneVerified createdAt technicianId').populate('customerBookingRatings.customer', 'name').sort('-createdAt');
     res.json({
       success: true,
       data: {

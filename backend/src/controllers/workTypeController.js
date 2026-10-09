@@ -31,9 +31,9 @@ exports.getWorkTypeById = async (req, res, next) => {
  */
 exports.createWorkType = async (req, res, next) => {
     try {
-        const { name, description } = req.body;
+        const { name, description, isActive, subTypes } = req.body;
         if (!name?.trim()) return res.status(400).json({ success: false, message: 'Work type name is required' });
-        const workType = await WorkType.create({ name: name.trim(), description: description?.trim() || '' });
+        const workType = await WorkType.create({ name: name.trim(), description: description?.trim() || '', isActive: isActive ?? true, subTypes: Array.isArray(subTypes) ? subTypes.map(sub => ({ name: sub.name, description: sub.description, isActive: sub.isActive ?? true })) : [] });
         res.status(201).json({ success: true, data: { workType } });
     } catch (err) {
         if (err.code === 11000) return res.status(400).json({ success: false, message: 'A work type with this name already exists' });
@@ -79,7 +79,7 @@ exports.deleteWorkType = async (req, res, next) => {
  */
 exports.addSubType = async (req, res, next) => {
     try {
-        const { name, description } = req.body;
+        const { name, description, isActive } = req.body;
         if (!name?.trim()) return res.status(400).json({ success: false, message: 'Sub-type name is required' });
 
         const workType = await WorkType.findById(req.params.id);
@@ -89,7 +89,7 @@ exports.addSubType = async (req, res, next) => {
         const exists = workType.subTypes.some(s => s.name.toLowerCase() === name.trim().toLowerCase());
         if (exists) return res.status(400).json({ success: false, message: 'A sub-type with this name already exists in this work type' });
 
-        workType.subTypes.push({ name: name.trim(), description: description?.trim() || '' });
+        workType.subTypes.push({ name: name.trim(), description: description?.trim() || '', isActive: isActive ?? true });
         await workType.save();
         res.status(201).json({ success: true, data: { workType } });
     } catch (err) { next(err); }

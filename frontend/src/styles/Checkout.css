@@ -949,3 +949,4 @@
   background: var(--ui-color-31);
   margin-bottom: var(--ui-space-16);
 }
+.checkout-coupon { border: 1px solid #e6dccd; border-radius: 12px; padding: 16px; }.checkout-coupon > label { display: block; margin-bottom: 8px; font-weight: 600; }.checkout-coupon > div { display: flex; gap: 8px; }.checkout-coupon input { min-width: 0; flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 7px; }.checkout-coupon button { border: 1px solid #b58a54; border-radius: 7px; padding: 8px 12px; background: #a7732c; color: #fff; }.checkout-coupon button:disabled { opacity: .5; }.checkout-coupon p { font-size: 13px; margin: 10px 0 0; }.checkout-coupon p[role=alert] { color: #b4232a; }.checkout-coupon details { margin-top: 10px; font-size: 13px; }.checkout-coupon details button { display: block; width: 100%; text-align: left; background: #faf5ee; color: #7d5627; margin-top: 7px; }

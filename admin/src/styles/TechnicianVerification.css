@@ -80,8 +80,9 @@
 
 .tv-dashboard,
 .tv-review-page {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
   padding: var(--admin-space-4px) 0 var(--admin-space-28px)
 }
 
@@ -542,6 +543,7 @@
 
 .tv-review-nav {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--admin-space-8px)
 }
 

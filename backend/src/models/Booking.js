@@ -31,6 +31,10 @@ const bookingSchema = new mongoose.Schema({
             }
         }
     ],
+    coupon: {
+        offer: { type: mongoose.Schema.Types.ObjectId, ref: 'Offer' },
+        code: String, discount: { type: Number, min: 0 }, subtotal: { type: Number, min: 0 }
+    },
     totalAmount: {
         type: Number,
         required: [true, 'Booking must have a total amount']

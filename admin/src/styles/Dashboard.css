@@ -816,7 +816,7 @@
     border: 1px solid var(--admin-color--eadfd0);
     border-radius: 10px;
     padding: var(--admin-space-13px) var(--admin-space-12px) var(--admin-space-12px);
-    margin: 0;
+    margin: 10;
 }
 
 .financial-panel .dash-section-title {
