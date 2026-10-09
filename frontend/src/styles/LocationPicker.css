@@ -1,0 +1,54 @@
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-locationpicker-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-6);
+  color: var(--ui-color-30);
+  padding: var(--ui-space-35);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-locationpicker-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+  position: relative;
+  z-index: 1100;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-locationpicker-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  padding: var(--ui-space-39);
+  border-radius: 10px;
+  border: 1.5px solid #e0e0e0;
+  background: var(--ui-color-31);
+  font-size: var(--ui-font-size-3);
+  color: var(--ui-color-4);
+  outline: none;
+  box-sizing: border-box;
+  margin-bottom: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-locationpicker-4:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  height: 220px;
+  border-radius: 10px;
+  border: 1.5px solid #e0e0e0;
+  overflow: hidden;
+  background: var(--ui-color-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-locationpicker-5:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--ui-color-19);
+  font-size: var(--ui-font-size-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-locationpicker-6:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-4);
+  color: var(--ui-color-6);
+  margin-top: var(--ui-space-17);
+}

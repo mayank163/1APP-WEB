@@ -1,0 +1,17 @@
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-servicecard-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  height: 200px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-servicecard-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+  height: 48px;
+  line-height: 24px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-servicecard-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+  height: 72px;
+  font-size: var(--ui-font-size-23);
+}

@@ -1,3 +1,4 @@
+import '../styles/BlogDetail.css';
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -29,7 +30,7 @@ export default function BlogDetail() {
     };
 
     if (blogLoading) return <BlogDetailShimmer />;
-    if (!blog) return <div style={{ textAlign: 'center', padding: 80, color: '#888' }}>Blog not found.</div>;
+    if (!blog) return <div className="ui-blogdetail-1" >Blog not found.</div>;
 
     const blocks = blog.contentBlocks || [];
 
@@ -46,13 +47,13 @@ export default function BlogDetail() {
         // Pattern 0: full-width image above, text below
         if (isEven === 0) {
             return (
-                <div key={index} style={{ marginBottom: 56 }}>
-                    <div style={{ borderRadius: 16, overflow: 'hidden', marginBottom: 24 }}>
-                        <img src={img} alt={title} style={{ width: '100%', height: 380, objectFit: 'cover' }} />
+                <div className="ui-blogdetail-2" key={index} >
+                    <div className="ui-blogdetail-3" >
+                        <img className="ui-blogdetail-4" src={img} alt={title}  />
                     </div>
-                    <div style={{ color: '#000000', fontSize: 12, fontWeight: 700, letterSpacing: 2, marginBottom: 8 }}>{orderLabel}</div>
-                    <h2 style={{ fontWeight: 800, fontSize: '1.6rem', marginBottom: 12 }}>{title}</h2>
-                    <p style={{ fontSize: 15, color: '#444', lineHeight: 1.8, maxWidth: 680 }}>{body}</p>
+                    <div className="ui-blogdetail-5" >{orderLabel}</div>
+                    <h2 className="ui-blogdetail-6" >{title}</h2>
+                    <p className="ui-blogdetail-7" >{body}</p>
                 </div>
             );
         }
@@ -60,14 +61,14 @@ export default function BlogDetail() {
         // Pattern 1: image left, text right (light bg card)
         if (isEven === 1) {
             return (
-                <div key={index} style={{ background: '#f7f5f2', borderRadius: 16, display: 'flex', gap: 32, padding: 24, marginBottom: 56, alignItems: 'center' }}>
-                    <div style={{ width: '45%', flexShrink: 0, borderRadius: 12, overflow: 'hidden', height: 260 }}>
-                        <img src={img} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div className="ui-blogdetail-8" key={index} >
+                    <div className="ui-blogdetail-9" >
+                        <img className="ui-blogdetail-10" src={img} alt={title}  />
                     </div>
-                    <div style={{ flex: 1 }}>
-                        <div style={{ color: '#000000', fontSize: 12, fontWeight: 700, letterSpacing: 2, marginBottom: 8 }}>{orderLabel}</div>
-                        <h2 style={{ fontWeight: 800, fontSize: '1.5rem', marginBottom: 12 }}>{title}</h2>
-                        <p style={{ fontSize: 14, color: '#555', lineHeight: 1.8 }}>{body}</p>
+                    <div className="ui-blogdetail-11" >
+                        <div className="ui-blogdetail-12" >{orderLabel}</div>
+                        <h2 className="ui-blogdetail-13" >{title}</h2>
+                        <p className="ui-blogdetail-14" >{body}</p>
                     </div>
                 </div>
             );
@@ -76,12 +77,12 @@ export default function BlogDetail() {
         // Pattern 2: text center, full-width image below
         if (isEven === 2) {
             return (
-                <div key={index} style={{ marginBottom: 56, textAlign: 'center' }}>
-                    <div style={{ color: '#000000', fontSize: 12, fontWeight: 700, letterSpacing: 2, marginBottom: 8 }}>{orderLabel}</div>
-                    <h2 style={{ fontWeight: 800, fontSize: '1.6rem', marginBottom: 12 }}>{title}</h2>
-                    <p style={{ fontSize: 15, color: '#444', lineHeight: 1.8, margin: '0 auto 24px' }}>{body}</p>
-                    <div style={{ borderRadius: 16, overflow: 'hidden' }}>
-                        <img src={img} alt={title} style={{ width: '100%', height: 360, objectFit: 'cover' }} />
+                <div className="ui-blogdetail-15" key={index} >
+                    <div className="ui-blogdetail-16" >{orderLabel}</div>
+                    <h2 className="ui-blogdetail-17" >{title}</h2>
+                    <p className="ui-blogdetail-18" >{body}</p>
+                    <div className="ui-blogdetail-19" >
+                        <img className="ui-blogdetail-20" src={img} alt={title}  />
                     </div>
                 </div>
             );
@@ -89,18 +90,18 @@ export default function BlogDetail() {
 
         // Pattern 3: text left, image right (dark bg card)
         return (
-            <div key={index} style={{ background: '#111', borderRadius: 16, display: 'flex', gap: 32, padding: 32, marginBottom: 56, alignItems: 'center' }}>
-                <div style={{ flex: 1 }}>
-                    <div style={{ color: '#000000', fontSize: 12, fontWeight: 700, letterSpacing: 2, marginBottom: 8 }}>{orderLabel}</div>
-                    <h2 style={{ fontWeight: 800, fontSize: '1.5rem', marginBottom: 12, color: '#fff' }}>{title}</h2>
-                    <p style={{ fontSize: 14, color: '#aaa', lineHeight: 1.8 }}>{body}</p>
-                    <button style={{ marginTop: 20, border: '1.5px solid #000000', background: '#000000', color: '#fff', borderRadius: 24, padding: '10px 20px', cursor: 'pointer', fontSize: 14, fontWeight: 700 }}>
+            <div className="ui-blogdetail-21" key={index} >
+                <div className="ui-blogdetail-22" >
+                    <div className="ui-blogdetail-23" >{orderLabel}</div>
+                    <h2 className="ui-blogdetail-24" >{title}</h2>
+                    <p className="ui-blogdetail-25" >{body}</p>
+                    <button className="ui-blogdetail-26" >
                         Enquire About This
                     </button>
                 </div>
-                <div style={{ width: '48%', flexShrink: 0, borderRadius: 12, overflow: 'hidden', height: 280, position: 'relative' }}>
-                    <img src={img} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <div style={{ position: 'absolute', bottom: 16, right: 16, background: '#000000', color: '#fff', borderRadius: 8, padding: '8px 14px', fontSize: 13, fontStyle: 'italic', fontWeight: 600 }}>
+                <div className="ui-blogdetail-27" >
+                    <img className="ui-blogdetail-28" src={img} alt={title}  />
+                    <div className="ui-blogdetail-29" >
                         "Quality speaks for itself."
                     </div>
                 </div>
@@ -109,40 +110,40 @@ export default function BlogDetail() {
     };
 
     return (
-        <div style={{ maxWidth: 1000, margin: '0 auto', padding: '48px 20px 80px' }}>
+        <div className="ui-blogdetail-30" >
 
             {/* Breadcrumb */}
-            <div style={{ textAlign: 'center', fontSize: 13, color: '#888', marginBottom: 16 }}>
-                <span style={{ cursor: 'pointer' }} onClick={() => navigate('/blogs')}>Blogs</span>
-                <span style={{ margin: '0 6px' }}>›</span>
+            <div className="ui-blogdetail-31" >
+                <span className="ui-blogdetail-32"  onClick={() => navigate('/blogs')}>Blogs</span>
+                <span className="ui-blogdetail-33" >›</span>
                 <span>{blog.subcategory?.category?.name || 'Home'}</span>
             </div>
 
             {/* Title */}
-            <h1 style={{ fontWeight: 900, fontSize: '2.4rem', textAlign: 'center', lineHeight: 1.25, marginBottom: 20 }}>{blog.title}</h1>
+            <h1 className="ui-blogdetail-34" >{blog.title}</h1>
 
             {/* Description */}
-            <p style={{ textAlign: 'center', fontSize: 15, color: '#555', lineHeight: 1.8, maxWidth: 620, margin: '0 auto 32px' }}>
+            <p className="ui-blogdetail-35" >
                 {blog.description?.slice(0, 180)}
             </p>
 
             {/* Divider */}
-            <div style={{ width: 60, height: 2, background: '#ddd', margin: '0 auto 48px' }} />
+            <div className="ui-blogdetail-36"  />
 
             {/* Content Blocks */}
             {blocks.map((block, i) => renderBlock(block, i))}
 
             {/* CTA Footer */}
-            <div style={{ background: '#f5f5f5', borderRadius: 16, padding: '48px 32px', textAlign: 'center', marginTop: 40 }}>
-                <h2 style={{ fontWeight: 800, fontSize: '1.5rem', marginBottom: 12 }}>Ready to get started?</h2>
-                <p style={{ fontSize: 14, color: '#666', marginBottom: 28 }}>
+            <div className="ui-blogdetail-37" >
+                <h2 className="ui-blogdetail-38" >Ready to get started?</h2>
+                <p className="ui-blogdetail-39" >
                     Consult with our 1APP experts to find the perfect solution for your needs.
                 </p>
-                <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-                    <button style={{ background: '#000000', color: '#fff', border: 'none', borderRadius: 8, padding: '12px 24px', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+                <div className="ui-blogdetail-40" >
+                    <button className="ui-blogdetail-41" >
                         Get a Free Quote
                     </button>
-                    <button onClick={() => navigate('/services')} style={{ background: '#fff', color: '#000000', border: '1.5px solid #000000', borderRadius: 8, padding: '12px 24px', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+                    <button className="ui-blogdetail-42" onClick={() => navigate('/services')} >
                         View All Services
                     </button>
                 </div>

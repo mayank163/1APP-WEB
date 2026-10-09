@@ -11,6 +11,18 @@ const validateFeedback = input => {
   return { score: input.score, note: (input.note || '').trim(), criteria };
 };
 
+// Both sources contribute equally to the public technician average.
+const combinedRatingStages = () => [{ $set: {
+  rating: { $avg: { $concatArrays: [
+    { $ifNull: ['$workOrderRatings.score', []] },
+    { $ifNull: ['$customerBookingRatings.score', []] },
+  ] } },
+  ratingCount: { $add: [
+    { $size: { $ifNull: ['$workOrderRatings', []] } },
+    { $size: { $ifNull: ['$customerBookingRatings', []] } },
+  ] },
+} }];
+
 // One rating per paid work order. Profile history is idempotent and its average
 // is recalculated atomically, so concurrent ratings cannot lose an update.
 const saveTechnicianRating = async (jobId, input, adminId) => {
@@ -41,8 +53,25 @@ const syncRatingToProfile = async job => {
       { $filter: { input: { $ifNull: ['$workOrderRatings', []] }, as: 'rating', cond: { $ne: ['$$rating.job', job._id] } } },
       { $literal: [entry] },
     ] } } },
-    { $set: { rating: { $avg: '$workOrderRatings.score' }, ratingCount: { $size: '$workOrderRatings' } } },
+    ...combinedRatingStages(),
   ], { updatePipeline: true });
   if (result.matchedCount === 0) throw fail('Assigned technician profile was not found.', 404);
 };
-module.exports = { CRITERIA, validateFeedback, saveTechnicianRating, syncRatingToProfile };
+// Keep customer scores separate from admin workorder feedback and replace by booking.
+const syncCustomerRatingToProfile = async booking => {
+  const review = booking.technicianReview;
+  const entry = {
+    booking: booking._id, customer: booking.user, score: review.rating,
+    review: review.review, ratedAt: review.updatedAt || new Date(),
+  };
+  const result = await User.updateOne({ _id: review.technician, role: 'technician' }, [
+    { $set: { customerBookingRatings: { $concatArrays: [
+      { $filter: { input: { $ifNull: ['$customerBookingRatings', []] }, as: 'rating', cond: { $ne: ['$$rating.booking', booking._id] } } },
+      { $literal: [entry] },
+    ] } } },
+    ...combinedRatingStages(),
+  ], { updatePipeline: true });
+  if (result.matchedCount === 0) throw fail('Assigned technician profile was not found.', 404);
+};
+
+module.exports = { syncCustomerRatingToProfile, CRITERIA, validateFeedback, saveTechnicianRating, syncRatingToProfile };

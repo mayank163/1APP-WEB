@@ -18,6 +18,8 @@ const { uploadAdminTechnicianDocuments } = require('../middleware/upload');
 router.get('/technicians', adminOnly, checkPermission('technician_jobs', 'read'), adminTechnicianController.getTechnicians);
 router.post('/technicians', adminOnly, checkPermission('technician_jobs', 'write'), uploadAdminTechnicianDocuments, adminTechnicianController.createTechnician);
 router.post('/technicians/invite', adminOnly, checkPermission('technician_jobs', 'write'), adminTechnicianController.inviteTechnician);
+router.get('/technicians/:technicianId/financials', adminOnly, checkPermission('technician_jobs', 'read'), require('../controllers/technicianFinancialController').getFinancials);
+router.patch('/technicians/:technicianId/note', adminOnly, checkPermission('technician_jobs', 'write'), require('../services/adminTechnicians').saveTechnicianNote);
 router.patch('/technicians/:technicianId', adminOnly, checkPermission('technician_jobs', 'write'), adminTechnicianController.updateTechnician);
 router.patch('/technicians/:technicianId/account', adminOnly, checkPermission('technician_jobs', 'write'), adminTechnicianController.updateTechnicianAccount);
 

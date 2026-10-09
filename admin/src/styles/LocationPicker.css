@@ -1,0 +1,30 @@
+
+/* Extracted presentation styles; repeated class specificity preserves inline precedence. */
+.admin-location-picker-1.admin-location-picker-1.admin-location-picker-1 {
+  position: relative;
+  z-index: 1100;
+}
+
+.admin-location-picker-2.admin-location-picker-2.admin-location-picker-2 {
+  width: 100%;
+  height: 260px;
+  border-radius: 10px;
+  border: 1.5px solid var(--admin-color--e9e0d5);
+  overflow: hidden;
+  background: var(--admin-color--f0f0f0);
+}
+
+.admin-location-picker-3.admin-location-picker-3.admin-location-picker-3 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--admin-color--adb5bd);
+  font-size: var(--admin-font-size-0-85rem);
+}
+
+.admin-location-picker-4.admin-location-picker-4.admin-location-picker-4 {
+  font-size: var(--admin-font-size-0-75rem);
+  color: var(--admin-color--6c757d);
+  margin-top: var(--admin-space-4px);
+}

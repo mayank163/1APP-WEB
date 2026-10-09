@@ -1,3 +1,4 @@
+import '../styles/Pagination.css';
 import React from 'react';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
@@ -29,7 +30,7 @@ const Pagination = ({ page = 1, totalPages = 1, total = 0, limit = 10, onPageCha
                     <FaChevronRight />
                 </button>
             </nav>
-            <select className="form-select form-select-sm" style={{ width: 'auto' }} aria-label="Rows per page" value={limit} onChange={event => onLimitChange(Number(event.target.value))}>
+            <select className="form-select form-select-sm admin-pagination-1"  aria-label="Rows per page" value={limit} onChange={event => onLimitChange(Number(event.target.value))}>
                 {[10, 25, 50].map(size => <option key={size} value={size}>{size} per page</option>)}
             </select>
         </div>

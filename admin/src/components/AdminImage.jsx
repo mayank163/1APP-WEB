@@ -1,3 +1,5 @@
+import { adminCssValue } from '../utils/adminCssValue.js';
+import '../styles/AdminImage.css';
 import React, { useState } from 'react';
 import { FaImage } from 'react-icons/fa';
 
@@ -34,50 +36,24 @@ const AdminImage = ({
 }) => {
     const [status, setStatus] = useState(src ? 'loading' : 'error');
 
-    const containerStyle = {
-        position: 'relative',
-        width,
-        height,
-        borderRadius: radius,
-        overflow: 'hidden',
-        flexShrink: 0,
-        background: '#f0f0f0',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        ...style,
-    };
 
     return (
-        <div className={className} style={containerStyle}>
+        <div className={`admin-image-container ${className}`} style={{
+            '--admin-image-width': adminCssValue(width),
+            '--admin-image-height': adminCssValue(height),
+            '--admin-image-radius': adminCssValue(radius),
+            ...style,
+        }}>
             {/* ── Loading spinner (shown while image is fetching) ── */}
             {status === 'loading' && (
-                <div style={{
-                    position: 'absolute', inset: 0,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: '#f0f0f0',
-                    zIndex: 1,
-                }}>
-                    <div style={{
-                        width: Math.max(16, Math.min(width, height) * 0.4),
-                        height: Math.max(16, Math.min(width, height) * 0.4),
-                        borderRadius: '50%',
-                        border: '2px solid #d0d0d0',
-                        borderTopColor: '#999',
-                        animation: 'adminImgSpin 0.75s linear infinite',
-                    }} />
+                <div className="admin-admin-image-1" >
+                    <div className="admin-admin-image-2" style={{ "--admin-admin-image-2-width": adminCssValue(Math.max(16, Math.min(width, height) * 0.4)), "--admin-admin-image-2-height": adminCssValue(Math.max(16, Math.min(width, height) * 0.4)) }} />
                 </div>
             )}
 
             {/* ── Placeholder (shown on error or missing src) ── */}
             {status === 'error' && (
-                <div style={{
-                    position: 'absolute', inset: 0,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: '#f0f0f0',
-                    flexDirection: 'column',
-                    gap: 4,
-                }}>
+                <div className="admin-admin-image-3" >
                     <FaImage
                         size={Math.max(12, Math.min(width, height) * 0.35)}
                         color="#bbb"
@@ -90,25 +66,12 @@ const AdminImage = ({
                 <img
                     src={src}
                     alt={alt}
-                    className={imgClassName}
+                    className={[`admin-image-content ${imgClassName}`, " ", status === 'loaded' ? "admin-admin-image-state-1" : "admin-admin-image-state-2"].join('')}
                     onLoad={() => setStatus('loaded')}
                     onError={() => setStatus('error')}
-                    style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit,
-                        display: status === 'loaded' ? 'block' : 'none',
-                        ...imgStyle,
-                    }}
+                    style={{ '--admin-image-fit': objectFit, ...imgStyle }}
                 />
             )}
-
-            {/* ── Keyframe injected once via a style tag ── */}
-            <style>{`
-                @keyframes adminImgSpin {
-                    to { transform: rotate(360deg); }
-                }
-            `}</style>
         </div>
     );
 };

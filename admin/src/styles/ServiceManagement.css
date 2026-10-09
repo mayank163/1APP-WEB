@@ -1,0 +1,17 @@
+
+/* Extracted presentation styles; repeated class specificity preserves inline precedence. */
+.admin-service-management-1.admin-service-management-1.admin-service-management-1 {
+  max-width: 350px;
+}
+
+.admin-service-management-2.admin-service-management-2.admin-service-management-2 {
+  width: 200px;
+}
+
+.admin-service-management-3.admin-service-management-3.admin-service-management-3 {
+  color: var(--admin-color-brand);
+}
+
+.admin-service-management-4.admin-service-management-4.admin-service-management-4 {
+  color: var(--admin-color-brand);
+}

@@ -1,0 +1,134 @@
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-reviews-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 900px;
+  margin: var(--ui-space-25);
+  padding: var(--ui-space-72);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-reviews-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-25);
+  margin-bottom: var(--ui-space-4);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-reviews-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--ui-color-2);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-reviews-4:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ui-space-1);
+  padding: var(--ui-space-105);
+  border-bottom: var(--ui-reviews-4-border-bottom);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-reviews-5:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--ui-reviews-5-background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: var(--ui-font-size-9);
+  color: var(--ui-color-41);
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-reviews-6:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-reviews-7:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-reviews-8:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-reviews-9:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  font-size: var(--ui-font-size-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-reviews-10:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-27);
+  color: var(--ui-color-2);
+  font-size: var(--ui-font-size-4);
+  font-weight: 700;
+  padding: var(--ui-space-101);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-91);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-reviews-11:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-9);
+  color: var(--ui-color-71);
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-reviews-12:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-9);
+  color: var(--ui-color-41);
+  margin: var(--ui-space-16);
+  line-height: 1.6;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-reviews-13:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: center;
+  gap: var(--ui-space-14);
+  margin-top: var(--ui-space-46);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-reviews-14:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background: var(--ui-reviews-14-background);
+  color: var(--ui-reviews-14-color);
+  font-weight: var(--ui-reviews-14-font-weight);
+  font-size: var(--ui-font-size-3);
+  cursor: pointer;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-reviews-15:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background: var(--ui-color-2);
+  color: var(--ui-color-4);
+  font-size: var(--ui-font-size-3);
+  cursor: pointer;
+}

@@ -1,3 +1,5 @@
+import { cssValue } from '../utils/cssValue';
+import '../styles/Reviews.css';
 import React, { useState } from 'react';
 
 const AVATAR_COLORS = ['#f5c842', '#f5d4a2', '#f5a87a', '#a2c4f5', '#d4a2f5', '#f5a2c4', '#a2f5e8', '#e8d5b0'];
@@ -36,44 +38,44 @@ export default function Reviews() {
     const handlePage = (p) => { setPage(p); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
     return (
-        <div style={{ maxWidth: 900, margin: '0 auto', padding: '48px 20px' }}>
-            <h1 style={{ fontWeight: 800, fontSize: '1.8rem', marginBottom: 28 }}>Recently Added Reviews</h1>
+        <div className="ui-reviews-1" >
+            <h1 className="ui-reviews-2" >Recently Added Reviews</h1>
 
-            <div style={{ border: '1px solid #e8e8e8', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
+            <div className="ui-reviews-3" >
                 {reviews.map((r, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: '20px 24px', borderBottom: i < reviews.length - 1 ? '1px solid #f0f0f0' : 'none' }}>
+                    <div className="ui-reviews-4" key={i} style={{ "--ui-reviews-4-border-bottom": cssValue(i < reviews.length - 1 ? '1px solid #f0f0f0' : 'none', "borderBottom") }}>
                         {/* Avatar */}
-                        <div style={{ width: 44, height: 44, borderRadius: '50%', background: getColor(r.name), display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '13px', color: '#555', flexShrink: 0 }}>
+                        <div className="ui-reviews-5" style={{ "--ui-reviews-5-background": cssValue(getColor(r.name), "background") }}>
                             {getInitials(r.name)}
                         </div>
 
                         {/* Content */}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <span style={{ fontWeight: 700, fontSize: '14px' }}>{r.name}</span>
-                                    <span style={{ background: '#000000', color: '#fff', fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: 4, display: 'flex', alignItems: 'center', gap: 3 }}>
+                        <div className="ui-reviews-6" >
+                            <div className="ui-reviews-7" >
+                                <div className="ui-reviews-8" >
+                                    <span className="ui-reviews-9" >{r.name}</span>
+                                    <span className="ui-reviews-10" >
                                         {r.rating.toFixed(1)} ★
                                     </span>
                                 </div>
-                                <span style={{ fontSize: '13px', color: '#999', flexShrink: 0 }}>{r.date}</span>
+                                <span className="ui-reviews-11" >{r.date}</span>
                             </div>
-                            <p style={{ fontSize: '13px', color: '#555', margin: 0, lineHeight: 1.6 }}>{r.text}</p>
+                            <p className="ui-reviews-12" >{r.text}</p>
                         </div>
                     </div>
                 ))}
             </div>
 
             {/* Pagination */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 4, marginTop: 32 }}>
+            <div className="ui-reviews-13" >
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                    <button key={p} onClick={() => handlePage(p)}
-                        style={{ width: 36, height: 36, borderRadius: 6, border: '1px solid #ddd', background: p === page ? '#000000' : '#fff', color: p === page ? '#fff' : '#333', fontWeight: p === page ? 700 : 400, fontSize: '14px', cursor: 'pointer' }}>
+                    <button className="ui-reviews-14" key={p} onClick={() => handlePage(p)}
+                        style={{ "--ui-reviews-14-background": cssValue(p === page ? "var(--ui-color-27)" : "var(--ui-color-2)", "background"), "--ui-reviews-14-color": cssValue(p === page ? "var(--ui-color-2)" : "var(--ui-color-4)", "color"), "--ui-reviews-14-font-weight": cssValue(p === page ? 700 : 400, "fontWeight") }}>
                         {p}
                     </button>
                 ))}
-                <button onClick={() => handlePage(Math.min(page + 1, totalPages))}
-                    style={{ width: 36, height: 36, borderRadius: 6, border: '1px solid #ddd', background: '#fff', color: '#333', fontSize: '14px', cursor: 'pointer' }}>
+                <button className="ui-reviews-15" onClick={() => handlePage(Math.min(page + 1, totalPages))}
+                    >
                     ›
                 </button>
             </div>

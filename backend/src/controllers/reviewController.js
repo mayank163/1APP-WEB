@@ -3,6 +3,8 @@
 const Review  = require('../models/Review');
 const Booking = require('../models/Booking');
 const Service = require('../models/Service');
+const TechnicianJob = require('../models/TechnicianJob');
+const { syncCustomerRatingToProfile } = require('../services/technicianRating');
 
 // ─── POST /api/services/:serviceId/reviews ────────────────────────────────────
 /**
@@ -224,7 +226,43 @@ exports.getReviewableServices = async (req, res, next) => {
                 existingReview: reviewedMap[s.service?._id?.toString()] || null,
             }));
 
-        res.status(200).json({ success: true, data: { services, bookingId: booking._id } });
+        res.status(200).json({ success: true, data: { services, bookingId: booking._id, technician: booking.assignedTechnician, technicianReview: booking.technicianReview } });
+    } catch (err) {
+        next(err);
+    }
+};
+
+// A technician review belongs to one completed booking and its customer.
+exports.submitTechnicianReview = async (req, res, next) => {
+    try {
+        const { rating, review = '' } = req.body;
+        if (!require('mongoose').isValidObjectId(req.params.bookingId)) {
+            return res.status(400).json({ success: false, message: 'Invalid booking ID' });
+        }
+        if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+            return res.status(400).json({ success: false, message: 'Please provide a whole-star rating between 1 and 5' });
+        }
+        if (typeof review !== 'string' || review.trim().length > 500) {
+            return res.status(400).json({ success: false, message: 'Review must be text with at most 500 characters' });
+        }
+        const booking = await Booking.findOne({ _id: req.params.bookingId, user: req.user._id, status: 'Completed' });
+        if (!booking) {
+            return res.status(403).json({ success: false, message: 'You can only rate a technician for your own completed booking' });
+        }
+        // Resolve the actual profile through the linked workorder, never by name or phone.
+        const job = await TechnicianJob.findOne({ sourceBooking: booking._id });
+        const technician = job?.assignedTechnician;
+        if (!technician?._id) {
+            return res.status(400).json({ success: false, message: 'No technician is assigned to this booking' });
+        }
+        booking.technicianReview = {
+            rating, review: review.trim(), technician: technician._id, technicianName: technician.name,
+            technicianPhone: technician.phone,
+            createdAt: booking.technicianReview?.createdAt || new Date()
+        };
+        await booking.save();
+        await syncCustomerRatingToProfile(booking);
+        res.status(200).json({ success: true, message: 'Technician review saved successfully', data: { technicianReview: booking.technicianReview } });
     } catch (err) {
         next(err);
     }

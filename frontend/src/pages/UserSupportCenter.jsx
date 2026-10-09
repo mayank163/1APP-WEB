@@ -4,7 +4,7 @@ import { FiArrowLeft, FiChevronRight, FiUser, FiCreditCard, FiAward, FiShield, F
 import { useAuth } from '../hooks/useAuth';
 import API from '../services/supportApi';
 import bookingService from '../services/bookingService';
-import './UserSupportCenter.css';
+import '../styles/UserSupportCenter.css';
 const topics = [['Getting started with 1APP', FiUser, 'Getting Started'], ['Payment & 1APP Credits', FiCreditCard, 'Payment'], ['1APP Plus Membership', FiAward, 'Membership'], ['1APP Safety', FiShield, 'Safety'], ['Warranty', FiBookOpen, 'Warranty']];
 const issues = { 'Service / Technician': ["Technician didn’t arrive", 'Service quality issue', 'Technician behaviour', 'Other'], 'Payment & Billing': ['Refund not received', 'Incorrect charge', 'Payment failed', 'Other'], Booking: ['Reschedule booking', 'Cancel booking', 'Booking not confirmed', 'Other'], Account: ['Login issue', 'Update account details', 'Other'], Other: ['Other'] };
 const formatDate = value => value ? new Date(value).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—';

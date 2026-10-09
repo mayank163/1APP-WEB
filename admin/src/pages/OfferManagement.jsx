@@ -1,3 +1,4 @@
+import '../styles/OfferManagement.css';
 import React, { useState } from 'react';
 import { FaTag, FaPlus, FaCheckCircle, FaTrash } from 'react-icons/fa';
 import { toast } from 'react-toastify';
@@ -62,10 +63,10 @@ const OfferManagement = () => {
                         <div className="row g-3 mb-4">
                             <div className="col-md-4">
                                 <label className="form-label text-muted small fw-bold">Coupon Code</label>
-                                <input 
-                                    type="text" 
-                                    required 
-                                    className="form-control bg-light border-0" 
+                                <input
+                                    type="text"
+                                    required
+                                    className="form-control bg-light border-0"
                                     placeholder="1APP30"
                                     value={code}
                                     onChange={(e) => setCode(e.target.value)}
@@ -73,10 +74,10 @@ const OfferManagement = () => {
                             </div>
                             <div className="col-md-4">
                                 <label className="form-label text-muted small fw-bold">Discount Value</label>
-                                <input 
-                                    type="text" 
-                                    required 
-                                    className="form-control bg-light border-0" 
+                                <input
+                                    type="text"
+                                    required
+                                    className="form-control bg-light border-0"
                                     placeholder="30% OFF / Flat $300 OFF"
                                     value={discount}
                                     onChange={(e) => setDiscount(e.target.value)}
@@ -84,10 +85,10 @@ const OfferManagement = () => {
                             </div>
                             <div className="col-md-4">
                                 <label className="form-label text-muted small fw-bold">Applicability / Scope</label>
-                                <input 
-                                    type="text" 
-                                    required 
-                                    className="form-control bg-light border-0" 
+                                <input
+                                    type="text"
+                                    required
+                                    className="form-control bg-light border-0"
                                     placeholder="On all orders above $999"
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
@@ -110,9 +111,9 @@ const OfferManagement = () => {
             <div className="row g-4">
                 {offers.map((offer, idx) => (
                     <div key={idx} className="col-md-4">
-                        <div className="card border-0 shadow-sm rounded-3 p-4 bg-white hover-shadow transition-all" style={{ borderTop: "3px solid #A5732F" }}>
+                        <div className="card border-0 shadow-sm rounded-3 p-4 bg-white hover-shadow transition-all admin-offer-management-1" >
                             <div className="d-flex align-items-center justify-content-between mb-3">
-                                <span className="badge bg-brand-light text-brand border font-monospace px-3 py-1.5 fs-6 fw-bold" style={{ background: "#fdf5ea", color: "#A5732F", border: "1px solid #A5732F" }}>
+                                <span className="badge bg-brand-light text-brand border font-monospace px-3 py-1.5 fs-6 fw-bold admin-offer-management-2" >
                                     {offer.code}
                                 </span>
                                 <span className="text-success d-flex align-items-center gap-1 small fw-bold">
@@ -122,8 +123,8 @@ const OfferManagement = () => {
                             </div>
                             <h4 className="fw-bold text-dark font-monospace mb-1">{offer.discount}</h4>
                             <p className="text-muted small mb-3">{offer.description}</p>
-                            
-                            <button 
+
+                            <button
                                 onClick={() => handleDeleteOffer(offer.code)}
                                 className="btn btn-sm btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2 mt-2"
                             >

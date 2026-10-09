@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useSocket } from '../context/SocketContext';
 import { chatApi } from '../services/api';
-import './TechnicianChat.css';
-import './SupportChatScrollbar.css';
+import '../styles/TechnicianChat.css';
+import '../styles/SupportChatScrollbar.css';
 
 const messageKey = message => String(message._id || `${message.createdAt}-${message.senderId}`);
 const formatTime = value => value ? new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';

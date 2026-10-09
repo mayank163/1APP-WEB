@@ -2,12 +2,13 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Dropdown, Modal } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FiPlus, FiUserPlus, FiSearch, FiFilter, FiCalendar, FiX, FiChevronLeft, FiChevronRight, FiMoreVertical, FiEdit2, FiClipboard, FiShield, FiMessageSquare, FiUserX, FiPhone, FiMail, FiArrowRight, FiCheckCircle, FiClock, FiUsers, FiBriefcase, FiBarChart2, FiFileText, FiDollarSign, FiActivity, FiMapPin } from 'react-icons/fi';
+import { FiPlus, FiUserPlus, FiSearch, FiFilter, FiCalendar, FiX, FiChevronLeft, FiChevronRight, FiMoreVertical, FiEdit2, FiClipboard, FiShield, FiMessageSquare, FiUserX, FiCheckCircle, FiClock, FiUsers } from 'react-icons/fi';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import adminApi from '../services/adminApi';
 import { getImageUrl } from '../utils/helpers';
-import TechnicianFormModal, { DEFAULT_TRADES, DetailList, errorMessage } from '../components/TechnicianFormModal';
+import TechnicianFormModal, { DEFAULT_TRADES, errorMessage } from '../components/TechnicianFormModal';
 import '../styles/TechnicianOverview.css';
+import TechnicianProfile from '../components/TechnicianProfile';
 const initialFilters = {
   search: '',
   verification: 'all',
@@ -55,58 +56,6 @@ function Rating({
   return <div className="to-rating"><span><i>★</i> {technician.rating == null ? 'NA' : Number(technician.rating).toFixed(1)}</span>{technician.ratingCount != null && <small>({technician.ratingCount})</small>}</div>;
 }
 
-function TechnicianProfileModal({ technician, jobs, canWrite, onClose, onEdit }) {
-  const [tab, setTab] = useState('overview');
-  const documents = technician.documents || [];
-  const approvedDocuments = documents.filter(document => document.status === 'approved').length;
-  const earnings = Number(technician.totalEarnings || 0);
-  const withdrawn = Number(technician.totalWithdrawn || 0);
-  const available = Math.max(earnings - withdrawn, 0);
-  const technicianJobs = (jobs || []).filter(job => String(job.assignedTechnician?._id || job.assignedTechnician || '') === String(technician._id));
-  const profileRows = [
-    ['Full Name', technician.name],
-    ['Email', technician.email || 'Not available'],
-    ['Phone', technician.phone || 'Not available'],
-    ['Technician ID', technician.technicianId || 'Not available'],
-    ['Primary Service', technician.primaryService || 'Not available'],
-    ['Experience', technician.yearsOfExperience != null ? `${technician.yearsOfExperience} years` : 'Not available'],
-    ['Service Area', technician.serviceArea || 'Not available'],
-    ['Service Radius', technician.serviceRadius ? `${technician.serviceRadius} km` : 'Not available'],
-  ];
-  const tabs = [
-    ['overview', 'Overview', FiUsers],
-    ['jobs', 'Jobs', FiBriefcase],
-    ['performance', 'Performance', FiBarChart2],
-    ['documents', 'Documents', FiFileText],
-    ['earnings', 'Earnings & Payouts', FiDollarSign],
-    ['activity', 'Activity', FiActivity],
-  ];
-
-  return <div className="to-profile-screen" aria-labelledby="to-profile-title">
-    <div className="to-profile-workspace-header">
-      <div className="to-profile-heading"><div><div className="to-breadcrumb">Field Operations <FiChevronRight /> Technicians <FiChevronRight /> <span>Profile</span></div><h2 id="to-profile-title">Technician’s Profile</h2><p>Manage and monitor technician activity.</p></div></div>
-      <div className="to-profile-header-actions"><button className="to-btn-outline" onClick={onClose}><FiX /> Close</button>{canWrite && <button className="to-btn-primary" onClick={onEdit}><FiEdit2 /> Edit Profile</button>}</div>
-    </div>
-    <div className="to-profile-summary"><Avatar technician={technician} /><div className="to-profile-summary-main"><h3>{technician.name} <Badge status={verification(technician)} /></h3><p>{technician.technicianId || 'Technician'} · {technician.primaryService || 'Service not added'}</p><p><FiMapPin /> {technician.serviceArea || 'Location not available'}</p><div className="to-profile-summary-status"><Badge status={availability(technician)} /><span>Last active: {technician.isOnline ? 'Now' : 'Not available'}</span></div></div><div className="to-profile-summary-actions"><button className="to-btn-outline" onClick={() => technician.phone && (window.location.href = `tel:${technician.phone}`)}><FiPhone /> Call</button><button className="to-btn-soft" onClick={() => technician.email && (window.location.href = `mailto:${technician.email}`)}><FiMail /> Email</button></div></div>
-    <div className="to-profile-tabs" role="tablist">{tabs.map(([key, label, Icon]) => <button key={key} role="tab" aria-selected={tab === key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)}><Icon />{label}</button>)}</div>
-    <div className="to-profile-workspace-body">
-      {tab === 'overview' && <div className="to-profile-grid"><section className="to-profile-panel to-profile-panel-wide"><h3>Personal Information</h3><div className="to-detail-grid">{profileRows.map(([label, value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}</div></section><section className="to-profile-panel"><h3>Verification Summary</h3><div className="to-verification-summary"><Badge status={verification(technician)} /><strong>{approvedDocuments} / {documents.length || 0} Documents Approved</strong>{documents.length ? documents.map(document => <div key={document.documentId}><FiCheckCircle />{document.label || document.documentId}<span>{document.status || 'pending'}</span></div>) : <p>No documents uploaded.</p>}</div></section><section className="to-profile-panel"><h3>Skills & Tools</h3><div className="to-tag-list">{(technician.skills || []).length ? technician.skills.map(skill => <span key={skill}>{skill}</span>) : <p>Not available</p>}</div></section><section className="to-profile-panel"><h3>Account Information</h3><div className="to-detail-list"><div><dt>Account status</dt><dd><Badge status={technician.accountStatus || 'active'} /></dd></div><div><dt>Phone verification</dt><dd>{technician.isPhoneVerified ? 'Verified' : 'Not verified'}</dd></div><div><dt>Joined</dt><dd>{technician.createdAt ? new Date(technician.createdAt).toLocaleDateString('en-IN') : 'Not available'}</dd></div></div></section></div>}
-      {tab === 'jobs' && <section className="to-profile-panel"><div className="to-profile-panel-title"><h3>Jobs completed by {technician.name}</h3><span className="to-job-count">{technicianJobs.length} jobs</span></div>{technicianJobs.length ? <div className="to-profile-jobs"><div className="to-profile-job-row to-profile-job-head"><span>Job</span><span>Status</span><span>Scheduled</span><span>Amount</span></div>{technicianJobs.map(job => <div className="to-profile-job-row" key={job._id}><strong>{job.title || 'Untitled job'}</strong><Badge status={job.status === 'completed' ? 'approved' : job.status === 'checkout' ? 'under_review' : 'pending'} /><span>{job.jobDate?.from ? new Date(job.jobDate.from).toLocaleDateString('en-IN') : 'Not scheduled'}</span><span>${Number(job.finalPrice || job.pay?.fixedAmount || 0).toLocaleString()}</span></div>)}</div> : <ProfileEmptyState icon={FiBriefcase} title="No jobs found" text="No jobs are currently assigned to this technician." />}</section>}
-      {tab === 'performance' && <div className="to-profile-grid"><MetricCard label="Completion Rate" value={technician.performance != null ? `${technician.performance}%` : 'Not available'} icon={FiBarChart2} /><MetricCard label="Average Rating" value={technician.rating != null ? Number(technician.rating).toFixed(1) : 'Not available'} icon={FiCheckCircle} /><MetricCard label="Reviews" value={technician.ratingCount != null ? technician.ratingCount : 'Not available'} icon={FiUsers} />{technician.workOrderRatings?.length > 0 && <div className="to-profile-section"><h4>Work order ratings</h4>{technician.workOrderRatings.map(item => <p key={item.job}><a href={`/technician-jobs?jobId=${item.job}`}>Work order #{String(item.job).slice(-6)}</a> — ★ {item.score}/5</p>)}</div>}<ProfileEmptyState icon={FiClock} title="Response time" text="Response-time metrics are not available from the current technician API." /> </div>}
-      {tab === 'documents' && <section className="to-profile-panel"><div className="to-profile-panel-title"><h3>All Documents</h3><Badge status={verification(technician)} /></div>{documents.length ? <div className="to-document-list">{documents.map(document => <div key={document.documentId}><FiFileText /><div><strong>{document.label || document.documentId}</strong><small>{document.status || 'pending'}</small></div><span>{document.rejectionReason || 'No additional notes'}</span></div>)}</div> : <ProfileEmptyState icon={FiFileText} title="No documents uploaded" text="Documents submitted by this technician will appear here." />}</section>}
-      {tab === 'earnings' && <div className="to-profile-grid"><MetricCard label="Total Earnings" value={`$${earnings.toLocaleString()}`} icon={FiDollarSign} /><MetricCard label="Total Paid Out" value={`$${withdrawn.toLocaleString()}`} icon={FiDollarSign} /><MetricCard label="Available Balance" value={`$${available.toLocaleString()}`} icon={FiDollarSign} /><ProfileEmptyState icon={FiActivity} title="Earnings transactions" text="Detailed payout transactions are not available from the current technician API." /></div>}
-      {tab === 'activity' && <ProfileEmptyState icon={FiActivity} title="No activity history" text="Technician activity events will appear here when the activity feed API is connected." />}
-    </div>
-  </div>;
-}
-
-function MetricCard({ label, value, icon: Icon }) {
-  return <div className="to-profile-metric"><Icon /><span>{label}</span><strong>{value}</strong></div>;
-}
-
-function ProfileEmptyState({ icon: Icon, title, text, value }) {
-  return <section className="to-profile-panel to-profile-empty"><Icon /><h3>{title}{value != null ? ` (${value})` : ''}</h3><p>{text}</p></section>;
-}
 function InviteModal({
   onClose,
   technician
@@ -223,6 +172,7 @@ export default function TechnicianOverview() {
   const [pageSize, setPageSize] = useState(10);
   const [dateOpen, setDateOpen] = useState(false);
   const [modal, setModal] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [trades, setTrades] = useState(DEFAULT_TRADES);
   const [jobs, setJobs] = useState([]);
   const load = useCallback(async () => {
@@ -283,8 +233,14 @@ export default function TechnicianOverview() {
   };
   const filter = (key, label, options) => <label className="to-filter-group" key={key}><span>{label}</span><select value={filters[key]} onChange={e => updateFilter(key, e.target.value)}><option value="all">All</option>{options.map(o => <option key={Array.isArray(o) ? o[0] : o} value={Array.isArray(o) ? o[0] : o}>{Array.isArray(o) ? o[1] : o}</option>)}</select></label>;
   const selected = modal?.technician;
-  if (['profile', 'full-profile'].includes(modal?.type) && selected) {
-    return <div className="to-page"><TechnicianProfileModal technician={selected} jobs={jobs} canWrite={canWrite} onClose={() => setModal(null)} onEdit={() => setModal({ type: 'edit', technician: selected })} /></div>;
+  const dialogs = <>
+    {['add', 'edit'].includes(modal?.type) && <TechnicianFormModal technician={selected} trades={services} onClose={() => setModal(null)} onSaved={load} />}
+    {modal?.type === 'invite' && <InviteModal technician={selected} onClose={() => setModal(null)} />}
+    {['assign', 'message', 'suspend', 'inactive'].includes(modal?.type) && <ActionModal action={modal.type} technician={selected} onClose={() => setModal(null)} onSaved={load} />}
+  </>;
+  if (profile) {
+    const technician = raw.find(item => item._id === profile._id) || profile;
+    return <div className="to-page"><TechnicianProfile key={technician._id} technician={technician} jobs={jobs} canWrite={canWrite} onClose={() => setProfile(null)} onEdit={() => setModal({ type: 'edit', technician })} onAction={type => setModal({ type, technician })} onAdd={() => setModal({ type: 'add' })} onInvite={() => setModal({ type: 'invite', technician })} onNoteSaved={note => setRaw(previous => previous.map(item => item._id === technician._id ? { ...item, adminNote: note } : item))} />{dialogs}</div>;
   }
   return <div className="to-page">
     <div className="to-page-header"><div><div className="to-breadcrumb">Field Operations <FiChevronRight /> <span>Technicians</span></div><h1>Technician’s Overview</h1><p>{loading ? 'Loading technicians…' : `${raw.length.toLocaleString()} technicians registered on this platform,`} Manage and monitor all technicians on the platform.</p></div><div className="to-header-actions"><button className="to-btn-primary" disabled={!canWrite} onClick={() => setModal({
@@ -305,10 +261,7 @@ export default function TechnicianOverview() {
         setPage(1);
       }}>{label} <span>{counts[key].toLocaleString()}</span></button>)}</div>
     <div className="to-table-card" aria-busy={loading}>{loading ? <div className="to-empty" role="status"><div className="spinner-border spinner-border-sm" />Loading technicians…</div> : loadError ? <div className="to-empty" role="alert"><p>{loadError}</p><button className="to-btn-outline" onClick={load}>Try again</button></div> : <div className="to-table-scroll"><table className="to-table"><thead><tr>{['Technician Name', 'Service / Trade', 'Verification', 'Availability', 'Ratings', 'Jobs', 'Performance', 'Account Status', ''].map((label, i) => <th scope="col" key={i}>{label || <span className="visually-hidden">Actions</span>}</th>)}</tr></thead><tbody>{rows.length === 0 ? <tr><td colSpan={9}><div className="to-empty"><FiUsers /><strong>No technicians found</strong><span>Try adjusting your filters or add a technician.</span></div></td></tr> : rows.map(t => <tr key={t._id}>
-      <td><button className="to-tech-cell" onClick={() => setModal({
-                  type: 'profile',
-                  technician: t
-                })}><Avatar technician={t} /><span><strong>{t.name}</strong><small title={t.technicianId}>{t.technicianId}</small></span></button></td><td className="to-trade">{t.primaryService || '—'}</td><td><Badge status={verification(t)} /></td><td><Badge status={availability(t)} /></td><td><Rating technician={t} /></td><td className="to-number">{t.totalJobsDone}</td><td className="to-number"><strong>{t.performance == null ? 'NA' : `${t.performance}%`}</strong></td><td><Badge status={t.accountStatus} /></td><td><Dropdown align="end"><Dropdown.Toggle className="to-menu-toggle" variant="link" aria-label={`Actions for ${t.name}`}><FiMoreVertical /></Dropdown.Toggle><Dropdown.Menu className="to-action-menu" popperConfig={{
+      <td><button className="to-tech-cell" onClick={() => setProfile(t)}><Avatar technician={t} /><span><strong>{t.name}</strong><small title={t.technicianId}>{t.technicianId}</small></span></button></td><td className="to-trade">{t.primaryService || '—'}</td><td><Badge status={verification(t)} /></td><td><Badge status={availability(t)} /></td><td><Rating technician={t} /></td><td className="to-number">{t.totalJobsDone}</td><td className="to-number"><strong>{t.performance == null ? 'NA' : `${t.performance}%`}</strong></td><td><Badge status={t.accountStatus} /></td><td><Dropdown align="end"><Dropdown.Toggle className="to-menu-toggle" variant="link" aria-label={`Actions for ${t.name}`}><FiMoreVertical /></Dropdown.Toggle><Dropdown.Menu className="to-action-menu" popperConfig={{
                     strategy: 'fixed'
                   }}>
         <Dropdown.Item disabled={!canWrite} onClick={() => setModal({
@@ -339,8 +292,6 @@ export default function TechnicianOverview() {
         setPageSize(Number(e.target.value));
         setPage(1);
       }}>{[10, 25, 50].map(s => <option key={s} value={s}>{s} per page</option>)}</select></div>}
-    {['add', 'edit'].includes(modal?.type) && <TechnicianFormModal technician={selected} trades={services} onClose={() => setModal(null)} onSaved={load} />}
-    {modal?.type === 'invite' && <InviteModal technician={selected} onClose={() => setModal(null)} />}
-    {['assign', 'message', 'suspend', 'inactive'].includes(modal?.type) && <ActionModal action={modal.type} technician={selected} onClose={() => setModal(null)} onSaved={load} />}
+    {dialogs}
   </div>;
 }

@@ -18,4 +18,6 @@ router.get('/:id/invoice',                      bookingController.downloadInvoic
 router.get('/:id/invoice/details',              invoiceController.getInvoice);
 router.get('/:bookingId/reviewable-services',   reviewController.getReviewableServices);
 
+router.post('/:bookingId/technician-review', reviewController.submitTechnicianReview);
+
 module.exports = router;

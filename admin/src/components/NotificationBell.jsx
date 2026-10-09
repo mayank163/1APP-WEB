@@ -1,3 +1,4 @@
+import '../styles/NotificationBell.css';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaBell } from 'react-icons/fa';
@@ -62,16 +63,16 @@ const NotificationBell = () => {
 
   return (
     <div ref={wrapperRef} className="position-relative">
-      <button type="button" className="btn p-0 border-0 bg-transparent" onClick={toggle} title="Notifications" aria-label="Notifications" style={{ color: '#A5732F' }}>
+      <button type="button" className="btn p-0 border-0 bg-transparent admin-notification-bell-1" onClick={toggle} title="Notifications" aria-label="Notifications" >
         <FaBell size={18} />
-        {unread > 0 && <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: 9 }}>{unread}</span>}
+        {unread > 0 && <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger admin-notification-bell-2" >{unread}</span>}
       </button>
-      {open && <div className="position-absolute end-0 mt-3 bg-white shadow border rounded-3 p-2" style={{ width: 340, zIndex: 1100 }}>
+      {open && <div className="position-absolute end-0 mt-3 bg-white shadow border rounded-3 p-2 admin-notification-bell-3" >
         <div className="fw-bold px-2 py-1">Notifications</div>
         {notificationError && <div className="small text-danger px-2 py-2">{notificationError}</div>}
-        <div style={{ maxHeight: 320, overflowY: 'auto' }}>
+        <div className="admin-notification-bell-4" >
           {items.length === 0 ? <div className="text-muted small px-2 py-3">No notifications yet.</div> : items.map(item => (
-            <button key={item._id} type="button" className="border-top px-2 py-2 text-start w-100 bg-white" onClick={() => openNotification(item)} style={{ borderLeft: 0, borderRight: 0, borderBottom: 0, cursor: item.data?.jobId ? 'pointer' : 'default' }}><div className="small fw-semibold">{!item.isRead && <span className="d-inline-block rounded-circle bg-primary me-1" aria-label="Unread" style={{ width: 6, height: 6 }} />}{item.title}</div><div className="small text-muted">{item.message}</div></button>
+            <button key={item._id} type="button" className={["border-top px-2 py-2 text-start w-100 bg-white admin-notification-bell-5 ", item.data?.jobId ? "admin-notification-bell-state-1" : "admin-notification-bell-state-2"].join('')} onClick={() => openNotification(item)} ><div className="small fw-semibold">{!item.isRead && <span className="d-inline-block rounded-circle bg-primary me-1 admin-notification-bell-6" aria-label="Unread"  />}{item.title}</div><div className="small text-muted">{item.message}</div></button>
           ))}
         </div>
       </div>}

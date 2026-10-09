@@ -1,0 +1,287 @@
+.home-reviews-section {
+    overflow: hidden;
+    padding: var(--ui-space-225);
+    background: var(--ui-color-2);
+}
+
+.home-reviews-container {
+    width: min(92%, 1500px);
+    margin: var(--ui-space-25);
+}
+
+.home-reviews-title {
+    margin: var(--ui-space-226);
+    color: var(--ui-color-167);
+    font-size: var(--ui-font-size-36);
+    font-weight: 800;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.home-reviews-carousel {
+    position: relative;
+}
+
+.home-reviews-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--ui-space-7);
+}
+
+.home-review-item {
+    min-width: 0;
+}
+
+.home-review-card {
+    position: relative;
+    min-height: 230px;
+    padding: var(--ui-space-227);
+    border: 1.5px solid #dedede;
+    border-radius: 16px;
+    background: var(--ui-color-2);
+}
+
+.home-review-card::after {
+    position: absolute;
+    bottom: -12px;
+    left: 26px;
+    width: 0;
+    height: 0;
+    border-top: 14px solid #dedede;
+    border-right: 14px solid transparent;
+    border-left: 14px solid transparent;
+    content: "";
+}
+
+.home-review-card::before {
+    position: absolute;
+    z-index: 1;
+    bottom: -9px;
+    left: 28px;
+    width: 0;
+    height: 0;
+    border-top: 12px solid #fff;
+    border-right: 12px solid transparent;
+    border-left: 12px solid transparent;
+    content: "";
+}
+
+.home-review-topline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--ui-space-23);
+}
+
+.home-review-rating {
+    display: flex;
+    align-items: center;
+    gap: var(--ui-space-172);
+    color: var(--ui-color-168);
+    font-size: var(--ui-font-size-27);
+    letter-spacing: 0;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.home-review-verified {
+    width: 20px;
+    height: 20px;
+    color: var(--ui-color-169);
+}
+
+.home-google-mark {
+    background: var(--ui-color-170);
+    background-clip: text;
+    color: var(--ui-color-120);
+    font-family: var(--ui-font-family-6);
+    font-size: var(--ui-font-size-61);
+    font-weight: 800;
+    line-height: 1;
+    -webkit-background-clip: text;
+}
+
+.home-review-text {
+    display: -webkit-box;
+    overflow: hidden;
+    margin: var(--ui-space-16);
+    color: var(--ui-color-171);
+    font-size: var(--ui-font-size-8);
+    letter-spacing: 0.2px;
+    line-height: 1.55;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+}
+
+.home-review-text.is-expanded {
+    display: block;
+    overflow: visible;
+}
+
+.home-review-read-more {
+    margin-top: var(--ui-space-9);
+    padding: var(--ui-space-16);
+    border: 0;
+    background: var(--ui-color-120);
+    color: var(--ui-color-172);
+    cursor: pointer;
+    font-size: var(--ui-font-size-3);
+    letter-spacing: 0.4px;
+}
+
+.home-review-read-more:hover {
+    color: var(--ui-color-4);
+}
+
+.home-review-author {
+    display: flex;
+    align-items: center;
+    gap: var(--ui-space-1);
+    padding: var(--ui-space-228);
+}
+
+.home-review-avatar {
+    display: grid;
+    width: 56px;
+    height: 56px;
+    flex: 0 0 56px;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--ui-color-2);
+    font-size: var(--ui-font-size-27);
+    font-weight: 400;
+}
+
+.home-review-author-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ui-space-15);
+    min-width: 0;
+    color: var(--ui-color-33);
+    font-size: var(--ui-font-size-3);
+}
+
+.home-review-author-info strong {
+    overflow: hidden;
+    color: var(--ui-color-5);
+    font-size: var(--ui-font-size-1);
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.home-reviews-next {
+    position: absolute;
+    z-index: 2;
+    top: 45%;
+    right: -18px;
+    display: grid;
+    width: 46px;
+    height: 46px;
+    place-items: center;
+    padding: var(--ui-space-16);
+    border: 1.5px solid #dedede;
+    border-radius: 50%;
+    background: var(--ui-color-2);
+    color: var(--ui-color-173);
+    cursor: pointer;
+    transform: translateY(-50%);
+}
+
+.home-reviews-next:hover {
+    border-color: #aaa;
+    color: var(--ui-color-5);
+}
+
+.home-reviews-next svg {
+    width: 25px;
+    height: 25px;
+    fill: var(--ui-color-134);
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2.5;
+}
+
+.home-reviews-trustindex {
+    display: flex;
+    width: fit-content;
+    align-items: center;
+    gap: var(--ui-space-100);
+    margin: var(--ui-space-229);
+    padding: var(--ui-space-178);
+    border-radius: 4px;
+    background: var(--ui-color-174);
+    color: var(--ui-color-175);
+    font-size: var(--ui-font-size-3);
+    font-weight: 750;
+    letter-spacing: 0.6px;
+}
+
+.home-reviews-trustindex span {
+    font-size: var(--ui-font-size-1);
+}
+
+@media (max-width: 900px) {
+    .home-reviews-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .home-review-item:nth-child(3) {
+        display: none;
+    }
+}
+
+@media (max-width: 600px) {
+    .home-reviews-section {
+        padding: var(--ui-space-230);
+    }
+
+    .home-reviews-container {
+        width: calc(100% - 40px);
+    }
+
+    .home-reviews-title {
+        margin-bottom: var(--ui-space-10);
+        font-size: var(--ui-font-size-31);
+        text-align: left;
+    }
+
+    .home-reviews-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .home-review-item:nth-child(2) {
+        display: none;
+    }
+
+    .home-review-card {
+        min-height: 220px;
+        padding: var(--ui-space-7);
+    }
+
+    .home-review-rating {
+        gap: var(--ui-space-100);
+        font-size: var(--ui-font-size-69);
+    }
+
+    .home-google-mark {
+        font-size: var(--ui-font-size-53);
+    }
+
+    .home-review-author {
+        gap: var(--ui-space-13);
+        padding: var(--ui-space-231);
+    }
+
+    .home-reviews-next {
+        right: -14px;
+        width: 40px;
+        height: 40px;
+    }
+
+    .home-reviews-trustindex {
+        margin-right: var(--ui-space-16);
+        font-size: var(--ui-font-size-6);
+    }
+}

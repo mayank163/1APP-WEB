@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import API from '../services/api';
-import './TechnicianActivation.css';
+import '../styles/TechnicianActivation.css';
 export default function TechnicianActivation() {
   const [params] = useSearchParams();
   const [form, setForm] = useState({

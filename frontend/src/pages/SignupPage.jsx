@@ -1,3 +1,5 @@
+import { cssValue } from '../utils/cssValue';
+import '../styles/SignupPage.css';
 import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
@@ -21,12 +23,12 @@ const getStrength = (pwd) => {
 const strengthLabel = ['', 'Weak', 'Fair', 'Good', 'Strong'];
 const strengthColor = ['', '#e53935', '#fb8c00', '#fdd835', '#000000'];
 
-const inputStyle = { border: 'none', outline: 'none', flex: 1, fontSize: '0.95rem', background: 'transparent' };
+
 
 const Field = ({ label, icon, children }) => (
-    <div style={{ marginBottom: 16 }}>
-        <label style={{ fontWeight: 700, fontSize: '0.85rem', display: 'block', marginBottom: 6, color: '#1a1a1a' }}>{label}</label>
-        <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #ccc', borderRadius: 8, padding: '10px 14px', gap: 10 }}>
+    <div className="ui-signuppage-1" >
+        <label className="ui-signuppage-2" >{label}</label>
+        <div className="ui-signuppage-3" >
             {icon}
             {children}
         </div>
@@ -128,28 +130,28 @@ const SignupPage = () => {
     });
 
     return (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: '100vh' }}>
+        <div className="ui-signuppage-4" >
             <AuthPanel />
 
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '48px 56px', background: '#fff' }}>
-                <div style={{ maxWidth: 420, width: '100%', margin: '0 auto' }}>
-                    <div style={{ textAlign: 'center', marginBottom: 28 }}>
-                        <p style={{ fontWeight: 700, fontSize: '1.1rem', color: '#1a1a1a', marginBottom: 2 }}>
-                            <span style={{ color: '#000000' }}>1APP</span> Portal
+            <div className="ui-signuppage-5" >
+                <div className="ui-signuppage-6" >
+                    <div className="ui-signuppage-7" >
+                        <p className="ui-signuppage-8" >
+                            <span className="ui-signuppage-9" >1APP</span> Portal
                         </p>
-                        <h2 style={{ fontWeight: 800, fontSize: '1.9rem', color: '#000000', margin: '4px 0 6px' }}>Create Account</h2>
-                        <p style={{ color: '#888', fontSize: '0.9rem', margin: 0 }}>
+                        <h2 className="ui-signuppage-10" >Create Account</h2>
+                        <p className="ui-signuppage-11" >
                             {registrationStep === 'details' ? 'Enter your details to receive an OTP' : 'Verify OTP to finish signup'}
                         </p>
-                        <div style={{ width: 40, height: 3, background: '#000000', margin: '10px auto 0', borderRadius: 2 }} />
+                        <div className="ui-signuppage-12"  />
                     </div>
 
                     <form onSubmit={handleSubmit}>
                         {registrationStep === 'details' ? (
                             <>
                                 <Field label="Full Name" icon={<FaUser color="#888" size={14} />}>
-                                    <input type="text" required placeholder="John Doe" value={name}
-                                        onChange={e => setName(e.target.value)} style={inputStyle} />
+                                    <input className="ui-signuppage-13" type="text" required placeholder="John Doe" value={name}
+                                        onChange={e => setName(e.target.value)}  />
                                 </Field>
 
                                 <Field label="Phone Number" icon={<FaPhoneAlt color="#888" size={14} />}>
@@ -163,34 +165,30 @@ const SignupPage = () => {
                                 </Field>
 
                                 <Field label="Email Address" icon={<FaEnvelope color="#888" size={14} />}>
-                                    <input type="email" required placeholder="name@example.com" value={email}
-                                        onChange={e => setEmail(e.target.value)} style={inputStyle} />
+                                    <input className="ui-signuppage-14" type="email" required placeholder="name@example.com" value={email}
+                                        onChange={e => setEmail(e.target.value)}  />
                                 </Field>
 
-                                <div style={{ marginBottom: 16 }}>
-                                    <label style={{ fontWeight: 700, fontSize: '0.85rem', display: 'block', marginBottom: 6, color: '#1a1a1a' }}>Password</label>
-                                    <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #ccc', borderRadius: 8, padding: '10px 14px', gap: 10 }}>
+                                <div className="ui-signuppage-15" >
+                                    <label className="ui-signuppage-16" >Password</label>
+                                    <div className="ui-signuppage-17" >
                                         <FaLock color="#888" size={14} />
-                                        <input type={showPass ? 'text' : 'password'} required placeholder="Password"
+                                        <input className="ui-signuppage-18" type={showPass ? 'text' : 'password'} required placeholder="Password"
                                             value={password} onChange={e => setPassword(e.target.value)}
-                                            style={{ ...inputStyle, flex: 1 }} />
-                                        <button type="button" onClick={() => setShowPass(!showPass)}
-                                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#aaa', display: 'flex' }}>
+                                             />
+                                        <button className="ui-signuppage-19" type="button" onClick={() => setShowPass(!showPass)}
+                                            >
                                             {showPass ? <FaEye size={15} /> : <FaEyeSlash size={15} />}
                                         </button>
                                     </div>
-                                    <div style={{ marginTop: 8 }}>
-                                        <div style={{ display: 'flex', gap: 6 }}>
+                                    <div className="ui-signuppage-20" >
+                                        <div className="ui-signuppage-21" >
                                             {[1, 2, 3, 4].map(i => (
-                                                <div key={i} style={{
-                                                    flex: 1, height: 4, borderRadius: 2,
-                                                    background: password && i <= strength ? strengthColor[strength] : '#e0e0e0',
-                                                    transition: 'background 0.3s'
-                                                }} />
+                                                <div className="ui-signuppage-22" key={i} style={{ "--ui-signuppage-22-background": cssValue(password && i <= strength ? strengthColor[strength] : "var(--ui-color-26)", "background") }} />
                                             ))}
                                         </div>
                                         {password && (
-                                            <div style={{ textAlign: 'right', fontSize: '0.75rem', color: strengthColor[strength], fontWeight: 600, marginTop: 3 }}>
+                                            <div className="ui-signuppage-23" style={{ "--ui-signuppage-23-color": cssValue(strengthColor[strength], "color") }}>
                                                 {strengthLabel[strength]} password
                                             </div>
                                         )}
@@ -199,48 +197,35 @@ const SignupPage = () => {
                             </>
                         ) : (
                             <>
-                                <div style={{ background: '#f5fbf6', border: '1px solid #d7eadb', borderRadius: 8, padding: 12, marginBottom: 16 }}>
-                                    <div style={{ color: '#000000', fontWeight: 800, fontSize: '0.9rem' }}>Verify your phone</div>
-                                    <div style={{ color: '#555', fontSize: '0.85rem', marginTop: 4 }}>OTP sent to {phoneCountry.code} {phone}</div>
-                                    <button type="button" onClick={editDetails} style={{ background: 'none', border: 'none', color: '#000000', fontWeight: 700, padding: '8px 0 0', cursor: 'pointer' }}>
+                                <div className="ui-signuppage-24" >
+                                    <div className="ui-signuppage-25" >Verify your phone</div>
+                                    <div className="ui-signuppage-26" >OTP sent to {phoneCountry.code} {phone}</div>
+                                    <button className="ui-signuppage-27" type="button" onClick={editDetails} >
                                         Edit details
                                     </button>
                                 </div>
 
                                 <Field label="OTP Code" icon={<FaSms color="#888" size={14} />}>
-                                    <input type="text" inputMode="numeric" maxLength="6" required placeholder="Enter 6-digit OTP" value={otp}
-                                        onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))} style={inputStyle} />
+                                    <input className="ui-signuppage-28" type="text" inputMode="numeric" maxLength="6" required placeholder="Enter 6-digit OTP" value={otp}
+                                        onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}  />
                                 </Field>
 
                                 {/* Dev-mode OTP hint */}
                                 {devOtp && (
-                                    <div style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        background: '#fdf5ea',
-                                        border: '1.5px dashed #000000',
-                                        borderRadius: 10,
-                                        padding: '10px 16px',
-                                        marginBottom: 16,
-                                    }}>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#000000', letterSpacing: 0.5, textTransform: 'uppercase' }}>
+                                    <div className="ui-signuppage-29" >
+                                        <div className="ui-signuppage-30" >
+                                            <span className="ui-signuppage-31" >
                                                 Dev mode · OTP
                                             </span>
-                                            <span style={{ fontSize: '1.35rem', fontWeight: 800, letterSpacing: 6, color: '#1a1a1a', fontFamily: 'monospace' }}>
+                                            <span className="ui-signuppage-32" >
                                                 {devOtp}
                                             </span>
                                         </div>
-                                        <button
+                                        <button className="ui-signuppage-33"
                                             type="button"
                                             title="Auto-fill OTP"
                                             onClick={() => setOtp(devOtp)}
-                                            style={{
-                                                background: '#000000', color: '#fff', border: 'none',
-                                                borderRadius: 8, padding: '6px 14px', fontWeight: 700,
-                                                fontSize: '0.8rem', cursor: 'pointer', flexShrink: 0,
-                                            }}
+
                                         >
                                             Auto-fill
                                         </button>
@@ -249,38 +234,29 @@ const SignupPage = () => {
                             </>
                         )}
 
-                        <button type="submit" disabled={loading} style={{
-                            width: '100%', background: '#000000', color: '#fff', border: 'none',
-                            borderRadius: 8, padding: '13px', fontWeight: 700, fontSize: '1rem',
-                            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                            marginTop: 4
-                        }}>
+                        <button className="ui-signuppage-34" type="submit" disabled={loading} >
                             {registrationStep === 'details' ? <FaUser size={14} /> : <FaSms size={14} />}
                             {loading
                                 ? (registrationStep === 'details' ? 'Sending OTP...' : 'Verifying OTP...')
                                 : (registrationStep === 'details' ? 'Send OTP' : 'Verify & Create Account')}
-                            <span style={{ fontSize: '1.1rem' }}>→</span>
+                            <span className="ui-signuppage-35" >→</span>
                         </button>
                     </form>
 
-                    <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0', gap: 10 }}>
-                        <div style={{ flex: 1, height: 1, background: '#e0e0e0' }} />
-                        <span style={{ color: '#aaa', fontSize: '0.8rem', fontWeight: 600, letterSpacing: 1 }}>OR</span>
-                        <div style={{ flex: 1, height: 1, background: '#e0e0e0' }} />
+                    <div className="ui-signuppage-36" >
+                        <div className="ui-signuppage-37"  />
+                        <span className="ui-signuppage-38" >OR</span>
+                        <div className="ui-signuppage-39"  />
                     </div>
 
-                    <button onClick={() => googleLogin()} style={{
-                        width: '100%', background: '#fff', border: '1.5px solid #ddd',
-                        borderRadius: 8, padding: '12px', fontWeight: 700, fontSize: '0.95rem',
-                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10
-                    }}>
+                    <button className="ui-signuppage-40" onClick={() => googleLogin()} >
                         <GoogleIcon />
                         Continue with Google
                     </button>
 
-                    <p style={{ textAlign: 'center', marginTop: 20, fontSize: '0.88rem', color: '#555' }}>
+                    <p className="ui-signuppage-41" >
                         Already have an account?{' '}
-                        <Link to="/login" style={{ color: '#000000', fontWeight: 700, textDecoration: 'none' }}>Sign In</Link>
+                        <Link className="ui-signuppage-42" to="/login" >Sign In</Link>
                     </p>
                 </div>
             </div>

@@ -1,3 +1,4 @@
+import '../styles/LoginPage.css';
 import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
@@ -7,7 +8,7 @@ import { useGoogleLogin } from '@react-oauth/google';
 import AuthPanel from './AuthPanel';
 import CountryCodePicker, { DEFAULT_COUNTRY } from '../components/CountryCodePicker';
 
-const inputStyle = { border: 'none', outline: 'none', flex: 1, fontSize: '0.95rem', background: 'transparent' };
+
 
 const GoogleIcon = () => (
     <svg width="20" height="20" viewBox="0 0 48 48">
@@ -60,40 +61,40 @@ const LoginPage = () => {
     });
 
     return (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', height: '100vh', overflow: 'hidden' }}>
+        <div className="ui-loginpage-1" >
             {/* left: Auth Panel */}
             <AuthPanel />
             {/* right: Form */}
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '48px 56px', background: '#fff', height: '100%', boxSizing: 'border-box', overflowY: 'auto' }}>
-                <div style={{ maxWidth: 400, width: '100%', margin: '0 auto' }}>
+            <div className="ui-loginpage-2" >
+                <div className="ui-loginpage-3" >
 
                     {/* Header */}
-                    <div style={{ textAlign: 'center', marginBottom: 32 }}>
-                        <p style={{ fontWeight: 800, fontSize: '1.25rem', color: '#1A1A1A', marginBottom: 4, letterSpacing: 0.5 }}>
-                            <span style={{ color: '#000000' }}>1APP</span> PORTAL
+                    <div className="ui-loginpage-4" >
+                        <p className="ui-loginpage-5" >
+                            <span className="ui-loginpage-6" >1APP</span> PORTAL
                         </p>
-                        <h2 style={{ fontWeight: 800, fontSize: '1.9rem', color: '#000000', margin: '4px 0 8px' }}>Welcome Back</h2>
-                        <p style={{ color: '#888', fontSize: '0.9rem', margin: 0 }}>Login to your account to continue</p>
-                        <div style={{ width: 40, height: 3, background: '#000000', margin: '12px auto 0', borderRadius: 2 }} />
+                        <h2 className="ui-loginpage-7" >Welcome Back</h2>
+                        <p className="ui-loginpage-8" >Login to your account to continue</p>
+                        <div className="ui-loginpage-9"  />
                     </div>
 
                     <form onSubmit={handleSubmit}>
                         {/* Phone / Email field */}
-                        <div style={{ marginBottom: 16 }}>
-                            <label style={{ fontWeight: 700, fontSize: '0.85rem', display: 'block', marginBottom: 6, color: '#1A1A1A' }}>
+                        <div className="ui-loginpage-10" >
+                            <label className="ui-loginpage-11" >
                                 {useEmail ? 'Email Address' : 'Phone Number'}
                             </label>
-                            <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #ccc', borderRadius: 8, padding: '10px 14px', gap: 10 }}>
+                            <div className="ui-loginpage-12" >
                                 {useEmail ? (
                                     <>
                                         <FaEnvelope color="#888" size={14} />
-                                        <input
+                                        <input className="ui-loginpage-13"
                                             type="email"
                                             required
                                             placeholder="name@example.com"
                                             value={identifier}
                                             onChange={e => setIdentifier(e.target.value)}
-                                            style={inputStyle}
+
                                         />
                                     </>
                                 ) : (
@@ -109,68 +110,59 @@ const LoginPage = () => {
                                     </>
                                 )}
                             </div>
-                            <div style={{ textAlign: 'right', marginTop: 5 }}>
-                                <button type="button" onClick={() => { setUseEmail(!useEmail); setIdentifier(''); }}
-                                    style={{ background: 'none', border: 'none', color: '#000000', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer', padding: 0 }}>
+                            <div className="ui-loginpage-14" >
+                                <button className="ui-loginpage-15" type="button" onClick={() => { setUseEmail(!useEmail); setIdentifier(''); }}
+                                    >
                                     {useEmail ? 'Use Phone Number' : 'Use Email'}
                                 </button>
                             </div>
                         </div>
 
                         {/* Password field */}
-                        <div style={{ marginBottom: 8 }}>
-                            <label style={{ fontWeight: 700, fontSize: '0.85rem', display: 'block', marginBottom: 6, color: '#1A1A1A' }}>Password</label>
-                            <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #ccc', borderRadius: 8, padding: '10px 14px', gap: 10 }}>
+                        <div className="ui-loginpage-16" >
+                            <label className="ui-loginpage-17" >Password</label>
+                            <div className="ui-loginpage-18" >
                                 <FaLock color="#888" size={14} />
-                                <input
+                                <input className="ui-loginpage-19"
                                     type={showPass ? 'text' : 'password'}
                                     required
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
-                                    style={{ ...inputStyle, flex: 1 }}
+
                                 />
-                                <button type="button" onClick={() => setShowPass(!showPass)}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#aaa', display: 'flex' }}>
+                                <button className="ui-loginpage-20" type="button" onClick={() => setShowPass(!showPass)}
+                                    >
                                     {showPass ? <FaEye size={15} /> : <FaEyeSlash size={15} />}
                                 </button>
                             </div>
-                            <div style={{ textAlign: 'right', marginTop: 5 }}>
-                                <Link to="/forgot-password" style={{ color: '#000000', fontSize: '0.82rem', fontWeight: 700, textDecoration: 'none' }}>
+                            <div className="ui-loginpage-21" >
+                                <Link className="ui-loginpage-22" to="/forgot-password" >
                                     Forgot password ?
                                 </Link>
                             </div>
                         </div>
 
-                        <button type="submit" disabled={loading} style={{
-                            width: '100%', background: '#000000', color: '#fff', border: 'none',
-                            borderRadius: 8, padding: '13px', fontWeight: 700, fontSize: '1rem',
-                            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            gap: 8, marginTop: 20
-                        }}>
-                            {loading ? 'Logging in...' : 'Login'} <span style={{ fontSize: '1.1rem' }}>→</span>
+                        <button className="ui-loginpage-23" type="submit" disabled={loading} >
+                            {loading ? 'Logging in...' : 'Login'} <span className="ui-loginpage-24" >→</span>
                         </button>
                     </form>
 
                     {/* OR divider */}
-                    <div style={{ display: 'flex', alignItems: 'center', margin: '22px 0', gap: 10 }}>
-                        <div style={{ flex: 1, height: 1, background: '#E0E0E0' }} />
-                        <span style={{ color: '#aaa', fontSize: '0.8rem', fontWeight: 600, letterSpacing: 1 }}>OR</span>
-                        <div style={{ flex: 1, height: 1, background: '#E0E0E0' }} />
+                    <div className="ui-loginpage-25" >
+                        <div className="ui-loginpage-26"  />
+                        <span className="ui-loginpage-27" >OR</span>
+                        <div className="ui-loginpage-28"  />
                     </div>
 
-                    <button onClick={() => googleLoginHandler()} style={{
-                        width: '100%', background: '#fff', border: '1.5px solid #ddd',
-                        borderRadius: 8, padding: '12px', fontWeight: 700, fontSize: '0.95rem',
-                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10
-                    }}>
+                    <button className="ui-loginpage-29" onClick={() => googleLoginHandler()} >
                         <GoogleIcon />
                         Continue with Google
                     </button>
 
-                    <p style={{ textAlign: 'center', marginTop: 22, fontSize: '0.88rem', color: '#555' }}>
+                    <p className="ui-loginpage-30" >
                         Don't have an account?{' '}
-                        <Link to="/signup" style={{ color: '#000000', fontWeight: 700, textDecoration: 'none' }}>Sign Up</Link>
+                        <Link className="ui-loginpage-31" to="/signup" >Sign Up</Link>
                     </p>
                 </div>
             </div>

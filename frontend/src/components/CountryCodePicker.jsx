@@ -1,3 +1,5 @@
+import { cssValue } from '../utils/cssValue';
+import '../styles/CountryCodePicker.css';
 import React, { useState, useRef, useEffect } from 'react';
 
 // Country list: { name, flag emoji, dial code, max digits for local number }
@@ -119,39 +121,21 @@ const CountryCodePicker = ({
     const inputPlaceholder = placeholder || `${selectedCountry.maxDigits}-digit number`;
 
     return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 0, width: '100%', position: 'relative' }} ref={dropdownRef}>
+        <div className="ui-countrycodepicker-1"  ref={dropdownRef}>
             {/* Dial code selector button */}
-            <button
+            <button className="ui-countrycodepicker-2"
                 type="button"
                 disabled={disabled}
                 onClick={() => setOpen(o => !o)}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 5,
-                    background: '#f4f4f4',
-                    border: 'none',
-                    borderRight: '1.5px solid #ddd',
-                    borderRadius: '6px 0 0 6px',
-                    padding: '8px 10px',
-                    cursor: disabled ? 'default' : 'pointer',
-                    fontWeight: 600,
-                    fontSize: '0.88rem',
-                    color: '#1a1a1a',
-                    whiteSpace: 'nowrap',
-                    flexShrink: 0,
-                    minWidth: 72,
-                    justifyContent: 'center',
-                    userSelect: 'none',
-                }}
+                style={{ "--ui-countrycodepicker-2-cursor": cssValue(disabled ? 'default' : 'pointer', "cursor") }}
             >
-                <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>{selectedCountry.flag}</span>
+                <span className="ui-countrycodepicker-3" >{selectedCountry.flag}</span>
                 <span>{selectedCountry.code}</span>
-                <span style={{ fontSize: '0.6rem', color: '#888', marginLeft: 1 }}>▼</span>
+                <span className="ui-countrycodepicker-4" >▼</span>
             </button>
 
             {/* Phone number input */}
-            <input
+            <input className="ui-countrycodepicker-5"
                 type="tel"
                 inputMode="numeric"
                 required={required}
@@ -160,97 +144,49 @@ const CountryCodePicker = ({
                 onChange={handlePhoneInput}
                 maxLength={selectedCountry.maxDigits}
                 placeholder={inputPlaceholder}
-                style={{
-                    flex: 1,
-                    border: 'none',
-                    outline: 'none',
-                    fontSize: '0.95rem',
-                    background: 'transparent',
-                    padding: '0 4px',
-                    minWidth: 0,
-                }}
+
             />
 
             {/* Digit counter hint */}
             {phoneValue.length > 0 && (
-                <span style={{
-                    fontSize: '0.7rem',
-                    color: phoneValue.length === selectedCountry.maxDigits ? '#2e7d32' : '#aaa',
-                    fontWeight: 600,
-                    flexShrink: 0,
-                    marginRight: 2,
-                }}>
+                <span className="ui-countrycodepicker-6" style={{ "--ui-countrycodepicker-6-color": cssValue(phoneValue.length === selectedCountry.maxDigits ? "var(--ui-color-269)" : "var(--ui-color-19)", "color") }}>
                     {phoneValue.length}/{selectedCountry.maxDigits}
                 </span>
             )}
 
             {/* Dropdown */}
             {open && (
-                <div style={{
-                    position: 'absolute',
-                    top: 'calc(100% + 4px)',
-                    left: 0,
-                    zIndex: 9999,
-                    background: '#fff',
-                    border: '1.5px solid #ddd',
-                    borderRadius: 10,
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                    width: 270,
-                    maxHeight: 280,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    overflow: 'hidden',
-                }}>
+                <div className="ui-countrycodepicker-7" >
                     {/* Search box */}
-                    <div style={{ padding: '8px 10px', borderBottom: '1px solid #f0f0f0' }}>
-                        <input
+                    <div className="ui-countrycodepicker-8" >
+                        <input className="ui-countrycodepicker-9"
                             autoFocus
                             type="text"
                             placeholder="Search country or code..."
                             value={search}
                             onChange={e => setSearch(e.target.value)}
-                            style={{
-                                width: '100%',
-                                border: '1px solid #e0e0e0',
-                                borderRadius: 6,
-                                padding: '6px 10px',
-                                fontSize: '0.85rem',
-                                outline: 'none',
-                                boxSizing: 'border-box',
-                            }}
+
                         />
                     </div>
 
                     {/* Country list */}
-                    <div style={{ overflowY: 'auto', flex: 1 }}>
+                    <div className="ui-countrycodepicker-10" >
                         {filtered.length === 0 ? (
-                            <div style={{ padding: '12px 14px', color: '#aaa', fontSize: '0.85rem' }}>No results</div>
+                            <div className="ui-countrycodepicker-11" >No results</div>
                         ) : (
                             filtered.map((c) => (
-                                <button
+                                <button className="ui-countrycodepicker-12"
                                     key={`${c.name}-${c.code}`}
                                     type="button"
                                     onClick={() => handleCountrySelect(c)}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 10,
-                                        width: '100%',
-                                        padding: '9px 14px',
-                                        border: 'none',
-                                        background: selectedCountry.name === c.name ? '#f5f5f5' : 'transparent',
-                                        cursor: 'pointer',
-                                        fontSize: '0.88rem',
-                                        textAlign: 'left',
-                                        borderBottom: '1px solid #f8f8f8',
-                                    }}
-                                    onMouseEnter={e => e.currentTarget.style.background = '#f0f0f0'}
-                                    onMouseLeave={e => e.currentTarget.style.background = selectedCountry.name === c.name ? '#f5f5f5' : 'transparent'}
+                                    style={{ "--ui-countrycodepicker-12-background": cssValue(selectedCountry.name === c.name ? "var(--ui-color-35)" : "var(--ui-color-120)", "background") }}
+
+
                                 >
-                                    <span style={{ fontSize: '1.15rem', flexShrink: 0 }}>{c.flag}</span>
-                                    <span style={{ flex: 1, color: '#1a1a1a' }}>{c.name}</span>
-                                    <span style={{ color: '#888', fontWeight: 600, flexShrink: 0 }}>{c.code}</span>
-                                    <span style={{ color: '#bbb', fontSize: '0.75rem', flexShrink: 0 }}>{c.maxDigits}d</span>
+                                    <span className="ui-countrycodepicker-13" >{c.flag}</span>
+                                    <span className="ui-countrycodepicker-14" >{c.name}</span>
+                                    <span className="ui-countrycodepicker-15" >{c.code}</span>
+                                    <span className="ui-countrycodepicker-16" >{c.maxDigits}d</span>
                                 </button>
                             ))
                         )}

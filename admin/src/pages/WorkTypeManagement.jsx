@@ -1,3 +1,4 @@
+import '../styles/WorkTypeManagement.css';
 import React, { useEffect, useRef, useState } from 'react';
 import adminApi from '../services/adminApi';
 import { FaPlus, FaEdit, FaTrash, FaChevronDown, FaChevronRight, FaLayerGroup } from 'react-icons/fa';
@@ -5,7 +6,7 @@ import { toast } from 'react-toastify';
 
 /* ─── tiny helpers ─────────────────────────────────────────────────── */
 const Badge = ({ active }) => (
-    <span className={`badge rounded-pill ${active ? 'bg-success' : 'bg-secondary'}`} style={{ fontSize: 11 }}>
+    <span className={[`badge rounded-pill ${active ? 'bg-success' : 'bg-secondary'}`, " admin-work-type-management-1"].join('')} >
         {active ? 'Active' : 'Inactive'}
     </span>
 );
@@ -207,8 +208,8 @@ const WorkTypeManagement = () => {
                 <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
                     <input
                         type="text"
-                        className="form-control"
-                        style={{ maxWidth: 350 }}
+                        className="form-control admin-work-type-management-2"
+
                         placeholder="Search work types or sub-types…"
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
@@ -230,8 +231,8 @@ const WorkTypeManagement = () => {
                             <div key={wt._id} className="border rounded-3 overflow-hidden">
                                 {/* Work-type row */}
                                 <div
-                                    className="d-flex align-items-center px-3 py-3 gap-2"
-                                    style={{ background: '#faf7f2', borderBottom: expanded[wt._id] ? '1px solid #e9e4da' : 'none' }}
+                                    className={["d-flex align-items-center px-3 py-3 gap-2 admin-work-type-management-3 ", expanded[wt._id] ? "admin-work-type-management-state-1" : "admin-work-type-management-state-2"].join('')}
+
                                 >
                                     <button
                                         className="btn btn-sm btn-light border-0 p-1"
@@ -239,8 +240,8 @@ const WorkTypeManagement = () => {
                                         title={expanded[wt._id] ? 'Collapse' : 'Expand'}
                                     >
                                         {expanded[wt._id]
-                                            ? <FaChevronDown size={12} style={{ color: '#A5732F' }} />
-                                            : <FaChevronRight size={12} style={{ color: '#A5732F' }} />}
+                                            ? <FaChevronDown size={12} className="admin-work-type-management-4"  />
+                                            : <FaChevronRight size={12} className="admin-work-type-management-5"  />}
                                     </button>
 
                                     <div className="flex-grow-1">
@@ -258,8 +259,8 @@ const WorkTypeManagement = () => {
 
                                     <div className="d-flex gap-1 ms-2">
                                         <button
-                                            className="btn btn-sm btn-light border"
-                                            style={{ color: '#A5732F' }}
+                                            className="btn btn-sm btn-light border admin-work-type-management-6"
+
                                             title="Edit"
                                             onClick={() => openEdit(wt)}
                                         >
@@ -270,7 +271,7 @@ const WorkTypeManagement = () => {
                                             title={wt.isActive ? 'Deactivate' : 'Activate'}
                                             onClick={() => handleToggleActive(wt)}
                                         >
-                                            <span style={{ fontSize: 11 }}>{wt.isActive ? 'Deactivate' : 'Activate'}</span>
+                                            <span className="admin-work-type-management-7" >{wt.isActive ? 'Deactivate' : 'Activate'}</span>
                                         </button>
                                         <button
                                             className="btn btn-sm btn-light border text-danger"
@@ -284,17 +285,17 @@ const WorkTypeManagement = () => {
                                             title="Add sub-type"
                                             onClick={() => openSubCreate(wt._id)}
                                         >
-                                            <FaPlus size={10} /><span style={{ fontSize: 11 }}>Sub-type</span>
+                                            <FaPlus size={10} /><span className="admin-work-type-management-8" >Sub-type</span>
                                         </button>
                                     </div>
                                 </div>
 
                                 {/* Sub-types */}
                                 {expanded[wt._id] && (
-                                    <div className="px-4 py-2" style={{ background: '#fff' }}>
+                                    <div className="px-4 py-2 admin-work-type-management-9" >
                                         {/* Inline sub-type form */}
                                         {subForm?.workTypeId === wt._id && (
-                                            <form onSubmit={handleSubSubmit} className="d-flex gap-2 align-items-center mb-3 mt-2 p-3 rounded-3" style={{ background: '#f8f4ee', border: '1px dashed #c9a96e' }}>
+                                            <form onSubmit={handleSubSubmit} className="d-flex gap-2 align-items-center mb-3 mt-2 p-3 rounded-3 admin-work-type-management-10" >
                                                 <div className="flex-grow-1">
                                                     <input
                                                         type="text"
@@ -344,8 +345,8 @@ const WorkTypeManagement = () => {
                                                             <td>
                                                                 <div className="d-flex gap-1">
                                                                     <button
-                                                                        className="btn btn-sm btn-light border"
-                                                                        style={{ color: '#A5732F' }}
+                                                                        className="btn btn-sm btn-light border admin-work-type-management-11"
+
                                                                         title="Edit"
                                                                         onClick={() => openSubEdit(wt._id, sub)}
                                                                     >
@@ -356,7 +357,7 @@ const WorkTypeManagement = () => {
                                                                         title={sub.isActive ? 'Deactivate' : 'Activate'}
                                                                         onClick={() => handleToggleSubActive(wt, sub)}
                                                                     >
-                                                                        <span style={{ fontSize: 10 }}>{sub.isActive ? 'Deactivate' : 'Activate'}</span>
+                                                                        <span className="admin-work-type-management-12" >{sub.isActive ? 'Deactivate' : 'Activate'}</span>
                                                                     </button>
                                                                     <button
                                                                         className="btn btn-sm btn-light border text-danger"

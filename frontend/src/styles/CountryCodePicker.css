@@ -1,0 +1,155 @@
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-countrycodepicker-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-16);
+  width: 100%;
+  position: relative;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-countrycodepicker-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-17);
+  background: var(--ui-color-18);
+  border: none;
+  border-right: 1.5px solid #ddd;
+  border-radius: 6px 0 0 6px;
+  padding: var(--ui-space-18);
+  cursor: var(--ui-countrycodepicker-2-cursor);
+  font-weight: 600;
+  font-size: var(--ui-font-size-10);
+  color: var(--ui-color-7);
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 72px;
+  justify-content: center;
+  user-select: none;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-countrycodepicker-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-11);
+  line-height: 1;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-countrycodepicker-4:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-12);
+  color: var(--ui-color-6);
+  margin-left: var(--ui-space-19);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-countrycodepicker-5:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: var(--ui-font-size-13);
+  background: var(--ui-color-120);
+  padding: var(--ui-space-20);
+  min-width: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-countrycodepicker-6:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-14);
+  color: var(--ui-countrycodepicker-6-color);
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-right: var(--ui-space-15);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-countrycodepicker-7:not(#ui-style-priority):not(#ui-style-priority-2) {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 9999;
+  background: var(--ui-color-2);
+  border: 1.5px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  width: 270px;
+  max-height: 280px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-countrycodepicker-8:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-18);
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-countrycodepicker-9:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: var(--ui-space-21);
+  font-size: var(--ui-font-size-15);
+  outline: none;
+  box-sizing: border-box;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-countrycodepicker-10:not(#ui-style-priority):not(#ui-style-priority-2) {
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-countrycodepicker-11:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-22);
+  color: var(--ui-color-19);
+  font-size: var(--ui-font-size-15);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-countrycodepicker-12:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-23);
+  width: 100%;
+  padding: var(--ui-space-24);
+  border: none;
+  background: var(--ui-countrycodepicker-12-background);
+  cursor: pointer;
+  font-size: var(--ui-font-size-10);
+  text-align: left;
+  border-bottom: 1px solid #f8f8f8;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-countrycodepicker-13:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-16);
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-countrycodepicker-14:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+  color: var(--ui-color-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-countrycodepicker-15:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-6);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-countrycodepicker-16:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-20);
+  font-size: var(--ui-font-size-17);
+  flex-shrink: 0;
+}
+
+.ui-countrycodepicker-12:not(#ui-style-priority):not(#ui-style-priority-2):hover {
+  background: var(--ui-color-3);
+}

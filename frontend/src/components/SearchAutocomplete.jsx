@@ -1,8 +1,10 @@
+import { cssValue } from '../utils/cssValue';
+import '../styles/SearchAutocomplete.css';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { FaMapMarkerAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
-const SearchAutocomplete = ({ placeholder = "Search locations...", inputStyle = {}, wrapperStyle = {} }) => {
+const SearchAutocomplete = ({ placeholder = "Search locations...", inputClassName = '', wrapperClassName = '' }) => {
     const [query, setQuery] = useState('');
     const [selected, setSelected] = useState(false);
     const [suggestions, setSuggestions] = useState([]);
@@ -68,48 +70,29 @@ const SearchAutocomplete = ({ placeholder = "Search locations...", inputStyle = 
     }, []);
 
     return (
-        <div ref={wrapperRef} style={{ position: 'relative', ...wrapperStyle }}>
-            <form onSubmit={handleSubmit} className="d-flex align-items-center border rounded-pill px-3 py-2" style={{ background: '#fff', gap: 6 }}>
-                <FaMapMarkerAlt size={13} className="flex-shrink-0" style={{ color: selected ? '#f97316' : '#aaa' }} />
+        <div className={`ui-searchautocomplete-1 ${wrapperClassName}`} ref={wrapperRef} >
+            <form onSubmit={handleSubmit} className="d-flex align-items-center border rounded-pill px-3 py-2 ui-searchautocomplete-2" >
+                <FaMapMarkerAlt size={13} className="flex-shrink-0 ui-searchautocomplete-3" style={{ "--ui-searchautocomplete-3-color": cssValue(selected ? "var(--ui-color-271)" : "var(--ui-color-19)", "color") }} />
                 <input
                     ref={inputRef}
                     type="text"
-                    className="border-0 bg-transparent"
+                    className="border-0 bg-transparent ui-searchautocomplete-4"
                     placeholder={placeholder}
                     value={query}
                     onChange={handleChange}
                     onFocus={() => suggestions.length > 0 && setOpen(true)}
-                    style={{
-                        outline: 'none',
-                        fontSize: '13px',
-                        color: '#444',
-                        flex: 1,
-                        minWidth: '120px',
-                        maxWidth: '220px',
-                        width: query ? `${Math.max(120, query.length * 7)}px` : '160px',
-                        transition: 'width 0.2s',
-                        ...inputStyle
-                    }}
+                    style={{ "--ui-searchautocomplete-4-width": cssValue(query ? `${Math.max(120, query.length * 7)}px` : '160px', "width") }}
                     autoComplete="off"
                 />
                 {/* Right slot: spinner → clear → empty */}
-                <span className="flex-shrink-0 d-flex align-items-center" style={{ width: 18, justifyContent: 'center' }}>
+                <span className="flex-shrink-0 d-flex align-items-center ui-searchautocomplete-5" >
                     {loading ? (
-                        <span style={{
-                            display: 'inline-block', width: 13, height: 13,
-                            border: '2px solid #e0e0e0', borderTop: '2px solid #888',
-                            borderRadius: '50%', animation: 'loc-spin 0.7s linear infinite'
-                        }} />
+                        <span className="ui-searchautocomplete-6"  />
                     ) : selected || query ? (
-                        <button
+                        <button className="ui-searchautocomplete-7"
                             type="button"
                             onMouseDown={handleClear}
-                            style={{
-                                background: '#e0e0e0', border: 'none', borderRadius: '50%',
-                                width: 16, height: 16, padding: 0, cursor: 'pointer',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                lineHeight: 1, flexShrink: 0
-                            }}
+
                             aria-label="Clear"
                         >
                             <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
@@ -119,24 +102,24 @@ const SearchAutocomplete = ({ placeholder = "Search locations...", inputStyle = 
                     ) : null}
                 </span>
             </form>
-            <style>{`@keyframes loc-spin { to { transform: rotate(360deg); } }`}</style>
+
 
             {open && (
                 <ul
-                    className="list-unstyled mb-0 shadow-sm border rounded-3 bg-white"
-                    style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 2000, overflow: 'hidden' }}
+                    className="list-unstyled mb-0 shadow-sm border rounded-3 bg-white ui-searchautocomplete-8"
+
                 >
                     {suggestions.map((item) => (
                         <li
                             key={item.place_id}
                             onMouseDown={() => handleSelect(item)}
-                            className="d-flex align-items-start gap-2 px-3 py-2"
-                            style={{ cursor: 'pointer', fontSize: '13px', borderBottom: '1px solid #f0f0f0' }}
-                            onMouseEnter={e => e.currentTarget.style.background = '#f8f8f8'}
-                            onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+                            className="d-flex align-items-start gap-2 px-3 py-2 ui-searchautocomplete-9"
+
+
+
                         >
                             <FaMapMarkerAlt size={13} className="text-muted flex-shrink-0 mt-1" />
-                            <span className="text-truncate" style={{ maxWidth: '100%' }}>{item.display_name}</span>
+                            <span className="text-truncate ui-searchautocomplete-10" >{item.display_name}</span>
                         </li>
                     ))}
                 </ul>

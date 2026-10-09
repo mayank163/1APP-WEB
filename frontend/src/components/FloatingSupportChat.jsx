@@ -6,7 +6,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useSocket } from '../context/SocketContext';
 import { chatApi } from '../services/api';
 import UserChat from '../pages/UserChat';
-import './FloatingSupportChat.css';
+import '../styles/FloatingSupportChat.css';
 
 export default function FloatingSupportChat() {
     const { user } = useAuth();

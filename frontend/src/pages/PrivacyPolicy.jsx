@@ -1,5 +1,7 @@
+import { cssValue } from '../utils/cssValue';
+import '../styles/PrivacyPolicy.css';
 import React, { useState, useEffect, useRef } from 'react';
-import './PrivacyPolicy.css';
+import '../styles/PrivacyPolicy.css';
 
 const POLICY_TEXT = `1App ("1App," "1App," "we," "us," or "our") respects your privacy and is committed to protecting the personal information of users of the **1App (1App)** application.
 
@@ -790,12 +792,12 @@ const SECTIONS = POLICY_TEXT.slice(firstSectionIndex).split(/(?=^\*\*\d+\. )/m).
 const renderInline = (text) => text.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\(https?:\/\/[^)]+\))/g).map((part, index) => {
     if (part.startsWith('**') && part.endsWith('**')) return <strong key={index}>{part.slice(2, -2)}</strong>;
     const link = part.match(/^\[([^\]]+)\]\((https?:\/\/[^)]+)\)$/);
-    if (link) return <a key={index} href={link[2]} target="_blank" rel="noreferrer" style={{ color: '#000000' }}>{link[1]}</a>;
+    if (link) return <a className="ui-privacypolicy-1" key={index} href={link[2]} target="_blank" rel="noreferrer" >{link[1]}</a>;
     return part;
 });
 
-const renderParagraphs = (content, style) => content.split(/\n\s*\n/).filter(Boolean).map((paragraph, index) => (
-    <p key={index} style={{ ...style, whiteSpace: 'pre-line' }}>{renderInline(paragraph)}</p>
+const renderParagraphs = (content, className) => content.split(/\n\s*\n/).filter(Boolean).map((paragraph, index) => (
+    <p className={`ui-privacypolicy-2 ${className}`} key={index}>{renderInline(paragraph)}</p>
 ));
 
 export default function PrivacyPolicy() {
@@ -814,36 +816,36 @@ export default function PrivacyPolicy() {
     const scrollTo = (id) => sectionRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
     return (
-        <div className="privacy-policy-layout" style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 20px' }}>
+        <div className="privacy-policy-layout ui-privacypolicy-3" >
             {/* Center: Content */}
             <div className="privacy-policy-content">
-                <h1 style={{ fontWeight: 800, fontSize: '1.8rem', marginBottom: 4 }}>Privacy Policy</h1>
-                <p style={{ color: '#888', fontStyle: 'italic', marginBottom: 24, fontSize: '14px' }}>Last updated: October 2, 2026</p>
-                {renderParagraphs(INTRO, { fontSize: '14px', lineHeight: 1.8, color: '#333', marginBottom: 12 })}
+                <h1 className="ui-privacypolicy-4" >Privacy Policy</h1>
+                <p className="ui-privacypolicy-5" >Last updated: October 2, 2026</p>
+                {renderParagraphs(INTRO, 'legal-intro-paragraph')}
 
                 {SECTIONS.map(sec => (
-                    <div key={sec.id} id={sec.id} ref={el => sectionRefs.current[sec.id] = el} style={{ marginBottom: 32 }}>
-                        <h2 style={{ fontWeight: 800, fontSize: '0.95rem', marginBottom: 10 }}>{sec.title}</h2>
-                        {renderParagraphs(sec.content, { fontSize: '14px', lineHeight: 1.8, color: '#333', marginBottom: 10 })}
+                    <div className="ui-privacypolicy-6" key={sec.id} id={sec.id} ref={el => sectionRefs.current[sec.id] = el} >
+                        <h2 className="ui-privacypolicy-7" >{sec.title}</h2>
+                        {renderParagraphs(sec.content, 'legal-section-paragraph')}
                     </div>
                 ))}
             </div>
 
             {/* Right: Sticky TOC */}
             <div className="privacy-policy-toc">
-                <div style={{ border: '1px solid #e0e0e0', borderRadius: 12, padding: '20px', marginBottom: 16 }}>
-                    <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', color: '#888', marginBottom: 14 }}>PRIVACY POLICY</div>
+                <div className="ui-privacypolicy-8" >
+                    <div className="ui-privacypolicy-9" >PRIVACY POLICY</div>
                     {SECTIONS.map(sec => (
-                        <div key={sec.id} onClick={() => scrollTo(sec.id)}
-                            style={{ fontSize: '12px', padding: '5px 0 5px 10px', cursor: 'pointer', color: active === sec.id ? '#000000' : '#444', fontWeight: active === sec.id ? 700 : 400, borderLeft: active === sec.id ? '2px solid #000000' : '2px solid transparent', marginBottom: 2 }}>
+                        <div className="ui-privacypolicy-10" key={sec.id} onClick={() => scrollTo(sec.id)}
+                            style={{ "--ui-privacypolicy-10-color": cssValue(active === sec.id ? "var(--ui-color-27)" : "var(--ui-color-34)", "color"), "--ui-privacypolicy-10-font-weight": cssValue(active === sec.id ? 700 : 400, "fontWeight"), "--ui-privacypolicy-10-border-left": cssValue(active === sec.id ? '2px solid #000000' : '2px solid transparent', "borderLeft") }}>
                             {sec.title}
                         </div>
                     ))}
                 </div>
-                <div style={{ border: '1px solid #e0e0e0', borderRadius: 12, padding: '20px' }}>
-                    <p style={{ fontSize: '13px', fontWeight: 700, marginBottom: 6 }}>Need help?</p>
-                    <p style={{ fontSize: '13px', color: '#555', marginBottom: 14 }}>If you have any questions about this Privacy Policy, please contact us.</p>
-                    <a href="/contact" style={{ display: 'block', background: '#000000', color: '#fff', textAlign: 'center', padding: '12px', borderRadius: 8, fontWeight: 700, fontSize: '14px', textDecoration: 'none' }}>Contact Support</a>
+                <div className="ui-privacypolicy-11" >
+                    <p className="ui-privacypolicy-12" >Need help?</p>
+                    <p className="ui-privacypolicy-13" >If you have any questions about this Privacy Policy, please contact us.</p>
+                    <a className="ui-privacypolicy-14" href="/contact" >Contact Support</a>
                 </div>
             </div>
         </div>

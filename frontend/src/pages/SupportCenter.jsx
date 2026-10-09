@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import API from '../services/supportApi';
-import './SupportCenter.css';
+import '../styles/SupportCenter.css';
 import UserSupportCenter from './UserSupportCenter';
 const statuses = ['open', 'in_progress', 'escalated', 'resolved', 'closed'];
 const priorities = ['low', 'medium', 'high', 'urgent'];

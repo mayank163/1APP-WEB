@@ -1,3 +1,5 @@
+import { cssValue } from '../utils/cssValue';
+import '../styles/Checkout.css';
 import React, { useContext, useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { loadStripe } from '@stripe/stripe-js';
@@ -30,13 +32,9 @@ const fmtAddress = (a) =>
     [a.addressLine, a.city, a.state, a.zipcode].filter(Boolean).join(', ');
 
 /* ─── styles ─── */
-const inputStyle = {
-    width: '100%', padding: '11px 14px', borderRadius: 10,
-    border: '1.5px solid #e0e0e0', background: '#f9f9f9',
-    fontSize: 14, color: '#333', outline: 'none', boxSizing: 'border-box'
-};
-const labelStyle = { fontSize: 13, fontWeight: 700, color: '#555', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 7 };
-const cardStyle = { background: '#fff', borderRadius: 14, padding: '20px 22px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' };
+
+
+
 
 /* ─── Stripe sub-form (unchanged logic) ─── */
 const StripePaymentForm = ({ paymentAttempt, paymentOrder, amount, onSuccess, onCancel }) => {
@@ -69,29 +67,29 @@ const StripePaymentForm = ({ paymentAttempt, paymentOrder, amount, onSuccess, on
     };
 
     return (
-        <form onSubmit={handleSubmit} style={{ padding: '28px 24px' }}>
-            <div style={{ marginBottom: 20, textAlign: 'center' }}>
-                <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Payment Intent</div>
-                <div style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 12, color: '#333', wordBreak: 'break-all' }}>{paymentOrder?.id}</div>
+        <form className="ui-checkout-1" onSubmit={handleSubmit} >
+            <div className="ui-checkout-2" >
+                <div className="ui-checkout-3" >Payment Intent</div>
+                <div className="ui-checkout-4" >{paymentOrder?.id}</div>
             </div>
-            <div style={{ background: '#f5f5f5', borderRadius: 12, padding: '16px 20px', marginBottom: 20, textAlign: 'center' }}>
-                <div style={{ fontSize: 12, color: '#888', marginBottom: 4 }}>Amount to Pay</div>
-                <div style={{ fontWeight: 800, fontSize: '2rem', color: '#000', fontFamily: 'monospace' }}>${amount.toFixed(2)}</div>
+            <div className="ui-checkout-5" >
+                <div className="ui-checkout-6" >Amount to Pay</div>
+                <div className="ui-checkout-7" >${amount.toFixed(2)}</div>
             </div>
-            <div style={{ marginBottom: 18 }}>
+            <div className="ui-checkout-8" >
                 <PaymentElement options={{ layout: 'tabs', wallets: { applePay: 'never', googlePay: 'never' } }} />
             </div>
             {processing ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '8px 0' }}>
-                    <div className="shimmer" style={{ height: 48, borderRadius: 12 }} />
-                    <div className="shimmer" style={{ height: 48, borderRadius: 12 }} />
+                <div className="ui-checkout-9" >
+                    <div className="shimmer ui-checkout-10"  />
+                    <div className="shimmer ui-checkout-11"  />
                 </div>
             ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <button type="submit" disabled={!stripe || !elements} style={{ width: '100%', background: '#000', color: '#fff', border: 'none', borderRadius: 12, padding: '14px 0', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
+                <div className="ui-checkout-12" >
+                    <button className="ui-checkout-13" type="submit" disabled={!stripe || !elements} >
                         Pay ${amount.toFixed(2)}
                     </button>
-                    <button type="button" onClick={onCancel} style={{ background: 'none', border: 'none', color: '#888', fontSize: 13, cursor: 'pointer', marginTop: 4 }}>
+                    <button className="ui-checkout-14" type="button" onClick={onCancel} >
                         Cancel Transaction
                     </button>
                 </div>
@@ -252,12 +250,12 @@ const Checkout = () => {
     if (showGateway) {
         const stripeReady = paymentOrder?.provider === 'stripe' && paymentOrder?.clientSecret && stripePromiseRef.current;
         return (
-            <div style={{ background: '#f5f5f5', minHeight: '100vh', padding: '28px 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ ...cardStyle, width: '100%', maxWidth: 460, padding: 0, overflow: 'hidden' }}>
-                    <div style={{ background: '#111', padding: '28px 24px', textAlign: 'center' }}>
-                        <FaLock size={28} color="#635bff" style={{ marginBottom: 10 }} />
-                        <div style={{ fontWeight: 800, fontSize: 18, color: '#fff' }}>{paymentOrder?.provider === 'paypal' ? 'PayPal' : 'Stripe'} Secure Payment</div>
-                        <div style={{ fontSize: 12, color: '#aaa', marginTop: 4 }}>Complete payment to confirm your booking</div>
+            <div className="ui-checkout-15" >
+                <div className="ui-checkout-16" >
+                    <div className="ui-checkout-17" >
+                        <FaLock className="ui-checkout-18" size={28} color="#635bff"  />
+                        <div className="ui-checkout-19" >{paymentOrder?.provider === 'paypal' ? 'PayPal' : 'Stripe'} Secure Payment</div>
+                        <div className="ui-checkout-20" >Complete payment to confirm your booking</div>
                     </div>
                     {paymentOrder?.provider === 'paypal' ? (
                         <PayPalPayment paymentAttempt={paymentAttempt} paymentOrder={paymentOrder}
@@ -273,9 +271,9 @@ const Checkout = () => {
                             />
                         </Elements>
                     ) : (
-                        <div style={{ padding: 24, textAlign: 'center' }}>
-                            <p style={{ color: '#c62828', fontWeight: 700 }}>Stripe is not configured for this payment.</p>
-                            <button onClick={() => setShowGateway(false)} style={{ background: '#000', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 18px', cursor: 'pointer', fontWeight: 700 }}>
+                        <div className="ui-checkout-21" >
+                            <p className="ui-checkout-22" >Stripe is not configured for this payment.</p>
+                            <button className="ui-checkout-23" onClick={() => setShowGateway(false)} >
                                 Back to checkout
                             </button>
                         </div>
@@ -287,72 +285,66 @@ const Checkout = () => {
 
     /* ── Main checkout screen ── */
     return (
-        <div style={{ background: '#f5f5f5', minHeight: '100vh', padding: '28px 0' }}>
-            <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
+        <div className="ui-checkout-24" >
+            <div className="ui-checkout-25" >
                 {/* Header */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-                    <button onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}>
+                <div className="ui-checkout-26" >
+                    <button className="ui-checkout-27" onClick={() => navigate(-1)} >
                         <FaArrowLeft size={18} color="#111" />
                     </button>
-                    <h2 style={{ fontWeight: 800, fontSize: '1.5rem', margin: 0, color: '#111' }}>Cart &amp; Checkout</h2>
+                    <h2 className="ui-checkout-28" >Cart &amp; Checkout</h2>
                 </div>
 
                 {submitting ? (
                     <CheckoutShimmer />
                 ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 380px), 1fr))', gap: 20, alignItems: 'start' }}>
+                    <div className="ui-checkout-29" >
                         {/* ── Left column ── */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                            <div style={cardStyle}>
-                                <div style={{ fontWeight: 800, fontSize: 16, color: '#111', marginBottom: 18 }}>
+                        <div className="ui-checkout-30" >
+                            <div className="ui-checkout-31" >
+                                <div className="ui-checkout-32" >
                                     Delivery Address &amp; Contact
                                 </div>
 
-                                <form onSubmit={handleCreateOrder} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+                                <form className="ui-checkout-33" onSubmit={handleCreateOrder} >
 
                                     {/* ── Saved address cards ── */}
                                     {savedAddresses.length > 0 && (
                                         <div>
-                                            <div style={labelStyle}><FaMapMarkerAlt color="#000" /> Choose Address</div>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                            <div className="ui-checkout-34" ><FaMapMarkerAlt color="#000" /> Choose Address</div>
+                                            <div className="ui-checkout-35" >
                                                 {savedAddresses.map(addr => {
                                                     const isSelected = selectedAddrId === addr._id;
                                                     return (
-                                                        <div
+                                                        <div className="ui-checkout-36"
                                                             key={addr._id}
                                                             onClick={() => setSelectedAddrId(addr._id)}
-                                                            style={{
-                                                                display: 'flex', alignItems: 'flex-start', gap: 12,
-                                                                padding: '12px 14px', borderRadius: 10, cursor: 'pointer',
-                                                                border: `2px solid ${isSelected ? '#111' : '#e0e0e0'}`,
-                                                                background: isSelected ? '#f9f9f9' : '#fff',
-                                                                transition: 'border-color 0.15s, background 0.15s'
-                                                            }}
+                                                            style={{ "--ui-checkout-36-border": cssValue(`2px solid ${isSelected ? '#111' : '#e0e0e0'}`, "border"), "--ui-checkout-36-background": cssValue(isSelected ? "var(--ui-color-31)" : "var(--ui-color-2)", "background") }}
                                                         >
                                                             {/* Radio dot */}
-                                                            <div style={{ marginTop: 2, width: 18, height: 18, borderRadius: '50%', border: `2px solid ${isSelected ? '#111' : '#ccc'}`, background: isSelected ? '#111' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                                                {isSelected && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#fff' }} />}
+                                                            <div className="ui-checkout-37" style={{ "--ui-checkout-37-border": cssValue(`2px solid ${isSelected ? '#111' : '#ccc'}`, "border"), "--ui-checkout-37-background": cssValue(isSelected ? "var(--ui-color-5)" : "var(--ui-color-120)", "background") }}>
+                                                                {isSelected && <div className="ui-checkout-38"  />}
                                                             </div>
 
-                                                            <div style={{ flex: 1 }}>
-                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-                                                                    <span style={{ fontSize: 10, background: '#e9ecef', color: '#555', borderRadius: 20, padding: '2px 8px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                            <div className="ui-checkout-39" >
+                                                                <div className="ui-checkout-40" >
+                                                                    <span className="ui-checkout-41" >
                                                                         {labelIcon(addr.label)} {addr.label || 'Home'}
                                                                     </span>
                                                                     {addr.isDefault && (
-                                                                        <span style={{ fontSize: 10, background: '#d8f3dc', color: '#2d6a4f', borderRadius: 20, padding: '2px 7px', fontWeight: 700 }}>Default</span>
+                                                                        <span className="ui-checkout-42" >Default</span>
                                                                     )}
                                                                 </div>
                                                                 {addr.name && (
-                                                                    <div style={{ fontWeight: 700, fontSize: 13, color: '#111', marginBottom: 2 }}>{addr.name}</div>
+                                                                    <div className="ui-checkout-43" >{addr.name}</div>
                                                                 )}
-                                                                <div style={{ fontSize: 13, color: '#666', lineHeight: 1.4 }}>
+                                                                <div className="ui-checkout-44" >
                                                                     {fmtAddress(addr)}
                                                                 </div>
                                                             </div>
 
                                                             {isSelected && (
-                                                                <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#111', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                                                <div className="ui-checkout-45" >
                                                                     <FaCheck size={9} color="#fff" />
                                                                 </div>
                                                             )}
@@ -361,18 +353,12 @@ const Checkout = () => {
                                                 })}
 
                                                 {/* Use a different / new address */}
-                                                <div
+                                                <div className="ui-checkout-46"
                                                     onClick={() => setSelectedAddrId('new')}
-                                                    style={{
-                                                        display: 'flex', alignItems: 'center', gap: 12,
-                                                        padding: '11px 14px', borderRadius: 10, cursor: 'pointer',
-                                                        border: `2px dashed ${selectedAddrId === 'new' ? '#111' : '#ccc'}`,
-                                                        background: selectedAddrId === 'new' ? '#f9f9f9' : '#fff',
-                                                        transition: 'border-color 0.15s'
-                                                    }}
+                                                    style={{ "--ui-checkout-46-border": cssValue(`2px dashed ${selectedAddrId === 'new' ? '#111' : '#ccc'}`, "border"), "--ui-checkout-46-background": cssValue(selectedAddrId === 'new' ? "var(--ui-color-31)" : "var(--ui-color-2)", "background") }}
                                                 >
                                                     <FaPlus size={13} color={selectedAddrId === 'new' ? '#111' : '#aaa'} />
-                                                    <span style={{ fontSize: 13, fontWeight: 600, color: selectedAddrId === 'new' ? '#111' : '#888' }}>
+                                                    <span className="ui-checkout-47" style={{ "--ui-checkout-47-color": cssValue(selectedAddrId === 'new' ? "var(--ui-color-5)" : "var(--ui-color-6)", "color") }}>
                                                         Use a different address
                                                     </span>
                                                 </div>
@@ -382,79 +368,71 @@ const Checkout = () => {
 
                                     {/* ── New / manual address form ── */}
                                     {selectedAddrId === 'new' && (
-                                        <div style={{ background: '#f8fffe', border: '1.5px solid #d8f3dc', borderRadius: 10, padding: '14px 16px' }}>
-                                            <div style={{ fontWeight: 700, fontSize: 13, color: '#333', marginBottom: 12 }}>
+                                        <div className="ui-checkout-48" >
+                                            <div className="ui-checkout-49" >
                                                 {savedAddresses.length === 0 ? 'Enter Delivery Address' : 'New Address'}
                                             </div>
 
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                            <div className="ui-checkout-50" >
                                                 {/* Map-based location picker */}
                                                 <div>
-                                                    <div style={{ ...labelStyle, marginBottom: 5, color: '#555' }}>
+                                                    <div className="ui-checkout-51" >
                                                         <FaMapMarkerAlt size={12} /> Search on Map
                                                     </div>
                                                     <LocationPicker
                                                         value={locationValue}
                                                         onChange={handleLocationChange}
-                                                        inputStyle={{ borderRadius: 10, border: '1.5px solid #e0e0e0', background: '#f9f9f9', marginBottom: 0 }}
+                                                        inputClassName="checkout-location-input-1"
                                                     />
                                                 </div>
 
                                                 {/* Address line */}
                                                 <div>
-                                                    <div style={{ ...labelStyle, marginBottom: 5 }}>Address Line <span style={{ color: '#e53935' }}>*</span></div>
-                                                    <input
+                                                    <div className="ui-checkout-52" >Address Line <span className="ui-checkout-53" >*</span></div>
+                                                    <input className="ui-checkout-54"
                                                         type="text"
                                                         required={selectedAddrId === 'new'}
-                                                        style={inputStyle}
+
                                                         placeholder="Flat / House No., Building, Street..."
                                                         value={manualAddr.addressLine}
                                                         onChange={patchManual('addressLine')}
                                                     />
                                                 </div>
 
-                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                                                <div className="ui-checkout-55" >
                                                     <div>
-                                                        <div style={{ ...labelStyle, marginBottom: 5 }}>City</div>
-                                                        <input type="text" style={inputStyle} placeholder="City" value={manualAddr.city} onChange={patchManual('city')} />
+                                                        <div className="ui-checkout-56" >City</div>
+                                                        <input className="ui-checkout-57" type="text"  placeholder="City" value={manualAddr.city} onChange={patchManual('city')} />
                                                     </div>
                                                     <div>
-                                                        <div style={{ ...labelStyle, marginBottom: 5 }}>State</div>
-                                                        <input type="text" style={inputStyle} placeholder="State" value={manualAddr.state} onChange={patchManual('state')} />
+                                                        <div className="ui-checkout-58" >State</div>
+                                                        <input className="ui-checkout-59" type="text"  placeholder="State" value={manualAddr.state} onChange={patchManual('state')} />
                                                     </div>
                                                 </div>
 
-                                                <div style={{ maxWidth: '50%' }}>
-                                                    <div style={{ ...labelStyle, marginBottom: 5 }}>ZIP / Postal Code</div>
-                                                    <input type="text" style={inputStyle} placeholder="e.g. 10001" value={manualAddr.zipcode} onChange={patchManual('zipcode')} />
+                                                <div className="ui-checkout-60" >
+                                                    <div className="ui-checkout-61" >ZIP / Postal Code</div>
+                                                    <input className="ui-checkout-62" type="text"  placeholder="e.g. 10001" value={manualAddr.zipcode} onChange={patchManual('zipcode')} />
                                                 </div>
 
                                                 {/* ── Save as ── */}
-                                                <div style={{ paddingTop: 10, borderTop: '1px solid #e0e0e0' }}>
-                                                    <div style={{ fontSize: 12, fontWeight: 700, color: '#555', marginBottom: 6 }}>Save as</div>
-                                                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+                                                <div className="ui-checkout-63" >
+                                                    <div className="ui-checkout-64" >Save as</div>
+                                                    <div className="ui-checkout-65" >
                                                         {LABEL_OPTIONS.map(opt => (
-                                                            <button
+                                                            <button className="ui-checkout-66"
                                                                 key={opt}
                                                                 type="button"
                                                                 onClick={() => setManualAddr(f => ({ ...f, label: opt }))}
-                                                                style={{
-                                                                    borderRadius: 20, border: '1.5px solid',
-                                                                    borderColor: manualAddr.label === opt ? '#2d6a4f' : '#dee2e6',
-                                                                    background: manualAddr.label === opt ? '#d8f3dc' : '#fff',
-                                                                    color: manualAddr.label === opt ? '#2d6a4f' : '#6c757d',
-                                                                    fontWeight: manualAddr.label === opt ? 700 : 400,
-                                                                    fontSize: 12, padding: '4px 12px', cursor: 'pointer',
-                                                                    display: 'flex', alignItems: 'center', gap: 5
-                                                                }}
+                                                                style={{ "--ui-checkout-66-border-color": cssValue(manualAddr.label === opt ? '#2d6a4f' : '#dee2e6', "borderColor"), "--ui-checkout-66-background": cssValue(manualAddr.label === opt ? "var(--ui-color-49)" : "var(--ui-color-2)", "background"), "--ui-checkout-66-color": cssValue(manualAddr.label === opt ? "var(--ui-color-50)" : "var(--ui-color-84)", "color"), "--ui-checkout-66-font-weight": cssValue(manualAddr.label === opt ? 700 : 400, "fontWeight") }}
                                                             >
                                                                 {labelIcon(opt)} {opt}
                                                             </button>
                                                         ))}
                                                     </div>
-                                                    <input
+                                                    <input className="ui-checkout-67"
                                                         type="text"
-                                                        style={{ ...inputStyle, marginBottom: 0 }}
+
                                                         placeholder={`e.g. My ${manualAddr.label}, Friend's ${manualAddr.label}…`}
                                                         value={manualAddr.name}
                                                         maxLength={40}
@@ -463,16 +441,10 @@ const Checkout = () => {
                                                 </div>
 
                                                 {/* Save to profile toggle */}
-                                                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: '#555', userSelect: 'none', marginTop: 2 }}>
-                                                    <div
+                                                <label className="ui-checkout-68" >
+                                                    <div className="ui-checkout-69"
                                                         onClick={() => setSaveNew(v => !v)}
-                                                        style={{
-                                                            width: 18, height: 18, borderRadius: 4,
-                                                            border: `2px solid ${saveNew ? '#2d6a4f' : '#ccc'}`,
-                                                            background: saveNew ? '#2d6a4f' : '#fff',
-                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                            flexShrink: 0, transition: 'all 0.15s'
-                                                        }}
+                                                        style={{ "--ui-checkout-69-border": cssValue(`2px solid ${saveNew ? '#2d6a4f' : '#ccc'}`, "border"), "--ui-checkout-69-background": cssValue(saveNew ? "var(--ui-color-50)" : "var(--ui-color-2)", "background") }}
                                                     >
                                                         {saveNew && <FaCheck size={9} color="#fff" />}
                                                     </div>
@@ -484,13 +456,13 @@ const Checkout = () => {
 
                                     {/* Phone */}
                                     <div>
-                                        <label style={labelStyle}>
+                                        <label className="ui-checkout-70" >
                                             <FaPhoneAlt color="#000" /> Contact Number
                                         </label>
-                                        <input
+                                        <input className="ui-checkout-71"
                                             type="tel"
                                             required
-                                            style={inputStyle}
+
                                             placeholder="Enter contact number..."
                                             value={phone}
                                             onChange={(e) => setPhone(e.target.value)}
@@ -499,21 +471,21 @@ const Checkout = () => {
 
                                     {/* Special instructions */}
                                     <div>
-                                        <label style={{ ...labelStyle, color: '#888' }}>Special Instructions (Optional)</label>
-                                        <textarea
+                                        <label className="ui-checkout-72" >Special Instructions (Optional)</label>
+                                        <textarea className="ui-checkout-73"
                                             rows="2"
-                                            style={{ ...inputStyle, resize: 'vertical' }}
+
                                             placeholder="Any notes for technicians..."
                                             value={instructions}
                                             onChange={(e) => setInstructions(e.target.value)}
                                         />
                                     </div>
 
-                                    <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>
-                                        <legend style={labelStyle}>Payment method</legend>
-                                        <div style={{ display: 'flex', gap: 16 }}>
+                                    <fieldset className="ui-checkout-74" >
+                                        <legend className="ui-checkout-75" >Payment method</legend>
+                                        <div className="ui-checkout-76" >
                                             {[['stripe', 'Credit / Debit Card (Stripe)'], ['paypal', 'PayPal']].map(([value, label]) => (
-                                                <label key={value} style={{ display: 'flex', alignItems: 'center', gap: 7, cursor: 'pointer', fontSize: 14 }}>
+                                                <label className="ui-checkout-77" key={value} >
                                                     <input type="radio" name="paymentProvider" value={value} checked={paymentProvider === value} onChange={() => setPaymentProvider(value)} />
                                                     {label}
                                                 </label>
@@ -521,9 +493,9 @@ const Checkout = () => {
                                         </div>
                                     </fieldset>
 
-                                    <button
+                                    <button className="ui-checkout-78"
                                         type="submit"
-                                        style={{ width: '100%', background: '#000', color: '#fff', border: 'none', borderRadius: 12, padding: '15px 0', fontWeight: 700, fontSize: 15, cursor: 'pointer', marginTop: 4 }}
+
                                     >
                                         Proceed to Payment
                                     </button>
@@ -532,13 +504,13 @@ const Checkout = () => {
                         </div>
 
                         {/* ── Right column: summary ── */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                        <div className="ui-checkout-79" >
                             {/* Selected address preview */}
                             {selectedAddrId !== 'new' && resolvedAddress?.addressLine && (
-                                <div style={cardStyle}>
-                                    <div style={{ fontWeight: 800, fontSize: 14, color: '#111', marginBottom: 10 }}>Address</div>
-                                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <div className="ui-checkout-80" >
+                                    <div className="ui-checkout-81" >Address</div>
+                                    <div className="ui-checkout-82" >
+                                        <div className="ui-checkout-83" >
                                             {labelIcon(resolvedAddress.label)}
                                         </div>
                                         <div>
@@ -548,50 +520,50 @@ const Checkout = () => {
                                                 </span>
                                             </div> */}
                                             {resolvedAddress.name && (
-                                                <div style={{ fontWeight: 700, fontSize: 13, color: '#333', marginBottom: 2 }}>{resolvedAddress.name}</div>
+                                                <div className="ui-checkout-84" >{resolvedAddress.name}</div>
                                             )}
-                                            <div style={{ fontSize: 13, color: '#666', lineHeight: 1.5 }}>{fmtAddress(resolvedAddress)}</div>
+                                            <div className="ui-checkout-85" >{fmtAddress(resolvedAddress)}</div>
                                         </div>
                                     </div>
                                 </div>
                             )}
 
                             {/* Booking schedule */}
-                            <div style={cardStyle}>
-                                <div style={{ fontWeight: 800, fontSize: 16, color: '#111', marginBottom: 14 }}>Service Date</div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, color: '#555' }}>
+                            <div className="ui-checkout-86" >
+                                <div className="ui-checkout-87" >Service Date</div>
+                                <div className="ui-checkout-88" >
+                                    <div className="ui-checkout-89" >
                                         <FaCalendarAlt color="#000" />
                                         <span>Date:</span>
-                                        <strong style={{ color: '#111' }}>{new Date(bookingDate).toLocaleDateString()}</strong>
+                                        <strong className="ui-checkout-90" >{new Date(bookingDate).toLocaleDateString()}</strong>
                                     </div>
-                                    
+
                                 </div>
                             </div>
 
                             {/* Payment summary */}
-                            <div style={cardStyle}>
-                                <div style={{ fontWeight: 800, fontSize: 16, color: '#111', marginBottom: 18 }}>Payment Summary</div>
+                            <div className="ui-checkout-91" >
+                                <div className="ui-checkout-92" >Payment Summary</div>
                                 {cartItems.map(item => (
-                                    <div key={item.service._id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 12, fontSize: 14, color: '#555' }}>
-                                        <span style={{ flex: 1, minWidth: 0 }}>{item.service.name}{item.selectedAddons?.length > 0 && <small style={{ display: 'block', marginTop: 3, color: '#777' }}>Add-ons: {item.selectedAddons.map(addon => addon.name).join(', ')}</small>}</span>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
-                                            <button type="button" aria-label={`Decrease ${item.service.name} quantity`} onClick={() => item.quantity <= 1 ? removeFromCart(item.service._id) : updateQuantity(item.service._id, item.quantity - 1)} style={{ width: 26, height: 28, border: '1px solid #ddd', borderRadius: 6, background: '#fff', cursor: 'pointer' }}>-</button>
-                                            <span style={{ minWidth: 18, textAlign: 'center' }}>{item.quantity}</span>
-                                            <button type="button" aria-label={`Increase ${item.service.name} quantity`} onClick={() => updateQuantity(item.service._id, item.quantity + 1)} style={{ width: 26, height: 28, border: '1px solid #ddd', borderRadius: 6, background: '#fff', cursor: 'pointer' }}>+</button>
-                                            <button type="button" aria-label={`Remove ${item.service.name}`} onClick={() => removeFromCart(item.service._id)} style={{ width: 26, height: 28, border: 'none', background: 'transparent', color: '#777', cursor: 'pointer' }}><FaTimes size={12} /></button>
-                                            <strong style={{ minWidth: 60, textAlign: 'right', color: '#111' }}>${(item.service.price * item.quantity).toFixed(2)}</strong>
+                                    <div className="ui-checkout-93" key={item.service._id} >
+                                        <span className="ui-checkout-94" >{item.service.name}{item.selectedAddons?.length > 0 && <small className="ui-checkout-95" >Add-ons: {item.selectedAddons.map(addon => addon.name).join(', ')}</small>}</span>
+                                        <div className="ui-checkout-96" >
+                                            <button className="ui-checkout-97" type="button" aria-label={`Decrease ${item.service.name} quantity`} onClick={() => item.quantity <= 1 ? removeFromCart(item.service._id) : updateQuantity(item.service._id, item.quantity - 1)} >-</button>
+                                            <span className="ui-checkout-98" >{item.quantity}</span>
+                                            <button className="ui-checkout-99" type="button" aria-label={`Increase ${item.service.name} quantity`} onClick={() => updateQuantity(item.service._id, item.quantity + 1)} >+</button>
+                                            <button className="ui-checkout-100" type="button" aria-label={`Remove ${item.service.name}`} onClick={() => removeFromCart(item.service._id)} ><FaTimes size={12} /></button>
+                                            <strong className="ui-checkout-101" >${(item.service.price * item.quantity).toFixed(2)}</strong>
                                         </div>
                                     </div>
                                 ))}
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: 14 }}>
-                                    <span style={{ color: '#000', fontWeight: 600 }}>Free service offer</span>
-                                    <span style={{ color: '#000', fontWeight: 600 }}>-$0.00</span>
+                                <div className="ui-checkout-102" >
+                                    <span className="ui-checkout-103" >Free service offer</span>
+                                    <span className="ui-checkout-104" >-$0.00</span>
                                 </div>
-                                <hr style={{ border: 'none', borderTop: '1px solid #f0f0f0', margin: '10px 0 14px' }} />
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span style={{ fontWeight: 700, fontSize: 15, color: '#111' }}>Amount to pay</span>
-                                    <span style={{ fontWeight: 800, fontSize: '1.3rem', color: '#111' }}>${total.toFixed(2)}</span>
+                                <hr className="ui-checkout-105"  />
+                                <div className="ui-checkout-106" >
+                                    <span className="ui-checkout-107" >Amount to pay</span>
+                                    <span className="ui-checkout-108" >${total.toFixed(2)}</span>
                                 </div>
                             </div>
                         </div>

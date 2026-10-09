@@ -1,0 +1,211 @@
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: var(--ui-space-105);
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-8);
+  margin-bottom: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 1100px;
+  margin: var(--ui-space-25);
+  padding: var(--ui-space-72);
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: var(--ui-space-64);
+  align-items: start;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-4:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-36);
+  margin-bottom: var(--ui-space-46);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-5:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-6:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-9);
+  font-weight: 700;
+  color: var(--ui-color-5);
+  display: block;
+  margin-bottom: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-7:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  padding: var(--ui-space-22);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: var(--ui-font-size-3);
+  outline: none;
+  box-sizing: border-box;
+  color: var(--ui-color-4);
+  background: var(--ui-color-2);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-8:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-9);
+  font-weight: 700;
+  color: var(--ui-color-5);
+  display: block;
+  margin-bottom: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-9:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  padding: var(--ui-space-22);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: var(--ui-font-size-3);
+  outline: none;
+  box-sizing: border-box;
+  color: var(--ui-color-4);
+  background: var(--ui-color-2);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-10:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-11:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 90px;
+  padding: var(--ui-space-22);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: var(--ui-font-size-3);
+  outline: none;
+  box-sizing: border-box;
+  color: var(--ui-color-4);
+  background: var(--ui-color-2);
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-12:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  padding: var(--ui-space-22);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: var(--ui-font-size-3);
+  outline: none;
+  box-sizing: border-box;
+  color: var(--ui-color-4);
+  background: var(--ui-color-2);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-13:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-9);
+  font-weight: 700;
+  color: var(--ui-color-5);
+  display: block;
+  margin-bottom: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-14:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  padding: var(--ui-space-22);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: var(--ui-font-size-3);
+  outline: none;
+  box-sizing: border-box;
+  color: var(--ui-color-4);
+  background: var(--ui-color-2);
+  resize: vertical;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-15:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-27);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-106);
+  font-weight: 700;
+  font-size: var(--ui-font-size-8);
+  cursor: pointer;
+  width: fit-content;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-16:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-3);
+  color: var(--ui-color-41);
+  line-height: 1.7;
+  margin-bottom: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-17:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-3);
+  color: var(--ui-color-41);
+  line-height: 1.7;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-18:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-3);
+  color: var(--ui-color-41);
+  line-height: 1.7;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-19:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-38);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-20:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-3);
+  color: var(--ui-color-41);
+  line-height: 1.7;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-21:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-22:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-5);
+  margin-top: var(--ui-space-15);
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-contactus-23:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-3);
+  color: var(--ui-color-41);
+  line-height: 1.7;
+  margin: var(--ui-space-16);
+}

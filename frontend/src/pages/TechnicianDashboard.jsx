@@ -1,3 +1,5 @@
+import { cssValue } from '../utils/cssValue';
+import '../styles/TechnicianDashboard.css';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import API from '../services/api';
@@ -29,44 +31,7 @@ const fmtDT = (dt) => {
   });
 };
 
-const S = {
-  card: {
-    border: '1px solid #e9e0d5',
-    borderRadius: 12,
-    padding: '1rem 1.25rem',
-    background: '#fff',
-    marginBottom: 12,
-  },
-  btn: (bg = '#1a1208', disabled = false) => ({
-    background: disabled ? '#ccc' : bg,
-    color: '#fff',
-    border: 'none',
-    borderRadius: 8,
-    padding: '8px 18px',
-    fontWeight: 700,
-    fontSize: '0.85rem',
-    cursor: disabled ? 'not-allowed' : 'pointer',
-    opacity: disabled ? 0.7 : 1,
-  }),
-  ghost: {
-    background: 'transparent',
-    border: '1.5px solid #e9e0d5',
-    borderRadius: 8,
-    padding: '6px 14px',
-    fontWeight: 600,
-    fontSize: '0.82rem',
-    cursor: 'pointer',
-    color: '#495057',
-  },
-  badge: (color = '#6c757d', bg = 'rgba(108,117,125,0.1)') => ({
-    padding: '3px 12px',
-    borderRadius: 20,
-    fontSize: '0.75rem',
-    fontWeight: 700,
-    background: bg,
-    color,
-  }),
-};
+
 
 // ─── charge status badge ───────────────────────────────────────────────────────
 const chargeStatusBadge = (status) => {
@@ -77,7 +42,7 @@ const chargeStatusBadge = (status) => {
     countered: { color: '#2563eb', bg: 'rgba(37,99,235,0.1)',  label: '↔ Counter Offered' },
   };
   const s = map[status] || { color: '#6c757d', bg: 'rgba(108,117,125,0.1)', label: status };
-  return <span style={S.badge(s.color, s.bg)}>{s.label}</span>;
+  return <span className="ui-techniciandashboard-1" style={{ "--ui-techniciandashboard-1-background": cssValue(s.bg, "background"), "--ui-techniciandashboard-1-color": cssValue(s.color, "color") }}>{s.label}</span>;
 };
 
 // ─── request status badge ──────────────────────────────────────────────────────
@@ -90,7 +55,7 @@ const reqStatusBadge = (status) => {
   };
   const s = map[status] || map.pending;
   const label = status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Pending';
-  return <span style={S.badge(s.color, s.bg)}>{label}</span>;
+  return <span className="ui-techniciandashboard-2" style={{ "--ui-techniciandashboard-2-background": cssValue(s.bg, "background"), "--ui-techniciandashboard-2-color": cssValue(s.color, "color") }}>{label}</span>;
 };
 
 // ─── CHARGE_LABELS ─────────────────────────────────────────────────────────────
@@ -140,84 +105,71 @@ const RequestJobModal = ({ job, onClose, onSuccess }) => {
   };
 
   return (
-    <div
-      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 2000,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+    <div className="ui-techniciandashboard-3"
+
       onClick={onClose}
     >
-      <div
-        style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 520,
-          maxHeight: '90vh', overflowY: 'auto', padding: '1.5rem' }}
+      <div className="ui-techniciandashboard-4"
+
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h5 style={{ margin: 0, fontWeight: 800, color: '#1a1208' }}>Request: {job.title}</h5>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+        <div className="ui-techniciandashboard-5" >
+          <h5 className="ui-techniciandashboard-6" >Request: {job.title}</h5>
+          <button className="ui-techniciandashboard-7" onClick={onClose} >✕</button>
         </div>
 
-        <div style={{ fontSize: '0.82rem', color: '#6c757d', marginBottom: 16 }}>
-          Job budget: <strong style={{ color: '#A5732F' }}>₹{job.budget}</strong> &nbsp;·&nbsp; {job.location}
+        <div className="ui-techniciandashboard-8" >
+          Job budget: <strong className="ui-techniciandashboard-9" >₹{job.budget}</strong> &nbsp;·&nbsp; {job.location}
         </div>
 
-        <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#495057', display: 'block', marginBottom: 4 }}>
+        <label className="ui-techniciandashboard-10" >
           Your Message (optional)
         </label>
-        <textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)}
+        <textarea className="ui-techniciandashboard-11" rows={2} value={note} onChange={(e) => setNote(e.target.value)}
           placeholder="E.g. I have 5 years of experience in this area"
-          style={{ width: '100%', border: '1.5px solid #e9e0d5', borderRadius: 8, padding: '8px 12px',
-            fontSize: '0.875rem', outline: 'none', marginBottom: 12, fontFamily: 'inherit', resize: 'vertical' }}
+
         />
 
-        <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#495057', display: 'block', marginBottom: 4 }}>
+        <label className="ui-techniciandashboard-12" >
           Your Proposed Fixed Price (optional — leave blank to accept job budget)
         </label>
-        <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #e9e0d5',
-            borderRadius: 8, overflow: 'hidden', marginBottom: 16 }}>
-          <span style={{ padding: '0 12px', fontWeight: 700, color: '#A5732F',
-              background: 'rgba(165,115,47,0.07)', borderRight: '1.5px solid #e9e0d5',
-              alignSelf: 'stretch', display: 'flex', alignItems: 'center' }}>₹</span>
-          <input type="number" min="0" value={fixedPrice} onChange={(e) => setFixed(e.target.value)}
+        <div className="ui-techniciandashboard-13" >
+          <span className="ui-techniciandashboard-14" >₹</span>
+          <input className="ui-techniciandashboard-15" type="number" min="0" value={fixedPrice} onChange={(e) => setFixed(e.target.value)}
             placeholder={`${job.budget} (job budget)`}
-            style={{ flex: 1, border: 'none', outline: 'none', padding: '8px 12px', fontSize: '0.9rem', fontWeight: 600 }} />
+             />
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#495057' }}>Additional Charges (optional)</label>
-          <button onClick={addCharge} style={{ ...S.btn('#A5732F'), padding: '5px 12px', fontSize: '0.78rem' }}>+ Add Charge</button>
+        <div className="ui-techniciandashboard-16" >
+          <label className="ui-techniciandashboard-17" >Additional Charges (optional)</label>
+          <button className="ui-techniciandashboard-18" onClick={addCharge} style={{ "--ui-techniciandashboard-18-background": cssValue(false ? "var(--ui-color-29)" : "var(--ui-color-85)", "background"), "--ui-techniciandashboard-18-cursor": cssValue(false ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-18-opacity": cssValue(false ? 0.7 : 1, "opacity") }}>+ Add Charge</button>
         </div>
 
         {charges.map((c, i) => (
-          <div key={i} style={{ background: '#fdf9f5', border: '1px solid #f0e8dc', borderRadius: 10,
-              padding: '10px 12px', marginBottom: 8 }}>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
-              <select value={c.label} onChange={(e) => updateCharge(i, 'label', e.target.value)}
-                style={{ border: '1.5px solid #e9e0d5', borderRadius: 7, padding: '6px 8px',
-                  fontSize: '0.82rem', background: '#fff', flex: 1, minWidth: 120 }}>
+          <div className="ui-techniciandashboard-19" key={i} >
+            <div className="ui-techniciandashboard-20" >
+              <select className="ui-techniciandashboard-21" value={c.label} onChange={(e) => updateCharge(i, 'label', e.target.value)}
+                >
                 {CHARGE_LABELS.map((l) => <option key={l}>{l}</option>)}
               </select>
-              <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #e9e0d5',
-                  borderRadius: 7, overflow: 'hidden' }}>
-                <span style={{ padding: '0 8px', fontWeight: 700, color: '#A5732F',
-                    background: 'rgba(165,115,47,0.07)', borderRight: '1.5px solid #e9e0d5',
-                    alignSelf: 'stretch', display: 'flex', alignItems: 'center', fontSize: '0.85rem' }}>₹</span>
-                <input type="number" min="1" value={c.amount} onChange={(e) => updateCharge(i, 'amount', e.target.value)}
+              <div className="ui-techniciandashboard-22" >
+                <span className="ui-techniciandashboard-23" >₹</span>
+                <input className="ui-techniciandashboard-24" type="number" min="1" value={c.amount} onChange={(e) => updateCharge(i, 'amount', e.target.value)}
                   placeholder="0.00"
-                  style={{ border: 'none', outline: 'none', padding: '6px 10px', fontSize: '0.9rem', fontWeight: 700, width: 90 }} />
+                   />
               </div>
-              <button onClick={() => removeCharge(i)}
-                style={{ background: 'rgba(220,53,69,0.1)', color: '#dc3545', border: 'none',
-                  borderRadius: 7, padding: '6px 10px', cursor: 'pointer', fontWeight: 700 }}>✕</button>
+              <button className="ui-techniciandashboard-25" onClick={() => removeCharge(i)}
+                >✕</button>
             </div>
-            <input value={c.description} onChange={(e) => updateCharge(i, 'description', e.target.value)}
+            <input className="ui-techniciandashboard-26" value={c.description} onChange={(e) => updateCharge(i, 'description', e.target.value)}
               placeholder="Description (optional)"
-              style={{ width: '100%', border: '1.5px solid #e9e0d5', borderRadius: 7,
-                padding: '6px 10px', fontSize: '0.8rem', outline: 'none', boxSizing: 'border-box' }} />
+               />
           </div>
         ))}
 
-        <div style={{ display: 'flex', gap: 10, marginTop: 16, justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={S.ghost}>Cancel</button>
-          <button onClick={submit} disabled={saving} style={S.btn('#1a1208', saving)}>
+        <div className="ui-techniciandashboard-27" >
+          <button className="ui-techniciandashboard-28" onClick={onClose} >Cancel</button>
+          <button className="ui-techniciandashboard-29" onClick={submit} disabled={saving} style={{ "--ui-techniciandashboard-29-background": cssValue(saving ? "var(--ui-color-29)" : "var(--ui-color-83)", "background"), "--ui-techniciandashboard-29-cursor": cssValue(saving ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-29-opacity": cssValue(saving ? 0.7 : 1, "opacity") }}>
             {saving ? 'Sending…' : 'Send Request'}
           </button>
         </div>
@@ -266,62 +218,53 @@ const SubmitChargesModal = ({ requestId, onClose, onSuccess }) => {
   };
 
   return (
-    <div
-      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 2000,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+    <div className="ui-techniciandashboard-30"
+
       onClick={onClose}
     >
-      <div
-        style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 520,
-          maxHeight: '90vh', overflowY: 'auto', padding: '1.5rem' }}
+      <div className="ui-techniciandashboard-31"
+
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h5 style={{ margin: 0, fontWeight: 800, color: '#1a1208' }}>Submit Additional Charges</h5>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+        <div className="ui-techniciandashboard-32" >
+          <h5 className="ui-techniciandashboard-33" >Submit Additional Charges</h5>
+          <button className="ui-techniciandashboard-34" onClick={onClose} >✕</button>
         </div>
-        <p style={{ fontSize: '0.82rem', color: '#6c757d', marginTop: 0, marginBottom: 14 }}>
+        <p className="ui-techniciandashboard-35" >
           List any extra costs you incurred for this job. Admin will review and approve each charge.
         </p>
 
         {charges.map((c, i) => (
-          <div key={i} style={{ background: '#fdf9f5', border: '1px solid #f0e8dc', borderRadius: 10,
-              padding: '10px 12px', marginBottom: 8 }}>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
-              <select value={c.label} onChange={(e) => updateCharge(i, 'label', e.target.value)}
-                style={{ border: '1.5px solid #e9e0d5', borderRadius: 7, padding: '6px 8px',
-                  fontSize: '0.82rem', background: '#fff', flex: 1, minWidth: 120 }}>
+          <div className="ui-techniciandashboard-36" key={i} >
+            <div className="ui-techniciandashboard-37" >
+              <select className="ui-techniciandashboard-38" value={c.label} onChange={(e) => updateCharge(i, 'label', e.target.value)}
+                >
                 {CHARGE_LABELS.map((l) => <option key={l}>{l}</option>)}
               </select>
-              <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #e9e0d5',
-                  borderRadius: 7, overflow: 'hidden' }}>
-                <span style={{ padding: '0 8px', fontWeight: 700, color: '#A5732F',
-                    background: 'rgba(165,115,47,0.07)', borderRight: '1.5px solid #e9e0d5',
-                    alignSelf: 'stretch', display: 'flex', alignItems: 'center', fontSize: '0.85rem' }}>₹</span>
-                <input type="number" min="1" value={c.amount} onChange={(e) => updateCharge(i, 'amount', e.target.value)}
+              <div className="ui-techniciandashboard-39" >
+                <span className="ui-techniciandashboard-40" >₹</span>
+                <input className="ui-techniciandashboard-41" type="number" min="1" value={c.amount} onChange={(e) => updateCharge(i, 'amount', e.target.value)}
                   placeholder="0.00"
-                  style={{ border: 'none', outline: 'none', padding: '6px 10px', fontSize: '0.9rem', fontWeight: 700, width: 90 }} />
+                   />
               </div>
               {charges.length > 1 && (
-                <button onClick={() => removeCharge(i)}
-                  style={{ background: 'rgba(220,53,69,0.1)', color: '#dc3545', border: 'none',
-                    borderRadius: 7, padding: '6px 10px', cursor: 'pointer', fontWeight: 700 }}>✕</button>
+                <button className="ui-techniciandashboard-42" onClick={() => removeCharge(i)}
+                  >✕</button>
               )}
             </div>
-            <input value={c.description} onChange={(e) => updateCharge(i, 'description', e.target.value)}
+            <input className="ui-techniciandashboard-43" value={c.description} onChange={(e) => updateCharge(i, 'description', e.target.value)}
               placeholder="Description (optional)"
-              style={{ width: '100%', border: '1.5px solid #e9e0d5', borderRadius: 7,
-                padding: '6px 10px', fontSize: '0.8rem', outline: 'none', boxSizing: 'border-box' }} />
+               />
           </div>
         ))}
 
-        <button onClick={addCharge} style={{ ...S.btn('#A5732F'), padding: '5px 12px', fontSize: '0.78rem', marginBottom: 16 }}>
+        <button className="ui-techniciandashboard-44" onClick={addCharge} style={{ "--ui-techniciandashboard-44-background": cssValue(false ? "var(--ui-color-29)" : "var(--ui-color-85)", "background"), "--ui-techniciandashboard-44-cursor": cssValue(false ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-44-opacity": cssValue(false ? 0.7 : 1, "opacity") }}>
           + Add Another Charge
         </button>
 
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={S.ghost}>Cancel</button>
-          <button onClick={submit} disabled={saving} style={S.btn('#1a1208', saving)}>
+        <div className="ui-techniciandashboard-45" >
+          <button className="ui-techniciandashboard-46" onClick={onClose} >Cancel</button>
+          <button className="ui-techniciandashboard-47" onClick={submit} disabled={saving} style={{ "--ui-techniciandashboard-47-background": cssValue(saving ? "var(--ui-color-29)" : "var(--ui-color-83)", "background"), "--ui-techniciandashboard-47-cursor": cssValue(saving ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-47-opacity": cssValue(saving ? 0.7 : 1, "opacity") }}>
             {saving ? 'Submitting…' : 'Submit Charges'}
           </button>
         </div>
@@ -356,39 +299,37 @@ const JobDetailModal = ({ jobId, onClose }) => {
   const job = detail?.job;
 
   return (
-    <div
-      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 2100,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+    <div className="ui-techniciandashboard-48"
+
       onClick={onClose}
     >
-      <div
-        style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 580,
-          maxHeight: '90vh', overflowY: 'auto', padding: '1.5rem' }}
+      <div className="ui-techniciandashboard-49"
+
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h5 style={{ margin: 0, fontWeight: 800, color: '#1a1208' }}>Job Details</h5>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+        <div className="ui-techniciandashboard-50" >
+          <h5 className="ui-techniciandashboard-51" >Job Details</h5>
+          <button className="ui-techniciandashboard-52" onClick={onClose} >✕</button>
         </div>
 
-        {loading && <div style={{ textAlign: 'center', padding: '2rem', color: '#adb5bd' }}>Loading…</div>}
+        {loading && <div className="ui-techniciandashboard-53" >Loading…</div>}
 
         {!loading && !job && (
-          <div style={{ textAlign: 'center', padding: '2rem', color: '#dc3545' }}>Job not found.</div>
+          <div className="ui-techniciandashboard-54" >Job not found.</div>
         )}
 
         {!loading && job && (
           <>
-            <div style={{ ...S.card, marginBottom: 12 }}>
-              <div style={{ fontWeight: 800, fontSize: '1rem', color: '#1a1208', marginBottom: 4 }}>{job.title}</div>
-              <div style={{ fontSize: '0.8rem', color: '#6c757d', marginBottom: 8 }}>
+            <div className="ui-techniciandashboard-55" >
+              <div className="ui-techniciandashboard-56" >{job.title}</div>
+              <div className="ui-techniciandashboard-57" >
                 {job.category || '—'} · {job.location || '—'}
               </div>
               {job.description && (
-                <p style={{ fontSize: '0.875rem', color: '#495057', margin: '0 0 10px' }}>{job.description}</p>
+                <p className="ui-techniciandashboard-58" >{job.description}</p>
               )}
-              <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', fontSize: '0.82rem' }}>
-                <span>💰 Budget: <strong style={{ color: '#A5732F' }}>₹{Number(job.budget || 0).toLocaleString()}</strong></span>
+              <div className="ui-techniciandashboard-59" >
+                <span>💰 Budget: <strong className="ui-techniciandashboard-60" >₹{Number(job.budget || 0).toLocaleString()}</strong></span>
                 {job.estimatedTime && <span>⏱ Est. time: <strong>{job.estimatedTime}</strong></span>}
                 {job.serviceDate && <span>📅 Service: <strong>{fmtDT(job.serviceDate)}</strong></span>}
                 <span>Status: {reqStatusBadge(job.status)}</span>
@@ -397,9 +338,9 @@ const JobDetailModal = ({ jobId, onClose }) => {
             </div>
 
             {job.assignedTechnician && (
-              <div style={{ ...S.card, marginBottom: 0 }}>
-                <div style={{ fontWeight: 700, color: '#1a1208', marginBottom: 8 }}>Assigned Technician</div>
-                <div style={{ fontSize: '0.83rem', color: '#495057' }}>
+              <div className="ui-techniciandashboard-61" >
+                <div className="ui-techniciandashboard-62" >Assigned Technician</div>
+                <div className="ui-techniciandashboard-63" >
                   <strong>{job.assignedTechnician.name || 'Technician'}</strong>
                   {job.assignedTechnician.phone && <div>📞 {job.assignedTechnician.phone}</div>}
                   {job.assignedTechnician.email && <div>✉️ {job.assignedTechnician.email}</div>}
@@ -437,56 +378,50 @@ const WithdrawModal = ({ availableBalance, onClose, onSuccess }) => {
   };
 
   return (
-    <div
-      style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 2000,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+    <div className="ui-techniciandashboard-64"
+
       onClick={onClose}
     >
-      <div
-        style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 420, padding: '1.5rem' }}
+      <div className="ui-techniciandashboard-65"
+
         onClick={(e) => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <h5 style={{ margin: 0, fontWeight: 800, color: '#1a1208' }}>Withdraw Funds</h5>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
+        <div className="ui-techniciandashboard-66" >
+          <h5 className="ui-techniciandashboard-67" >Withdraw Funds</h5>
+          <button className="ui-techniciandashboard-68" onClick={onClose} >✕</button>
         </div>
 
-        <div style={{ fontSize: '0.85rem', color: '#6c757d', marginBottom: 14 }}>
-          Available balance: <strong style={{ color: '#16a34a' }}>₹{availableBalance.toLocaleString()}</strong>
+        <div className="ui-techniciandashboard-69" >
+          Available balance: <strong className="ui-techniciandashboard-70" >₹{availableBalance.toLocaleString()}</strong>
         </div>
 
-        <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#495057', display: 'block', marginBottom: 4 }}>Amount</label>
-        <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #e9e0d5',
-            borderRadius: 8, overflow: 'hidden', marginBottom: 12 }}>
-          <span style={{ padding: '0 12px', fontWeight: 700, color: '#A5732F',
-              background: 'rgba(165,115,47,0.07)', borderRight: '1.5px solid #e9e0d5',
-              alignSelf: 'stretch', display: 'flex', alignItems: 'center' }}>₹</span>
-          <input type="number" min="1" max={availableBalance} value={amount}
+        <label className="ui-techniciandashboard-71" >Amount</label>
+        <div className="ui-techniciandashboard-72" >
+          <span className="ui-techniciandashboard-73" >₹</span>
+          <input className="ui-techniciandashboard-74" type="number" min="1" max={availableBalance} value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            style={{ flex: 1, border: 'none', outline: 'none', padding: '8px 12px', fontSize: '0.9rem', fontWeight: 600 }} />
+             />
         </div>
 
-        <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#495057', display: 'block', marginBottom: 4 }}>Method</label>
-        <select value={method} onChange={(e) => setMethod(e.target.value)}
-          style={{ width: '100%', border: '1.5px solid #e9e0d5', borderRadius: 8, padding: '8px 12px',
-            fontSize: '0.875rem', background: '#fff', marginBottom: 12, outline: 'none' }}>
+        <label className="ui-techniciandashboard-75" >Method</label>
+        <select className="ui-techniciandashboard-76" value={method} onChange={(e) => setMethod(e.target.value)}
+          >
           <option value="bank-transfer">Bank Transfer</option>
           <option value="upi">UPI</option>
           <option value="cash">Cash</option>
           <option value="wallet">Wallet</option>
         </select>
 
-        <label style={{ fontSize: '0.8rem', fontWeight: 600, color: '#495057', display: 'block', marginBottom: 4 }}>
+        <label className="ui-techniciandashboard-77" >
           Details / Notes (optional)
         </label>
-        <textarea rows={2} value={details} onChange={(e) => setDetails(e.target.value)}
+        <textarea className="ui-techniciandashboard-78" rows={2} value={details} onChange={(e) => setDetails(e.target.value)}
           placeholder="E.g. Account number, UPI ID, etc."
-          style={{ width: '100%', border: '1.5px solid #e9e0d5', borderRadius: 8, padding: '8px 12px',
-            fontSize: '0.875rem', outline: 'none', marginBottom: 16, fontFamily: 'inherit', resize: 'vertical' }} />
+           />
 
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={S.ghost}>Cancel</button>
-          <button onClick={submit} disabled={saving} style={S.btn('#1a1208', saving)}>
+        <div className="ui-techniciandashboard-79" >
+          <button className="ui-techniciandashboard-80" onClick={onClose} >Cancel</button>
+          <button className="ui-techniciandashboard-81" onClick={submit} disabled={saving} style={{ "--ui-techniciandashboard-81-background": cssValue(saving ? "var(--ui-color-29)" : "var(--ui-color-83)", "background"), "--ui-techniciandashboard-81-cursor": cssValue(saving ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-81-opacity": cssValue(saving ? 0.7 : 1, "opacity") }}>
             {saving ? 'Requesting…' : 'Request Withdrawal'}
           </button>
         </div>
@@ -520,52 +455,42 @@ const CounterOfferBubble = ({ msg, isMe }) => {
   const mutedColor  = isMe ? 'rgba(255,255,255,0.6)'  : '#6c757d';
 
   return (
-    <div style={{
-      background: bubbleBg, border: `1px solid ${borderColor}`,
-      borderRadius: isMe ? '14px 14px 2px 14px' : '14px 14px 14px 2px',
-      padding: '12px 14px', color: textColor, fontSize: '0.83rem', lineHeight: 1.5,
-      maxWidth: '85%',
-    }}>
+    <div className="ui-techniciandashboard-82" style={{ "--ui-techniciandashboard-82-background": cssValue(bubbleBg, "background"), "--ui-techniciandashboard-82-border": cssValue(`1px solid ${borderColor}`, "border"), "--ui-techniciandashboard-82-border-radius": cssValue(isMe ? '14px 14px 2px 14px' : '14px 14px 14px 2px', "borderRadius"), "--ui-techniciandashboard-82-color": cssValue(textColor, "color") }}>
       {/* sender label */}
-      <div style={{ fontWeight: 700, fontSize: '0.7rem', color: accentColor, marginBottom: 6 }}>
+      <div className="ui-techniciandashboard-83" style={{ "--ui-techniciandashboard-83-color": cssValue(accentColor, "color") }}>
         {isMe ? '🔧 You' : '👤 Admin'} · Counter Offer
       </div>
 
       {/* fixed / base price — always shown prominently */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          borderBottom: `1px solid ${dividerColor}`, paddingBottom: 8, marginBottom: 8 }}>
-        <span style={{ fontWeight: 600, fontSize: '0.8rem', color: mutedColor }}>
+      <div className="ui-techniciandashboard-84" style={{ "--ui-techniciandashboard-84-border-bottom": cssValue(`1px solid ${dividerColor}`, "borderBottom") }}>
+        <span className="ui-techniciandashboard-85" style={{ "--ui-techniciandashboard-85-color": cssValue(mutedColor, "color") }}>
           {hasCharges ? 'Base Fixed Price' : 'Counter Amount'}
         </span>
-        <span style={{ fontWeight: 800, fontSize: '1.05rem', color: isMe ? '#d4a050' : '#2563eb' }}>
+        <span className="ui-techniciandashboard-86" style={{ "--ui-techniciandashboard-86-color": cssValue(isMe ? "var(--ui-color-278)" : "var(--ui-color-96)", "color") }}>
           ${Number(hasCharges ? fixedOnly : (msg.counterAmount || msg.counterOffer || 0)).toLocaleString()}
         </span>
       </div>
 
       {/* additional charges — collapsible toggle */}
       {hasCharges && (
-        <div style={{ marginBottom: 8 }}>
-          <button
+        <div className="ui-techniciandashboard-87" >
+          <button className="ui-techniciandashboard-88"
             onClick={() => setChargesOpen((p) => !p)}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              width: '100%', color: textColor,
-            }}
+            style={{ "--ui-techniciandashboard-88-color": cssValue(textColor, "color") }}
           >
-            <span style={{ fontSize: '0.78rem', fontWeight: 600 }}>
+            <span className="ui-techniciandashboard-89" >
               Additional Charges ({msg.charges.length})
             </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontWeight: 800, fontSize: '0.88rem', color: isMe ? '#d4a050' : '#2563eb' }}>
+            <span className="ui-techniciandashboard-90" >
+              <span className="ui-techniciandashboard-91" style={{ "--ui-techniciandashboard-91-color": cssValue(isMe ? "var(--ui-color-278)" : "var(--ui-color-96)", "color") }}>
                 +${chargesTotal.toLocaleString()}
               </span>
-              <span style={{ fontSize: '0.7rem', color: mutedColor }}>{chargesOpen ? '▲' : '▼'}</span>
+              <span className="ui-techniciandashboard-92" style={{ "--ui-techniciandashboard-92-color": cssValue(mutedColor, "color") }}>{chargesOpen ? '▲' : '▼'}</span>
             </span>
           </button>
 
           {chargesOpen && (
-            <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div className="ui-techniciandashboard-93" >
               {msg.charges.map((c, i) => {
                 const chargeStatusMap = {
                   accepted:  { color: '#16a34a', label: '✓' },
@@ -574,36 +499,31 @@ const CounterOfferBubble = ({ msg, isMe }) => {
                 };
                 const cs = chargeStatusMap[c.status] || null;
                 return (
-                  <div key={i} style={{
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    padding: '5px 8px',
-                    background: isMe ? 'rgba(255,255,255,0.07)' : 'rgba(37,99,235,0.05)',
-                    borderRadius: 6, fontSize: '0.78rem',
-                  }}>
+                  <div className="ui-techniciandashboard-94" key={i} style={{ "--ui-techniciandashboard-94-background": cssValue(isMe ? "var(--ui-color-279)" : "var(--ui-color-280)", "background") }}>
                     <div>
-                      <span style={{ fontWeight: 600 }}>{c.label}</span>
+                      <span className="ui-techniciandashboard-95" >{c.label}</span>
                       {c.description && (
-                        <span style={{ color: mutedColor, marginLeft: 5, fontSize: '0.72rem' }}>
+                        <span className="ui-techniciandashboard-96" style={{ "--ui-techniciandashboard-96-color": cssValue(mutedColor, "color") }}>
                           {c.description}
                         </span>
                       )}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div className="ui-techniciandashboard-97" >
                       {cs && (
-                        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: cs.color }}>{cs.label}</span>
+                        <span className="ui-techniciandashboard-98" style={{ "--ui-techniciandashboard-98-color": cssValue(cs.color, "color") }}>{cs.label}</span>
                       )}
                       {c.agreedAmount != null && c.agreedAmount !== c.amount ? (
                         <span>
-                          <span style={{ textDecoration: 'line-through', color: mutedColor, fontSize: '0.72rem' }}>
+                          <span className="ui-techniciandashboard-99" style={{ "--ui-techniciandashboard-99-color": cssValue(mutedColor, "color") }}>
                             ${Number(c.amount).toLocaleString()}
                           </span>
                           {' '}
-                          <span style={{ fontWeight: 700, color: '#16a34a' }}>
+                          <span className="ui-techniciandashboard-100" >
                             ${Number(c.agreedAmount).toLocaleString()}
                           </span>
                         </span>
                       ) : (
-                        <span style={{ fontWeight: 700 }}>₹{Number(c.amount).toLocaleString()}</span>
+                        <span className="ui-techniciandashboard-101" >₹{Number(c.amount).toLocaleString()}</span>
                       )}
                     </div>
                   </div>
@@ -615,35 +535,26 @@ const CounterOfferBubble = ({ msg, isMe }) => {
       )}
 
       {/* total line */}
-      <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        borderTop: `1px solid ${dividerColor}`, paddingTop: 8, marginTop: 4,
-      }}>
-        <span style={{ fontWeight: 700, fontSize: '0.82rem' }}>Total</span>
-        <span style={{ fontWeight: 800, fontSize: '1.1rem', color: isMe ? '#d4a050' : '#2563eb' }}>
+      <div className="ui-techniciandashboard-102" style={{ "--ui-techniciandashboard-102-border-top": cssValue(`1px solid ${dividerColor}`, "borderTop") }}>
+        <span className="ui-techniciandashboard-103" >Total</span>
+        <span className="ui-techniciandashboard-104" style={{ "--ui-techniciandashboard-104-color": cssValue(isMe ? "var(--ui-color-278)" : "var(--ui-color-96)", "color") }}>
           ${Number(msg.counterAmount || msg.counterOffer || 0).toLocaleString()}
         </span>
       </div>
 
       {/* proposal text */}
       {msg.message && !msg.message.startsWith('Counter offer:') && (
-        <div style={{
-          marginTop: 8, fontSize: '0.78rem', color: mutedColor,
-          borderTop: `1px solid ${dividerColor}`, paddingTop: 6, fontStyle: 'italic',
-        }}>
+        <div className="ui-techniciandashboard-105" style={{ "--ui-techniciandashboard-105-color": cssValue(mutedColor, "color"), "--ui-techniciandashboard-105-border-top": cssValue(`1px solid ${dividerColor}`, "borderTop") }}>
           "{msg.message.replace(/Counter offer: \$[\d,]+\.?\s*/i, '').replace(/Additional charges:.*$/i, '').trim()}"
         </div>
       )}
 
       {/* entry status badge */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
-        <span style={{
-          padding: '2px 8px', borderRadius: 12, fontSize: '0.68rem', fontWeight: 700,
-          background: isMe ? 'rgba(255,255,255,0.12)' : sc.bg, color: isMe ? sc.color : sc.color,
-        }}>
+      <div className="ui-techniciandashboard-106" >
+        <span className="ui-techniciandashboard-107" style={{ "--ui-techniciandashboard-107-background": cssValue(isMe ? "var(--ui-color-281)" : sc.bg, "background"), "--ui-techniciandashboard-107-color": cssValue(isMe ? sc.color : sc.color, "color") }}>
           {sc.label}
         </span>
-        <span style={{ fontSize: '0.65rem', color: mutedColor }}>
+        <span className="ui-techniciandashboard-108" style={{ "--ui-techniciandashboard-108-color": cssValue(mutedColor, "color") }}>
           {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : ''}
         </span>
       </div>
@@ -655,26 +566,18 @@ const CounterOfferBubble = ({ msg, isMe }) => {
 const AcceptRejectBubble = ({ msg, isMe }) => {
   const isAccept = msg.type === 'accept';
   return (
-    <div style={{
-      maxWidth: '75%', padding: '8px 12px', fontSize: '0.8rem', fontWeight: 600,
-      borderRadius: isMe ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
-      background: isAccept
-        ? (isMe ? 'rgba(22,163,74,0.15)' : 'rgba(22,163,74,0.1)')
-        : (isMe ? 'rgba(220,53,69,0.15)' : 'rgba(220,53,69,0.08)'),
-      border: `1px solid ${isAccept ? 'rgba(22,163,74,0.3)' : 'rgba(220,53,69,0.25)'}`,
-      color: isAccept ? '#16a34a' : '#dc3545',
-    }}>
-      <div style={{ fontWeight: 700, fontSize: '0.7rem', marginBottom: 3, opacity: 0.8 }}>
+    <div className="ui-techniciandashboard-109" style={{ "--ui-techniciandashboard-109-border-radius": cssValue(isMe ? '12px 12px 2px 12px' : '12px 12px 12px 2px', "borderRadius"), "--ui-techniciandashboard-109-background": cssValue(isAccept ? isMe ? "var(--ui-color-282)" : "var(--ui-color-104)" : isMe ? "var(--ui-color-283)" : "var(--ui-color-103)", "background"), "--ui-techniciandashboard-109-border": cssValue(`1px solid ${isAccept ? 'rgba(22,163,74,0.3)' : 'rgba(220,53,69,0.25)'}`, "border"), "--ui-techniciandashboard-109-color": cssValue(isAccept ? "var(--ui-color-90)" : "var(--ui-color-30)", "color") }}>
+      <div className="ui-techniciandashboard-110" >
         {isMe ? '🔧 You' : '👤 Admin'}
       </div>
       {isAccept ? '✓ Accepted the counter-offer' : '✗ Rejected the counter-offer'}
       {msg.message && msg.message !== 'Admin accepted the counter-offer.' &&
         msg.message !== 'Technician accepted the counter-offer.' && (
-        <div style={{ marginTop: 3, fontSize: '0.72rem', fontStyle: 'italic', opacity: 0.8 }}>
+        <div className="ui-techniciandashboard-111" >
           {msg.message}
         </div>
       )}
-      <div style={{ fontSize: '0.65rem', marginTop: 4, textAlign: 'right', opacity: 0.6 }}>
+      <div className="ui-techniciandashboard-112" >
         {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : ''}
       </div>
     </div>
@@ -684,22 +587,15 @@ const TechNegotiationHistory = ({ history }) => {
   const [open, setOpen] = useState(false);
   if (!history || history.length === 0) return null;
   return (
-    <div style={{ marginTop: 8 }}>
-      <button
+    <div className="ui-techniciandashboard-113" >
+      <button className="ui-techniciandashboard-114"
         onClick={() => setOpen((p) => !p)}
-        style={{
-          background: 'none', border: 'none', cursor: 'pointer',
-          fontSize: '0.72rem', fontWeight: 600, color: '#adb5bd',
-          padding: '2px 0', display: 'flex', alignItems: 'center', gap: 4,
-        }}
+
       >
         {open ? '▲' : '▼'} {open ? 'Hide' : 'View'} negotiation history ({history.length} rounds)
       </button>
       {open && (
-        <div style={{
-          marginTop: 6, borderLeft: '2px solid #e9e0d5',
-          paddingLeft: 10, display: 'flex', flexDirection: 'column', gap: 6,
-        }}>
+        <div className="ui-techniciandashboard-115" >
           {history.map((h, i) => {
             const isMe = h.actor === 'technician';
             const actionColor = h.action === 'accept' ? '#16a34a'
@@ -711,31 +607,27 @@ const TechNegotiationHistory = ({ history }) => {
               : h.action === 'reject'  ? '✕ Rejected'
               : isMe ? '↔ You countered' : '↔ Admin countered';
             return (
-              <div key={i} style={{
-                background: isMe ? 'rgba(165,115,47,0.05)' : 'rgba(37,99,235,0.04)',
-                border: `1px solid ${isMe ? 'rgba(165,115,47,0.15)' : 'rgba(37,99,235,0.12)'}`,
-                borderRadius: 6, padding: '6px 8px', fontSize: '0.75rem',
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                  <span style={{ fontWeight: 700, color: isMe ? '#A5732F' : '#2563eb' }}>
+              <div className="ui-techniciandashboard-116" key={i} style={{ "--ui-techniciandashboard-116-background": cssValue(isMe ? "var(--ui-color-284)" : "var(--ui-color-285)", "background"), "--ui-techniciandashboard-116-border": cssValue(`1px solid ${isMe ? 'rgba(165,115,47,0.15)' : 'rgba(37,99,235,0.12)'}`, "border") }}>
+                <div className="ui-techniciandashboard-117" >
+                  <span className="ui-techniciandashboard-118" style={{ "--ui-techniciandashboard-118-color": cssValue(isMe ? "var(--ui-color-85)" : "var(--ui-color-96)", "color") }}>
                     {isMe ? '🔧 You' : '👤 Admin'}
                   </span>
-                  <span style={{ color: '#adb5bd', fontSize: '0.68rem' }}>
+                  <span className="ui-techniciandashboard-119" >
                     {h.createdAt ? new Date(h.createdAt).toLocaleString('en-IN', {
                       day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
                     }) : ''}
                   </span>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontWeight: 700, color: actionColor }}>{actionLabel}</span>
+                <div className="ui-techniciandashboard-120" >
+                  <span className="ui-techniciandashboard-121" style={{ "--ui-techniciandashboard-121-color": cssValue(actionColor, "color") }}>{actionLabel}</span>
                   {h.amount != null && (
-                    <span style={{ fontWeight: 800, color: '#1a1208' }}>
+                    <span className="ui-techniciandashboard-122" >
                       ${Number(h.amount).toLocaleString()}
                     </span>
                   )}
                 </div>
                 {h.note && (
-                  <div style={{ marginTop: 2, color: '#6c757d', fontStyle: 'italic' }}>
+                  <div className="ui-techniciandashboard-123" >
                     "{h.note}"
                   </div>
                 )}
@@ -806,7 +698,7 @@ const ChargesInvoicePanel = ({ requestId, onUpdate, refreshKey = 0 }) => {
 
   if (loading) {
     return (
-      <div style={{ padding: '1.5rem', textAlign: 'center', color: '#adb5bd', fontSize: '0.85rem' }}>
+      <div className="ui-techniciandashboard-124" >
         Loading charges…
       </div>
     );
@@ -818,40 +710,36 @@ const ChargesInvoicePanel = ({ requestId, onUpdate, refreshKey = 0 }) => {
   const hasInvoice = !!invoice;
 
   return (
-    <div style={{ padding: '12px 0' }}>
+    <div className="ui-techniciandashboard-125" >
 
       {/* ── Next-action hint ── */}
       {nextAction && (
-        <div style={{
-          padding: '8px 12px', background: 'rgba(165,115,47,0.08)',
-          border: '1px solid rgba(165,115,47,0.2)', borderRadius: 8,
-          fontSize: '0.82rem', fontWeight: 600, color: '#8c5f25', marginBottom: 12,
-        }}>
+        <div className="ui-techniciandashboard-126" >
           💡 {nextAction}
         </div>
       )}
 
       {/* ── Summary badges ── */}
       {allCharges.length > 0 && (
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+        <div className="ui-techniciandashboard-127" >
           {summary.pendingAdminReview > 0 && (
-            <span style={S.badge('#b45309', 'rgba(234,179,8,0.15)')}>⏳ {summary.pendingAdminReview} pending review</span>
+            <span className="ui-techniciandashboard-128" >⏳ {summary.pendingAdminReview} pending review</span>
           )}
           {summary.awaitingYourReply > 0 && (
-            <span style={S.badge('#2563eb', 'rgba(37,99,235,0.1)')}>↔ {summary.awaitingYourReply} need your reply</span>
+            <span className="ui-techniciandashboard-129" >↔ {summary.awaitingYourReply} need your reply</span>
           )}
           {summary.accepted > 0 && (
-            <span style={S.badge('#16a34a', 'rgba(22,163,74,0.12)')}>✓ {summary.accepted} accepted</span>
+            <span className="ui-techniciandashboard-130" >✓ {summary.accepted} accepted</span>
           )}
           {summary.rejected > 0 && (
-            <span style={S.badge('#dc3545', 'rgba(220,53,69,0.1)')}>✗ {summary.rejected} rejected</span>
+            <span className="ui-techniciandashboard-131" >✗ {summary.rejected} rejected</span>
           )}
         </div>
       )}
 
       {/* ── Charge cards ── */}
       {allCharges.length === 0 ? (
-        <div style={{ color: '#adb5bd', textAlign: 'center', padding: '1.5rem', fontSize: '0.85rem' }}>
+        <div className="ui-techniciandashboard-132" >
           No additional charges submitted.
         </div>
       ) : (
@@ -862,26 +750,22 @@ const ChargesInvoicePanel = ({ requestId, onUpdate, refreshKey = 0 }) => {
           const showInlineCounter = counterOpen[c._id];
 
           return (
-            <div key={c._id} style={{
-              background: '#fdf9f5', border: '1px solid #f0e8dc',
-              borderRadius: 10, padding: '10px 14px', marginBottom: 10,
-            }}>
+            <div className="ui-techniciandashboard-133" key={c._id} >
 
               {/* ── Charge header: label + original asked amount ── */}
-              <div style={{ display: 'flex', justifyContent: 'space-between',
-                  alignItems: 'flex-start', flexWrap: 'wrap', gap: 6 }}>
+              <div className="ui-techniciandashboard-134" >
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1a1208' }}>{c.label}</div>
+                  <div className="ui-techniciandashboard-135" >{c.label}</div>
                   {c.description && (
-                    <div style={{ fontSize: '0.75rem', color: '#6c757d', marginTop: 2 }}>{c.description}</div>
+                    <div className="ui-techniciandashboard-136" >{c.description}</div>
                   )}
                 </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontWeight: 800, color: '#A5732F', fontSize: '0.9rem' }}>
+                <div className="ui-techniciandashboard-137" >
+                  <div className="ui-techniciandashboard-138" >
                     Asked: ${Number(c.requestedAmount).toLocaleString()}
                   </div>
                   {c.status === 'accepted' && c.agreedAmount != null && (
-                    <div style={{ fontSize: '0.78rem', color: '#16a34a', fontWeight: 700, marginTop: 2 }}>
+                    <div className="ui-techniciandashboard-139" >
                       ✓ Final: ${Number(c.agreedAmount).toLocaleString()}
                     </div>
                   )}
@@ -889,41 +773,37 @@ const ChargesInvoicePanel = ({ requestId, onUpdate, refreshKey = 0 }) => {
               </div>
 
               {/* ── Status badge ── */}
-              <div style={{ marginTop: 8 }}>{chargeStatusBadge(c.status)}</div>
+              <div className="ui-techniciandashboard-140" >{chargeStatusBadge(c.status)}</div>
 
               {/* ── Admin's active counter-offer (your turn to respond) ── */}
               {myTurn && c.adminCounterAmount > 0 && (
-                <div style={{
-                  marginTop: 8, padding: '10px 12px',
-                  background: 'rgba(37,99,235,0.06)',
-                  border: '1px solid rgba(37,99,235,0.18)', borderRadius: 8,
-                }}>
-                  <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#2563eb' }}>
+                <div className="ui-techniciandashboard-141" >
+                  <div className="ui-techniciandashboard-142" >
                     Admin counter-offer: ${Number(c.adminCounterAmount).toLocaleString()}
                   </div>
                   {c.adminNote && (
-                    <div style={{ fontSize: '0.78rem', color: '#6c757d', marginTop: 3, fontStyle: 'italic' }}>
+                    <div className="ui-techniciandashboard-143" >
                       "{c.adminNote}"
                     </div>
                   )}
 
                   {/* Accept / Re-counter buttons (hidden when inline form is open) */}
                   {!showInlineCounter && (
-                    <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-                      <button
+                    <div className="ui-techniciandashboard-144" >
+                      <button className="ui-techniciandashboard-145"
                         disabled={busy}
                         onClick={() => respond(c._id, 'accept')}
-                        style={S.btn('#16a34a', busy)}
+                        style={{ "--ui-techniciandashboard-145-background": cssValue(busy ? "var(--ui-color-29)" : "var(--ui-color-90)", "background"), "--ui-techniciandashboard-145-cursor": cssValue(busy ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-145-opacity": cssValue(busy ? 0.7 : 1, "opacity") }}
                       >
                         {busy ? '…' : `✓ Accept $${Number(c.adminCounterAmount).toLocaleString()}`}
                       </button>
-                      <button
+                      <button className="ui-techniciandashboard-146"
                         disabled={busy}
                         onClick={() => {
                           setCounterAmounts((p) => ({ ...p, [c._id]: String(c.adminCounterAmount || '') }));
                           setCounterOpen((p) => ({ ...p, [c._id]: true }));
                         }}
-                        style={S.btn('#2563eb', busy)}
+                        style={{ "--ui-techniciandashboard-146-background": cssValue(busy ? "var(--ui-color-29)" : "var(--ui-color-96)", "background"), "--ui-techniciandashboard-146-cursor": cssValue(busy ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-146-opacity": cssValue(busy ? 0.7 : 1, "opacity") }}
                       >
                         ↔ Re-counter
                       </button>
@@ -932,53 +812,45 @@ const ChargesInvoicePanel = ({ requestId, onUpdate, refreshKey = 0 }) => {
 
                   {/* Inline re-counter form */}
                   {showInlineCounter && (
-                    <div style={{ marginTop: 10 }}>
-                      <div style={{ fontSize: '0.78rem', fontWeight: 600, color: '#2563eb', marginBottom: 6 }}>
+                    <div className="ui-techniciandashboard-147" >
+                      <div className="ui-techniciandashboard-148" >
                         Your counter-offer for "{c.label}"
-                        <span style={{ color: '#adb5bd', fontWeight: 400, marginLeft: 6 }}>
+                        <span className="ui-techniciandashboard-149" >
                           (admin offered ${Number(c.adminCounterAmount).toLocaleString()})
                         </span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                        <div style={{ display: 'flex', alignItems: 'center',
-                            border: '1.5px solid #e9e0d5', borderRadius: 7, overflow: 'hidden', flex: 1, minWidth: 130 }}>
-                          <span style={{ padding: '0 8px', fontWeight: 700, color: '#A5732F',
-                              background: 'rgba(165,115,47,0.07)', borderRight: '1.5px solid #e9e0d5',
-                              alignSelf: 'stretch', display: 'flex', alignItems: 'center', fontSize: '0.85rem' }}>₹</span>
-                          <input
+                      <div className="ui-techniciandashboard-150" >
+                        <div className="ui-techniciandashboard-151" >
+                          <span className="ui-techniciandashboard-152" >₹</span>
+                          <input className="ui-techniciandashboard-153"
                             type="number"
                             min="1"
                             placeholder="Your amount"
                             value={counterAmounts[c._id] || ''}
                             onChange={(e) => setCounterAmounts((p) => ({ ...p, [c._id]: e.target.value }))}
-                            style={{ border: 'none', outline: 'none', padding: '6px 10px',
-                              fontSize: '0.9rem', fontWeight: 700, width: '100%' }}
+
                           />
                         </div>
-                        <button
+                        <button className="ui-techniciandashboard-154"
                           disabled={busy || !counterAmounts[c._id] || Number(counterAmounts[c._id]) <= 0}
                           onClick={() => respond(c._id, 'counter', counterAmounts[c._id], counterNotes[c._id] || '')}
-                          style={S.btn('#2563eb', busy || !counterAmounts[c._id] || Number(counterAmounts[c._id]) <= 0)}
+                          style={{ "--ui-techniciandashboard-154-background": cssValue(busy || !counterAmounts[c._id] || Number(counterAmounts[c._id]) <= 0 ? "var(--ui-color-29)" : "var(--ui-color-96)", "background"), "--ui-techniciandashboard-154-cursor": cssValue(busy || !counterAmounts[c._id] || Number(counterAmounts[c._id]) <= 0 ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-154-opacity": cssValue(busy || !counterAmounts[c._id] || Number(counterAmounts[c._id]) <= 0 ? 0.7 : 1, "opacity") }}
                         >
                           {busy ? '…' : 'Send'}
                         </button>
-                        <button
+                        <button className="ui-techniciandashboard-155"
                           onClick={() => setCounterOpen((p) => ({ ...p, [c._id]: false }))}
-                          style={S.ghost}
+
                         >
                           Cancel
                         </button>
                       </div>
-                      <input
+                      <input className="ui-techniciandashboard-156"
                         type="text"
                         placeholder="Optional note…"
                         value={counterNotes[c._id] || ''}
                         onChange={(e) => setCounterNotes((p) => ({ ...p, [c._id]: e.target.value }))}
-                        style={{
-                          marginTop: 6, width: '100%', border: '1.5px solid #e9e0d5',
-                          borderRadius: 7, padding: '6px 10px', fontSize: '0.8rem',
-                          outline: 'none', boxSizing: 'border-box',
-                        }}
+
                       />
                     </div>
                   )}
@@ -987,12 +859,7 @@ const ChargesInvoicePanel = ({ requestId, onUpdate, refreshKey = 0 }) => {
 
               {/* ── Waiting for admin (you already re-countered) ── */}
               {adminTurn && c.technicianCounterAmount > 0 && (
-                <div style={{
-                  marginTop: 8, padding: '8px 10px',
-                  background: 'rgba(165,115,47,0.06)',
-                  border: '1px solid rgba(165,115,47,0.18)', borderRadius: 8,
-                  fontSize: '0.8rem', fontWeight: 600, color: '#8c5f25',
-                }}>
+                <div className="ui-techniciandashboard-157" >
                   ⏳ Your counter-offer of ${Number(c.technicianCounterAmount).toLocaleString()} is with admin.
                   Waiting for their response…
                 </div>
@@ -1000,10 +867,7 @@ const ChargesInvoicePanel = ({ requestId, onUpdate, refreshKey = 0 }) => {
 
               {/* ── Admin note on resolved charges ── */}
               {['accepted', 'rejected'].includes(c.status) && c.adminNote && (
-                <div style={{
-                  marginTop: 6, fontSize: '0.78rem', color: '#6c757d',
-                  borderLeft: '3px solid #dee2e6', paddingLeft: 8, fontStyle: 'italic',
-                }}>
+                <div className="ui-techniciandashboard-158" >
                   Admin note: {c.adminNote}
                 </div>
               )}
@@ -1018,71 +882,64 @@ const ChargesInvoicePanel = ({ requestId, onUpdate, refreshKey = 0 }) => {
 
       {/* ── Invoice section ── */}
       {hasInvoice && (
-        <div style={{ marginTop: 16, border: '1.5px solid #f0e8dc', borderRadius: 12, overflow: 'hidden' }}>
-          <div style={{
-            background: '#fdf9f5', padding: '10px 14px', display: 'flex',
-            justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f0e8dc',
-          }}>
-            <div style={{ fontWeight: 800, color: '#1a1208', fontSize: '0.95rem' }}>🧾 {invoice.invoiceNumber}</div>
-            <span style={S.badge(
-              invoice.status === 'paid' ? '#16a34a' : invoice.status === 'finalised' ? '#2563eb' : '#6c757d',
-              invoice.status === 'paid' ? 'rgba(22,163,74,0.12)' : invoice.status === 'finalised' ? 'rgba(37,99,235,0.1)' : '#f3f4f6'
-            )}>
+        <div className="ui-techniciandashboard-159" >
+          <div className="ui-techniciandashboard-160" >
+            <div className="ui-techniciandashboard-161" >🧾 {invoice.invoiceNumber}</div>
+            <span className="ui-techniciandashboard-162" style={{ "--ui-techniciandashboard-162-background": cssValue(invoice.status === 'paid' ? "var(--ui-color-97)" : invoice.status === 'finalised' ? "var(--ui-color-95)" : "var(--ui-color-286)", "background"), "--ui-techniciandashboard-162-color": cssValue(invoice.status === 'paid' ? "var(--ui-color-90)" : invoice.status === 'finalised' ? "var(--ui-color-96)" : "var(--ui-color-84)", "color") }}>
               {invoice.status === 'paid' ? '💰 Paid' : invoice.status === 'finalised' ? '✓ Finalised' : 'Draft'}
             </span>
           </div>
-          <div style={{ padding: '12px 14px' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.83rem', marginBottom: 10 }}>
+          <div className="ui-techniciandashboard-163" >
+            <table className="ui-techniciandashboard-164" >
               <thead>
-                <tr style={{ borderBottom: '2px solid #f0e8dc' }}>
-                  <th style={{ textAlign: 'left', padding: '6px 0', color: '#6c757d', fontWeight: 600, fontSize: '0.72rem', textTransform: 'uppercase' }}>Item</th>
-                  <th style={{ textAlign: 'right', padding: '6px 0', color: '#6c757d', fontWeight: 600, fontSize: '0.72rem', textTransform: 'uppercase' }}>Amount</th>
+                <tr className="ui-techniciandashboard-165" >
+                  <th className="ui-techniciandashboard-166" >Item</th>
+                  <th className="ui-techniciandashboard-167" >Amount</th>
                 </tr>
               </thead>
               <tbody>
-                <tr style={{ borderBottom: '1px solid #f8f3ed' }}>
-                  <td style={{ padding: '7px 0', fontWeight: 600 }}>{invoice.fixedJobLabel || 'Fixed Job Charge'}</td>
-                  <td style={{ padding: '7px 0', textAlign: 'right', fontWeight: 700, color: '#A5732F' }}>
+                <tr className="ui-techniciandashboard-168" >
+                  <td className="ui-techniciandashboard-169" >{invoice.fixedJobLabel || 'Fixed Job Charge'}</td>
+                  <td className="ui-techniciandashboard-170" >
                     ${Number(invoice.fixedJobCharge).toLocaleString()}
                   </td>
                 </tr>
                 {(invoice.additionalCharges || []).map((ch, i) => (
-                  <tr key={i} style={{ borderBottom: '1px solid #f8f3ed' }}>
-                    <td style={{ padding: '7px 0' }}>
-                      <div style={{ fontWeight: 600 }}>{ch.label}</div>
-                      {ch.description && <div style={{ fontSize: '0.72rem', color: '#6c757d' }}>{ch.description}</div>}
+                  <tr className="ui-techniciandashboard-171" key={i} >
+                    <td className="ui-techniciandashboard-172" >
+                      <div className="ui-techniciandashboard-173" >{ch.label}</div>
+                      {ch.description && <div className="ui-techniciandashboard-174" >{ch.description}</div>}
                     </td>
-                    <td style={{ padding: '7px 0', textAlign: 'right', fontWeight: 700, color: '#A5732F' }}>
+                    <td className="ui-techniciandashboard-175" >
                       ${Number(ch.agreedAmount).toLocaleString()}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            <div style={{ background: '#fdf9f5', borderRadius: 8, padding: '10px 12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.83rem', color: '#495057', marginBottom: 4 }}>
+            <div className="ui-techniciandashboard-176" >
+              <div className="ui-techniciandashboard-177" >
                 <span>Fixed Charge</span>
                 <span>₹{Number(invoice.fixedJobCharge).toLocaleString()}</span>
               </div>
               {invoice.subtotalAdditional > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.83rem', color: '#495057', marginBottom: 4 }}>
+                <div className="ui-techniciandashboard-178" >
                   <span>Additional Charges</span>
                   <span>₹{Number(invoice.subtotalAdditional).toLocaleString()}</span>
                 </div>
               )}
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: '1rem',
-                  color: '#1a1208', borderTop: '2px solid #f0e8dc', paddingTop: 8, marginTop: 4 }}>
+              <div className="ui-techniciandashboard-179" >
                 <span>Total</span>
-                <span style={{ color: '#A5732F' }}>₹{Number(invoice.totalAmount).toLocaleString()}</span>
+                <span className="ui-techniciandashboard-180" >₹{Number(invoice.totalAmount).toLocaleString()}</span>
               </div>
             </div>
             {invoice.status === 'paid' && invoice.paidAt && (
-              <div style={{ marginTop: 8, fontSize: '0.78rem', color: '#16a34a', fontWeight: 600 }}>
+              <div className="ui-techniciandashboard-181" >
                 ✓ Paid on {fmtDT(invoice.paidAt)} — Check your wallet
               </div>
             )}
             {invoice.status === 'finalised' && (
-              <div style={{ marginTop: 8, fontSize: '0.78rem', color: '#2563eb', fontWeight: 600 }}>
+              <div className="ui-techniciandashboard-182" >
                 ⏳ Invoice finalised — Waiting for admin to process payment
               </div>
             )}
@@ -1118,15 +975,15 @@ const TaskCompletionModal = ({ task, onClose, onSubmit, saving }) => {
     if (task.requiresSignature) canvasRef.current.toBlob((blob) => onSubmit({ note: note.trim(), image, signature: new File([blob], 'signature.png', { type: 'image/png' }) }), 'image/png');
     else onSubmit({ note: note.trim(), image, signature: null });
   };
-  return <div style={{ position:'fixed', inset:0, zIndex:3000, background:'rgba(0,0,0,.5)', display:'grid', placeItems:'center', padding:16 }} onClick={onClose}>
-    <div style={{ width:'100%', maxWidth:480, maxHeight:'90vh', overflowY:'auto', background:'#fff', borderRadius:16, padding:24 }} onClick={(e) => e.stopPropagation()}>
-      <div style={{ display:'flex', justifyContent:'space-between', gap:12, alignItems:'center', marginBottom:8 }}><h5 style={{ margin:0, color:'#1a1208', fontWeight:800 }}>Complete task</h5><button onClick={onClose} style={{ border:0, background:'none', fontSize:22, cursor:'pointer' }}>×</button></div>
-      <p style={{ margin:'0 0 18px', color:'#6c757d', fontSize:'.85rem' }}>{task.title}</p>
-      {task.requirementReason && <div style={{ margin:'-8px 0 16px', padding:'10px 12px', borderRadius:8, background:'#fdf9f5', border:'1px solid #e9e0d5', color:'#6c757d', fontSize:'.82rem' }}><strong style={{ color:'#1a1208' }}>Why this is required:</strong> {task.requirementReason}</div>}
-      {task.requiresNote && <><label style={{ display:'block', fontWeight:700, fontSize:'.82rem', marginBottom:5 }}>Completion note <span style={{ color:'#dc3545' }}>*</span></label><textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} placeholder="Describe the completed work…" style={{ width:'100%', boxSizing:'border-box', border:'1.5px solid #e9e0d5', borderRadius:8, padding:10, marginBottom:14, fontFamily:'inherit' }} /></>}
-      {task.requiresImage && <><label style={{ display:'block', fontWeight:700, fontSize:'.82rem', marginBottom:5 }}>Completion image <span style={{ color:'#dc3545' }}>*</span></label><input type="file" accept="image/*" capture="environment" onChange={(e) => setImage(e.target.files?.[0] || null)} style={{ marginBottom:14, fontSize:'.82rem' }} />{image && <div style={{ color:'#16a34a', fontSize:'.78rem', marginTop:-10, marginBottom:14 }}>✓ {image.name}</div>}</>}
-      {task.requiresSignature && <><div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:5 }}><label style={{ fontWeight:700, fontSize:'.82rem' }}>Customer signature <span style={{ color:'#dc3545' }}>*</span></label><button type="button" onClick={clearSignature} style={{ border:0, background:'none', color:'#A5732F', cursor:'pointer', fontWeight:700, fontSize:'.78rem' }}>Clear</button></div><canvas ref={canvasRef} width="820" height="260" onPointerDown={start} onPointerMove={draw} onPointerUp={stop} onPointerLeave={stop} style={{ width:'100%', height:130, touchAction:'none', border:'1.5px dashed #A5732F', borderRadius:8, background:'#fdf9f5', marginBottom:16 }} /></>}
-      <div style={{ display:'flex', justifyContent:'flex-end', gap:10 }}><button onClick={onClose} style={S.ghost}>Cancel</button><button onClick={submit} disabled={saving} style={S.btn('#1a1208', saving)}>{saving ? 'Saving…' : 'Complete task'}</button></div>
+  return <div className="ui-techniciandashboard-183"  onClick={onClose}>
+    <div className="ui-techniciandashboard-184"  onClick={(e) => e.stopPropagation()}>
+      <div className="ui-techniciandashboard-185" ><h5 className="ui-techniciandashboard-186" >Complete task</h5><button className="ui-techniciandashboard-187" onClick={onClose} >×</button></div>
+      <p className="ui-techniciandashboard-188" >{task.title}</p>
+      {task.requirementReason && <div className="ui-techniciandashboard-189" ><strong className="ui-techniciandashboard-190" >Why this is required:</strong> {task.requirementReason}</div>}
+      {task.requiresNote && <><label className="ui-techniciandashboard-191" >Completion note <span className="ui-techniciandashboard-192" >*</span></label><textarea className="ui-techniciandashboard-193" value={note} onChange={(e) => setNote(e.target.value)} rows={3} placeholder="Describe the completed work…"  /></>}
+      {task.requiresImage && <><label className="ui-techniciandashboard-194" >Completion image <span className="ui-techniciandashboard-195" >*</span></label><input className="ui-techniciandashboard-196" type="file" accept="image/*" capture="environment" onChange={(e) => setImage(e.target.files?.[0] || null)}  />{image && <div className="ui-techniciandashboard-197" >✓ {image.name}</div>}</>}
+      {task.requiresSignature && <><div className="ui-techniciandashboard-198" ><label className="ui-techniciandashboard-199" >Customer signature <span className="ui-techniciandashboard-200" >*</span></label><button className="ui-techniciandashboard-201" type="button" onClick={clearSignature} >Clear</button></div><canvas className="ui-techniciandashboard-202" ref={canvasRef} width="820" height="260" onPointerDown={start} onPointerMove={draw} onPointerUp={stop} onPointerLeave={stop}  /></>}
+      <div className="ui-techniciandashboard-203" ><button className="ui-techniciandashboard-204" onClick={onClose} >Cancel</button><button className="ui-techniciandashboard-205" onClick={submit} disabled={saving} style={{ "--ui-techniciandashboard-205-background": cssValue(saving ? "var(--ui-color-29)" : "var(--ui-color-83)", "background"), "--ui-techniciandashboard-205-cursor": cssValue(saving ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-205-opacity": cssValue(saving ? 0.7 : 1, "opacity") }}>{saving ? 'Saving…' : 'Complete task'}</button></div>
     </div>
   </div>;
 };
@@ -1639,24 +1496,18 @@ const TechnicianDashboard = () => {
 
   if (loading) {
     return (
-      <div style={{ padding: 32, textAlign: 'center', color: '#6c757d' }}>Loading dashboard…</div>
+      <div className="ui-techniciandashboard-206" >Loading dashboard…</div>
     );
   }
 
-  const tabStyle = (key) => ({
-    padding: '8px 18px', border: 'none', borderRadius: '8px 8px 0 0',
-    fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer',
-    background: activeTab === key ? '#1a1208' : 'transparent',
-    color: activeTab === key ? '#fff' : '#6c757d',
-    borderBottom: activeTab === key ? '3px solid #A5732F' : '3px solid transparent',
-  });
+
 
   const withdrawalStatusColor = { pending: '#b45309', approved: '#16a34a', rejected: '#dc3545', completed: '#2563eb' };
   const withdrawalStatusBg = { pending: 'rgba(234,179,8,0.12)', approved: 'rgba(22,163,74,0.1)', rejected: 'rgba(220,53,69,0.1)', completed: 'rgba(37,99,235,0.1)' };
 
   return (
-    <div style={{ padding: 24, maxWidth: 960, margin: '0 auto', fontFamily: 'Inter, system-ui, sans-serif' }}>
-      <h2 style={{ fontWeight: 800, color: '#1a1208', marginBottom: 4 }}>Technician Dashboard</h2>
+    <div className="ui-techniciandashboard-207" >
+      <h2 className="ui-techniciandashboard-208" >Technician Dashboard</h2>
 
       {/* ── modals ── */}
       {completionTask && (
@@ -1699,41 +1550,33 @@ const TechnicianDashboard = () => {
       )}
 
       {/* ── Profile card ── */}
-      <div style={{ ...S.card, display: 'flex', alignItems: 'center', gap: 20, marginBottom: 20 }}>
-        <div style={{ flexShrink: 0 }}>
+      <div className="ui-techniciandashboard-209" >
+        <div className="ui-techniciandashboard-210" >
           {profileImagePreview ? (
-            <img src={profileImagePreview} alt="Profile"
-              style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: '3px solid #A5732F' }} />
+            <img className="ui-techniciandashboard-211" src={profileImagePreview} alt="Profile"
+               />
           ) : (
-            <div style={{ width: 80, height: 80, borderRadius: '50%',
-                background: 'linear-gradient(135deg,#A5732F,#d4a050)', display: 'flex',
-                alignItems: 'center', justifyContent: 'center', color: '#fff',
-                fontSize: '1.8rem', fontWeight: 800, border: '3px solid #A5732F' }}>
+            <div className="ui-techniciandashboard-212" >
               {profile?.name?.charAt(0)?.toUpperCase() || 'T'}
             </div>
           )}
         </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#1a1208' }}>{profile?.name || 'Technician'}</div>
-          <div style={{ color: '#6c757d', fontSize: '0.85rem', marginBottom: 6 }}>{profile?.email || ''}</div>
+        <div className="ui-techniciandashboard-213" >
+          <div className="ui-techniciandashboard-214" >{profile?.name || 'Technician'}</div>
+          <div className="ui-techniciandashboard-215" >{profile?.email || ''}</div>
           {profile?.technicianProfile?.verificationStatus && (
-            <span style={S.badge(
-              profile.technicianProfile.verificationStatus === 'approved' ? '#16a34a' :
-              profile.technicianProfile.verificationStatus === 'rejected' ? '#dc3545' : '#b45309',
-              profile.technicianProfile.verificationStatus === 'approved' ? 'rgba(22,163,74,0.1)' :
-              profile.technicianProfile.verificationStatus === 'rejected' ? 'rgba(220,53,69,0.1)' : 'rgba(234,179,8,0.12)'
-            )}>
+            <span className="ui-techniciandashboard-216" style={{ "--ui-techniciandashboard-216-background": cssValue(profile.technicianProfile.verificationStatus === 'approved' ? "var(--ui-color-104)" : profile.technicianProfile.verificationStatus === 'rejected' ? "var(--ui-color-88)" : "var(--ui-color-287)", "background"), "--ui-techniciandashboard-216-color": cssValue(profile.technicianProfile.verificationStatus === 'approved' ? "var(--ui-color-90)" : profile.technicianProfile.verificationStatus === 'rejected' ? "var(--ui-color-30)" : "var(--ui-color-94)", "color") }}>
               {profile.technicianProfile.verificationStatus === 'approved' ? '✓ Verified' :
                profile.technicianProfile.verificationStatus === 'rejected' ? '✗ Rejected' : '⏳ Pending Verification'}
             </span>
           )}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginTop: 8 }}>
-            <label style={{ ...S.btn('#A5732F'), display: 'inline-block', cursor: 'pointer' }}>
+          <div className="ui-techniciandashboard-217" >
+            <label className="ui-techniciandashboard-218" style={{ "--ui-techniciandashboard-218-background": cssValue(false ? "var(--ui-color-29)" : "var(--ui-color-85)", "background"), "--ui-techniciandashboard-218-opacity": cssValue(false ? 0.7 : 1, "opacity") }}>
               📷 {profileImagePreview ? 'Change Photo' : 'Upload Photo'}
               <input ref={imageInputRef} type="file" accept="image/*" hidden onChange={handleImageChange} />
             </label>
             {imageInputRef.current?.files?.[0] && (
-              <button style={S.btn('#16a34a', uploadingImage)} onClick={handleUploadImage} disabled={uploadingImage}>
+              <button className="ui-techniciandashboard-219" style={{ "--ui-techniciandashboard-219-background": cssValue(uploadingImage ? "var(--ui-color-29)" : "var(--ui-color-90)", "background"), "--ui-techniciandashboard-219-cursor": cssValue(uploadingImage ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-219-opacity": cssValue(uploadingImage ? 0.7 : 1, "opacity") }} onClick={handleUploadImage} disabled={uploadingImage}>
                 {uploadingImage ? 'Uploading…' : '✓ Save Photo'}
               </button>
             )}
@@ -1742,7 +1585,7 @@ const TechnicianDashboard = () => {
       </div>
 
       {/* ── Stats row ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 12, marginBottom: 16 }}>
+      <div className="ui-techniciandashboard-220" >
         {[
           { label: 'Average Rating', value: summary.rating == null ? 'Not yet rated' : `${Number(summary.rating).toFixed(2)}/5 (${summary.ratingCount} ratings)`, color: '#A5732F' },
           { label: 'Total Jobs', value: summary.totalJobsDone, color: '#1a1208' },
@@ -1750,9 +1593,9 @@ const TechnicianDashboard = () => {
           { label: 'Withdrawn', value: `₹${summary.totalWithdrawn.toLocaleString()}`, color: '#dc3545' },
           { label: 'Available', value: `₹${summary.availableBalance.toLocaleString()}`, color: '#16a34a' },
         ].map((s) => (
-          <div key={s.label} style={{ ...S.card, textAlign: 'center', marginBottom: 0 }}>
-            <div style={{ fontWeight: 800, fontSize: '1.4rem', color: s.color }}>{s.value}</div>
-            <div style={{ fontSize: '0.72rem', color: '#6c757d', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>
+          <div className="ui-techniciandashboard-221" key={s.label} >
+            <div className="ui-techniciandashboard-222" style={{ "--ui-techniciandashboard-222-color": cssValue(s.color, "color") }}>{s.value}</div>
+            <div className="ui-techniciandashboard-223" >
               {s.label}
             </div>
           </div>
@@ -1761,7 +1604,7 @@ const TechnicianDashboard = () => {
 
       {/* ── Metrics row (from /technician/metrics) ── */}
       {metrics && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 12, marginBottom: 16 }}>
+        <div className="ui-techniciandashboard-224" >
           {[
             { label: 'Accepted Jobs', value: metrics.acceptedCount, color: '#16a34a' },
             { label: 'Pending Requests', value: metrics.pendingCount, color: '#b45309' },
@@ -1769,10 +1612,9 @@ const TechnicianDashboard = () => {
                 ? `${Math.round((metrics.acceptedCount / (metrics.acceptedCount + metrics.pendingCount)) * 100)}%`
                 : '—', color: '#2563eb' },
           ].map((s) => (
-            <div key={s.label} style={{ ...S.card, textAlign: 'center', marginBottom: 0,
-                background: 'linear-gradient(135deg,#fdf9f5,#fff)' }}>
-              <div style={{ fontWeight: 800, fontSize: '1.2rem', color: s.color }}>{s.value}</div>
-              <div style={{ fontSize: '0.72rem', color: '#6c757d', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: 2 }}>
+            <div className="ui-techniciandashboard-225" key={s.label} >
+              <div className="ui-techniciandashboard-226" style={{ "--ui-techniciandashboard-226-color": cssValue(s.color, "color") }}>{s.value}</div>
+              <div className="ui-techniciandashboard-227" >
                 {s.label}
               </div>
             </div>
@@ -1780,12 +1622,12 @@ const TechnicianDashboard = () => {
         </div>
       )}
 
-      <button style={{ ...S.btn('#1a1208'), marginBottom: 20 }} onClick={() => setWithdrawModal(true)}>
+      <button className="ui-techniciandashboard-228" style={{ "--ui-techniciandashboard-228-background": cssValue(false ? "var(--ui-color-29)" : "var(--ui-color-83)", "background"), "--ui-techniciandashboard-228-cursor": cssValue(false ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-228-opacity": cssValue(false ? 0.7 : 1, "opacity") }} onClick={() => setWithdrawModal(true)}>
         💸 Withdraw
       </button>
 
       {/* ── Tabs ── */}
-      <div style={{ display: 'flex', gap: 4, borderBottom: '2px solid #f0e8dc', marginBottom: 20, flexWrap: 'wrap' }}>
+      <div className="ui-techniciandashboard-229" >
         {[
           { key: 'open',        label: `Open Jobs (${jobs.length})` },
           { key: 'my',          label: `My Jobs (${myJobs.length})` },
@@ -1793,7 +1635,7 @@ const TechnicianDashboard = () => {
           { key: 'withdrawals', label: `Withdrawals (${withdrawals.length})` },
           { key: 'documents',   label: 'My Documents' },
         ].map((t) => (
-          <button key={t.key} style={tabStyle(t.key)} onClick={() => setActiveTab(t.key)}>
+          <button className="ui-techniciandashboard-230" key={t.key} style={{ "--ui-techniciandashboard-230-background": cssValue(activeTab === t.key ? "var(--ui-color-83)" : "var(--ui-color-120)", "background"), "--ui-techniciandashboard-230-color": cssValue(activeTab === t.key ? "var(--ui-color-2)" : "var(--ui-color-84)", "color"), "--ui-techniciandashboard-230-border-bottom": cssValue(activeTab === t.key ? '3px solid #A5732F' : '3px solid transparent', "borderBottom") }} onClick={() => setActiveTab(t.key)}>
             {t.label}
           </button>
         ))}
@@ -1802,9 +1644,9 @@ const TechnicianDashboard = () => {
       {/* ════════════════════════════════ OPEN JOBS TAB ════════════════════════════════ */}
       {activeTab === 'open' && (
         <div>
-          <h4 style={{ fontWeight: 700, marginBottom: 12 }}>Available Jobs</h4>
+          <h4 className="ui-techniciandashboard-231" >Available Jobs</h4>
           {jobs.length === 0 ? (
-            <div style={{ color: '#adb5bd', padding: '2rem', textAlign: 'center' }}>No open jobs right now.</div>
+            <div className="ui-techniciandashboard-232" >No open jobs right now.</div>
           ) : (
             jobs.map((job) => {
               const myReq = requests.find(
@@ -1812,37 +1654,37 @@ const TechnicianDashboard = () => {
                   ['pending', 'accepted', 'counter-offer'].includes(r.status)
               );
               return (
-                <div key={job._id} style={S.card}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
+                <div className="ui-techniciandashboard-233" key={job._id} >
+                  <div className="ui-techniciandashboard-234" >
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: '1rem', color: '#1a1208' }}>{job.title}</div>
-                      <div style={{ fontSize: '0.8rem', color: '#6c757d' }}>{job.category} · {job.location}</div>
-                      {job.technicianRating?.score && <div style={{ color: '#A5732F', marginTop: 6 }}>★ Work order rating: {job.technicianRating.score}/5</div>}
+                      <div className="ui-techniciandashboard-235" >{job.title}</div>
+                      <div className="ui-techniciandashboard-236" >{job.category} · {job.location}</div>
+                      {job.technicianRating?.score && <div className="ui-techniciandashboard-237" >★ Work order rating: {job.technicianRating.score}/5</div>}
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontWeight: 800, color: '#A5732F', fontSize: '1.05rem' }}>₹{job.budget}</div>
-                      {job.estimatedTime && <div style={{ fontSize: '0.75rem', color: '#6c757d' }}>⏱ {job.estimatedTime}</div>}
+                    <div className="ui-techniciandashboard-238" >
+                      <div className="ui-techniciandashboard-239" >₹{job.budget}</div>
+                      {job.estimatedTime && <div className="ui-techniciandashboard-240" >⏱ {job.estimatedTime}</div>}
                     </div>
                   </div>
-                  <p style={{ color: '#495057', fontSize: '0.875rem', margin: '8px 0 10px' }}>{job.description}</p>
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <p className="ui-techniciandashboard-241" >{job.description}</p>
+                  <div className="ui-techniciandashboard-242" >
                     {myReq ? (
                       <>
                         {reqStatusBadge(myReq.status)}
-                        <span style={{ fontSize: '0.78rem', color: '#6c757d' }}>
+                        <span className="ui-techniciandashboard-243" >
                           {myReq.status === 'accepted' ? '— Job assigned to you'
                             : myReq.status === 'counter-offer' ? '— Awaiting admin review'
                             : '— Waiting for admin response'}
                         </span>
-                        
+
                       </>
                     ) : (
-                      <button style={S.btn('#1a1208')} onClick={() => setRequestModal(job)}>Request Job</button>
+                      <button className="ui-techniciandashboard-244" style={{ "--ui-techniciandashboard-244-background": cssValue(false ? "var(--ui-color-29)" : "var(--ui-color-83)", "background"), "--ui-techniciandashboard-244-cursor": cssValue(false ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-244-opacity": cssValue(false ? 0.7 : 1, "opacity") }} onClick={() => setRequestModal(job)}>Request Job</button>
                     )}
                     {/* View full details */}
-                    <button
+                    <button className="ui-techniciandashboard-245"
                       onClick={() => setJobDetailModal(job._id)}
-                      style={{ ...S.ghost, fontSize: '0.78rem', padding: '6px 12px' }}>
+                      >
                       🔍 Details
                     </button>
                   </div>
@@ -1856,46 +1698,41 @@ const TechnicianDashboard = () => {
       {/* ════════════════════════════════ MY JOBS TAB ════════════════════════════════ */}
       {activeTab === 'my' && (
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <h4 style={{ fontWeight: 700, margin: 0 }}>My Assigned Jobs</h4>
-            <button onClick={refreshMyJobs} style={{ ...S.ghost, fontSize: '0.78rem' }}>🔄 Refresh</button>
+          <div className="ui-techniciandashboard-246" >
+            <h4 className="ui-techniciandashboard-247" >My Assigned Jobs</h4>
+            <button className="ui-techniciandashboard-248" onClick={refreshMyJobs} >🔄 Refresh</button>
           </div>
           {myJobs.length === 0 ? (
-            <div style={{ color: '#adb5bd', padding: '2rem', textAlign: 'center' }}>No jobs assigned yet.</div>
+            <div className="ui-techniciandashboard-249" >No jobs assigned yet.</div>
           ) : (
             myJobs.map((job) => {
               const alreadyReached = !!job.reachedAt;
               const alreadyCompleted = !!job.jobCompletedAt;
               return (
-                <div key={job._id} style={S.card}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                <div className="ui-techniciandashboard-250" key={job._id} >
+                  <div className="ui-techniciandashboard-251" >
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: '1rem', color: '#1a1208' }}>{job.title}</div>
-                      <div style={{ fontSize: '0.8rem', color: '#6c757d' }}>{job.category} · {job.location}</div>
-                      {job.technicianRating?.score && <div style={{ color: '#A5732F', marginTop: 6 }}>★ Work order rating: {job.technicianRating.score}/5</div>}
+                      <div className="ui-techniciandashboard-252" >{job.title}</div>
+                      <div className="ui-techniciandashboard-253" >{job.category} · {job.location}</div>
+                      {job.technicianRating?.score && <div className="ui-techniciandashboard-254" >★ Work order rating: {job.technicianRating.score}/5</div>}
                     </div>
-                    <span style={S.badge(
-                      job.status === 'inprogress' ? '#2563eb' : job.status === 'completed' ? '#16a34a' : '#A5732F',
-                      job.status === 'inprogress' ? 'rgba(37,99,235,0.12)' : job.status === 'completed' ? 'rgba(22,163,74,0.12)' : 'rgba(165,115,47,0.12)'
-                    )}>{job.status}</span>
+                    <span className="ui-techniciandashboard-255" style={{ "--ui-techniciandashboard-255-background": cssValue(job.status === 'inprogress' ? "var(--ui-color-288)" : job.status === 'completed' ? "var(--ui-color-97)" : "var(--ui-color-289)", "background"), "--ui-techniciandashboard-255-color": cssValue(job.status === 'inprogress' ? "var(--ui-color-96)" : job.status === 'completed' ? "var(--ui-color-90)" : "var(--ui-color-85)", "color") }}>{job.status}</span>
                   </div>
 
                   {job.estimatedTime && (
-                    <div style={{ fontSize: '0.8rem', color: '#A5732F', fontWeight: 600, margin: '6px 0' }}>
+                    <div className="ui-techniciandashboard-256" >
                       ⏱ {job.estimatedTime}
                     </div>
                   )}
 
                   {(alreadyReached || alreadyCompleted) && (
-                    <div style={{ background: '#fdf9f5', borderRadius: 8, padding: '8px 12px',
-                        margin: '8px 0', border: '1px solid #f0e8dc', fontSize: '0.8rem',
-                        display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <div className="ui-techniciandashboard-257" >
                       {alreadyReached && (
                         <>
-                          <div><b style={{ color: '#2563eb' }}>📍 Reached:</b> {fmtDT(job.reachedAt)}</div>
+                          <div><b className="ui-techniciandashboard-258" >📍 Reached:</b> {fmtDT(job.reachedAt)}</div>
                           {job.reachedStatus?.siteStatus && (
                             <div>
-                              <b style={{ color: job.reachedStatus.siteStatus === 'onsite' ? '#16a34a' : '#dc3545' }}>
+                              <b className="ui-techniciandashboard-259" style={{ "--ui-techniciandashboard-259-color": cssValue(job.reachedStatus.siteStatus === 'onsite' ? "var(--ui-color-90)" : "var(--ui-color-30)", "color") }}>
                                 Site status:
                               </b>{' '}
                               {job.reachedStatus.siteStatus === 'onsite' ? 'Onsite' : 'Offsite'}
@@ -1905,10 +1742,10 @@ const TechnicianDashboard = () => {
                       )}
                       {alreadyCompleted && (
                         <>
-                          <div><b style={{ color: '#16a34a' }}>✅ Completed:</b> {fmtDT(job.jobCompletedAt)}</div>
+                          <div><b className="ui-techniciandashboard-260" >✅ Completed:</b> {fmtDT(job.jobCompletedAt)}</div>
                           {job.completedStatus?.siteStatus && (
                             <div>
-                              <b style={{ color: job.completedStatus.siteStatus === 'onsite' ? '#16a34a' : '#dc3545' }}>
+                              <b className="ui-techniciandashboard-261" style={{ "--ui-techniciandashboard-261-color": cssValue(job.completedStatus.siteStatus === 'onsite' ? "var(--ui-color-90)" : "var(--ui-color-30)", "color") }}>
                                 Completion site status:
                               </b>{' '}
                               {job.completedStatus.siteStatus === 'onsite' ? 'Onsite' : 'Offsite'}
@@ -1917,7 +1754,7 @@ const TechnicianDashboard = () => {
                         </>
                       )}
                       {job.jobDurationMinutes != null && (
-                        <div><b style={{ color: '#A5732F' }}>⏱ Duration:</b> {formatDuration(job.jobDurationMinutes)}</div>
+                        <div><b className="ui-techniciandashboard-262" >⏱ Duration:</b> {formatDuration(job.jobDurationMinutes)}</div>
                       )}
                     </div>
                   )}
@@ -1928,28 +1765,24 @@ const TechnicianDashboard = () => {
                     const doneCount = job.tasks.filter((t) => t.isDone).length;
                     const pct = Math.round((doneCount / job.tasks.length) * 100);
                     return (
-                      <div style={{ margin: '10px 0', border: '1px solid #f0e8dc', borderRadius: 10,
-                          background: '#fdf9f5', overflow: 'hidden' }}>
+                      <div className="ui-techniciandashboard-263" >
                         {/* header + progress bar */}
-                        <div style={{ padding: '10px 14px', borderBottom: '1px solid #f0e8dc' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                            <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#1a1208' }}>
+                        <div className="ui-techniciandashboard-264" >
+                          <div className="ui-techniciandashboard-265" >
+                            <span className="ui-techniciandashboard-266" >
                               🗂 Tasks
                             </span>
-                            <span style={{ fontSize: '0.75rem', fontWeight: 700,
-                                color: doneCount === job.tasks.length ? '#16a34a' : '#A5732F' }}>
+                            <span className="ui-techniciandashboard-267" style={{ "--ui-techniciandashboard-267-color": cssValue(doneCount === job.tasks.length ? "var(--ui-color-90)" : "var(--ui-color-85)", "color") }}>
                               {doneCount}/{job.tasks.length} done
                             </span>
                           </div>
-                          <div style={{ height: 6, background: '#e9e0d5', borderRadius: 10, overflow: 'hidden' }}>
-                            <div style={{ height: '100%', width: `${pct}%`,
-                                background: doneCount === job.tasks.length ? '#16a34a' : '#A5732F',
-                                borderRadius: 10, transition: 'width 0.4s ease' }} />
+                          <div className="ui-techniciandashboard-268" >
+                            <div className="ui-techniciandashboard-269" style={{ "--ui-techniciandashboard-269-width": cssValue(`${pct}%`, "width"), "--ui-techniciandashboard-269-background": cssValue(doneCount === job.tasks.length ? "var(--ui-color-90)" : "var(--ui-color-85)", "background") }} />
                           </div>
                         </div>
 
                         {/* grouped tasks */}
-                        <div style={{ padding: '8px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        <div className="ui-techniciandashboard-270" >
                           {GROUPS.map((g) => {
                             const gTasks = job.tasks
                               .map((t, idx) => ({ ...t, _idx: idx }))
@@ -1957,20 +1790,13 @@ const TechnicianDashboard = () => {
                             if (!gTasks.length) return null;
                             return (
                               <div key={g}>
-                                <div style={{ fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase',
-                                    letterSpacing: '0.07em', color: '#A5732F',
-                                    borderBottom: '1px solid #f0e8dc', paddingBottom: 3, marginBottom: 4 }}>
+                                <div className="ui-techniciandashboard-271" >
                                   {g}
                                 </div>
                                 {gTasks.map((t) => (
-                                  <div key={t._idx} style={{
-                                    display: 'flex', alignItems: 'center', gap: 10,
-                                    padding: '7px 0',
-                                    borderBottom: '1px solid #f8f3ed',
-                                    opacity: t.isDone ? 0.75 : 1,
-                                  }}>
+                                  <div className="ui-techniciandashboard-272" key={t._idx} style={{ "--ui-techniciandashboard-272-opacity": cssValue(t.isDone ? 0.75 : 1, "opacity") }}>
                                     {/* circle checkbox */}
-                                    <button
+                                    <button className="ui-techniciandashboard-273"
                                       disabled={t.isDone || alreadyCompleted}
                                       onClick={() => {
                                         if (t.requiresNote || t.requiresImage || t.requiresSignature) {
@@ -1979,14 +1805,7 @@ const TechnicianDashboard = () => {
                                           completeTask(job._id, t._idx);
                                         }
                                       }}
-                                      style={{
-                                        width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-                                        border: t.isDone ? 'none' : '2px solid #d1d5db',
-                                        background: t.isDone ? '#16a34a' : '#fff',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        cursor: t.isDone || alreadyCompleted ? 'default' : 'pointer',
-                                        padding: 0, transition: 'background 0.2s',
-                                      }}
+                                      style={{ "--ui-techniciandashboard-273-border": cssValue(t.isDone ? 'none' : '2px solid #d1d5db', "border"), "--ui-techniciandashboard-273-background": cssValue(t.isDone ? "var(--ui-color-90)" : "var(--ui-color-2)", "background"), "--ui-techniciandashboard-273-cursor": cssValue(t.isDone || alreadyCompleted ? 'default' : 'pointer', "cursor") }}
                                     >
                                       {t.isDone && (
                                         <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -1997,29 +1816,21 @@ const TechnicianDashboard = () => {
                                     </button>
 
                                     {/* title */}
-                                    <span style={{ flex: 1, fontSize: '0.85rem', color: '#1a1208',
-                                        textDecoration: t.isDone ? 'line-through' : 'none',
-                                        color: t.isDone ? '#6c757d' : '#1a1208' }}>
+                                    <span className="ui-techniciandashboard-274" style={{ "--ui-techniciandashboard-274-color": cssValue(t.isDone ? "var(--ui-color-84)" : "var(--ui-color-83)", "color"), "--ui-techniciandashboard-274-text-decoration": cssValue(t.isDone ? 'line-through' : 'none', "textDecoration") }}>
                                       {t.title}
                                     </span>
 
                                     {/* completion meta */}
                                     {t.isDone && (
-                                      <div style={{ display: 'flex', flexDirection: 'column',
-                                          alignItems: 'flex-end', gap: 2, flexShrink: 0 }}>
+                                      <div className="ui-techniciandashboard-275" >
                                         {t.checkedAt && (
-                                          <span style={{ fontSize: '0.65rem', color: '#adb5bd' }}>
+                                          <span className="ui-techniciandashboard-276" >
                                             {new Date(t.checkedAt).toLocaleTimeString('en-IN',
                                               { hour: '2-digit', minute: '2-digit' })}
                                           </span>
                                         )}
                                         {(t.distanceMiles != null || t.distanceMeters != null) && (
-                                          <span style={{ fontSize: '0.65rem', fontWeight: 700,
-                                              color: (t.distanceMiles ?? t.distanceMeters / 1609.344) <= 0.124274
-                                                ? '#16a34a'
-                                                : (t.distanceMiles ?? t.distanceMeters / 1609.344) <= 0.621371
-                                                  ? '#b45309'
-                                                  : '#dc3545' }}>
+                                          <span className="ui-techniciandashboard-277" style={{ "--ui-techniciandashboard-277-color": cssValue((t.distanceMiles ?? t.distanceMeters / 1609.344) <= 0.124274 ? "var(--ui-color-90)" : (t.distanceMiles ?? t.distanceMeters / 1609.344) <= 0.621371 ? "var(--ui-color-94)" : "var(--ui-color-30)", "color") }}>
                                             📏 {(t.distanceMiles ?? t.distanceMeters / 1609.344).toFixed(2)} mi
                                           </span>
                                         )}
@@ -2035,46 +1846,46 @@ const TechnicianDashboard = () => {
                     );
                   })()}
 
-                  <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <div className="ui-techniciandashboard-278" >
                     {!alreadyReached && job.status !== 'completed' && (
-                      <button style={S.btn('#2563eb')} onClick={() => markReached(job._id)}>
+                      <button className="ui-techniciandashboard-279" style={{ "--ui-techniciandashboard-279-background": cssValue(false ? "var(--ui-color-29)" : "var(--ui-color-96)", "background"), "--ui-techniciandashboard-279-cursor": cssValue(false ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-279-opacity": cssValue(false ? 0.7 : 1, "opacity") }} onClick={() => markReached(job._id)}>
                         📍 I Reached the Location
                       </button>
                     )}
                     {alreadyReached && !alreadyCompleted && job.status !== 'completed' && (
-                      <button style={S.btn('#16a34a')} onClick={() => markCompleted(job._id)}>
+                      <button className="ui-techniciandashboard-280" style={{ "--ui-techniciandashboard-280-background": cssValue(false ? "var(--ui-color-29)" : "var(--ui-color-90)", "background"), "--ui-techniciandashboard-280-cursor": cssValue(false ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-280-opacity": cssValue(false ? 0.7 : 1, "opacity") }} onClick={() => markCompleted(job._id)}>
                         ✅ Mark Job Completed
                       </button>
                     )}
                     {alreadyCompleted && (
-                      <span style={{ fontSize: '0.82rem', color: '#16a34a', fontWeight: 700, padding: '8px 0' }}>
+                      <span className="ui-techniciandashboard-281" >
                         ✓ Waiting for admin to process payment
                       </span>
                     )}
                     {job.finalPrice > 0 && (
-                      <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#A5732F', padding: '8px 0' }}>
+                      <span className="ui-techniciandashboard-282" >
                         💰 Final price: ${job.finalPrice}
                       </span>
                     )}
-                    <button onClick={() => setJobDetailModal(job._id)}
-                      style={{ ...S.ghost, fontSize: '0.78rem', padding: '6px 12px' }}>
+                    <button className="ui-techniciandashboard-283" onClick={() => setJobDetailModal(job._id)}
+                      >
                       🔍 Details
                     </button>
                     {(job.coordinates?.lat && job.coordinates?.lng) ? (
-                      <a
+                      <a className="ui-techniciandashboard-284"
                         href={`https://www.google.com/maps/dir/?api=1&destination=${job.coordinates.lat},${job.coordinates.lng}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ ...S.btn('#16a34a'), textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                        style={{ "--ui-techniciandashboard-284-background": cssValue(false ? "var(--ui-color-29)" : "var(--ui-color-90)", "background"), "--ui-techniciandashboard-284-cursor": cssValue(false ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-284-opacity": cssValue(false ? 0.7 : 1, "opacity") }}
                       >
                         🗺️ Navigate
                       </a>
                     ) : job.location ? (
-                      <a
+                      <a className="ui-techniciandashboard-285"
                         href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(job.location)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        style={{ ...S.btn('#16a34a'), textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                        style={{ "--ui-techniciandashboard-285-background": cssValue(false ? "var(--ui-color-29)" : "var(--ui-color-90)", "background"), "--ui-techniciandashboard-285-cursor": cssValue(false ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-285-opacity": cssValue(false ? 0.7 : 1, "opacity") }}
                       >
                         🗺️ Navigate
                       </a>
@@ -2090,12 +1901,12 @@ const TechnicianDashboard = () => {
       {/* ════════════════════════════════ MY REQUESTS TAB ════════════════════════════════ */}
       {activeTab === 'requests' && (
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <h4 style={{ fontWeight: 700, margin: 0 }}>My Job Requests</h4>
-            <button onClick={refreshRequests} style={{ ...S.ghost, fontSize: '0.78rem' }}>🔄 Refresh</button>
+          <div className="ui-techniciandashboard-286" >
+            <h4 className="ui-techniciandashboard-287" >My Job Requests</h4>
+            <button className="ui-techniciandashboard-288" onClick={refreshRequests} >🔄 Refresh</button>
           </div>
           {requests.length === 0 ? (
-            <div style={{ color: '#adb5bd', padding: '2rem', textAlign: 'center' }}>No requests yet.</div>
+            <div className="ui-techniciandashboard-289" >No requests yet.</div>
           ) : (
             requests.map((req) => {
               const isChat = openChat === req._id;
@@ -2107,23 +1918,18 @@ const TechnicianDashboard = () => {
               const waitingForAssignment = req.status === 'accepted' && req.adminApproved && req.chargesStatus && !['none', 'agreed', 'invoiced'].includes(req.chargesStatus) && !req.job?.assignedTechnician;
 
               return (
-                <div key={req._id} style={S.card}>
+                <div className="ui-techniciandashboard-290" key={req._id} >
                   {/* header */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
+                  <div className="ui-techniciandashboard-291" >
                     <div>
-                      <div style={{ fontWeight: 700, color: '#1a1208' }}>{req.job?.title || 'Job'}</div>
-                      <div style={{ fontSize: '0.8rem', color: '#6c757d' }}>{req.job?.location || ''}</div>
+                      <div className="ui-techniciandashboard-292" >{req.job?.title || 'Job'}</div>
+                      <div className="ui-techniciandashboard-293" >{req.job?.location || ''}</div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <div className="ui-techniciandashboard-294" >
                       {reqStatusBadge(req.status)}
-                      {waitingForAssignment && <span style={S.badge('#b45309', 'rgba(234,179,8,0.15)')}>⏳ Approved — charges pending</span>}
+                      {waitingForAssignment && <span className="ui-techniciandashboard-295" >⏳ Approved — charges pending</span>}
                       {hasCharges && (
-                        <span style={S.badge(
-                          req.chargesStatus === 'invoiced' ? '#A5732F' : req.chargesStatus === 'agreed' ? '#16a34a' :
-                          needsReply ? '#b45309' : '#2563eb',
-                          req.chargesStatus === 'invoiced' ? 'rgba(165,115,47,0.15)' : req.chargesStatus === 'agreed' ? 'rgba(22,163,74,0.12)' :
-                          needsReply ? 'rgba(234,179,8,0.15)' : 'rgba(37,99,235,0.1)'
-                        )}>
+                        <span className="ui-techniciandashboard-296" style={{ "--ui-techniciandashboard-296-background": cssValue(req.chargesStatus === 'invoiced' ? "var(--ui-color-290)" : req.chargesStatus === 'agreed' ? "var(--ui-color-97)" : needsReply ? "var(--ui-color-93)" : "var(--ui-color-95)", "background"), "--ui-techniciandashboard-296-color": cssValue(req.chargesStatus === 'invoiced' ? "var(--ui-color-85)" : req.chargesStatus === 'agreed' ? "var(--ui-color-90)" : needsReply ? "var(--ui-color-94)" : "var(--ui-color-96)", "color") }}>
                           {req.chargesStatus === 'invoiced' ? '🧾 Invoiced'
                             : req.chargesStatus === 'agreed' ? '✓ Agreed'
                             : needsReply ? '⏳ Charges Pending'
@@ -2134,7 +1940,7 @@ const TechnicianDashboard = () => {
                   </div>
 
                   {req.note && (
-                    <p style={{ color: '#6c757d', fontSize: '0.82rem', margin: '0 0 6px', fontStyle: 'italic' }}>
+                    <p className="ui-techniciandashboard-297" >
                       "{req.note}"
                     </p>
                   )}
@@ -2142,114 +1948,90 @@ const TechnicianDashboard = () => {
                   {/* Admin counter-offer banner */}
                   {/* Admin counter-offer banner */}
 {isAdminCounter && req.counterOffer > 0 && (
-  <div
-    style={{
-      padding: '10px 12px',
-      background: 'rgba(37,99,235,0.06)',
-      border: '1px solid rgba(37,99,235,0.2)',
-      borderRadius: 8,
-      marginBottom: 8,
-    }}
+  <div className="ui-techniciandashboard-298"
+
   >
-    <div
-      style={{
-        fontSize: '0.85rem',
-        fontWeight: 700,
-        color: '#2563eb',
-        marginBottom: 8,
-      }}
+    <div className="ui-techniciandashboard-299"
+
     >
       ↔ Admin counter-offer: $
       {Number(req.counterOffer).toLocaleString()}
     </div>
 
-    <div
-      style={{
-        fontSize: '0.78rem',
-        color: '#6c757d',
-        marginBottom: 10,
-      }}
+    <div className="ui-techniciandashboard-300"
+
     >
       Accept the offer or send a new fixed-price counter-offer.
     </div>
 
-    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-      <button disabled={respondingCounter === req._id} onClick={() => respondToFixedCounter(req._id, 'accept')} style={S.btn('#16a34a')}>✓ Accept ${Number(req.counterOffer).toLocaleString()}</button>
-      <input type="number" min="1" placeholder="New amount" value={fixedCounterAmounts[req._id] || ''} onChange={e => setFixedCounterAmounts(p => ({ ...p, [req._id]: e.target.value }))} style={{ width: 120, border: '1px solid #ced4da', borderRadius: 7, padding: '6px 8px' }} />
-      <button disabled={respondingCounter === req._id} onClick={() => respondToFixedCounter(req._id, 'counter')} style={S.btn('#2563eb')}>↔ Re-counter</button>
-      <button disabled={respondingCounter === req._id} onClick={() => respondToFixedCounter(req._id, 'reject')} style={S.btn('#dc3545')}>✕ Reject</button>
+    <div className="ui-techniciandashboard-301" >
+      <button className="ui-techniciandashboard-302" disabled={respondingCounter === req._id} onClick={() => respondToFixedCounter(req._id, 'accept')} style={{ "--ui-techniciandashboard-302-background": cssValue(false ? "var(--ui-color-29)" : "var(--ui-color-90)", "background"), "--ui-techniciandashboard-302-cursor": cssValue(false ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-302-opacity": cssValue(false ? 0.7 : 1, "opacity") }}>✓ Accept ${Number(req.counterOffer).toLocaleString()}</button>
+      <input className="ui-techniciandashboard-303" type="number" min="1" placeholder="New amount" value={fixedCounterAmounts[req._id] || ''} onChange={e => setFixedCounterAmounts(p => ({ ...p, [req._id]: e.target.value }))}  />
+      <button className="ui-techniciandashboard-304" disabled={respondingCounter === req._id} onClick={() => respondToFixedCounter(req._id, 'counter')} style={{ "--ui-techniciandashboard-304-background": cssValue(false ? "var(--ui-color-29)" : "var(--ui-color-96)", "background"), "--ui-techniciandashboard-304-cursor": cssValue(false ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-304-opacity": cssValue(false ? 0.7 : 1, "opacity") }}>↔ Re-counter</button>
+      <button className="ui-techniciandashboard-305" disabled={respondingCounter === req._id} onClick={() => respondToFixedCounter(req._id, 'reject')} style={{ "--ui-techniciandashboard-305-background": cssValue(false ? "var(--ui-color-29)" : "var(--ui-color-30)", "background"), "--ui-techniciandashboard-305-cursor": cssValue(false ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-305-opacity": cssValue(false ? 0.7 : 1, "opacity") }}>✕ Reject</button>
     </div>
   </div>
 )}
 
                   {req.amountEarned > 0 && (
-                    <div style={{ fontWeight: 700, color: '#16a34a', fontSize: '0.9rem', marginBottom: 6 }}>
+                    <div className="ui-techniciandashboard-306" >
                       💰 Earned: ${req.amountEarned}
                     </div>
                   )}
 
-                  {req.initiatedBy === 'admin' && <div style={{ background: '#fff7ed', border: '1px solid #ead2b0', borderRadius: 10, padding: 14, marginBottom: 12 }}>
+                  {req.initiatedBy === 'admin' && <div className="ui-techniciandashboard-307" >
                     <strong>Job invitation from admin</strong>
-                    <p style={{ margin: '6px 0' }}>{req.adminMessage || 'You have been invited to this job.'}</p>
-                    {req.offeredPay && <p style={{ margin: '6px 0' }}>Offered pay: {formatPay(req.offeredPay)}</p>}
-                    <button style={S.ghost} onClick={() => setJobDetailModal(req.job?._id || req.job)}>View Job Details</button>
-                    {req.status === 'pending' && <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                      <button style={S.btn('#16a34a')} disabled={respondingInvitation !== null || req.job?.status !== 'open'} onClick={() => respondToInvitation(req._id, 'accept')}>{respondingInvitation === req._id ? 'Saving…' : 'Accept Job'}</button>
-                      <button style={S.btn('#dc3545')} disabled={respondingInvitation !== null} onClick={() => respondToInvitation(req._id, 'reject')}>Reject Request</button>
+                    <p className="ui-techniciandashboard-308" >{req.adminMessage || 'You have been invited to this job.'}</p>
+                    {req.offeredPay && <p className="ui-techniciandashboard-309" >Offered pay: {formatPay(req.offeredPay)}</p>}
+                    <button className="ui-techniciandashboard-310"  onClick={() => setJobDetailModal(req.job?._id || req.job)}>View Job Details</button>
+                    {req.status === 'pending' && <div className="ui-techniciandashboard-311" >
+                      <button className="ui-techniciandashboard-312" style={{ "--ui-techniciandashboard-312-background": cssValue(false ? "var(--ui-color-29)" : "var(--ui-color-90)", "background"), "--ui-techniciandashboard-312-cursor": cssValue(false ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-312-opacity": cssValue(false ? 0.7 : 1, "opacity") }} disabled={respondingInvitation !== null || req.job?.status !== 'open'} onClick={() => respondToInvitation(req._id, 'accept')}>{respondingInvitation === req._id ? 'Saving…' : 'Accept Job'}</button>
+                      <button className="ui-techniciandashboard-313" style={{ "--ui-techniciandashboard-313-background": cssValue(false ? "var(--ui-color-29)" : "var(--ui-color-30)", "background"), "--ui-techniciandashboard-313-cursor": cssValue(false ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-313-opacity": cssValue(false ? 0.7 : 1, "opacity") }} disabled={respondingInvitation !== null} onClick={() => respondToInvitation(req._id, 'reject')}>Reject Request</button>
                     </div>}
                     {req.status === 'pending' && req.job?.status !== 'open' && <p>This job is no longer open for acceptance.</p>}
                   </div>}
                   {/* action buttons */}
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    <button onClick={() => openChatFor(req._id)}
-                      style={{ background: isChat ? '#f0e8dc' : '#1a1208', color: isChat ? '#1a1208' : '#fff',
-                        border: 'none', borderRadius: 8, padding: '6px 14px', fontSize: '0.78rem',
-                        fontWeight: 700, cursor: 'pointer' }}>
+                  <div className="ui-techniciandashboard-314" >
+                    <button className="ui-techniciandashboard-315" onClick={() => openChatFor(req._id)}
+                      style={{ "--ui-techniciandashboard-315-background": cssValue(isChat ? "var(--ui-color-291)" : "var(--ui-color-83)", "background"), "--ui-techniciandashboard-315-color": cssValue(isChat ? "var(--ui-color-83)" : "var(--ui-color-2)", "color") }}>
                       💬 {isChat ? 'Close Chat' : `Chat${convo.length ? ` (${convo.length})` : ''}`}
                     </button>
 
                     {(hasCharges || req.status === 'accepted') && (
-                      <button onClick={() => toggleChargesPanel(req._id)}
-                        style={{ background: isCharges ? 'rgba(165,115,47,0.15)' : 'rgba(165,115,47,0.1)',
-                          color: '#A5732F', border: '1.5px solid rgba(165,115,47,0.3)',
-                          borderRadius: 8, padding: '6px 14px', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}>
+                      <button className="ui-techniciandashboard-316" onClick={() => toggleChargesPanel(req._id)}
+                        style={{ "--ui-techniciandashboard-316-background": cssValue(isCharges ? "var(--ui-color-290)" : "var(--ui-color-292)", "background") }}>
                         🧾 {isCharges ? 'Close' : 'Charges & Invoice'}
-                        {needsReply && <span style={{ marginLeft: 4, color: '#b45309' }}>●</span>}
+                        {needsReply && <span className="ui-techniciandashboard-317" >●</span>}
                       </button>
                     )}
 
                     {/* Submit additional charges — available on accepted requests */}
                     {req.initiatedBy !== 'admin' && ['pending', 'counter-offer'].includes(req.status) && (
-                      <button
+                      <button className="ui-techniciandashboard-318"
                         onClick={() => cancelRequest(req._id)}
-                        style={{ background: 'rgba(220,53,69,0.08)', color: '#dc3545',
-                          border: '1.5px solid rgba(220,53,69,0.25)', borderRadius: 8,
-                          padding: '6px 14px', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}
+
                       >
                         ✕ Cancel Request
                       </button>
                     )}
 
                     {req.status === 'accepted' && (
-                      <button onClick={() => setSubmitChargesModal(req._id)}
-                        style={{ background: 'rgba(22,163,74,0.1)', color: '#16a34a',
-                          border: '1.5px solid rgba(22,163,74,0.3)', borderRadius: 8,
-                          padding: '6px 14px', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}>
+                      <button className="ui-techniciandashboard-319" onClick={() => setSubmitChargesModal(req._id)}
+                        >
                         + Submit Charges
                       </button>
                     )}
-                    {waitingForAssignment && <span style={{ color: '#b45309', fontSize: '0.78rem', alignSelf: 'center' }}>Admin approved your request. Assignment follows after charge negotiation.</span>}
+                    {waitingForAssignment && <span className="ui-techniciandashboard-320" >Admin approved your request. Assignment follows after charge negotiation.</span>}
                   </div>
 
                   {/* ── chat window ── */}
                   {isChat && (
-                    <div style={{ marginTop: 12, border: '1px solid #e9e0d5', borderRadius: 10, overflow: 'hidden' }}>
-                      <div style={{ height: 260, overflowY: 'auto', padding: 12, background: '#fdf9f5',
-                          display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div className="ui-techniciandashboard-321" >
+                      <div className="ui-techniciandashboard-322" >
                         {loadingChat === req._id ? (
-                          <div style={{ color: '#adb5bd', textAlign: 'center', marginTop: 80, fontSize: '0.85rem' }}>Loading…</div>
+                          <div className="ui-techniciandashboard-323" >Loading…</div>
                         ) : convo.length === 0 ? (
-                          <div style={{ color: '#adb5bd', textAlign: 'center', marginTop: 80, fontSize: '0.85rem' }}>No messages yet.</div>
+                          <div className="ui-techniciandashboard-324" >No messages yet.</div>
                         ) : (
                           convo.map((msg, i) => {
                             const isMe = msg.sender === 'technician';
@@ -2258,7 +2040,7 @@ const TechnicianDashboard = () => {
                             if (msg.type === 'counter-offer' ||
                                 (!msg.type && (msg.counterOffer > 0 || msg.counterAmount > 0))) {
                               return (
-                                <div key={i} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start' }}>
+                                <div className="ui-techniciandashboard-325" key={i} style={{ "--ui-techniciandashboard-325-justify-content": cssValue(isMe ? 'flex-end' : 'flex-start', "justifyContent") }}>
                                   <CounterOfferBubble msg={msg} isMe={isMe} />
                                 </div>
                               );
@@ -2267,7 +2049,7 @@ const TechnicianDashboard = () => {
                             // ── Accept / Reject event ──
                             if (msg.type === 'accept' || msg.type === 'reject') {
                               return (
-                                <div key={i} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start' }}>
+                                <div className="ui-techniciandashboard-326" key={i} style={{ "--ui-techniciandashboard-326-justify-content": cssValue(isMe ? 'flex-end' : 'flex-start', "justifyContent") }}>
                                   <AcceptRejectBubble msg={msg} isMe={isMe} />
                                 </div>
                               );
@@ -2276,12 +2058,8 @@ const TechnicianDashboard = () => {
                             // ── System event ──
                             if (msg.type === 'system' || msg.sender === 'system') {
                               return (
-                                <div key={i} style={{ display: 'flex', justifyContent: 'center' }}>
-                                  <div style={{
-                                    fontSize: '0.72rem', color: '#adb5bd', background: '#f8f3ed',
-                                    border: '1px solid #e9e0d5', borderRadius: 20,
-                                    padding: '3px 12px', fontStyle: 'italic',
-                                  }}>
+                                <div className="ui-techniciandashboard-327" key={i} >
+                                  <div className="ui-techniciandashboard-328" >
                                     {msg.message}
                                   </div>
                                 </div>
@@ -2290,20 +2068,13 @@ const TechnicianDashboard = () => {
 
                             // ── Plain text message ──
                             return (
-                              <div key={i} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start' }}>
-                                <div style={{ maxWidth: '72%', padding: '8px 12px',
-                                    borderRadius: isMe ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
-                                    background: isMe ? '#1a1208' : '#fff',
-                                    color: isMe ? '#fff' : '#1a1208',
-                                    border: isMe ? 'none' : '1px solid #e9e0d5',
-                                    fontSize: '0.83rem', lineHeight: 1.45 }}>
-                                  <div style={{ fontWeight: 600, fontSize: '0.7rem', marginBottom: 3,
-                                      color: isMe ? '#d4a050' : '#A5732F' }}>
+                              <div className="ui-techniciandashboard-329" key={i} style={{ "--ui-techniciandashboard-329-justify-content": cssValue(isMe ? 'flex-end' : 'flex-start', "justifyContent") }}>
+                                <div className="ui-techniciandashboard-330" style={{ "--ui-techniciandashboard-330-border-radius": cssValue(isMe ? '12px 12px 2px 12px' : '12px 12px 12px 2px', "borderRadius"), "--ui-techniciandashboard-330-background": cssValue(isMe ? "var(--ui-color-83)" : "var(--ui-color-2)", "background"), "--ui-techniciandashboard-330-color": cssValue(isMe ? "var(--ui-color-2)" : "var(--ui-color-83)", "color"), "--ui-techniciandashboard-330-border": cssValue(isMe ? 'none' : '1px solid #e9e0d5', "border") }}>
+                                  <div className="ui-techniciandashboard-331" style={{ "--ui-techniciandashboard-331-color": cssValue(isMe ? "var(--ui-color-278)" : "var(--ui-color-85)", "color") }}>
                                     {isMe ? 'You' : 'Admin'}
                                   </div>
                                   {msg.message}
-                                  <div style={{ fontSize: '0.65rem', marginTop: 4,
-                                      color: isMe ? 'rgba(255,255,255,0.55)' : '#adb5bd', textAlign: 'right' }}>
+                                  <div className="ui-techniciandashboard-332" style={{ "--ui-techniciandashboard-332-color": cssValue(isMe ? "var(--ui-color-293)" : "var(--ui-color-89)", "color") }}>
                                     {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : ''}
                                   </div>
                                 </div>
@@ -2313,17 +2084,15 @@ const TechnicianDashboard = () => {
                         )}
                         <div ref={chatEndRef} />
                       </div>
-                      <div style={{ display: 'flex', gap: 8, padding: '10px 12px',
-                          background: '#fff', borderTop: '1px solid #e9e0d5' }}>
-                        <input type="text" placeholder="Type a message…"
+                      <div className="ui-techniciandashboard-333" >
+                        <input className="ui-techniciandashboard-334" type="text" placeholder="Type a message…"
                           value={msgText[req._id] || ''}
                           onChange={(e) => setMsgText((p) => ({ ...p, [req._id]: e.target.value }))}
                           onKeyDown={(e) => e.key === 'Enter' && !sendingMsg && sendMessage(req._id)}
-                          style={{ flex: 1, border: '1.5px solid #e9e0d5', borderRadius: 8,
-                            padding: '8px 12px', fontSize: '0.85rem', outline: 'none' }} />
-                        <button onClick={() => sendMessage(req._id)}
+                           />
+                        <button className="ui-techniciandashboard-335" onClick={() => sendMessage(req._id)}
                           disabled={sendingMsg || !msgText[req._id]?.trim()}
-                          style={S.btn('#A5732F', sendingMsg || !msgText[req._id]?.trim())}>
+                          style={{ "--ui-techniciandashboard-335-background": cssValue(sendingMsg || !msgText[req._id]?.trim() ? "var(--ui-color-29)" : "var(--ui-color-85)", "background"), "--ui-techniciandashboard-335-cursor": cssValue(sendingMsg || !msgText[req._id]?.trim() ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-335-opacity": cssValue(sendingMsg || !msgText[req._id]?.trim() ? 0.7 : 1, "opacity") }}>
                           {sendingMsg ? '…' : 'Send'}
                         </button>
                       </div>
@@ -2332,8 +2101,7 @@ const TechnicianDashboard = () => {
 
                   {/* ── charges & invoice panel ── */}
                   {isCharges && (
-                    <div style={{ marginTop: 12, border: '1px solid #f0e8dc', borderRadius: 10,
-                        background: '#fffcf8', padding: '4px 8px' }}>
+                    <div className="ui-techniciandashboard-336" >
                       <ChargesInvoicePanel
                         requestId={req._id}
                         onUpdate={loadData}
@@ -2351,34 +2119,31 @@ const TechnicianDashboard = () => {
       {/* ════════════════════════════════ WITHDRAWALS TAB ════════════════════════════════ */}
       {activeTab === 'withdrawals' && (
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <h4 style={{ fontWeight: 700, margin: 0 }}>Withdrawal History</h4>
-            <button style={S.btn('#1a1208')} onClick={() => setWithdrawModal(true)}>💸 New Withdrawal</button>
+          <div className="ui-techniciandashboard-337" >
+            <h4 className="ui-techniciandashboard-338" >Withdrawal History</h4>
+            <button className="ui-techniciandashboard-339" style={{ "--ui-techniciandashboard-339-background": cssValue(false ? "var(--ui-color-29)" : "var(--ui-color-83)", "background"), "--ui-techniciandashboard-339-cursor": cssValue(false ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-339-opacity": cssValue(false ? 0.7 : 1, "opacity") }} onClick={() => setWithdrawModal(true)}>💸 New Withdrawal</button>
           </div>
 
           {withdrawals.length === 0 ? (
-            <div style={{ color: '#adb5bd', padding: '2rem', textAlign: 'center' }}>No withdrawals yet.</div>
+            <div className="ui-techniciandashboard-340" >No withdrawals yet.</div>
           ) : (
             withdrawals.map((w) => (
-              <div key={w._id} style={S.card}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
+              <div className="ui-techniciandashboard-341" key={w._id} >
+                <div className="ui-techniciandashboard-342" >
                   <div>
-                    <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1a1208' }}>
+                    <div className="ui-techniciandashboard-343" >
                       ${Number(w.amount).toLocaleString()}
                     </div>
-                    <div style={{ fontSize: '0.8rem', color: '#6c757d', marginTop: 2 }}>
+                    <div className="ui-techniciandashboard-344" >
                       {w.method} · {fmtDT(w.createdAt)}
                     </div>
                     {w.details && (
-                      <div style={{ fontSize: '0.78rem', color: '#6c757d', marginTop: 2, fontStyle: 'italic' }}>
+                      <div className="ui-techniciandashboard-345" >
                         {w.details}
                       </div>
                     )}
                   </div>
-                  <span style={S.badge(
-                    withdrawalStatusColor[w.status] || '#6c757d',
-                    withdrawalStatusBg[w.status] || 'rgba(108,117,125,0.1)'
-                  )}>
+                  <span className="ui-techniciandashboard-346" style={{ "--ui-techniciandashboard-346-background": cssValue(withdrawalStatusBg[w.status] || 'rgba(108,117,125,0.1)', "background"), "--ui-techniciandashboard-346-color": cssValue(withdrawalStatusColor[w.status] || '#6c757d', "color") }}>
                     {w.status === 'completed' ? '✓ Completed'
                      : w.status === 'approved' ? '✓ Approved'
                      : w.status === 'rejected' ? '✗ Rejected'
@@ -2386,8 +2151,7 @@ const TechnicianDashboard = () => {
                   </span>
                 </div>
                 {w.adminNote && (
-                  <div style={{ marginTop: 6, fontSize: '0.78rem', color: '#6c757d',
-                      borderLeft: '3px solid #dee2e6', paddingLeft: 8, fontStyle: 'italic' }}>
+                  <div className="ui-techniciandashboard-347" >
                     Admin: {w.adminNote}
                   </div>
                 )}
@@ -2405,27 +2169,25 @@ const TechnicianDashboard = () => {
         const statusIcon  = { approved: '✓', rejected: '✗', pending: '⏳' };
         return (
           <div>
-            <h4 style={{ fontWeight: 700, marginBottom: 12 }}>My Documents</h4>
+            <h4 className="ui-techniciandashboard-348" >My Documents</h4>
             {docs.length === 0 ? (
-              <div style={{ color: '#adb5bd', padding: '2rem', textAlign: 'center' }}>No documents uploaded yet.</div>
+              <div className="ui-techniciandashboard-349" >No documents uploaded yet.</div>
             ) : (
               docs.map((doc) => (
-                <div key={doc.documentId} style={{ ...S.card, display: 'flex', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, color: '#1a1208', marginBottom: 4 }}>{doc.label || doc.documentId}</div>
-                    <span style={S.badge(statusColor[doc.status] || '#6c757d', statusBg[doc.status] || 'rgba(108,117,125,0.1)')}>
+                <div className="ui-techniciandashboard-350" key={doc.documentId} >
+                  <div className="ui-techniciandashboard-351" >
+                    <div className="ui-techniciandashboard-352" >{doc.label || doc.documentId}</div>
+                    <span className="ui-techniciandashboard-353" style={{ "--ui-techniciandashboard-353-background": cssValue(statusBg[doc.status] || 'rgba(108,117,125,0.1)', "background"), "--ui-techniciandashboard-353-color": cssValue(statusColor[doc.status] || '#6c757d', "color") }}>
                       {statusIcon[doc.status]} {doc.status}
                     </span>
                     {doc.status === 'rejected' && doc.rejectionReason && (
-                      <div style={{ marginTop: 6, padding: '6px 10px', background: '#fff5f5',
-                          border: '1px solid #fecaca', borderRadius: 8, fontSize: '0.82rem', color: '#dc3545' }}>
+                      <div className="ui-techniciandashboard-354" >
                         <strong>Reason:</strong> {doc.rejectionReason}
                       </div>
                     )}
                   </div>
                   {doc.status === 'rejected' && (
-                    <label style={{ ...S.btn('#A5732F'), display: 'inline-block', cursor: 'pointer',
-                        opacity: reuploadingDoc === doc.documentId ? 0.6 : 1 }}>
+                    <label className="ui-techniciandashboard-355" style={{ "--ui-techniciandashboard-355-background": cssValue(false ? "var(--ui-color-29)" : "var(--ui-color-85)", "background"), "--ui-techniciandashboard-355-opacity": cssValue(reuploadingDoc === doc.documentId ? 0.6 : 1, "opacity") }}>
                       {reuploadingDoc === doc.documentId ? 'Uploading…' : '↑ Re-upload'}
                       <input type="file" hidden disabled={reuploadingDoc === doc.documentId}
                         onChange={(e) => reuploadDocument(doc.documentId, e.target.files[0])} />

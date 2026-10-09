@@ -1,0 +1,486 @@
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: none;
+  background: var(--ui-color-134);
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: var(--ui-font-size-1);
+  color: var(--ui-color-41);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+  min-width: 28px;
+  text-align: center;
+  font-weight: 700;
+  font-size: var(--ui-font-size-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-4:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: none;
+  background: var(--ui-color-134);
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: var(--ui-font-size-1);
+  color: var(--ui-color-27);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-5:not(#ui-style-priority):not(#ui-style-priority-2) {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--ui-color-35);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-6:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-10);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-7:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-36);
+  color: var(--ui-color-5);
+  margin-bottom: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-8:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-6);
+  font-size: var(--ui-font-size-37);
+  margin-bottom: var(--ui-space-4);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-9:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-27);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 12px;
+  padding: var(--ui-space-86);
+  font-weight: 700;
+  font-size: var(--ui-font-size-37);
+  text-decoration: none;
+  display: inline-block;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-10:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-35);
+  min-height: 100vh;
+  padding: var(--ui-space-56);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-11:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 1100px;
+  margin: var(--ui-space-25);
+  padding: var(--ui-space-37);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-12:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-11);
+  margin-bottom: var(--ui-space-10);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-13:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: none;
+  background: var(--ui-color-134);
+  cursor: pointer;
+  padding: var(--ui-space-14);
+  display: flex;
+  align-items: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-14:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-31);
+  margin: var(--ui-space-16);
+  color: var(--ui-color-5);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-15:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: var(--ui-space-7);
+  align-items: start;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-16:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-13);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-17:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+  border-radius: 14px;
+  padding: var(--ui-space-87);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-18:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--ui-color-42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-19:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-3);
+  color: var(--ui-color-4);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-20:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+  border-radius: 14px;
+  padding: var(--ui-space-88);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-21:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  font-size: var(--ui-font-size-1);
+  margin-bottom: var(--ui-space-3);
+  color: var(--ui-color-5);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-22:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-23:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-3);
+  color: var(--ui-color-41);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-24:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-3);
+  color: var(--ui-color-6);
+  margin: var(--ui-space-89);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-25:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  background: var(--ui-color-27);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 10px;
+  padding: var(--ui-space-90);
+  font-weight: 700;
+  font-size: var(--ui-font-size-8);
+  cursor: pointer;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-26:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-13);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-27:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+  border-radius: 14px;
+  padding: var(--ui-space-88);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-28:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--ui-space-13);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-29:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-11);
+  flex: 1;
+  min-width: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-30:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-31:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-3);
+  color: var(--ui-color-4);
+  line-height: 1.4;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-32:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: block;
+  margin-top: var(--ui-space-91);
+  color: var(--ui-color-47);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-33:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-13);
+  flex-shrink: 0;
+  margin-left: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-34:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  font-size: var(--ui-font-size-3);
+  min-width: 64px;
+  text-align: right;
+  color: var(--ui-color-5);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-35:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: none;
+  border-top: 1px solid #f0f0f0;
+  margin: var(--ui-space-89);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-36:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: none;
+  border-top: 1px solid #ebebeb;
+  margin: var(--ui-space-92);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-37:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: none;
+  border-top: 1.5px dashed #e0e0e0;
+  margin: var(--ui-space-93);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-38:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-23);
+  cursor: pointer;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-39:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--ui-color-27);
+  cursor: pointer;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-40:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-9);
+  color: var(--ui-color-33);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-41:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+  border-radius: 14px;
+  padding: var(--ui-space-94);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-13);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-42:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--ui-color-42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-43:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  font-size: var(--ui-font-size-3);
+  color: var(--ui-color-5);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-44:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-9);
+  color: var(--ui-color-6);
+  margin-top: var(--ui-space-15);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-45:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+  border-radius: 14px;
+  padding: var(--ui-space-88);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-46:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-1);
+  color: var(--ui-color-5);
+  margin-bottom: var(--ui-space-6);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-47:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--ui-space-23);
+  font-size: var(--ui-font-size-3);
+  color: var(--ui-color-41);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-48:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--ui-space-23);
+  font-size: var(--ui-font-size-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-49:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-27);
+  font-weight: 600;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-50:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-27);
+  font-weight: 600;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-51:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--ui-space-1);
+  font-size: var(--ui-font-size-3);
+  color: var(--ui-color-41);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-52:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: none;
+  border-top: 1px solid #f0f0f0;
+  margin: var(--ui-space-89);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-53:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-54:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  font-size: var(--ui-font-size-8);
+  color: var(--ui-color-5);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-55:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-38);
+  color: var(--ui-color-5);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-56:not(#ui-style-priority):not(#ui-style-priority-2) {
+  text-align: right;
+  margin-bottom: var(--ui-space-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-57:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-9);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  color: var(--ui-color-4);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-cart-58:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  background: var(--ui-color-27);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 12px;
+  padding: var(--ui-space-95);
+  font-weight: 700;
+  font-size: var(--ui-font-size-8);
+  cursor: pointer;
+}

@@ -1,3 +1,4 @@
+import '../styles/Plans.css';
 import React, { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
@@ -207,18 +208,7 @@ const Plans = () => {
 
     return (
         <section id="plans" className="plans-page py-5">
-            <style>{`
-                .plans-page { --plan-ink: #000000; --plan-accent: #000000; background: #f5f7f8; color: var(--plan-ink); }
-                .plan-card { background: #fff; border: 1px solid #d8e0e5; border-radius: 8px; box-shadow: 0 4px 14px #20304012; height: 100%; }
-                .plan-card.featured { border: 2px solid var(--plan-ink); box-shadow: 0 7px 20px #20304020; }
-                .plan-price { font-size: 2.3rem; line-height: 1.05; font-weight: 800; color: var(--plan-ink); }
-                .plan-choice { border: 1px solid #cbd5dc; background: #fff; color: #000000; font-weight: 700; }
-                .plan-choice[aria-pressed="true"] { border-color: #000000; background: #000000; color: #fff; }
-                .plan-checkout-overlay { position: fixed; inset: 0; z-index: 1200; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(12, 16, 20, 0.58); overflow-y: auto; }
-                .plan-checkout-dialog { width: min(100%, 520px); max-height: calc(100vh - 32px); overflow-y: auto; background: #fff; border: 1px solid #d8e0e5; border-radius: 8px; box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28); }
-                @media (max-width: 575px) { .plan-checkout-overlay { align-items: flex-start; padding: 12px; } .plan-checkout-dialog { max-height: calc(100vh - 24px); } }
-                @media (max-width: 575px) { .plan-price { font-size: 1.9rem; } }
-            `}</style>
+
             <div className="container">
                 <div className="text-center mb-5">
                     <h2 className="h1 fw-bold mb-2">Choose Your Plan</h2>
@@ -267,7 +257,7 @@ const Plans = () => {
 
                 {loading ? <div className="text-center py-5">Loading available plans...</div> : (
                     <section aria-live="polite">
-                        
+
                         <div className="row g-4 justify-content-center">
                             {plans.map(plan => (
                                 <div key={plan._id} className="col-12 col-md-6 col-xl-4">

@@ -32,6 +32,8 @@ router.get('/requests/:requestId/invoice',   protect, restrictTo('technician'), 
 router.patch('/requests/:requestId/status',  protect, restrictTo('admin'),      technicianController.updateRequestStatus);
 router.patch('/requests/:requestId/respond', protect, restrictTo('technician'), technicianController.respondToRequestCounter);
 
+router.get('/financials', protect, restrictTo('technician'), require('../controllers/technicianFinancialController').getFinancials);
+
 // ── Dashboard / metrics ───────────────────────────────────────────────────────
 router.get('/dashboard', protect, restrictTo('technician'), technicianController.getTechnicianDashboard);
 router.get('/metrics',   protect, restrictTo('technician'), technicianController.getMetrics);

@@ -275,7 +275,7 @@ const createTechnicianJob = async (req, res, next) => {
 
 const getTechnicianJobs = async (req, res, next) => {
   try {
-    const jobs = await TechnicianJob.find().select('+privateTechnicianFeedback').sort('-createdAt');
+    const jobs = await TechnicianJob.find().select('+privateTechnicianFeedback').populate({ path: 'sourceBooking', select: 'user', populate: { path: 'user', select: 'name' } }).sort('-createdAt');
     res.status(200).json({ success: true, data: { jobs } });
   } catch (error) {
     next(error);

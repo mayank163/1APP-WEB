@@ -26,6 +26,10 @@ const serializeTechnician = user => ({
   email: user.email || '',
   phone: user.phone,
   dateOfBirth: user.dateOfBirth,
+  gender: user.gender || '',
+  adminNote: user.technicianAdminNote || '',
+  address: user.address || '',
+  customerBookingRatings: user.customerBookingRatings || [],
   primaryService: user.primaryService || user.skills?.[0] || '',
   skills: user.skills || [],
   serviceArea: user.serviceArea || user.address || '',
@@ -151,7 +155,7 @@ exports.getTechnicians = async (req, res, next) => {
   try {
     const technicians = await User.find({
       role: 'technician'
-    }).select('name email phone dateOfBirth primaryService skills serviceArea serviceRadius address technicianProfile.yearsOfExperience technicianProfile.verificationStatus technicianProfile.documents technicianProfile.photoUrl profileImage.url isOnline totalJobsDone rating ratingCount workOrderRatings accountStatus isPhoneVerified createdAt technicianId').sort('-createdAt');
+    }).select('+technicianAdminNote gender address customerBookingRatings name email phone dateOfBirth primaryService skills serviceArea serviceRadius address technicianProfile.yearsOfExperience technicianProfile.verificationStatus technicianProfile.documents technicianProfile.photoUrl profileImage.url isOnline totalJobsDone rating ratingCount workOrderRatings accountStatus isPhoneVerified createdAt technicianId').populate('customerBookingRatings.customer', 'name').sort('-createdAt');
     res.json({
       success: true,
       data: {
@@ -310,3 +314,13 @@ exports.inviteTechnician = async (req, res, next) => {
   }
 };
 exports.serializeTechnician = serializeTechnician;
+
+exports.saveTechnicianNote = async (req, res, next) => {
+  try {
+    if (typeof req.body?.note !== 'string' || req.body.note.length > 1000) throw fail('Note must be text with a maximum of 1000 characters.');
+    if (!require('mongoose').isValidObjectId(req.params.technicianId)) throw fail('Invalid technician ID.');
+    const user = await User.findOneAndUpdate({ _id: req.params.technicianId, role: 'technician' }, { $set: { technicianAdminNote: req.body.note.trim() } }, { new: true, runValidators: true }).select('+technicianAdminNote');
+    if (!user) throw fail('Technician not found.', 404);
+    res.json({ success: true, data: { note: user.technicianAdminNote || '' } });
+  } catch (error) { next(error); }
+};

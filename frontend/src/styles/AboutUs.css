@@ -1,0 +1,443 @@
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-39);
+  min-height: 480px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 58%;
+  opacity: 0.55;
+  background-image: var(--ui-aboutus-3-background-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-4:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 1100px;
+  margin: var(--ui-space-25);
+  padding: var(--ui-space-58);
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-5:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-2);
+  font-weight: 900;
+  font-size: var(--ui-font-size-24);
+  margin-bottom: var(--ui-space-10);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-6:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-29);
+  font-size: var(--ui-font-size-8);
+  line-height: 1.8;
+  max-width: 360px;
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-7:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-19);
+  font-size: var(--ui-font-size-8);
+  line-height: 1.8;
+  max-width: 360px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-8:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-40);
+  padding: var(--ui-space-59);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-9:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 1100px;
+  margin: var(--ui-space-25);
+  padding: var(--ui-space-60);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-10:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-11);
+  margin-bottom: var(--ui-space-61);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-11:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 4px;
+  height: 32px;
+  background: var(--ui-color-5);
+  border-radius: 2px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-12:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 900;
+  font-size: var(--ui-font-size-25);
+  margin: var(--ui-space-16);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-13:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-14:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+  border-radius: 16px;
+  padding: var(--ui-space-62);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-15:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-4);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-16:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-26);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-17:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-9);
+  color: var(--ui-color-33);
+  line-height: 1.6;
+  flex: 1;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-18:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-9);
+  color: var(--ui-color-4);
+  cursor: pointer;
+  margin-top: var(--ui-space-9);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ui-space-14);
+  font-weight: 600;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-19:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-40);
+  padding: var(--ui-space-63);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-20:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 1100px;
+  margin: var(--ui-space-25);
+  padding: var(--ui-space-60);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-21:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 900;
+  font-size: var(--ui-font-size-25);
+  text-align: center;
+  margin-bottom: var(--ui-space-64);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-22:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--ui-space-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-23:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-7);
+  border-radius: 20px;
+  padding: var(--ui-space-65);
+  text-align: center;
+  color: var(--ui-color-2);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-24:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-2);
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-25:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-11);
+  margin-bottom: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-26:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-9);
+  color: var(--ui-color-19);
+  line-height: 1.7;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-27:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-40);
+  padding: var(--ui-space-66);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-28:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 1100px;
+  margin: var(--ui-space-25);
+  padding: var(--ui-space-60);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-29:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 900;
+  font-size: var(--ui-font-size-25);
+  text-align: center;
+  margin-bottom: var(--ui-space-54);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-30:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--ui-space-16);
+  position: relative;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-31:not(#ui-style-priority):not(#ui-style-priority-2) {
+  position: absolute;
+  top: 44px;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: var(--ui-color-29);
+  z-index: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-32:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-33:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 80px;
+  height: 80px;
+  border: 1.5px solid #ccc;
+  border-radius: 20px;
+  background: var(--ui-color-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--ui-font-size-27);
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-34:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-8);
+  margin-bottom: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-35:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-9);
+  color: var(--ui-color-6);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-36:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+  padding: var(--ui-space-66);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-37:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 1100px;
+  margin: var(--ui-space-25);
+  padding: var(--ui-space-60);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--ui-space-67);
+  align-items: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-38:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 900;
+  font-size: var(--ui-font-size-25);
+  margin-bottom: var(--ui-space-61);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-39:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-1);
+  margin-bottom: var(--ui-space-4);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-40:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--ui-color-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--ui-color-41);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-41:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-8);
+  margin-bottom: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-42:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-9);
+  color: var(--ui-color-33);
+  line-height: 1.7;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-43:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border-radius: 24px;
+  overflow: hidden;
+  height: 380px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-44:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-45:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-40);
+  padding: var(--ui-space-68);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-46:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 1100px;
+  margin: var(--ui-space-25);
+  padding: var(--ui-space-69);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-47:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--ui-space-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-48:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-aboutus-48-background);
+  border-radius: 20px;
+  padding: var(--ui-space-70);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-49:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-26);
+  color: var(--ui-aboutus-49-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-50:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-9);
+  color: var(--ui-aboutus-50-color);
+  line-height: 1.7;
+  flex: 1;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-51:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-1);
+  background: var(--ui-color-27);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 10px;
+  padding: var(--ui-space-34);
+  font-weight: 700;
+  font-size: var(--ui-font-size-3);
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-52:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-39);
+  padding: var(--ui-space-71);
+  text-align: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-53:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-style: italic;
+  font-weight: 900;
+  font-size: var(--ui-font-size-28);
+  color: var(--ui-color-2);
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-aboutus-54:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-9);
+  letter-spacing: 3px;
+  color: var(--ui-color-6);
+  font-weight: 600;
+}
+
+.ui-aboutus-18:not(#ui-style-priority):not(#ui-style-priority-2):hover {
+  color: var(--ui-color-38);
+}

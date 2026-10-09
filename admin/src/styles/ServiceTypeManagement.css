@@ -1,0 +1,27 @@
+
+/* Extracted presentation styles; repeated class specificity preserves inline precedence. */
+.admin-service-type-management-1.admin-service-type-management-1.admin-service-type-management-1 {
+  max-width: 350px;
+}
+
+.admin-service-type-management-2.admin-service-type-management-2.admin-service-type-management-2 {
+  width: 180px;
+}
+
+.admin-service-type-management-3.admin-service-type-management-3.admin-service-type-management-3 {
+  width: 34px;
+  height: 34px;
+  background: var(--admin-color-rgba-165--115--47--0-1-);
+}
+
+.admin-service-type-management-4.admin-service-type-management-4.admin-service-type-management-4 {
+  color: var(--admin-color-brand);
+}
+
+.admin-service-type-management-5.admin-service-type-management-5.admin-service-type-management-5 {
+  color: var(--admin-color-brand);
+}
+
+.admin-service-type-management-6.admin-service-type-management-6.admin-service-type-management-6 {
+  font-size: var(--admin-font-size-11px);
+}

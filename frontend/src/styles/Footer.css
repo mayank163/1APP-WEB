@@ -1,0 +1,305 @@
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-21);
+  text-decoration: none;
+  font-size: var(--ui-font-size-3);
+  line-height: 1.5;
+  transition: color 0.2s ease;
+  font-weight: 500;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-22);
+  color: var(--ui-color-21);
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 1350px;
+  margin: var(--ui-space-25);
+  padding: var(--ui-space-26);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-4:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  height: 1px;
+  background: var(--ui-color-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-5:not(#ui-style-priority):not(#ui-style-priority-2) {
+  position: relative;
+  max-width: 1200px;
+  min-height: 470px;
+  margin: var(--ui-space-25);
+  padding: var(--ui-space-27);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  box-sizing: border-box;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-6:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 52%;
+  padding-top: var(--ui-space-28);
+  position: relative;
+  z-index: 2;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-7:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-21);
+  font-size: var(--ui-font-size-18);
+  line-height: 1.12;
+  font-weight: 700;
+  margin: var(--ui-space-29);
+  letter-spacing: -1px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-8:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-24);
+  font-size: var(--ui-font-size-19);
+  line-height: 1.55;
+  font-weight: 500;
+  max-width: 560px;
+  margin: var(--ui-space-30);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-9:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-13);
+  flex-wrap: wrap;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-10:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: inline-block;
+  line-height: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-11:not(#ui-style-priority):not(#ui-style-priority-2) {
+  height: 48px;
+  width: auto;
+  display: block;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-12:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: inline-block;
+  line-height: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-13:not(#ui-style-priority):not(#ui-style-priority-2) {
+  height: 48px;
+  width: auto;
+  display: block;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-14:not(#ui-style-priority):not(#ui-style-priority-2) {
+  position: absolute;
+  right: -40px;
+  bottom: -5px;
+  width: 500px;
+  z-index: 3;
+  transform: rotate(10deg);
+  transform-origin: center bottom;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-15:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 40%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+  filter: drop-shadow(0px 15px 30px rgba(0,0,0,0.45));
+  margin: var(--ui-space-31);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-16:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  height: 1px;
+  background: var(--ui-color-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-17:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 1200px;
+  margin: var(--ui-space-25);
+  padding: var(--ui-space-32);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-33);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-18:not(#ui-style-priority):not(#ui-style-priority-2) {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-19:not(#ui-style-priority):not(#ui-style-priority-2) {
+  height: 42px;
+  width: auto;
+  display: block;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-20:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-25);
+  font-size: var(--ui-font-size-9);
+  margin: var(--ui-space-16);
+  text-align: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-21:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-22:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-footer-23:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  display: block;
+}
+
+                    .footer-links-grid {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        gap: var(--ui-space-10);
+                        width: 100%;
+                    }
+
+                    .footer-links-grid > a {
+                        flex-shrink: 0;
+                        text-align: center;
+                        white-space: nowrap;
+                    }
+
+                    .footer-links-grid > a:focus-visible {
+                        outline: 2px solid #fff;
+                        outline-offset: 6px;
+                    }
+
+                    @media (max-width: 1000px) {
+
+                        .footer-links-grid {
+                            display: grid;
+                            grid-template-columns: repeat(3, minmax(0, 1fr));
+                            gap: var(--ui-space-215);
+                        }
+
+                        .footer-links-grid > a {
+                            white-space: normal;
+                        }
+
+                        .footer-app-section {
+                            min-height: 560px !important;
+                        }
+
+                        .footer-app-content {
+                            width: 60% !important;
+                        }
+
+                        .footer-phone {
+                            width: 430px !important;
+                            right: -80px !important;
+                        }
+
+                    }
+
+
+                    @media (max-width: 768px) {
+
+                        .footer-links-wrapper {
+                            padding: var(--ui-space-216) !important;
+                        }
+
+                        .footer-links-grid {
+                            grid-template-columns: repeat(2, minmax(0, 1fr));
+                            row-gap: var(--ui-space-6) !important;
+                        }
+
+                        .footer-app-section {
+                            min-height: auto !important;
+                            padding: var(--ui-space-217) !important;
+                            display: block !important;
+                        }
+
+                        .footer-app-content {
+                            width: 100% !important;
+                            padding-top: var(--ui-space-16) !important;
+                            padding-bottom: var(--ui-space-218) !important;
+                        }
+
+                        .footer-app-content h2 {
+                            font-size: var(--ui-font-size-66) !important;
+                        }
+
+                        .footer-app-content p {
+                            font-size: var(--ui-font-size-8) !important;
+                        }
+
+                        .footer-phone {
+                            position: relative !important;
+                            right: auto !important;
+                            bottom: auto !important;
+                            width: 330px !important;
+                            margin: var(--ui-space-219) !important;
+                        }
+
+                        .footer-bottom {
+                            padding: var(--ui-space-220) !important;
+                            flex-direction: column !important;
+                            text-align: center !important;
+                        }
+
+                    }
+
+
+                    @media (max-width: 480px) {
+
+                        .footer-links-grid {
+                            grid-template-columns: minmax(0, 1fr);
+                        }
+
+                        .footer-app-content h2 {
+                            font-size: var(--ui-font-size-20) !important;
+                        }
+
+                        .footer-phone {
+                            width: 280px !important;
+                        }
+
+                    }
+                
+.ui-footer-1:not(#ui-style-priority):not(#ui-style-priority-2):hover {
+  color: var(--ui-color-21);
+}

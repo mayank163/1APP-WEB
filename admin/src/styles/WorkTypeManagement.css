@@ -1,0 +1,55 @@
+
+/* Extracted presentation styles; repeated class specificity preserves inline precedence. */
+.admin-work-type-management-1.admin-work-type-management-1.admin-work-type-management-1 {
+  font-size: var(--admin-font-size-11px);
+}
+
+.admin-work-type-management-2.admin-work-type-management-2.admin-work-type-management-2 {
+  max-width: 350px;
+}
+
+.admin-work-type-management-3.admin-work-type-management-3.admin-work-type-management-3 {
+  background: var(--admin-color--faf7f2);
+  border-bottom: var(--admin-work-type-management-3-border-bottom);
+}
+
+.admin-work-type-management-4.admin-work-type-management-4.admin-work-type-management-4 {
+  color: var(--admin-color-brand);
+}
+
+.admin-work-type-management-5.admin-work-type-management-5.admin-work-type-management-5 {
+  color: var(--admin-color-brand);
+}
+
+.admin-work-type-management-6.admin-work-type-management-6.admin-work-type-management-6 {
+  color: var(--admin-color-brand);
+}
+
+.admin-work-type-management-7.admin-work-type-management-7.admin-work-type-management-7 {
+  font-size: var(--admin-font-size-11px);
+}
+
+.admin-work-type-management-8.admin-work-type-management-8.admin-work-type-management-8 {
+  font-size: var(--admin-font-size-11px);
+}
+
+.admin-work-type-management-9.admin-work-type-management-9.admin-work-type-management-9 {
+  background: var(--admin-color-white);
+}
+
+.admin-work-type-management-10.admin-work-type-management-10.admin-work-type-management-10 {
+  background: var(--admin-color--f8f4ee);
+  border: 1px dashed var(--admin-color--c9a96e);
+}
+
+.admin-work-type-management-11.admin-work-type-management-11.admin-work-type-management-11 {
+  color: var(--admin-color-brand);
+}
+
+.admin-work-type-management-12.admin-work-type-management-12.admin-work-type-management-12 {
+  font-size: var(--admin-font-size-10px);
+}
+
+/* State-dependent presentation stays in CSS. */
+.admin-work-type-management-state-1 { --admin-work-type-management-3-border-bottom: 1px solid var(--admin-color--e9e4da); }
+.admin-work-type-management-state-2 { --admin-work-type-management-3-border-bottom: none; }

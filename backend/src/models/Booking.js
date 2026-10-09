@@ -77,6 +77,16 @@ const bookingSchema = new mongoose.Schema({
         name: { type: String, default: '' },
         phone: { type: String, default: '' }
     },
+    technicianReview: {
+        type: new mongoose.Schema({
+            rating: { type: Number, required: true, min: 1, max: 5, validate: Number.isInteger },
+            review: { type: String, default: '', trim: true, maxlength: 500 },
+            technician: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+            technicianName: { type: String, default: '' },
+            technicianPhone: { type: String, default: '' }
+        }, { _id: false, timestamps: true }),
+        default: null
+    },
     specialInstructions: {
         type: String,
         default: ''

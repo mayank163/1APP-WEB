@@ -1,3 +1,5 @@
+import { cssValue } from '../utils/cssValue';
+import '../styles/AboutUs.css';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -62,24 +64,13 @@ export default function AboutUs() {
     const navigate = useNavigate();
 
     return (
-        <div style={{ background: '#fff' }}>
+        <div className="ui-aboutus-1" >
 
             {/* ── Hero ── */}
-            <div style={{ background: '#0a0a0a', minHeight: 480, display: 'flex', alignItems: 'center', position: 'relative', overflow: 'hidden' }}>
+            <div className="ui-aboutus-2" >
                 {/* Isometric city illustration (SVG placeholder matching the dark city grid) */}
-                <div
-    style={{
-        position: 'absolute',
-        right: 0,
-        top: 0,
-        bottom: 0,
-        width: '58%',
-        opacity: 0.55,
-        backgroundImage: `url(${heroImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-    }}
+                <div className="ui-aboutus-3"
+    style={{ "--ui-aboutus-3-background-image": cssValue(`url(${heroImage})`, "backgroundImage") }}
 >
     <svg
         viewBox="0 0 700 480"
@@ -91,37 +82,37 @@ export default function AboutUs() {
     </svg>
 </div>
 
-                <div style={{ maxWidth: 1100, margin: '0 auto', padding: '80px 40px', position: 'relative', zIndex: 1, width: '100%' }}>
-                    <h1 style={{ color: '#fff', fontWeight: 900, fontSize: '3rem', marginBottom: 24 }}>About Us</h1>
-                    <p style={{ color: '#ccc', fontSize: '15px', lineHeight: 1.8, maxWidth: 360, marginBottom: 16 }}>
+                <div className="ui-aboutus-4" >
+                    <h1 className="ui-aboutus-5" >About Us</h1>
+                    <p className="ui-aboutus-6" >
                         1APP is a technology-driven platform that connects you with trusted professionals for all your home, workspace, health, fitness, education and beauty needs — from cleaning and repairs to salon and spa services.
                     </p>
-                    <p style={{ color: '#aaa', fontSize: '15px', lineHeight: 1.8, maxWidth: 360 }}>
+                    <p className="ui-aboutus-7" >
                         We're simplifying your living by ensuring reliable, high-quality and transparent services, every single time.
                     </p>
                 </div>
             </div>
 
-            
+
 
             {/* ── Our Ecosystem ── */}
-            <div style={{ background: '#f5f5f0', padding: '56px 0' }}>
-                <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 40px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 36 }}>
-                        <div style={{ width: 4, height: 32, background: '#111', borderRadius: 2 }} />
-                        <h2 style={{ fontWeight: 900, fontSize: '1.8rem', margin: 0 }}>Our Ecosystem</h2>
+            <div className="ui-aboutus-8" >
+                <div className="ui-aboutus-9" >
+                    <div className="ui-aboutus-10" >
+                        <div className="ui-aboutus-11"  />
+                        <h2 className="ui-aboutus-12" >Our Ecosystem</h2>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+                    <div className="ui-aboutus-13" >
                         {ECOSYSTEM.map((item, i) => (
-                            <div key={i} style={{ background: '#fff', borderRadius: 16, padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                <div style={{ color: '#333' }}>{item.icon}</div>
-                                <div style={{ fontWeight: 800, fontSize: '1rem' }}>{item.title}</div>
-                                <div style={{ fontSize: '13px', color: '#666', lineHeight: 1.6, flex: 1 }}>{item.desc}</div>
-                                <div
+                            <div className="ui-aboutus-14" key={i} >
+                                <div className="ui-aboutus-15" >{item.icon}</div>
+                                <div className="ui-aboutus-16" >{item.title}</div>
+                                <div className="ui-aboutus-17" >{item.desc}</div>
+                                <div className="ui-aboutus-18"
                                     onClick={() => navigate(`/services?search=${encodeURIComponent(item.title)}`)}
-                                    style={{ fontSize: '13px', color: '#333', cursor: 'pointer', marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 4, fontWeight: 600 }}
-                                    onMouseEnter={e => e.currentTarget.style.color = '#000'}
-                                    onMouseLeave={e => e.currentTarget.style.color = '#333'}
+
+
+
                                 >
                                     Explore <FaArrowRight size={10} />
                                 </div>
@@ -132,15 +123,15 @@ export default function AboutUs() {
             </div>
 
             {/* ── Building The Future ── */}
-            <div style={{ background: '#f5f5f0', padding: '56px 0 72px' }}>
-                <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 40px' }}>
-                    <h2 style={{ fontWeight: 900, fontSize: '1.8rem', textAlign: 'center', marginBottom: 48 }}>Building The Future Of Services</h2>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+            <div className="ui-aboutus-19" >
+                <div className="ui-aboutus-20" >
+                    <h2 className="ui-aboutus-21" >Building The Future Of Services</h2>
+                    <div className="ui-aboutus-22" >
                         {VALUES.map((v, i) => (
-                            <div key={i} style={{ background: '#1a1a1a', borderRadius: 20, padding: '40px 28px', textAlign: 'center', color: '#fff' }}>
-                                <div style={{ color: '#fff', marginBottom: 16 }}>{v.icon}</div>
-                                <div style={{ fontWeight: 800, fontSize: '1.1rem', marginBottom: 12 }}>{v.title}</div>
-                                <div style={{ fontSize: '13px', color: '#aaa', lineHeight: 1.7 }}>{v.desc}</div>
+                            <div className="ui-aboutus-23" key={i} >
+                                <div className="ui-aboutus-24" >{v.icon}</div>
+                                <div className="ui-aboutus-25" >{v.title}</div>
+                                <div className="ui-aboutus-26" >{v.desc}</div>
                             </div>
                         ))}
                     </div>
@@ -148,19 +139,19 @@ export default function AboutUs() {
             </div>
 
             {/* ── How It Works ── */}
-            <div style={{ background: '#f5f5f0', padding: '72px 0' }}>
-                <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 40px' }}>
-                    <h2 style={{ fontWeight: 900, fontSize: '1.8rem', textAlign: 'center', marginBottom: 56 }}>How It Works</h2>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'center', gap: 0, position: 'relative' }}>
+            <div className="ui-aboutus-27" >
+                <div className="ui-aboutus-28" >
+                    <h2 className="ui-aboutus-29" >How It Works</h2>
+                    <div className="ui-aboutus-30" >
                         {/* Connecting line */}
-                        <div style={{ position: 'absolute', top: 44, left: '10%', right: '10%', height: 1, background: '#ccc', zIndex: 0 }} />
+                        <div className="ui-aboutus-31"  />
                         {HOW_IT_WORKS.map((step, i) => (
-                            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', position: 'relative', zIndex: 1 }}>
-                                <div style={{ width: 80, height: 80, border: '1.5px solid #ccc', borderRadius: 20, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', marginBottom: 16 }}>
+                            <div className="ui-aboutus-32" key={i} >
+                                <div className="ui-aboutus-33" >
                                     {step.icon}
                                 </div>
-                                <div style={{ fontWeight: 800, fontSize: '15px', marginBottom: 4 }}>{step.title}</div>
-                                <div style={{ fontSize: '13px', color: '#888' }}>{step.sub}</div>
+                                <div className="ui-aboutus-34" >{step.title}</div>
+                                <div className="ui-aboutus-35" >{step.sub}</div>
                             </div>
                         ))}
                     </div>
@@ -168,28 +159,28 @@ export default function AboutUs() {
             </div>
 
             {/* ── Core Values ── */}
-            <div style={{ background: '#fff', padding: '72px 0' }}>
-                <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 40px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 60, alignItems: 'center' }}>
+            <div className="ui-aboutus-36" >
+                <div className="ui-aboutus-37" >
                     <div>
-                        <h2 style={{ fontWeight: 900, fontSize: '1.8rem', marginBottom: 36 }}>Our Core Values</h2>
+                        <h2 className="ui-aboutus-38" >Our Core Values</h2>
                         {CORE_VALUES.map((v, i) => (
-                            <div key={i} style={{ display: 'flex', gap: 16, marginBottom: 28 }}>
-                                <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#555' }}>
+                            <div className="ui-aboutus-39" key={i} >
+                                <div className="ui-aboutus-40" >
                                     {v.icon}
                                 </div>
                                 <div>
-                                    <div style={{ fontWeight: 800, fontSize: '15px', marginBottom: 4 }}>{v.title}</div>
-                                    <div style={{ fontSize: '13px', color: '#666', lineHeight: 1.7 }}>{v.desc}</div>
+                                    <div className="ui-aboutus-41" >{v.title}</div>
+                                    <div className="ui-aboutus-42" >{v.desc}</div>
                                 </div>
                             </div>
                         ))}
                     </div>
                     {/* Photo */}
-                    <div style={{ borderRadius: 24, overflow: 'hidden', height: 380 }}>
-                        <img
+                    <div className="ui-aboutus-43" >
+                        <img className="ui-aboutus-44"
                             src={technicianImage}
                             alt="1App service professional"
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+
                         />
                     </div>
                 </div>
@@ -218,14 +209,14 @@ export default function AboutUs() {
             </div> */}
 
             {/* ── CTA Cards ── */}
-            <div style={{ background: '#f5f5f0', padding: '0 0 72px' }}>
-                <div style={{ maxWidth: 1100, margin: '0 auto', padding: '50px 40px 0px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+            <div className="ui-aboutus-45" >
+                <div className="ui-aboutus-46" >
+                    <div className="ui-aboutus-47" >
                         {CTA.map((c, i) => (
-                            <div key={i} style={{ background: c.dark ? '#111' : '#f0ece8', borderRadius: 20, padding: '32px 28px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                <div style={{ fontWeight: 800, fontSize: '1rem', color: c.dark ? '#fff' : '#111' }}>{c.title}</div>
-                                <div style={{ fontSize: '13px', color: c.dark ? '#aaa' : '#555', lineHeight: 1.7, flex: 1 }}>{c.desc}</div>
-                                <button style={{ marginTop: 16, background: '#000000', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 0', fontWeight: 700, fontSize: '14px', cursor: 'pointer', width: '100%' }}>
+                            <div className="ui-aboutus-48" key={i} style={{ "--ui-aboutus-48-background": cssValue(c.dark ? "var(--ui-color-5)" : "var(--ui-color-272)", "background") }}>
+                                <div className="ui-aboutus-49" style={{ "--ui-aboutus-49-color": cssValue(c.dark ? "var(--ui-color-2)" : "var(--ui-color-5)", "color") }}>{c.title}</div>
+                                <div className="ui-aboutus-50" style={{ "--ui-aboutus-50-color": cssValue(c.dark ? "var(--ui-color-19)" : "var(--ui-color-41)", "color") }}>{c.desc}</div>
+                                <button className="ui-aboutus-51" >
                                     {c.btn}
                                 </button>
                             </div>
@@ -235,11 +226,11 @@ export default function AboutUs() {
             </div>
 
             {/* ── Tagline Banner ── */}
-            <div style={{ background: '#0a0a0a', padding: '72px 40px', textAlign: 'center' }}>
-                <div style={{ fontStyle: 'italic', fontWeight: 900, fontSize: '2.8rem', color: '#fff', marginBottom: 16 }}>
+            <div className="ui-aboutus-52" >
+                <div className="ui-aboutus-53" >
                     We're just getting started.
                 </div>
-                <div style={{ fontSize: '13px', letterSpacing: '3px', color: '#888', fontWeight: 600 }}>
+                <div className="ui-aboutus-54" >
                     BUILDING INDIA'S MOST CONNECTED SERVICE ECOSYSTEM.
                 </div>
             </div>

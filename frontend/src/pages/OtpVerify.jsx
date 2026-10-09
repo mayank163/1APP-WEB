@@ -1,3 +1,5 @@
+import { cssValue } from '../utils/cssValue';
+import '../styles/OtpVerify.css';
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -42,29 +44,29 @@ const OtpVerify = () => {
     const maskedPhone = phone ? `******${phone.slice(-4)}` : '';
 
     return (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: '100vh' }}>
+        <div className="ui-otpverify-1" >
             {/* Left - Form */}
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '48px 64px', background: '#fff' }}>
-                <div style={{ maxWidth: 380, width: '100%', margin: '0 auto' }}>
-                    <Link to="/forgot-password" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#555', textDecoration: 'none', fontSize: '0.88rem', marginBottom: 32 }}>
+            <div className="ui-otpverify-2" >
+                <div className="ui-otpverify-3" >
+                    <Link className="ui-otpverify-4" to="/forgot-password" >
                         <FaArrowLeft size={12} /> Back
                     </Link>
 
-                    <div style={{ marginBottom: 28 }}>
-                        <h2 style={{ fontWeight: 800, fontSize: '1.8rem', marginBottom: 8 }}>
-                            Verify <span style={{ color: '#000000' }}>OTP</span>
+                    <div className="ui-otpverify-5" >
+                        <h2 className="ui-otpverify-6" >
+                            Verify <span className="ui-otpverify-7" >OTP</span>
                         </h2>
-                        <p style={{ color: '#777', fontSize: '0.9rem', lineHeight: 1.5 }}>
+                        <p className="ui-otpverify-8" >
                             We've sent a 6-digit OTP to your registered phone{' '}
-                            <strong style={{ color: '#333' }}>{maskedPhone}</strong>
+                            <strong className="ui-otpverify-9" >{maskedPhone}</strong>
                         </p>
-                        <div style={{ width: 40, height: 3, background: '#000000', marginTop: 12 }} />
+                        <div className="ui-otpverify-10"  />
                     </div>
 
                     <form onSubmit={handleSubmit}>
-                        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginBottom: 28 }}>
+                        <div className="ui-otpverify-11" >
                             {otp.map((digit, idx) => (
-                                <input
+                                <input className="ui-otpverify-12"
                                     key={idx}
                                     ref={el => inputs.current[idx] = el}
                                     type="text"
@@ -73,36 +75,23 @@ const OtpVerify = () => {
                                     value={digit}
                                     onChange={e => handleChange(e.target.value, idx)}
                                     onKeyDown={e => handleKeyDown(e, idx)}
-                                    style={{
-                                        width: 48, height: 52, textAlign: 'center', fontSize: '1.4rem', fontWeight: 700,
-                                        border: `2px solid ${digit ? '#000000' : '#ddd'}`, borderRadius: 10, outline: 'none',
-                                        transition: 'border-color 0.2s',
-                                    }}
+                                    style={{ "--ui-otpverify-12-border": cssValue(`2px solid ${digit ? '#000000' : '#ddd'}`, "border") }}
                                 />
                             ))}
                         </div>
 
                         {/* Dev-mode OTP hint — only shown when Twilio SMS is off */}
                         {devOtp && (
-                            <div style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                background: '#fdf5ea',
-                                border: '1.5px dashed #000000',
-                                borderRadius: 10,
-                                padding: '10px 16px',
-                                marginBottom: 20,
-                            }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#000000', letterSpacing: 0.5, textTransform: 'uppercase' }}>
+                            <div className="ui-otpverify-13" >
+                                <div className="ui-otpverify-14" >
+                                    <span className="ui-otpverify-15" >
                                         Dev mode · OTP
                                     </span>
-                                    <span style={{ fontSize: '1.35rem', fontWeight: 800, letterSpacing: 6, color: '#1a1a1a', fontFamily: 'monospace' }}>
+                                    <span className="ui-otpverify-16" >
                                         {devOtp}
                                     </span>
                                 </div>
-                                <button
+                                <button className="ui-otpverify-17"
                                     type="button"
                                     title="Auto-fill OTP"
                                     onClick={() => {
@@ -110,32 +99,28 @@ const OtpVerify = () => {
                                         setOtp(digits);
                                         inputs.current[5]?.focus();
                                     }}
-                                    style={{
-                                        background: '#000000', color: '#fff', border: 'none',
-                                        borderRadius: 8, padding: '6px 14px', fontWeight: 700,
-                                        fontSize: '0.8rem', cursor: 'pointer', flexShrink: 0,
-                                    }}
+
                                 >
                                     Auto-fill
                                 </button>
                             </div>
                         )}
 
-                        <button type="submit"
-                            style={{ width: '100%', background: '#000000', color: '#fff', border: 'none', borderRadius: 8, padding: '13px', fontWeight: 700, fontSize: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                            Verify OTP <span style={{ fontSize: '1.1rem' }}>→</span>
+                        <button className="ui-otpverify-18" type="submit"
+                            >
+                            Verify OTP <span className="ui-otpverify-19" >→</span>
                         </button>
                     </form>
 
-                    <p style={{ textAlign: 'center', marginTop: 20, fontSize: '0.88rem', color: '#555' }}>
+                    <p className="ui-otpverify-20" >
                         Remember your Password?{' '}
-                        <Link to="/login" style={{ color: '#000000', fontWeight: 700, textDecoration: 'none' }}>Sign In</Link>
+                        <Link className="ui-otpverify-21" to="/login" >Sign In</Link>
                     </p>
                 </div>
             </div>
             {/* Right - Illustration */}
             <ResetAuthPanel />
-            
+
         </div>
     );
 };

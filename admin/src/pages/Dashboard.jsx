@@ -1,3 +1,4 @@
+import { adminCssValue } from '../utils/adminCssValue.js';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
     FaBriefcase, FaCheckCircle, FaClipboardCheck, FaFileInvoiceDollar,
@@ -178,7 +179,7 @@ const Dashboard = () => {
                             return <div className="booking-pipeline-item" key={label}>
                                 <div className="booking-pipeline-label"><span>{label}</span><strong>{count.toLocaleString()}</strong></div>
                                 <div className="booking-pipeline-track" aria-label={`${label}: ${percentage}%`}>
-                                    <span className={`booking-pipeline-fill pipeline-${tone}`} style={{ width: `${percentage}%` }} />
+                                    <span className={[`booking-pipeline-fill pipeline-${tone}`, " admin-dashboard-1"].join('')} style={{ "--admin-dashboard-1-width": adminCssValue(`${percentage}%`) }} />
                                 </div>
                             </div>;
                         })}

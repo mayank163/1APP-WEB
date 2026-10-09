@@ -1,3 +1,4 @@
+import '../styles/Login.css';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import adminApi from '../services/adminApi';
@@ -5,72 +6,30 @@ import { useAdminAuth } from '../context/AdminAuthContext';
 import { FaLock, FaEnvelope, FaEye, FaEyeSlash, FaShieldAlt } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
-const inputStyle = {
-    border: 'none',
-    outline: 'none',
-    flex: 1,
-    fontSize: '0.95rem',
-    background: 'transparent',
-};
-
 const AdminPanel = () => (
     <div
-        style={{
-            background: 'linear-gradient(135deg, #1a1208 0%, #2d1f0a 50%, #1a1208 100%)',
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '48px',
-            position: 'relative',
-            overflow: 'hidden',
-        }}
+        className="admin-login-1"
     >
         {/* Decorative circles */}
-        <div style={{
-            position: 'absolute', top: -80, right: -80,
-            width: 320, height: 320, borderRadius: '50%',
-            background: 'rgba(165,115,47,0.08)',
-        }} />
-        <div style={{
-            position: 'absolute', bottom: -60, left: -60,
-            width: 240, height: 240, borderRadius: '50%',
-            background: 'rgba(165,115,47,0.06)',
-        }} />
-        <div style={{
-            position: 'absolute', top: '40%', left: -40,
-            width: 160, height: 160, borderRadius: '50%',
-            background: 'rgba(165,115,47,0.05)',
-        }} />
+        <div className="admin-login-2"  />
+        <div className="admin-login-3"  />
+        <div className="admin-login-4"  />
 
         {/* Icon */}
-        <div style={{
-            width: 90, height: 90, borderRadius: '50%',
-            background: 'rgba(165,115,47,0.15)',
-            border: '2px solid rgba(165,115,47,0.4)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            marginBottom: 28,
-        }}>
+        <div className="admin-login-5" >
             <FaShieldAlt size={38} color="#A5732F" />
         </div>
 
         {/* Brand */}
-        <p style={{
-            fontWeight: 800, fontSize: '1.6rem', color: '#fff',
-            letterSpacing: 3, marginBottom: 8, fontFamily: 'monospace',
-        }}>
+        <p className="admin-login-6" >
             1APP
         </p>
-        <p style={{
-            fontWeight: 600, fontSize: '0.85rem', color: 'rgba(165,115,47,0.7)',
-            letterSpacing: 4, textTransform: 'uppercase', marginBottom: 32,
-        }}>
+        <p className="admin-login-7" >
             Admin Portal
         </p>
 
         {/* Divider */}
-        <div style={{ width: 48, height: 3, background: '#A5732F', borderRadius: 2, marginBottom: 32, opacity: 0.6 }} />
+        <div className="admin-login-8"  />
 
         {/* Features list */}
         {[
@@ -79,15 +38,9 @@ const AdminPanel = () => (
             'Publish and edit blogs',
             'Track platform analytics',
         ].map((text, i) => (
-            <div key={i} style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                marginBottom: 14, width: '100%', maxWidth: 260,
-            }}>
-                <div style={{
-                    width: 7, height: 7, borderRadius: '50%',
-                    background: '#A5732F', flexShrink: 0,
-                }} />
-                <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.88rem' }}>{text}</span>
+            <div key={i} className="admin-login-9" >
+                <div className="admin-login-10"  />
+                <span className="admin-login-11" >{text}</span>
             </div>
         ))}
     </div>
@@ -119,43 +72,35 @@ const Login = () => {
     };
 
     return (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', height: '100vh', overflow: 'hidden' }}>
+        <div className="admin-login-12" >
             {/* Left: decorative panel */}
             <AdminPanel />
 
             {/* Right: form */}
-            <div style={{
-                display: 'flex', flexDirection: 'column', justifyContent: 'center',
-                padding: '48px 56px', background: '#fff', height: '100%',
-                boxSizing: 'border-box', overflowY: 'auto',
-            }}>
-                <div style={{ maxWidth: 400, width: '100%', margin: '0 auto' }}>
+            <div className="admin-login-13" >
+                <div className="admin-login-14" >
 
                     {/* Header */}
-                    <div style={{ textAlign: 'center', marginBottom: 32 }}>
-                        <p style={{ fontWeight: 800, fontSize: '1.25rem', color: '#1a1a1a', marginBottom: 4, letterSpacing: 0.5 }}>
-                            <span style={{ color: '#A5732F' }}>1APP</span> ADMIN
+                    <div className="admin-login-15" >
+                        <p className="admin-login-16" >
+                            <span className="admin-login-17" >1APP</span> ADMIN
                         </p>
-                        <h2 style={{ fontWeight: 800, fontSize: '1.9rem', color: '#A5732F', margin: '4px 0 8px' }}>
+                        <h2 className="admin-login-18" >
                             Welcome Back
                         </h2>
-                        <p style={{ color: '#888', fontSize: '0.9rem', margin: 0 }}>
+                        <p className="admin-login-19" >
                             Sign in to access the admin dashboard
                         </p>
-                        <div style={{ width: 40, height: 3, background: '#A5732F', margin: '12px auto 0', borderRadius: 2 }} />
+                        <div className="admin-login-20"  />
                     </div>
 
                     <form onSubmit={handleSubmit}>
                         {/* Email field */}
-                        <div style={{ marginBottom: 16 }}>
-                            <label style={{ fontWeight: 700, fontSize: '0.85rem', display: 'block', marginBottom: 6, color: '#1a1a1a' }}>
+                        <div className="admin-login-21" >
+                            <label className="admin-login-22" >
                                 Admin Email
                             </label>
-                            <div style={{
-                                display: 'flex', alignItems: 'center',
-                                border: '1.5px solid #ccc', borderRadius: 8,
-                                padding: '10px 14px', gap: 10,
-                            }}>
+                            <div className="admin-login-23" >
                                 <FaEnvelope color="#888" size={14} />
                                 <input
                                     type="email"
@@ -163,21 +108,17 @@ const Login = () => {
                                     placeholder="admin@1app.com"
                                     value={email}
                                     onChange={e => setEmail(e.target.value)}
-                                    style={inputStyle}
+                                    className="admin-login-24"
                                 />
                             </div>
                         </div>
 
                         {/* Password field */}
-                        <div style={{ marginBottom: 8 }}>
-                            <label style={{ fontWeight: 700, fontSize: '0.85rem', display: 'block', marginBottom: 6, color: '#1a1a1a' }}>
+                        <div className="admin-login-25" >
+                            <label className="admin-login-26" >
                                 Password
                             </label>
-                            <div style={{
-                                display: 'flex', alignItems: 'center',
-                                border: '1.5px solid #ccc', borderRadius: 8,
-                                padding: '10px 14px', gap: 10,
-                            }}>
+                            <div className="admin-login-27" >
                                 <FaLock color="#888" size={14} />
                                 <input
                                     type={showPass ? 'text' : 'password'}
@@ -185,12 +126,12 @@ const Login = () => {
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
-                                    style={{ ...inputStyle, flex: 1 }}
+                                    className="admin-login-28"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPass(!showPass)}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#aaa', display: 'flex' }}
+                                    className="admin-login-29"
                                 >
                                     {showPass ? <FaEye size={15} /> : <FaEyeSlash size={15} />}
                                 </button>
@@ -200,21 +141,14 @@ const Login = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            style={{
-                                width: '100%', background: '#A5732F', color: '#fff',
-                                border: 'none', borderRadius: 8, padding: '13px',
-                                fontWeight: 700, fontSize: '1rem', cursor: 'pointer',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                gap: 8, marginTop: 24,
-                                opacity: loading ? 0.7 : 1,
-                            }}
+                            className={["admin-login-30 ", loading ? "admin-login-state-1" : "admin-login-state-2"].join('')}
                         >
-                            {loading ? 'Signing in...' : 'Enter Dashboard'} <span style={{ fontSize: '1.1rem' }}>→</span>
+                            {loading ? 'Signing in...' : 'Enter Dashboard'} <span className="admin-login-31" >→</span>
                         </button>
                     </form>
 
                     {/* Footer note */}
-                    <p style={{ textAlign: 'center', marginTop: 28, fontSize: '0.82rem', color: '#bbb' }}>
+                    <p className="admin-login-32" >
                         Restricted access — authorised personnel only
                     </p>
                 </div>

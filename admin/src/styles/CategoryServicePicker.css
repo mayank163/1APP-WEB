@@ -1,0 +1,8 @@
+/* Extracted presentation styles; repeated class specificity preserves inline precedence. */
+.admin-category-service-picker-1.admin-category-service-picker-1.admin-category-service-picker-1 {
+  color: var(--admin-color-brand);
+}
+
+.admin-category-service-picker-2.admin-category-service-picker-2.admin-category-service-picker-2 {
+  color: var(--admin-color-brand);
+}

@@ -1,3 +1,4 @@
+import '../styles/ServiceTypeManagement.css';
 import React, { useEffect, useRef, useState } from 'react';
 import adminApi from '../services/adminApi';
 import { FaPlus, FaEdit, FaTrash, FaWrench, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
@@ -154,15 +155,15 @@ const ServiceTypeManagement = () => {
                 <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
                     <input
                         type="text"
-                        className="form-control"
-                        style={{ maxWidth: 350 }}
+                        className="form-control admin-service-type-management-1"
+
                         placeholder="Search service types…"
                         value={searchTerm}
                         onChange={e => { setSearchTerm(e.target.value); setPage(1); }}
                     />
                     <select
-                        className="form-select"
-                        style={{ width: 180 }}
+                        className="form-select admin-service-type-management-2"
+
                         value={sortOrder}
                         onChange={e => { setSortOrder(e.target.value); setPage(1); }}
                     >
@@ -192,10 +193,10 @@ const ServiceTypeManagement = () => {
                                         <td>
                                             <div className="d-flex align-items-center gap-2">
                                                 <div
-                                                    className="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0"
-                                                    style={{ width: 34, height: 34, background: 'rgba(165,115,47,0.1)' }}
+                                                    className="d-flex align-items-center justify-content-center rounded-2 flex-shrink-0 admin-service-type-management-3"
+
                                                 >
-                                                    <FaWrench size={14} style={{ color: '#A5732F' }} />
+                                                    <FaWrench size={14} className="admin-service-type-management-4"  />
                                                 </div>
                                                 <span className="fw-bold text-dark">{st.name}</span>
                                             </div>
@@ -216,8 +217,8 @@ const ServiceTypeManagement = () => {
                                             <div className="d-flex gap-1">
                                                 <button
                                                     onClick={() => openEdit(st)}
-                                                    className="btn btn-sm btn-light border"
-                                                    style={{ color: '#A5732F' }}
+                                                    className="btn btn-sm btn-light border admin-service-type-management-5"
+
                                                     title="Edit"
                                                 >
                                                     <FaEdit size={13} />
@@ -227,7 +228,7 @@ const ServiceTypeManagement = () => {
                                                     className="btn btn-sm btn-light border"
                                                     title={st.isActive ? 'Deactivate' : 'Activate'}
                                                 >
-                                                    <span style={{ fontSize: 11 }}>{st.isActive ? 'Deactivate' : 'Activate'}</span>
+                                                    <span className="admin-service-type-management-6" >{st.isActive ? 'Deactivate' : 'Activate'}</span>
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(st._id)}

@@ -265,7 +265,7 @@ exports.login = async (req, res, next) => {
 // ── Profile & document handlers ───────────────────────────────────────────────
 exports.completeTechnicianProfile = async (req, res, next) => {
   try {
-    const { skills, experienceLevel, yearsOfExperience, previousCompanyName } = req.body;
+    const { skills, experienceLevel, yearsOfExperience, previousCompanyName,professionalBio  } = req.body;
     const technician = await User.findById(req.user._id);
     if (!technician || technician.role !== 'technician') {
       return res.status(403).json({ success: false, message: 'Only technician accounts can complete this profile' });
@@ -299,9 +299,10 @@ exports.completeTechnicianProfile = async (req, res, next) => {
       yearsOfExperience: Number(yearsOfExperience || 0),
       certifications: prev.certifications || [],
       previousCompanyName: previousCompanyName || prev.previousCompanyName || '',
+      professionalBio: professionalBio || prev.professionalBio || '',
       certificateImages,
       portfolioPhotos,
-      drivingLicense: { front: prev.drivingLicense?.front || '', back: prev.drivingLicense?.back || '' },
+      drivingLicense: { ...prev.drivingLicense, front: prev.drivingLicense?.front || '', back: prev.drivingLicense?.back || '' },
       taxInformation: { w9Form: prev.taxInformation?.w9Form || '', form1099: prev.taxInformation?.form1099 || '' },
     };
     technician.profileCompleted = true;
@@ -324,6 +325,30 @@ const DOC_FIELDS = {
   profilePhoto:           { folder: 'technician-docs/profile-photo', label: 'Profile Photo' },
 };
 
+const getDrivingLicenseDates = (body, previous, required) => {
+  const dates = {};
+  for (const [field, input] of Object.entries({ issuedDate: 'drivingLicenseIssuedDate', expiryDate: 'drivingLicenseExpiryDate' })) {
+    const value = body[input];
+    if (value !== undefined) {
+      const parsed = typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)
+        ? new Date(`${value}T00:00:00.000Z`) : null;
+      if (!parsed || !Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) {
+        return { error: `${input} must be a valid date in YYYY-MM-DD format.` };
+      }
+      dates[field] = parsed;
+    } else {
+      dates[field] = previous?.[field] || null;
+    }
+  }
+  if (required && (!dates.issuedDate || !dates.expiryDate)) {
+    return { error: 'Driving license issued date and expiry date are required.' };
+  }
+  if (dates.issuedDate && dates.expiryDate && new Date(dates.expiryDate) <= new Date(dates.issuedDate)) {
+    return { error: 'Driving license expiry date must be after the issued date.' };
+  }
+  return { dates };
+};
+
 exports.uploadTechnicianDocuments = async (req, res, next) => {
   try {
     const technician = await User.findById(req.user._id);
@@ -338,6 +363,10 @@ exports.uploadTechnicianDocuments = async (req, res, next) => {
 
     const prev = technician.technicianProfile || {};
 
+    const licenseDates = getDrivingLicenseDates(req.body, prev.drivingLicense,
+      Boolean(req.files.drivingLicenseFront?.[0] || req.files.drivingLicenseBack?.[0]));
+    if (licenseDates.error) return res.status(400).json({ success: false, message: licenseDates.error });
+
     const replaceKey = async (newFile, oldKey, folder) => {
       if (!newFile?.[0]) return oldKey || '';
       if (oldKey) await deleteFile(oldKey).catch(() => {});
@@ -348,6 +377,7 @@ exports.uploadTechnicianDocuments = async (req, res, next) => {
     technician.technicianProfile = {
       ...prev,
       drivingLicense: {
+        ...licenseDates.dates,
         front: await replaceKey(req.files.drivingLicenseFront, prev.drivingLicense?.front, 'technician-docs/driving-license'),
         back:  await replaceKey(req.files.drivingLicenseBack,  prev.drivingLicense?.back,  'technician-docs/driving-license'),
       },
@@ -414,6 +444,12 @@ exports.reuploadDocument = async (req, res, next) => {
     const prev = technician.technicianProfile || {};
     const docs  = prev.documents || [];
     const docEntry = docs.find(d => d.documentId === documentId);
+
+    if (documentId === 'drivingLicenseFront' || documentId === 'drivingLicenseBack') {
+      const licenseDates = getDrivingLicenseDates(req.body, prev.drivingLicense, true);
+      if (licenseDates.error) return res.status(400).json({ success: false, message: licenseDates.error });
+      prev.drivingLicense = { ...prev.drivingLicense, ...licenseDates.dates };
+    }
 
     // Delete old S3 file
     if (docEntry?.s3Key) await deleteFile(docEntry.s3Key).catch(() => {});

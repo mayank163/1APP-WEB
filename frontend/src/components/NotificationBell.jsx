@@ -1,3 +1,5 @@
+import { cssValue } from '../utils/cssValue';
+import '../styles/NotificationBell.css';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaBell } from 'react-icons/fa';
@@ -128,9 +130,9 @@ const NotificationBell = () => {
     <div ref={wrapperRef} className="position-relative">
       <button type="button" className="btn p-0 border-0 bg-transparent text-dark" onClick={toggle} title="Notifications" aria-label="Notifications">
         <FaBell size={18} />
-        {unread > 0 && <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: 9 }}>{unread}</span>}
+        {unread > 0 && <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger ui-notificationbell-1" >{unread}</span>}
       </button>
-      {open && <div className="position-absolute end-0 mt-3 bg-white shadow border rounded-3 p-2" style={{ width: 320, zIndex: 1100 }}>
+      {open && <div className="position-absolute end-0 mt-3 bg-white shadow border rounded-3 p-2 ui-notificationbell-2" >
         <div className="d-flex align-items-center justify-content-between px-2 py-1">
           <div className="fw-bold">Notifications</div>
           <button type="button" className="btn btn-link btn-sm p-0 text-decoration-none" onClick={markAllRead} disabled={unread === 0}>
@@ -138,10 +140,10 @@ const NotificationBell = () => {
           </button>
         </div>
         {notificationError && <div className="small text-danger px-2 py-2">{notificationError}</div>}
-        <div onScroll={handleScroll} style={{ maxHeight: 320, overflowY: 'auto' }}>
+        <div className="ui-notificationbell-3" onScroll={handleScroll} >
           {items.length === 0 && !loadingMore ? <div className="text-muted small px-2 py-3">No notifications yet.</div> : items.map(item => (
-            <button key={item._id} type="button" className="border-top px-2 py-2 text-start w-100 bg-white" onClick={() => openNotification(item)} style={{ borderLeft: 0, borderRight: 0, borderBottom: 0, cursor: item.data?.jobId ? 'pointer' : 'default' }}>
-              <div className="small fw-semibold">{!item.isRead && <span className="d-inline-block rounded-circle bg-primary me-1" aria-label="Unread" style={{ width: 6, height: 6 }} />}{item.title}</div>
+            <button key={item._id} type="button" className="border-top px-2 py-2 text-start w-100 bg-white ui-notificationbell-4" onClick={() => openNotification(item)} style={{ "--ui-notificationbell-4-cursor": cssValue(item.data?.jobId ? 'pointer' : 'default', "cursor") }}>
+              <div className="small fw-semibold">{!item.isRead && <span className="d-inline-block rounded-circle bg-primary me-1 ui-notificationbell-5" aria-label="Unread"  />}{item.title}</div>
               <div className="small text-muted">{item.message}</div>
             </button>
           ))}

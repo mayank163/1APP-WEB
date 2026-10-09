@@ -1,3 +1,4 @@
+import '../styles/CategoryServicePicker.css';
 import React, { useEffect, useState } from 'react';
 import adminApi from '../services/adminApi';
 
@@ -93,7 +94,7 @@ const CategoryServicePicker = ({ form, setForm }) => {
         <div className="col-md-4">
           <label className="tj-label">
             Subcategory
-            {loadingSub && <span className="spinner-border spinner-border-sm ms-2" style={{ color: '#A5732F' }} />}
+            {loadingSub && <span className="spinner-border spinner-border-sm ms-2 admin-category-service-picker-1"  />}
           </label>
           <select
             className="form-select tj-input"
@@ -112,7 +113,7 @@ const CategoryServicePicker = ({ form, setForm }) => {
         <div className="col-md-4">
           <label className="tj-label">
             Service
-            {loadingSvc && <span className="spinner-border spinner-border-sm ms-2" style={{ color: '#A5732F' }} />}
+            {loadingSvc && <span className="spinner-border spinner-border-sm ms-2 admin-category-service-picker-2"  />}
           </label>
           <select
             className="form-select tj-input"

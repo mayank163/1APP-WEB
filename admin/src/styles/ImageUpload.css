@@ -1,0 +1,28 @@
+
+/* Extracted presentation styles; repeated class specificity preserves inline precedence. */
+.admin-image-upload-1.admin-image-upload-1.admin-image-upload-1 {
+  width: var(--admin-image-upload-1-width);
+  height: var(--admin-image-upload-1-height);
+}
+
+.admin-image-upload-2.admin-image-upload-2.admin-image-upload-2 {
+  object-fit: cover;
+}
+
+.admin-image-upload-3.admin-image-upload-3.admin-image-upload-3 {
+  width: 18px;
+  height: 18px;
+  font-size: var(--admin-font-size-9px);
+  border-radius: 50%;
+  transform: translate(40%,-40%);
+}
+
+.admin-image-upload-4.admin-image-upload-4.admin-image-upload-4 {
+  font-size: var(--admin-font-size-11px);
+}
+
+/* State-dependent presentation stays in CSS. */
+.admin-image-upload-state-1 { --admin-image-upload-1-width: 56px; }
+.admin-image-upload-state-2 { --admin-image-upload-1-width: 80px; }
+.admin-image-upload-state-3 { --admin-image-upload-1-height: 56px; }
+.admin-image-upload-state-4 { --admin-image-upload-1-height: 80px; }

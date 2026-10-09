@@ -1,3 +1,4 @@
+import '../styles/BookingCard.css';
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import Modal from 'react-bootstrap/Modal';
@@ -20,7 +21,7 @@ const formatAddress = (address) => {
 };
 
 /* ─────────────── Review Popup ─────────────── */
-const ReviewPopup = ({ bookingId, onClose, onReviewed }) => {
+const ReviewPopup = ({ bookingId, onClose, onReviewed, technicianMode = false }) => {
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeIdx, setActiveIdx] = useState(0);
@@ -33,8 +34,12 @@ const ReviewPopup = ({ bookingId, onClose, onReviewed }) => {
         bookingService.getReviewableServices(bookingId)
             .then(res => {
                 if (res.success) {
-                    setServices(res.data.services || []);
-                    const first = res.data.services?.[0];
+                    const technician = res.data.technician;
+                    const items = technicianMode
+                        ? (technician?.name || technician?.phone ? [{ service: { _id: bookingId, name: technician.name || 'Assigned technician' }, existingReview: res.data.technicianReview }] : [])
+                        : res.data.services || [];
+                    setServices(items);
+                    const first = items[0];
                     if (first?.existingReview) {
                         setSelectedStar(first.existingReview.rating);
                         setReviewText(first.existingReview.review || '');
@@ -43,7 +48,7 @@ const ReviewPopup = ({ bookingId, onClose, onReviewed }) => {
             })
             .catch(() => toast.error('Failed to load services'))
             .finally(() => setLoading(false));
-    }, [bookingId]);
+    }, [bookingId, technicianMode]);
 
     const current = services[activeIdx];
     const existing = current?.existingReview;
@@ -62,7 +67,8 @@ const ReviewPopup = ({ bookingId, onClose, onReviewed }) => {
         setSubmitting(true);
         try {
             const payload = { rating: selectedStar, review: reviewText.trim(), bookingId };
-            await bookingService.submitServiceReview(current.service._id, payload);
+            if (technicianMode) await bookingService.submitTechnicianReview(bookingId, { rating: selectedStar, review: reviewText.trim() });
+            else await bookingService.submitServiceReview(current.service._id, payload);
             toast.success(existing ? 'Review updated!' : 'Review submitted!');
             if (activeIdx < services.length - 1) {
                 switchService(activeIdx + 1);
@@ -86,11 +92,11 @@ const ReviewPopup = ({ bookingId, onClose, onReviewed }) => {
                 <div className="service-review-handle" aria-hidden="true" />
                 <button className="service-review-close" type="button" onClick={onClose} disabled={submitting} aria-label="Close review">×</button>
                 <header className="service-review-header">
-                    <h2 id="service-review-title">Rate &amp; Review Service</h2>
+                    <h2 id="service-review-title">{technicianMode ? 'Rate & Review Technician' : 'Rate & Review Service'}</h2>
                     <p>Your feedback helps us improve and serve you better.</p>
                 </header>
                 {loading ? <div className="service-review-message" role="status">Loading…</div>
-                    : services.length === 0 ? <div className="service-review-message">No services available for review.</div> : (
+                    : services.length === 0 ? <div className="service-review-message">{technicianMode ? 'No technician available for review.' : 'No services available for review.'}</div> : (
                     <>
                         {services.length > 1 && <div className="service-review-tabs" aria-label="Choose a service to review">
                             {services.map((item, index) => <button key={item.service._id} type="button" disabled={submitting}
@@ -102,7 +108,7 @@ const ReviewPopup = ({ bookingId, onClose, onReviewed }) => {
                             <div className="service-review-photo">
                                 <FiTool aria-hidden="true" />
                                 {current.service.featuredImage && <img src={resolveImageUrl(current.service.featuredImage)} alt={current.service.name}
-                                    onError={event => { event.currentTarget.style.display = 'none'; }} />}
+                                    onError={event => { event.currentTarget.classList.add('ui-image-hidden'); }} />}
                             </div>
                             <div className="service-review-service-info">
                                 <h3>{current.service.name}</h3>
@@ -112,7 +118,7 @@ const ReviewPopup = ({ bookingId, onClose, onReviewed }) => {
                         </div>
                         <form onSubmit={handleSubmit}>
                             <div className="service-review-rating-section">
-                                <h3 id="service-review-rating-label">How was your service?</h3>
+                                <h3 id="service-review-rating-label">{technicianMode ? 'How was your technician?' : 'How was your service?'}</h3>
                                 <p>Tap a star to rate your experience.</p>
                                 <div className="service-review-stars" role="group" aria-labelledby="service-review-rating-label" onMouseLeave={() => setHoverStar(0)}>
                                     {[1, 2, 3, 4, 5].map(star => <button key={star} type="button" disabled={submitting}
@@ -150,6 +156,7 @@ const BookingCard = ({ booking, onCancelled }) => {
     const [cancelling, setCancelling] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
     const [showReview, setShowReview] = useState(false);
+    const [showTechnicianReview, setShowTechnicianReview] = useState(false);
 
     const [showInvoice, setShowInvoice] = useState(false);
     const status = (booking.status || 'pending').toLowerCase();
@@ -172,15 +179,15 @@ const BookingCard = ({ booking, onCancelled }) => {
     const address = formatAddress(booking.address);
     const technician = booking.assignedTechnician || {};
 
-    const getStatusStyle = () => {
+    const getStatusClass = () => {
         const s = (booking.status || '').toLowerCase();
-        if (s === 'completed') return styles.completedBadge;
-        if (s === 'cancelled') return styles.cancelledBadge;
-        if (s === 'confirmed') return styles.confirmedBadge;
-        if (s === 'assigned' || s === 'on the way') return styles.confirmedBadge;
-        if (s === 'pending' || s === 'in progress' || s === 'checkout') return styles.pendingBadge;
-        if (s === 'rescheduled') return styles.rescheduledBadge;
-        return styles.defaultBadge;
+        if (s === 'completed') return 'booking-detail-status-completed';
+        if (s === 'cancelled') return 'booking-detail-status-cancelled';
+        if (s === 'confirmed') return 'booking-detail-status-confirmed';
+        if (s === 'assigned' || s === 'on the way') return 'booking-detail-status-confirmed';
+        if (s === 'pending' || s === 'in progress' || s === 'checkout') return 'booking-detail-status-pending';
+        if (s === 'rescheduled') return 'booking-detail-status-rescheduled';
+        return 'booking-detail-status-default';
     };
 
     const handleCancel = async () => {
@@ -207,7 +214,7 @@ const BookingCard = ({ booking, onCancelled }) => {
                 <div className="booking-card-photo">
                     <div className="booking-card-photo-fallback"><FiTool aria-hidden="true" /><span>{serviceName}</span></div>
                     {imageUrl && <img src={imageUrl} alt={serviceName} loading="lazy"
-                        onError={event => { event.currentTarget.style.display = 'none'; }} />}
+                        onError={event => { event.currentTarget.classList.add('ui-image-hidden'); }} />}
                 </div>
                 <div className="booking-card-status-row">
                     <span className="booking-card-category"><i className={`booking-status-dot ${badgeTone}`} />
@@ -239,18 +246,22 @@ const BookingCard = ({ booking, onCancelled }) => {
                         </div>
                     </div>
                 </div>
+                {/* {booking.technicianReview && <p className="booking-card-info-value">Your technician rating: {booking.technicianReview.rating}/5 ★</p>} */}
                 <div className="booking-card-actions">
                     <button className="booking-action-primary" onClick={isCompleted ? () => setShowInvoice(true) : () => setShowDetails(true)}>
                         {isCompleted ? 'Download Invoice' : technician.name ? 'View Specialist & Booking Details' : 'View Booking Details'} <FiArrowRight />
                     </button>
                     {isCompleted && <div className="booking-card-secondary-actions">
                         <button className="booking-action-secondary" onClick={() => setShowDetails(true)}>View Details</button>
-                        <button className="booking-action-secondary" onClick={() => setShowReview(true)}><FiStar /> Rate &amp; Review Service</button>
+                        <button className="booking-action-secondary" onClick={() => setShowReview(true)}><FiStar /> Rate Us</button>
+                        {(technician.name || technician.phone) && <button className="booking-action-secondary" onClick={() => setShowTechnicianReview(true)}><FiStar /> Rate Technician</button>}
                     </div>}
                     {canCancel && <button className="booking-action-secondary" onClick={handleCancel} disabled={cancelling}>{cancelling ? 'Cancelling…' : 'Cancel Booking'}</button>}
                 </div>
             </article>
 
+            {showTechnicianReview && <ReviewPopup bookingId={booking._id} technicianMode
+                onClose={() => setShowTechnicianReview(false)} onReviewed={() => { if (onCancelled) onCancelled(); }} />}
             {/* Review popup */}
             {showInvoice && <InvoicePreview bookingId={booking._id} onClose={() => setShowInvoice(false)} />}
             {showReview && (
@@ -264,129 +275,80 @@ const BookingCard = ({ booking, onCancelled }) => {
 
             {/* Details modal — unchanged */}
             {showDetails && (
-                <div style={styles.modalOverlay} onClick={() => setShowDetails(false)}>
-                    <div style={styles.modalCard} onClick={(e) => e.stopPropagation()}>
-                        <button style={styles.closeButton} onClick={() => setShowDetails(false)} aria-label="Close">✕</button>
-                        <div style={styles.modalHeader}>
+                <div className="ui-bookingcard-1"  onClick={() => setShowDetails(false)}>
+                    <div className="ui-bookingcard-2"  onClick={(e) => e.stopPropagation()}>
+                        <button className="ui-bookingcard-3"  onClick={() => setShowDetails(false)} aria-label="Close">✕</button>
+                        <div className="ui-bookingcard-4" >
                             <div>
-                                <div style={styles.modalEyebrow}>Booking Details</div>
-                                <div style={styles.modalTitle}>{booking.services?.[0]?.service?.name || 'Service Booking'}</div>
+                                <div className="ui-bookingcard-5" >Booking Details</div>
+                                <div className="ui-bookingcard-6" >{booking.services?.[0]?.service?.name || 'Service Booking'}</div>
                             </div>
-                            <span style={{ ...styles.badge, ...getStatusStyle() }}>{statusLabel}</span>
+                            <span className={`ui-bookingcard-7 ${getStatusClass()}`}>{statusLabel}</span>
                         </div>
-                        <div style={styles.modalBody}>
-                            <div style={styles.detailGrid}>
-                                <div style={styles.detailBlock}><div style={styles.detailLabel}>Booking ID</div><div style={styles.detailValue}>{booking._id}</div></div>
-                                <div style={styles.detailBlock}><div style={styles.detailLabel}>Payment</div><div style={styles.detailValue}>{booking.paymentStatus || 'N/A'}</div></div>
-                                <div style={styles.detailBlock}><div style={styles.detailLabel}>Date</div><div style={styles.detailValue}>{serviceDateFormatted}</div></div>
-                                <div style={styles.detailBlock}><div style={styles.detailLabel}>Phone</div><div style={styles.detailValue}>{booking.phone || 'N/A'}</div></div>
-                                <div style={styles.detailBlock}><div style={styles.detailLabel}>Address</div><div style={styles.detailValue}>{address}</div></div>
+                        <div className="ui-bookingcard-8" >
+                            <div className="ui-bookingcard-9" >
+                                <div className="ui-bookingcard-10" ><div className="ui-bookingcard-11" >Booking ID</div><div className="ui-bookingcard-12" >{booking._id}</div></div>
+                                <div className="ui-bookingcard-13" ><div className="ui-bookingcard-14" >Payment</div><div className="ui-bookingcard-15" >{booking.paymentStatus || 'N/A'}</div></div>
+                                <div className="ui-bookingcard-16" ><div className="ui-bookingcard-17" >Date</div><div className="ui-bookingcard-18" >{serviceDateFormatted}</div></div>
+                                <div className="ui-bookingcard-19" ><div className="ui-bookingcard-20" >Phone</div><div className="ui-bookingcard-21" >{booking.phone || 'N/A'}</div></div>
+                                <div className="ui-bookingcard-22" ><div className="ui-bookingcard-23" >Address</div><div className="ui-bookingcard-24" >{address}</div></div>
                             </div>
-                            <div style={styles.sectionCard}>
-                                <div style={styles.sectionTitle}>Service Summary</div>
-                                <div style={styles.serviceSummaryRow}>
-                                    <div><div style={styles.sectionLabel}>Service</div><div style={styles.sectionValue}>{booking.services?.[0]?.service?.name || 'Service'}</div></div>
-                                    <div><div style={styles.sectionLabel}>Quantity</div><div style={styles.sectionValue}>{booking.services?.[0]?.quantity || 1}</div></div>
-                                    <div><div style={styles.sectionLabel}>Amount</div><div style={styles.sectionValue}>${booking.totalAmount?.toLocaleString('en-US')}</div></div>
+                            <div className="ui-bookingcard-25" >
+                                <div className="ui-bookingcard-26" >Service Summary</div>
+                                <div className="ui-bookingcard-27" >
+                                    <div><div className="ui-bookingcard-28" >Service</div><div className="ui-bookingcard-29" >{booking.services?.[0]?.service?.name || 'Service'}</div></div>
+                                    <div><div className="ui-bookingcard-30" >Quantity</div><div className="ui-bookingcard-31" >{booking.services?.[0]?.quantity || 1}</div></div>
+                                    <div><div className="ui-bookingcard-32" >Amount</div><div className="ui-bookingcard-33" >${booking.totalAmount?.toLocaleString('en-US')}</div></div>
                                 </div>
-                                <div style={styles.mutedText}>{booking.services?.[0]?.service?.description || booking.services?.[0]?.service?.longDescription || 'No description provided.'}</div>
+                                <div className="ui-bookingcard-34" >{booking.services?.[0]?.service?.description || booking.services?.[0]?.service?.longDescription || 'No description provided.'}</div>
                             </div>
-                            <div style={styles.sectionCard}>
-                                <div style={styles.sectionTitle}>Technician & Instructions</div>
+                            <div className="ui-bookingcard-35" >
+                                <div className="ui-bookingcard-36" >Technician & Instructions</div>
 
                                 {technician?.name ? (
-                                    <div
-                                        style={{
-                                            display: "flex",
-                                            flexDirection: "column",
-                                            gap: "12px",
-                                            marginBottom: "16px",
-                                        }}
+                                    <div className="ui-bookingcard-37"
+
                                     >
-                                        <div
-                                            style={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                gap: "12px",
-                                            }}
+                                        <div className="ui-bookingcard-38"
+
                                         >
-                                            <div
-                                                style={{
-                                                    width: "40px",
-                                                    height: "40px",
-                                                    borderRadius: "50%",
-                                                    background: "#F3F4F6",
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    fontSize: "18px",
-                                                }}
+                                            <div className="ui-bookingcard-39"
+
                                             >
                                                 👤
                                             </div>
 
                                             <div>
-                                                <div
-                                                    style={{
-                                                        fontSize: "12px",
-                                                        color: "#6B7280",
-                                                        textTransform: "uppercase",
-                                                        fontWeight: 600,
-                                                    }}
+                                                <div className="ui-bookingcard-40"
+
                                                 >
                                                     Technician
                                                 </div>
-                                                <div
-                                                    style={{
-                                                        fontSize: "16px",
-                                                        fontWeight: 600,
-                                                        color: "#111827",
-                                                    }}
+                                                <div className="ui-bookingcard-41"
+
                                                 >
                                                     {technician.name}
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div
-                                            style={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                gap: "12px",
-                                            }}
+                                        <div className="ui-bookingcard-42"
+
                                         >
-                                            <div
-                                                style={{
-                                                    width: "40px",
-                                                    height: "40px",
-                                                    borderRadius: "50%",
-                                                    background: "#F3F4F6",
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    fontSize: "18px",
-                                                }}
+                                            <div className="ui-bookingcard-43"
+
                                             >
                                                 📞
                                             </div>
 
                                             <div>
-                                                <div
-                                                    style={{
-                                                        fontSize: "12px",
-                                                        color: "#6B7280",
-                                                        textTransform: "uppercase",
-                                                        fontWeight: 600,
-                                                    }}
+                                                <div className="ui-bookingcard-44"
+
                                                 >
                                                     Phone
                                                 </div>
-                                                <div
-                                                    style={{
-                                                        fontSize: "16px",
-                                                        fontWeight: 600,
-                                                        color: "#111827",
-                                                    }}
+                                                <div className="ui-bookingcard-45"
+
                                                 >
                                                     {technician.phone || "No phone"}
                                                 </div>
@@ -394,63 +356,31 @@ const BookingCard = ({ booking, onCancelled }) => {
                                         </div>
                                     </div>
                                 ) : (
-                                    <div
-                                        style={{
-                                            padding: "14px",
-                                            background: "#F9FAFB",
-                                            border: "1px solid #E5E7EB",
-                                            borderRadius: "10px",
-                                            color: "#6B7280",
-                                            marginBottom: "16px",
-                                        }}
+                                    <div className="ui-bookingcard-46"
+
                                     >
                                         👨‍🔧 Awaiting assignment
                                     </div>
                                 )}
 
-                                <div
-                                    style={{
-                                        borderTop: "1px solid #E5E7EB",
-                                        paddingTop: "16px",
-                                        display: "flex",
-                                        gap: "12px",
-                                    }}
+                                <div className="ui-bookingcard-47"
+
                                 >
-                                    <div
-                                        style={{
-                                            width: "40px",
-                                            height: "40px",
-                                            borderRadius: "50%",
-                                            background: "#F3F4F6",
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                            fontSize: "18px",
-                                            flexShrink: 0,
-                                        }}
+                                    <div className="ui-bookingcard-48"
+
                                     >
                                         📝
                                     </div>
 
                                     <div>
-                                        <div
-                                            style={{
-                                                fontSize: "12px",
-                                                color: "#6B7280",
-                                                textTransform: "uppercase",
-                                                fontWeight: 600,
-                                                marginBottom: "4px",
-                                            }}
+                                        <div className="ui-bookingcard-49"
+
                                         >
                                             Special Instructions
                                         </div>
 
-                                        <div
-                                            style={{
-                                                color: "#374151",
-                                                lineHeight: "22px",
-                                                fontSize: "14px",
-                                            }}
+                                        <div className="ui-bookingcard-50"
+
                                         >
                                             {booking.specialInstructions ||
                                                 "No special instructions provided."}
@@ -474,45 +404,6 @@ const BookingCard = ({ booking, onCancelled }) => {
 };
 
 /* ─────────────── Card styles (unchanged) ─────────────── */
-const styles = {
-    card: { border: '1px solid #e0e0e0', borderRadius: 12, overflow: 'hidden', backgroundColor: '#fff', marginBottom: 24 },
-    header: { backgroundColor: '#f2f2f2', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-    headerLabel: { fontSize: 12, fontWeight: 600, letterSpacing: 1.5, color: '#555', textTransform: 'uppercase' },
-    badge: { color: '#fff', fontSize: 11, fontWeight: 700, letterSpacing: 1, padding: '4px 12px', borderRadius: 4 },
-    completedBadge: { backgroundColor: '#ecfdf5', color: '#047857' },
-    cancelledBadge: { backgroundColor: '#fef2f2', color: '#b91c1c' },
-    confirmedBadge: { backgroundColor: '#eff6ff', color: '#2563eb' },
-    pendingBadge: { backgroundColor: '#fffbeb', color: '#b45309' },
-    rescheduledBadge: { backgroundColor: '#000000' },
-    defaultBadge: { backgroundColor: '#111' },
-    body: { padding: '20px' },
-    serviceRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 },
-    serviceName: { fontWeight: 700, fontSize: 16, color: '#111' },
-    price: { fontWeight: 700, fontSize: 16, color: '#111', whiteSpace: 'nowrap' },
-    infoBox: { display: 'flex', alignItems: 'flex-start', gap: 12, backgroundColor: '#f7f7f7', borderRadius: 8, padding: '12px 16px', marginBottom: 10 },
-    infoIcon: { fontSize: 18, marginTop: 2 },
-    infoLabel: { fontSize: 12, color: '#888', fontWeight: 500 },
-    infoValue: { fontSize: 14, color: '#111', fontWeight: 500, marginTop: 2 },
-    btnPrimary: { width: '100%', backgroundColor: '#000000', color: '#fff', border: 'none', borderRadius: 8, padding: '14px', fontWeight: 600, fontSize: 15, letterSpacing: 0.5, cursor: 'pointer', marginTop: 12, marginBottom: 8 },
-    btnReview: { width: '100%', backgroundColor: '#000000', color: '#fff', border: 'none', borderRadius: 8, padding: '13px', fontWeight: 600, fontSize: 15, letterSpacing: 0.5, cursor: 'pointer', marginBottom: 8 },
-    btnSecondary: { width: '100%', backgroundColor: '#fff', color: '#000000', border: '1.5px solid #000000', borderRadius: 8, padding: '13px', fontWeight: 600, fontSize: 15, letterSpacing: 0.5, cursor: 'pointer' },
-    modalOverlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, zIndex: 2000 },
-    modalCard: { width: '100%', maxWidth: 760, maxHeight: '90vh', overflowY: 'auto', background: '#fff', borderRadius: 18, boxShadow: '0 20px 50px rgba(0,0,0,0.25)', position: 'relative', padding: 24 },
-    closeButton: { position: 'absolute', top: 12, right: 12, border: 'none', background: '#f3f3f3', borderRadius: '50%', width: 36, height: 36, cursor: 'pointer', fontSize: 18, color: '#333' },
-    modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 18 },
-    modalEyebrow: { fontSize: 12, textTransform: 'uppercase', letterSpacing: 1.4, color: '#6b7280', fontWeight: 700, marginBottom: 6 },
-    modalTitle: { fontSize: 22, fontWeight: 800, color: '#111' },
-    modalBody: { display: 'flex', flexDirection: 'column', gap: 14 },
-    detailGrid: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 },
-    detailBlock: { background: '#f8fafc', border: '1px solid #e5e7eb', borderRadius: 12, padding: 12 },
-    detailLabel: { fontSize: 12, color: '#6b7280', fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.8 },
-    detailValue: { fontSize: 14, color: '#111', fontWeight: 600, lineHeight: 1.5 },
-    sectionCard: { background: 'linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)', borderRadius: 12, padding: 14, border: '1px solid #e5e7eb' },
-    sectionTitle: { fontSize: 15, fontWeight: 800, color: '#111', marginBottom: 8 },
-    serviceSummaryRow: { display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 8, flexWrap: 'wrap' },
-    sectionLabel: { fontSize: 12, color: '#6b7280', fontWeight: 700, marginBottom: 2, textTransform: 'uppercase' },
-    sectionValue: { fontSize: 14, color: '#111', fontWeight: 700 },
-    mutedText: { fontSize: 13, color: '#4b5563', lineHeight: 1.6, marginTop: 4 },
-};
+
 
 export default BookingCard;

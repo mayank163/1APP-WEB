@@ -1,15 +1,22 @@
 const User = require('../models/User');
+const Admin = require('../models/Admin');
+const mongoose = require('mongoose');
 const { emitVerificationUpdated } = require('../utils/socketEvents');
 
 const getTechnicianVerificationRequests = async (req, res, next) => {
   try {
     const technicians = await User.find({ role: 'technician' }).sort('-createdAt');
 
+    const reviewers = await Admin.find({ isSuperAdmin: { $ne: true }, isActive: true }).select('_id name email').sort('name');
+    const reviewerNames = new Map(reviewers.map(admin => [String(admin._id), admin.name]));
+
     const requests = technicians
       .filter((user) => user.technicianProfile && user.technicianProfile.verificationStatus)
       .map((user) => ({
         _id: user._id,
         name: user.name,
+        reviewerId: user.technicianProfile?.reviewer ? String(user.technicianProfile.reviewer) : null,
+        reviewer: reviewerNames.get(String(user.technicianProfile?.reviewer)) || '',
         email: user.email,
         phone: user.phone,
         skills: user.skills || user.technicianProfile?.skills || [],
@@ -26,6 +33,10 @@ const getTechnicianVerificationRequests = async (req, res, next) => {
           cvResume:               user.technicianProfile?.cvResume || '',
           backgroundVerification: user.technicianProfile?.backgroundVerification || '',
         },
+        drivingLicense: {
+          issuedDate: user.technicianProfile?.drivingLicense?.issuedDate || null,
+          expiryDate: user.technicianProfile?.drivingLicense?.expiryDate || null,
+        },
         documentStatuses: user.technicianProfile?.documents || [],
         verificationStatus: user.technicianProfile?.verificationStatus || 'not-started',
         verificationNotes: user.technicianProfile?.verificationNotes || '',
@@ -33,7 +44,7 @@ const getTechnicianVerificationRequests = async (req, res, next) => {
         bankDetails: user.bankDetails || {},
       }));
 
-    res.status(200).json({ success: true, data: { requests } });
+    res.status(200).json({ success: true, data: { requests, reviewers } });
   } catch (error) {
     next(error);
   }
@@ -56,7 +67,7 @@ const updateTechnicianVerificationStatus = async (req, res, next) => {
     const prev = technician.technicianProfile || {};
     technician.technicianProfile = {
       ...prev,
-      drivingLicense:  { front: prev.drivingLicense?.front || '', back: prev.drivingLicense?.back || '' },
+      drivingLicense:  { ...prev.drivingLicense, front: prev.drivingLicense?.front || '', back: prev.drivingLicense?.back || '' },
       taxInformation:  { w9Form: prev.taxInformation?.w9Form || '', form1099: prev.taxInformation?.form1099 || '' },
       verificationStatus: status,
       verificationNotes: notes || prev.verificationNotes || ''
@@ -74,6 +85,29 @@ const updateTechnicianVerificationStatus = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+const assignReviewer = async (req, res, next) => {
+  try {
+    const { technicianId } = req.params;
+    const { reviewerId } = req.body;
+    if (!mongoose.isValidObjectId(technicianId) || (reviewerId !== null && !mongoose.isValidObjectId(reviewerId))) {
+      return res.status(400).json({ success: false, message: 'Invalid technician or reviewer ID' });
+    }
+    let reviewer = null;
+    if (reviewerId !== null) {
+      reviewer = await Admin.findOne({ _id: reviewerId, isSuperAdmin: { $ne: true }, isActive: true }).select('_id name');
+      if (!reviewer) return res.status(400).json({ success: false, message: 'Select an active sub-admin as reviewer' });
+    }
+    const technician = await User.findOneAndUpdate(
+      { _id: technicianId, role: 'technician' },
+      { $set: { 'technicianProfile.reviewer': reviewerId } },
+      { new: true, runValidators: true }
+    );
+    if (!technician) return res.status(404).json({ success: false, message: 'Technician not found' });
+    emitVerificationUpdated(technicianId, technician.technicianProfile?.verificationStatus, '');
+    res.status(200).json({ success: true, message: 'Reviewer updated', data: { reviewerId, reviewer: reviewer?.name || '' } });
+  } catch (error) { next(error); }
 };
 
 // PATCH /api/admin/technician-verifications/:technicianId/documents/:documentId
@@ -118,4 +152,5 @@ module.exports = {
   getTechnicianVerificationRequests,
   updateTechnicianVerificationStatus,
   updateDocumentStatus,
+  assignReviewer,
 };

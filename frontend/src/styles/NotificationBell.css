@@ -1,0 +1,31 @@
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-notificationbell-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-22);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-notificationbell-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 320px;
+  z-index: 1100;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-notificationbell-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-notificationbell-4:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  cursor: var(--ui-notificationbell-4-cursor);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-notificationbell-5:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 6px;
+  height: 6px;
+}

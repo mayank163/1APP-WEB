@@ -1,3 +1,4 @@
+import '../styles/ServiceCard.css';
 import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
@@ -17,7 +18,7 @@ const ServiceCard = ({ service }) => {
 
     return (
         <div className="card h-100 shadow-sm border-0 rounded-3 overflow-hidden hover-shadow transition-all">
-            <div className="position-relative" style={{ height: '200px' }}>
+            <div className="position-relative ui-servicecard-1" >
                 <img
                     src={resolveImageUrl(service.imageUrl) || 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&q=80&w=400'}
                     alt={service.name}
@@ -29,11 +30,11 @@ const ServiceCard = ({ service }) => {
             </div>
 
             <div className="card-body d-flex flex-column p-4">
-                <h5 className="card-title fw-bold text-dark mb-2 text-truncate-2" style={{ height: '48px', lineHeight: '24px' }}>
+                <h5 className="card-title fw-bold text-dark mb-2 text-truncate-2 ui-servicecard-2" >
                     {service.subcategory?.name || service.name}
                 </h5>
                 <div className="text-muted small fw-semibold mb-2">{service.category?.name || service.category}</div>
-                <p className="card-text text-muted mb-4 text-truncate-3" style={{ height: '72px', fontSize: '0.9rem' }}>
+                <p className="card-text text-muted mb-4 text-truncate-3 ui-servicecard-3" >
                     {service.description}
                 </p>
 

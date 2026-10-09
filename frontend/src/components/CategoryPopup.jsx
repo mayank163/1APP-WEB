@@ -1,3 +1,4 @@
+import '../styles/CategoryPopup.css';
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaTimes, FaTag } from 'react-icons/fa';
@@ -37,118 +38,50 @@ const CategoryPopup = ({ category, categoryId, subcategories, onClose }) => {
     };
 
     return (
-        <div
+        <div className="ui-categorypopup-1"
             onClick={onClose}
-            style={{
-                position: 'fixed', inset: 0,
-                background: 'rgba(0,0,0,0.45)',
-                zIndex: 1050,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '16px',
-            }}
+
         >
-            <div
+            <div className="ui-categorypopup-2"
                 onClick={(e) => e.stopPropagation()}
-                style={{
-                    background: '#fff',
-                    borderRadius: '20px',
-                    padding: '36px 32px 32px',
-                    maxWidth: '620px',
-                    width: '100%',
-                    maxHeight: '85vh',
-                    overflowY: 'auto',
-                    position: 'relative',
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.18)',
-                }}
+
             >
-                <button
+                <button className="ui-categorypopup-3"
                     onClick={onClose}
-                    style={{
-                        position: 'absolute', top: '16px', right: '16px',
-                        width: '36px', height: '36px',
-                        borderRadius: '50%',
-                        border: 'none',
-                        background: '#f0f0f0',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        cursor: 'pointer',
-                        fontSize: '16px',
-                        color: '#333',
-                    }}
+
                 >
                     <FaTimes />
                 </button>
 
-                <h2 style={{ fontWeight: 800, fontSize: '1.75rem', marginBottom: '28px', color: '#111' }}>
+                <h2 className="ui-categorypopup-4" >
                     {category}
                 </h2>
 
                 {subcategories.length === 0 ? (
-                    <p style={{ color: '#888', textAlign: 'center', padding: '24px 0' }}>
+                    <p className="ui-categorypopup-5" >
                         No subcategories available yet.
                     </p>
                 ) : (
-                    <div
-                        style={{
-                            display: "grid",
-                            gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
-                            gap: "18px",
-                            marginTop: "20px",
-                        }}
+                    <div className="ui-categorypopup-6"
+
                     >
                         {subcategories.map((sub, idx) => (
-                            <div
+                            <div className="ui-categorypopup-7"
                                 key={sub._id || idx}
                                 onClick={() => handleSubcategoryClick(sub)}
-                                style={{
-                                    cursor: 'pointer',
-                                    background: '#fff',
-                                    border: '1.5px solid #222',
-                                    borderRadius: '18px',
-                                    padding: '14px 8px 12px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    textAlign: 'center',
-                                    minHeight: '110px',
-                                    boxShadow: '0 0 0 2px rgba(0,0,0,0.06), 0 2px 10px rgba(0,0,0,0.08)',
-                                    transition: 'all 0.2s ease',
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = '#f5f5f5';
-                                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.15)';
-                                    e.currentTarget.style.transform = 'translateY(-3px)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = '#fff';
-                                    e.currentTarget.style.boxShadow = '0 0 0 2px rgba(0,0,0,0.06), 0 2px 10px rgba(0,0,0,0.08)';
-                                    e.currentTarget.style.transform = 'translateY(0)';
-                                }}
+
+
+
                             >
                                 {/* Icon */}
-                                <div
-                                    style={{
-                                        width: '54px',
-                                        height: '54px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        marginBottom: '8px',
-                                        flexShrink: 0,
-                                    }}
+                                <div className="ui-categorypopup-8"
+
                                 >
                                     {sub.icon ? (
-                                        <img
+                                        <img className="ui-categorypopup-9"
                                             src={resolveSubcategoryImage(sub.icon)}
                                             alt={sub.name}
-                                            style={{
-                                                width: '100%',
-                                                height: '100%',
-                                                objectFit: 'contain',
-                                                display: 'block',
-                                            }}
+
                                         />
                                     ) : (
                                         <FaTag size={24} color="#222" />
@@ -156,16 +89,8 @@ const CategoryPopup = ({ category, categoryId, subcategories, onClose }) => {
                                 </div>
 
                                 {/* Label */}
-                                <div
-                                    style={{
-                                        color: '#1a1a1a',
-                                        fontSize: '11px',
-                                        fontWeight: '600',
-                                        textAlign: 'center',
-                                        lineHeight: '1.35',
-                                        wordBreak: 'break-word',
-                                        maxWidth: '90%',
-                                    }}
+                                <div className="ui-categorypopup-10"
+
                                 >
                                     {sub.name}
                                 </div>

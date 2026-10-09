@@ -78,9 +78,9 @@ const BlogManagement = () => {
         setMetaDescription('');
     };
 
-    const handleOpenCreate = () => { 
-        resetForm(); 
-        setShowForm(true); 
+    const handleOpenCreate = () => {
+        resetForm();
+        setShowForm(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
@@ -90,13 +90,13 @@ const BlogManagement = () => {
         setTitle(blog.title);
         setSubtitle(blog.subtitle || '');
         setDescription(blog.description);
-        
+
         // Set category first, then subcategory
         const catId = blog.subcategory?.category?._id || '';
         setCategoryId(catId);
         setFilteredSubcategories(subcategories.filter(s => s.category?._id === catId));
         setSubcategoryId(blog.subcategory?._id || '');
-        
+
         setIsPublished(blog.isPublished);
         setFeaturedImageFile(null);
         setFeaturedImagePreview(blog.featuredImage ? getImageUrl(blog.featuredImage) : '');
@@ -120,12 +120,12 @@ const BlogManagement = () => {
         if (!window.confirm('Are you sure you want to delete this blog? This action cannot be undone.')) return;
         try {
             const res = await adminApi.deleteBlog(id);
-            if (res.success) { 
-                toast.success('Blog deleted successfully'); 
-                fetchData(); 
+            if (res.success) {
+                toast.success('Blog deleted successfully');
+                fetchData();
             }
-        } catch (err) { 
-            toast.error(err.response?.data?.message || 'Failed to delete blog'); 
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to delete blog');
         }
     };
 
@@ -190,7 +190,7 @@ const BlogManagement = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         // Validation
         if (!title.trim()) {
             toast.error('Please enter blog title');
@@ -208,7 +208,7 @@ const BlogManagement = () => {
             toast.error('Please select a subcategory');
             return;
         }
-        
+
         // Check if at least one block has content
         const hasContent = blocks.some(b => b.text.trim() || b.imageFile || b.image);
         if (!hasContent) {
@@ -255,7 +255,7 @@ const BlogManagement = () => {
                 res = await adminApi.createBlog(fd);
                 if (res.success) toast.success('Blog created successfully!');
             }
-            
+
             setShowForm(false);
             resetForm();
             fetchData();
@@ -275,8 +275,8 @@ const BlogManagement = () => {
                     <p className="text-muted mb-0">Create and manage blog posts with rich content blocks</p>
                 </div>
                 {!showForm && (
-                    <button 
-                        onClick={handleOpenCreate} 
+                    <button
+                        onClick={handleOpenCreate}
                         className="btn btn-brand fw-bold d-flex align-items-center gap-2 px-4"
                     >
                         <FaPlus /><span>Create New Blog</span>
@@ -290,9 +290,9 @@ const BlogManagement = () => {
                         <h5 className="fw-bold mb-0">
                             {editingId ? '✏️ Edit Blog Post' : '📝 Create New Blog Post'}
                         </h5>
-                        <button 
-                            type="button" 
-                            onClick={() => { setShowForm(false); resetForm(); }} 
+                        <button
+                            type="button"
+                            onClick={() => { setShowForm(false); resetForm(); }}
                             className="btn btn-outline-secondary btn-sm"
                         >
                             <FaTimes className="me-1" /> Cancel
@@ -303,7 +303,7 @@ const BlogManagement = () => {
                         {/* Basic Info Section */}
                         <div className="mb-4">
                             <h6 className="fw-bold text-dark mb-3">
-                                <span className="badge me-2" style={{ background: "#A5732F", color: "#fff" }}>1</span>Basic Information
+                                <span className="badge me-2 admin-blog-management-1" >1</span>Basic Information
                             </h6>
                             <div className="row g-3">
                                 <div className="col-md-6">
@@ -392,7 +392,7 @@ const BlogManagement = () => {
                         {/* Featured Image Section */}
                         <div className="mb-4">
                             <h6 className="fw-bold text-dark mb-3">
-                                <span className="badge me-2" style={{ background: "#A5732F", color: "#fff" }}>2</span>Featured Image
+                                <span className="badge me-2 admin-blog-management-2" >2</span>Featured Image
                             </h6>
                             <div className="row g-3">
                                 <div className="col-md-6">
@@ -412,11 +412,11 @@ const BlogManagement = () => {
                                 <div className="col-md-6">
                                     {featuredImagePreview && (
                                         <div className="position-relative d-inline-block">
-                                            <img 
-                                                src={featuredImagePreview} 
-                                                alt="featured" 
-                                                className="rounded border" 
-                                                style={{ maxHeight: 150, maxWidth: '100%', objectFit: 'cover' }} 
+                                            <img
+                                                src={featuredImagePreview}
+                                                alt="featured"
+                                                className="rounded border admin-blog-management-3"
+
                                             />
                                             <button
                                                 type="button"
@@ -438,32 +438,32 @@ const BlogManagement = () => {
                         <div className="mb-4">
                             <div className="d-flex justify-content-between align-items-center mb-3">
                                 <h6 className="fw-bold text-dark mb-0">
-                                    <span className="badge me-2" style={{ background: "#A5732F", color: "#fff" }}>3</span>
+                                    <span className="badge me-2 admin-blog-management-4" >3</span>
                                     Content Blocks ({blocks.length})
                                 </h6>
-                                <button 
-                                    type="button" 
-                                    onClick={handleAddBlock} 
+                                <button
+                                    type="button"
+                                    onClick={handleAddBlock}
                                     className="btn btn-sm btn-brand d-flex align-items-center gap-1"
                                 >
                                     <FaPlus size={12} /> Add Content Block
                                 </button>
                             </div>
 
-                            <div className="alert py-2 px-3 small mb-3" style={{ background: "#fdf5ea", border: "1px solid #e8c97a", color: "#7a5520" }}>
+                            <div className="alert py-2 px-3 small mb-3 admin-blog-management-5" >
                                 <strong>💡 Tip:</strong> Each content block can contain an image and text. Add multiple blocks to create rich, engaging blog posts with alternating images and content.
                             </div>
 
                             <div className="content-blocks-container">
                                 {blocks.map((block, i) => (
-                                    <div 
-                                        key={i} 
-                                        className="card border-0 shadow-sm rounded-3 p-4 mb-3 bg-white"
-                                        style={{ borderLeft: '4px solid #A5732F' }}
+                                    <div
+                                        key={i}
+                                        className="card border-0 shadow-sm rounded-3 p-4 mb-3 bg-white admin-blog-management-6"
+
                                     >
                                         <div className="d-flex justify-content-between align-items-center mb-3">
                                             <div className="d-flex align-items-center gap-2">
-                                                <span className="badge fs-6" style={{ background: "#A5732F", color: "#fff" }}>Block {i + 1}</span>
+                                                <span className="badge fs-6 admin-blog-management-7" >Block {i + 1}</span>
                                                 <span className="text-muted small">
                                                     {block.text.length > 0 && `${block.text.length} characters`}
                                                     {block.text.length > 0 && (block.imageFile || block.image) && ' • '}
@@ -471,28 +471,28 @@ const BlogManagement = () => {
                                                 </span>
                                             </div>
                                             <div className="d-flex gap-2">
-                                                <button 
-                                                    type="button" 
-                                                    onClick={() => handleMoveBlock(i, -1)} 
-                                                    className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" 
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleMoveBlock(i, -1)}
+                                                    className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
                                                     disabled={i === 0}
                                                     title="Move up"
                                                 >
                                                     <FaArrowUp size={12} />
                                                 </button>
-                                                <button 
-                                                    type="button" 
-                                                    onClick={() => handleMoveBlock(i, 1)} 
-                                                    className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" 
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleMoveBlock(i, 1)}
+                                                    className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
                                                     disabled={i === blocks.length - 1}
                                                     title="Move down"
                                                 >
                                                     <FaArrowDown size={12} />
                                                 </button>
-                                                <button 
-                                                    type="button" 
-                                                    onClick={() => handleRemoveBlock(i)} 
-                                                    className="btn btn-sm btn-outline-danger d-flex align-items-center gap-1" 
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveBlock(i)}
+                                                    className="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
                                                     disabled={blocks.length === 1}
                                                     title="Remove block"
                                                 >
@@ -526,11 +526,11 @@ const BlogManagement = () => {
                                                 <div className="border border-2 border-dashed rounded-3 p-3 text-center bg-light">
                                                     {block.imagePreview ? (
                                                         <div className="position-relative d-inline-block">
-                                                            <img 
-                                                                src={block.imagePreview} 
-                                                                alt={`block-${i}`} 
-                                                                className="rounded w-100" 
-                                                                style={{ maxHeight: 200, objectFit: 'cover' }} 
+                                                            <img
+                                                                src={block.imagePreview}
+                                                                alt={`block-${i}`}
+                                                                className="rounded w-100 admin-blog-management-8"
+
                                                             />
                                                             <button
                                                                 type="button"
@@ -567,11 +567,11 @@ const BlogManagement = () => {
                                                 </label>
                                                 <textarea
                                                     rows="9"
-                                                    className="form-control bg-light border-0"
+                                                    className="form-control bg-light border-0 admin-blog-management-9"
                                                     placeholder="Write your content here... You can describe, explain, or provide details related to the image."
                                                     value={block.text}
                                                     onChange={e => handleBlockTextChange(i, e.target.value)}
-                                                    style={{ resize: 'vertical' }}
+
                                                 />
                                                 <div className="text-muted small mt-1">
                                                     {block.text.length} characters
@@ -582,9 +582,9 @@ const BlogManagement = () => {
                                 ))}
                             </div>
 
-                            <button 
-                                type="button" 
-                                onClick={handleAddBlock} 
+                            <button
+                                type="button"
+                                onClick={handleAddBlock}
                                 className="btn btn-outline-dark btn-sm w-100 py-2 fw-bold"
                             >
                                 <FaPlus className="me-2" /> Add Another Content Block
@@ -594,7 +594,7 @@ const BlogManagement = () => {
                         {/* SEO / Meta Section */}
                         <div className="mb-4">
                             <h6 className="fw-bold text-dark mb-3">
-                                <span className="badge me-2" style={{ background: "#A5732F", color: "#fff" }}>4</span>SEO &amp; Meta
+                                <span className="badge me-2 admin-blog-management-10" >4</span>SEO &amp; Meta
                             </h6>
                             <div className="alert alert-light border py-2 px-3 small mb-3">
                                 🔍 These fields control how the blog appears in search engine results. Leave blank to auto-use the title and description.
@@ -634,41 +634,41 @@ const BlogManagement = () => {
                         {/* Publishing Options */}
                         <div className="mb-4">
                             <h6 className="fw-bold text-dark mb-3">
-                                <span className="badge me-2" style={{ background: "#A5732F", color: "#fff" }}>5</span>Publishing Options
+                                <span className="badge me-2 admin-blog-management-11" >5</span>Publishing Options
                             </h6>
                             <div className="form-check form-switch">
                                 <input
                                     type="checkbox"
-                                    className="form-check-input"
+                                    className="form-check-input admin-blog-management-12"
                                     id="isPublished"
                                     checked={isPublished}
                                     onChange={e => setIsPublished(e.target.checked)}
-                                    style={{ width: '3rem', height: '1.5rem' }}
+
                                 />
                                 <label className="form-check-label fw-semibold ms-2" htmlFor="isPublished">
                                     {isPublished ? '✅ Publish Immediately' : '📝 Save as Draft'}
                                 </label>
                             </div>
                             <div className="text-muted small mt-2">
-                                {isPublished 
-                                    ? 'This blog will be visible to all users immediately after saving.' 
+                                {isPublished
+                                    ? 'This blog will be visible to all users immediately after saving.'
                                     : 'This blog will be saved as a draft and won\'t be visible to users until published.'}
                             </div>
                         </div>
 
                         {/* Form Actions */}
                         <div className="d-flex gap-3 justify-content-end pt-3 border-top">
-                            <button 
-                                type="button" 
-                                onClick={() => { setShowForm(false); resetForm(); }} 
+                            <button
+                                type="button"
+                                onClick={() => { setShowForm(false); resetForm(); }}
                                 className="btn btn-outline-secondary px-4 py-2"
                                 disabled={submitting}
                             >
                                 <FaTimes className="me-2" />Cancel
                             </button>
-                            <button 
-                                type="submit" 
-                                disabled={submitting} 
+                            <button
+                                type="submit"
+                                disabled={submitting}
                                 className="btn btn-brand fw-bold px-5 py-2"
                             >
                                 {submitting ? (
@@ -696,7 +696,7 @@ const BlogManagement = () => {
                         {blogs.filter(b => b.isPublished).length} Published • {blogs.filter(b => !b.isPublished).length} Drafts
                     </div>
                 </div>
-                
+
                 {loading ? (
                     <ShimmerBlogTable rows={5} />
                 ) : (
@@ -704,14 +704,14 @@ const BlogManagement = () => {
                         <table className="table table-hover align-middle">
                             <thead className="table-light">
                                 <tr>
-                                    <th style={{ width: '80px' }}>Featured</th>
+                                    <th className="admin-blog-management-13" >Featured</th>
                                     <th>Title & Description</th>
-                                    <th style={{ width: '130px' }}>Category</th>
-                                    <th style={{ width: '130px' }}>Subcategory</th>
-                                    <th style={{ width: '80px' }} className="text-center">Blocks</th>
-                                    <th style={{ width: '100px' }}>Status</th>
-                                    <th style={{ width: '120px' }}>Created</th>
-                                    <th style={{ width: '100px' }} className="text-center">Actions</th>
+                                    <th className="admin-blog-management-14" >Category</th>
+                                    <th className="admin-blog-management-15" >Subcategory</th>
+                                    <th  className="text-center admin-blog-management-16">Blocks</th>
+                                    <th className="admin-blog-management-17" >Status</th>
+                                    <th className="admin-blog-management-18" >Created</th>
+                                    <th  className="text-center admin-blog-management-19">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -736,12 +736,12 @@ const BlogManagement = () => {
                                                         width={60}
                                                         height={45}
                                                         radius={6}
-                                                        style={{ border: '2px solid #dee2e6' }}
+                                                        className="admin-blog-management-20"
                                                     />
                                                 ) : (
-                                                    <div 
-                                                        className="rounded bg-light d-flex align-items-center justify-content-center"
-                                                        style={{ width: 60, height: 45 }}
+                                                    <div
+                                                        className="rounded bg-light d-flex align-items-center justify-content-center admin-blog-management-21"
+
                                                     >
                                                         <FaImage className="text-muted" />
                                                     </div>
@@ -749,14 +749,9 @@ const BlogManagement = () => {
                                             </td>
                                             <td>
                                                 <div className="fw-semibold text-dark mb-1">{blog.title}</div>
-                                                <div 
-                                                    className="text-muted small" 
-                                                    style={{ 
-                                                        maxWidth: 280, 
-                                                        overflow: 'hidden', 
-                                                        textOverflow: 'ellipsis', 
-                                                        whiteSpace: 'nowrap' 
-                                                    }}
+                                                <div
+                                                    className="text-muted small admin-blog-management-22"
+
                                                 >
                                                     {blog.description}
                                                 </div>
@@ -797,15 +792,15 @@ const BlogManagement = () => {
                                             </td>
                                             <td>
                                                 <div className="d-flex gap-2 justify-content-center">
-                                                    <button 
-                                                        onClick={() => handleOpenEdit(blog)} 
+                                                    <button
+                                                        onClick={() => handleOpenEdit(blog)}
                                                         className="btn btn-sm btn-light border text-brand"
                                                         title="Edit blog"
                                                     >
                                                         <FaEdit />
                                                     </button>
-                                                    <button 
-                                                        onClick={() => handleDelete(blog._id)} 
+                                                    <button
+                                                        onClick={() => handleDelete(blog._id)}
                                                         className="btn btn-sm btn-light border text-danger"
                                                         title="Delete blog"
                                                     >

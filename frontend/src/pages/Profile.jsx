@@ -1,3 +1,4 @@
+import { cssValue } from '../utils/cssValue';
 import React, { useContext, useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Modal from 'react-bootstrap/Modal';
@@ -256,32 +257,32 @@ const Profile = () => {
 
     return (
         <div className="container profile-page py-4">
-            <h1 className="fw-extrabold text-dark mb-1" style={{ fontSize: '2rem' }}>My Profile</h1>
-            <div className="mb-4" style={{ width: '152px', height: '4px', background: '#000000', borderRadius: '2px' }} />
+            <h1 className="fw-extrabold text-dark mb-1 ui-profile-1" >My Profile</h1>
+            <div className="mb-4 ui-profile-2"  />
 
             <div className={`profile-layout${planPurchases.length ? ' profile-has-plans' : ''}`}>
                         <div className="profile-panel profile-overview card border-0 shadow-sm rounded-4 bg-white p-4 text-center">
                             {/* Avatar */}
                             <div
-                                className="mx-auto mb-3 position-relative"
-                                style={{ width: 100, height: 100, cursor: 'pointer' }}
+                                className="mx-auto mb-3 position-relative ui-profile-3"
+
                                 onClick={() => !uploadingAvatar && avatarInputRef.current.click()}
                                 title="Click to change profile photo"
                             >
-                                <div style={{ width: 100, height: 100, borderRadius: '50%', border: '3px solid #000000', overflow: 'hidden', background: '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <div className="ui-profile-4" >
                                     {avatarPreview || user?.profileImage?.url ? (
-                                        <img src={avatarPreview || resolveImageUrl(user.profileImage.url)} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        <img className="ui-profile-5" src={avatarPreview || resolveImageUrl(user.profileImage.url)} alt="Profile"  />
                                     ) : (
-                                        <span className="fw-bold text-secondary" style={{ fontSize: '2rem' }}>{user?.name?.charAt(0)?.toUpperCase()}</span>
+                                        <span className="fw-bold text-secondary ui-profile-6" >{user?.name?.charAt(0)?.toUpperCase()}</span>
                                     )}
                                 </div>
-                                <div style={{ position: 'absolute', bottom: 0, right: 0, width: 28, height: 28, borderRadius: '50%', background: uploadingAvatar ? '#adb5bd' : '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #fff' }}>
+                                <div className="ui-profile-7" style={{ "--ui-profile-7-background": cssValue(uploadingAvatar ? "var(--ui-color-89)" : "var(--ui-color-27)", "background") }}>
                                     {uploadingAvatar
-                                        ? <div className="spinner-border spinner-border-sm text-white" style={{ width: 14, height: 14, borderWidth: 2 }} role="status" />
+                                        ? <div className="spinner-border spinner-border-sm text-white ui-profile-8"  role="status" />
                                         : <FaCamera size={12} color="#fff" />}
                                 </div>
                             </div>
-                            <input ref={avatarInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarChange} />
+                            <input className="ui-profile-9" ref={avatarInputRef} type="file" accept="image/*"  onChange={handleAvatarChange} />
 
                             <h4 className="fw-bold mb-1">{user?.name}</h4>
                             {/* <span className="badge text-uppercase mb-4" style={{ background: '#d8f3dc', color: '#000000', fontSize: '0.7rem', padding: '5px 10px' }}>{user?.role}</span> */}
@@ -297,7 +298,7 @@ const Profile = () => {
                                         <span className="small">{user?.phone}</span>
                                     </div>
                                     {user?.isPhoneVerified ? (
-                                        <span className="badge d-flex align-items-center gap-1" style={{ background: '#000000', color: '#ffffff' }}>
+                                        <span className="badge d-flex align-items-center gap-1 ui-profile-10" >
                                             <FaCheckCircle size={10} /> Verified
                                         </span>
                                     ) : (
@@ -311,7 +312,7 @@ const Profile = () => {
                             {!user?.isPhoneVerified && (
                                 <div className="mt-4 pt-3 border-top w-100">
                                     {!showOtpField ? (
-                                        <button onClick={handleRequestOtp} className="btn w-100 fw-bold py-2 d-flex align-items-center justify-content-center gap-2" style={{ background: '#000', color: '#fff', borderRadius: 8 }}>
+                                        <button onClick={handleRequestOtp} className="btn w-100 fw-bold py-2 d-flex align-items-center justify-content-center gap-2 ui-profile-11" >
                                             <FaCheckDouble size={14} /> Verify Phone Number
                                         </button>
                                     ) : (
@@ -319,7 +320,7 @@ const Profile = () => {
                                             <label className="form-label small fw-bold text-muted mb-2">Enter 6-digit OTP:</label>
                                             <div className="d-flex gap-2">
                                                 <input type="text" maxLength="6" required className="form-control text-center font-monospace" placeholder="999999" value={otpCode} onChange={(e) => setOtpCode(e.target.value)} />
-                                                <button type="submit" disabled={verifying} className="btn fw-bold" style={{ background: '#000', color: '#fff' }}>
+                                                <button type="submit" disabled={verifying} className="btn fw-bold ui-profile-12" >
                                                     {verifying ? '...' : 'Verify'}
                                                 </button>
                                             </div>
@@ -336,19 +337,19 @@ const Profile = () => {
                             <div className="row g-3">
                                 <div className="col-md-6">
                                     <label className="form-label fw-semibold small text-dark mb-1">Full Name</label>
-                                    <input type="text" required className="form-control" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }} value={name} onChange={(e) => setName(e.target.value)} />
+                                    <input type="text" required className="form-control ui-profile-13"  value={name} onChange={(e) => setName(e.target.value)} />
                                 </div>
                                 <div className="col-md-6">
                                     <label className="form-label fw-semibold small text-dark mb-1">Phone Number</label>
-                                    <input type="tel" required className="form-control" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }} value={phone} onChange={(e) => setPhone(e.target.value)} />
+                                    <input type="tel" required className="form-control ui-profile-14"  value={phone} onChange={(e) => setPhone(e.target.value)} />
                                 </div>
                                 <div className="col-md-4">
                                     <label className="form-label fw-semibold small text-dark mb-1">Date of Birth</label>
-                                    <input type="date" className="form-control" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }} value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} />
+                                    <input type="date" className="form-control ui-profile-15"  value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} />
                                 </div>
                                 <div className="col-md-4">
                                     <label className="form-label fw-semibold small text-dark mb-1">Gender</label>
-                                    <select className="form-select" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }} value={gender} onChange={(e) => setGender(e.target.value)}>
+                                    <select className="form-select ui-profile-16"  value={gender} onChange={(e) => setGender(e.target.value)}>
                                         <option value="">Prefer not to say</option>
                                         <option value="male">Male</option>
                                         <option value="female">Female</option>
@@ -357,10 +358,10 @@ const Profile = () => {
                                 </div>
                                 <div className="col-md-4">
                                     <label className="form-label fw-semibold small text-dark mb-1">Alternate Contact</label>
-                                    <input type="tel" className="form-control" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }} value={alternateContact} onChange={(e) => setAlternateContact(e.target.value)} />
+                                    <input type="tel" className="form-control ui-profile-17"  value={alternateContact} onChange={(e) => setAlternateContact(e.target.value)} />
                                 </div>
                             </div>
-                            <button type="submit" disabled={updatingInfo} className="btn fw-bold px-4 py-2 mt-3 d-flex align-items-center gap-2" style={{ background: '#000', color: '#fff', borderRadius: 8 }}>
+                            <button type="submit" disabled={updatingInfo} className="btn fw-bold px-4 py-2 mt-3 d-flex align-items-center gap-2 ui-profile-18" >
                                 <FaUpload size={14} /> {updatingInfo ? 'Saving...' : 'Save Info'}
                             </button>
                         </form>
@@ -372,8 +373,8 @@ const Profile = () => {
                             <h5 className="fw-bold mb-0">Saved Addresses</h5>
                             <button
                                 onClick={openAdd}
-                                className="btn btn-sm fw-bold d-flex align-items-center gap-2"
-                                style={{ background: '#000', color: '#fff', borderRadius: 8, padding: '6px 14px' }}
+                                className="btn btn-sm fw-bold d-flex align-items-center gap-2 ui-profile-19"
+
                             >
                                 <FaPlus size={11} /> Add Address
                             </button>
@@ -390,25 +391,21 @@ const Profile = () => {
                                 {addresses.map(addr => (
                                     <div
                                         key={addr._id}
-                                        className="profile-address-row d-flex align-items-start justify-content-between p-3 rounded-3"
-                                        style={{
-                                            background: addr.isDefault ? '#f0fff4' : '#f8f9fa',
-                                            border: `1.5px solid ${addr.isDefault ? '#b7e4c7' : '#e9ecef'}`,
-                                            transition: 'all 0.2s'
-                                        }}
+                                        className="profile-address-row d-flex align-items-start justify-content-between p-3 rounded-3 ui-profile-20"
+                                        style={{ "--ui-profile-20-background": cssValue(addr.isDefault ? "var(--ui-color-273)" : "var(--ui-color-68)", "background"), "--ui-profile-20-border": cssValue(`1.5px solid ${addr.isDefault ? '#b7e4c7' : '#e9ecef'}`, "border") }}
                                     >
                                         <div className="profile-address-content d-flex align-items-start gap-3">
                                             {/* Icon badge */}
-                                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: addr.isDefault ? '#d8f3dc' : '#e9ecef', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: addr.isDefault ? '#000000' : '#6c757d' }}>
+                                            <div className="ui-profile-21" style={{ "--ui-profile-21-background": cssValue(addr.isDefault ? "var(--ui-color-49)" : "var(--ui-color-48)", "background"), "--ui-profile-21-color": cssValue(addr.isDefault ? "var(--ui-color-27)" : "var(--ui-color-84)", "color") }}>
                                                 {labelIcon(addr.label)}
                                             </div>
                                             <div>
                                                 <div className="d-flex align-items-center gap-2 mb-1">
-                                                    <span className="badge d-flex align-items-center gap-1" style={{ background: '#e9ecef', color: '#495057', fontSize: '0.65rem', fontWeight: 600 }}>
+                                                    <span className="badge d-flex align-items-center gap-1 ui-profile-22" >
                                                         {labelIcon(addr.label)} {addr.label || 'Home'}
                                                     </span>
                                                     {addr.isDefault && (
-                                                        <span className="badge d-flex align-items-center gap-1" style={{ background: '#d8f3dc', color: '#000000', fontSize: '0.65rem' }}>
+                                                        <span className="badge d-flex align-items-center gap-1 ui-profile-23" >
                                                             <FaStar size={8} /> Default
                                                         </span>
                                                     )}
@@ -430,30 +427,30 @@ const Profile = () => {
                                             {!addr.isDefault && (
                                                 <button
                                                     onClick={() => handleSetDefault(addr._id)}
-                                                    className="btn btn-sm"
+                                                    className="btn btn-sm ui-profile-24"
                                                     title="Set as default"
-                                                    style={{ background: 'transparent', color: '#000000', border: '1px solid #b7e4c7', borderRadius: 6, padding: '4px 8px', fontSize: 11 }}
+
                                                 >
                                                     Set Default
                                                 </button>
                                             )}
                                             <button
                                                 onClick={() => openEdit(addr)}
-                                                className="btn btn-sm btn-light"
+                                                className="btn btn-sm btn-light ui-profile-25"
                                                 title="Edit"
-                                                style={{ padding: '5px 8px' }}
+
                                             >
                                                 <FaEdit size={12} color="#555" />
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteAddress(addr._id)}
                                                 disabled={deletingId === addr._id}
-                                                className="btn btn-sm"
+                                                className="btn btn-sm ui-profile-26"
                                                 title="Remove"
-                                                style={{ padding: '5px 8px', background: '#fff3f3', border: '1px solid #f8d7da', borderRadius: 6, color: '#dc3545' }}
+
                                             >
                                                 {deletingId === addr._id
-                                                    ? <div className="spinner-border spinner-border-sm" style={{ width: 12, height: 12, borderWidth: 2 }} role="status" />
+                                                    ? <div className="spinner-border spinner-border-sm ui-profile-27"  role="status" />
                                                     : <FaTrash size={11} />}
                                             </button>
                                         </div>
@@ -465,7 +462,7 @@ const Profile = () => {
                         <div className="profile-panel profile-delete card border-0 shadow-sm rounded-4 bg-white p-4">
                             <h5 className="fw-bold text-danger mb-2">Delete Account</h5>
                             <p className="small text-muted mb-3">Your account data will be retained, but you will be signed out and unable to use this account.</p>
-                            <button type="button" disabled={deletingAccount} onClick={handleDeleteAccount} className="btn btn-outline-danger fw-bold px-4 py-2" style={{ borderRadius: 8 }}>
+                            <button type="button" disabled={deletingAccount} onClick={handleDeleteAccount} className="btn btn-outline-danger fw-bold px-4 py-2 ui-profile-28" >
                                 {deletingAccount ? 'Deleting...' : 'Delete My Account'}
                             </button>
                         </div>
@@ -508,17 +505,8 @@ const Profile = () => {
                                                         key={opt}
                                                         type="button"
                                                         onClick={() => setAddrForm(f => ({ ...f, label: opt }))}
-                                                        className="btn btn-sm d-flex align-items-center gap-1"
-                                                        style={{
-                                                            borderRadius: 20,
-                                                            border: '1.5px solid',
-                                                            borderColor: addrForm.label === opt ? '#000000' : '#dee2e6',
-                                                            background: addrForm.label === opt ? '#d8f3dc' : '#fff',
-                                                            color: addrForm.label === opt ? '#000000' : '#6c757d',
-                                                            fontWeight: addrForm.label === opt ? 700 : 400,
-                                                            fontSize: 12,
-                                                            padding: '4px 12px'
-                                                        }}
+                                                        className="btn btn-sm d-flex align-items-center gap-1 ui-profile-29"
+                                                        style={{ "--ui-profile-29-border-color": cssValue(addrForm.label === opt ? '#000000' : '#dee2e6', "borderColor"), "--ui-profile-29-background": cssValue(addrForm.label === opt ? "var(--ui-color-49)" : "var(--ui-color-2)", "background"), "--ui-profile-29-color": cssValue(addrForm.label === opt ? "var(--ui-color-27)" : "var(--ui-color-84)", "color"), "--ui-profile-29-font-weight": cssValue(addrForm.label === opt ? 700 : 400, "fontWeight") }}
                                                     >
                                                         {labelIcon(opt)} {opt}
                                                     </button>
@@ -533,7 +521,7 @@ const Profile = () => {
                                             <LocationPicker
                                                 value={locationValue}
                                                 onChange={handleLocationChange}
-                                                inputStyle={{ background: '#f8f9fa', border: '1px solid #e9ecef', marginBottom: 0 }}
+                                                inputClassName="profile-location-input-1"
                                             />
                                         </div>
 
@@ -543,8 +531,8 @@ const Profile = () => {
                                             <input
                                                 type="text"
                                                 required
-                                                className="form-control"
-                                                style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }}
+                                                className="form-control ui-profile-30"
+
                                                 placeholder="Flat / House No., Building, Street..."
                                                 id="profile-address-line" value={addrForm.addressLine}
                                                 onChange={patchField('addressLine')}
@@ -554,29 +542,29 @@ const Profile = () => {
                                         {/* City & State */}
                                         <div className="col-md-6">
                                             <label htmlFor="profile-address-city" className="form-label fw-semibold small text-dark mb-1">City</label>
-                                            <input type="text" className="form-control" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }} placeholder="City" id="profile-address-city" value={addrForm.city} onChange={patchField('city')} />
+                                            <input type="text" className="form-control ui-profile-31"  placeholder="City" id="profile-address-city" value={addrForm.city} onChange={patchField('city')} />
                                         </div>
                                         <div className="col-md-6">
                                             <label htmlFor="profile-address-state" className="form-label fw-semibold small text-dark mb-1">State</label>
-                                            <input type="text" className="form-control" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }} placeholder="State" id="profile-address-state" value={addrForm.state} onChange={patchField('state')} />
+                                            <input type="text" className="form-control ui-profile-32"  placeholder="State" id="profile-address-state" value={addrForm.state} onChange={patchField('state')} />
                                         </div>
 
                                         {/* Zipcode */}
                                         <div className="col-md-6">
                                             <label htmlFor="profile-address-zipcode" className="form-label fw-semibold small text-dark mb-1">ZIP / Postal Code</label>
-                                            <input type="text" className="form-control" style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }} placeholder="e.g. 10001" id="profile-address-zipcode" value={addrForm.zipcode} onChange={patchField('zipcode')} />
+                                            <input type="text" className="form-control ui-profile-33"  placeholder="e.g. 10001" id="profile-address-zipcode" value={addrForm.zipcode} onChange={patchField('zipcode')} />
                                         </div>
 
                                         {/* ── Save as ── */}
                                         <div className="col-12 mt-1 pt-2 border-top">
                                             <label htmlFor="profile-address-name" className="form-label fw-semibold small text-dark mb-1">Save as</label>
                                             {/* Type pills */}
-                                            
+
                                             {/* Custom nickname */}
                                             <input
                                                 type="text"
-                                                className="form-control"
-                                                style={{ background: '#f8f9fa', border: '1px solid #e9ecef' }}
+                                                className="form-control ui-profile-34"
+
                                                 placeholder={`e.g. My ${addrForm.label}, Friend's ${addrForm.label}…`}
                                                 id="profile-address-name" value={addrForm.name}
                                                 maxLength={40}
@@ -585,10 +573,10 @@ const Profile = () => {
                                         </div>
 
                                         <div className="col-12 mt-2 d-flex gap-2">
-                                            <button type="submit" disabled={savingAddr} className="btn fw-bold d-flex align-items-center gap-2" style={{ background: '#000', color: '#fff', borderRadius: 8, padding: '8px 18px' }}>
+                                            <button type="submit" disabled={savingAddr} className="btn fw-bold d-flex align-items-center gap-2 ui-profile-35" >
                                                 <FaCheck size={12} /> {savingAddr ? 'Saving...' : (addrMode === 'add' ? 'Add Address' : 'Update Address')}
                                             </button>
-                                            <button type="button" disabled={savingAddr} onClick={closeAddrPanel} className="btn btn-light fw-semibold" style={{ borderRadius: 8, padding: '8px 18px' }}>
+                                            <button type="button" disabled={savingAddr} onClick={closeAddrPanel} className="btn btn-light fw-semibold ui-profile-36" >
                                                 Cancel
                                             </button>
                                         </div>

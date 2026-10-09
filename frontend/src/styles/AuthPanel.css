@@ -1,0 +1,20 @@
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-authpanel-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-42);
+  background-image: var(--ui-authpanel-1-background-image);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  height: 100%;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-authpanel-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-42);
+  background-image: var(--ui-authpanel-2-background-image);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  height: 100%;
+}

@@ -1,3 +1,4 @@
+import './styles/App.css';
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
@@ -40,7 +41,7 @@ const PermRoute = ({ resource, access = 'read', children }) => {
   if (!admin) return null;
   if (!can(resource, access)) {
     return (
-      <div style={{ padding: 40, textAlign: 'center', color: '#888' }}>
+      <div className="admin-app-1" >
         <h5>Access Denied</h5>
         <p>You don't have permission to view this section.</p>
       </div>

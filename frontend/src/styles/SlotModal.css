@@ -1,0 +1,87 @@
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-slotmodal-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  position: fixed;
+  inset: 0;
+  background: var(--ui-color-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-slotmodal-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 420px;
+  max-width: 90vw;
+  background: var(--ui-color-2);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  overflow: hidden;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-slotmodal-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-6);
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-slotmodal-4:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin: var(--ui-space-16);
+  font-size: var(--ui-font-size-5);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-slotmodal-5:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: none;
+  background: var(--ui-color-2);
+  cursor: pointer;
+  font-size: var(--ui-font-size-5);
+  padding: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-slotmodal-6:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-6);
+  display: grid;
+  gap: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-slotmodal-7:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: var(--ui-slotmodal-7-border);
+  border-radius: 8px;
+  padding: var(--ui-space-13);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-slotmodal-8:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-slotmodal-9:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-6);
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-slotmodal-10:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-38);
+  color: var(--ui-color-2);
+  border: none;
+  padding: var(--ui-space-57);
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}

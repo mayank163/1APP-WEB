@@ -1,9 +1,10 @@
+import '../../styles/InvoicePreview.css';
 import React, { useEffect, useRef, useState } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import Modal from 'react-bootstrap/Modal';
 import { FiGlobe, FiPhone, FiMail, FiHome, FiMapPin, FiTool, FiUser, FiFileText, FiHeadphones, FiDownload, FiPrinter } from 'react-icons/fi';
 import bookingService from '../../services/bookingService';
-import { invoiceStyles } from './invoiceStyles';
+import { getInvoiceStyles } from './invoiceStyles';
 
 const money = value => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(Number(value) || 0);
 const date = value => value && !Number.isNaN(new Date(value).getTime()) ? new Date(value).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'N/A';
@@ -60,7 +61,7 @@ export default function InvoicePreview({ bookingId, onClose }) {
         }).catch(() => { if (active) setError('Unable to load invoice. Please try again.'); });
         return () => { active = false; };
     }, [bookingId, attempt]);
-    const documentHtml = () => `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OneApp Invoice</title><style>${invoiceStyles}</style></head><body>${renderToStaticMarkup(<InvoiceDocument booking={booking} />)}</body></html>`;
+    const documentHtml = () => `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OneApp Invoice</title><style>${getInvoiceStyles()}</style></head><body>${renderToStaticMarkup(<InvoiceDocument booking={booking} />)}</body></html>`;
     const download = () => {
         const url = URL.createObjectURL(new Blob([documentHtml()], { type: 'text/html;charset=utf-8' }));
         const link = document.createElement('a');
@@ -72,10 +73,10 @@ export default function InvoicePreview({ bookingId, onClose }) {
         setTimeout(() => URL.revokeObjectURL(url), 1000);
     };
     return <Modal show onHide={onClose} size="xl" centered scrollable aria-labelledby="invoice-preview-title" dialogClassName="invoice-preview-dialog">
-        <style>{invoiceStyles}</style>
+
         <Modal.Header closeButton><Modal.Title id="invoice-preview-title">Invoice Preview</Modal.Title></Modal.Header>
         <Modal.Body>{error ? <div role="alert">{error} <button type="button" onClick={() => setAttempt(value => value + 1)}>Try again</button></div> : booking ? <InvoiceDocument booking={booking} /> : <p role="status">Loading invoice…</p>}</Modal.Body>
         <Modal.Footer><button type="button" className="invoice-button secondary" onClick={onClose}>Close</button><button type="button" className="invoice-button secondary" disabled={!booking} onClick={() => { printFrame.current.srcdoc = documentHtml(); }}><FiPrinter /> Print / Save as PDF</button><button type="button" className="invoice-button" disabled={!booking} onClick={download}><FiDownload /> Download Invoice</button></Modal.Footer>
-        <iframe ref={printFrame} title="Printable invoice" style={{ display: 'none' }} onLoad={() => { if (printFrame.current?.getAttribute('srcdoc')) { printFrame.current.contentWindow.focus(); printFrame.current.contentWindow.print(); } }} />
+        <iframe className="ui-invoicepreview-1" ref={printFrame} title="Printable invoice"  onLoad={() => { if (printFrame.current?.getAttribute('srcdoc')) { printFrame.current.contentWindow.focus(); printFrame.current.contentWindow.print(); } }} />
     </Modal>;
 }

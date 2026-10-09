@@ -1,3 +1,5 @@
+import { cssValue } from '../utils/cssValue';
+import '../styles/HeroBookingBar.css';
 import React, { useState, useRef, useEffect, useCallback, useContext } from 'react';
 import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
@@ -73,7 +75,7 @@ const PortalDropdown = ({
             rect.top < headerBottom;
 
         if (shouldHide) {
-            node.style.display = 'none';
+            node.classList.add('hero-dropdown-hidden');
             return;
         }
 
@@ -83,17 +85,13 @@ const PortalDropdown = ({
         const width = minWidth || rect.width;
         const maxHeight = Math.max(120, Math.min(DROPDOWN_MAX_HEIGHT, availableHeight));
 
-        node.style.display = 'block';
-        node.style.position = 'fixed';
-        node.style.top = '0px';
-        node.style.left = `${rect.left}px`;
-        node.style.width = `${width}px`;
-        node.style.maxHeight = `${maxHeight}px`;
-        node.style.overflowY = 'auto';
-        node.style.zIndex = 9999;
+        node.classList.remove('hero-dropdown-hidden');
+        node.classList.add('hero-positioned-dropdown');
+        node.style.setProperty('--hero-dropdown-left', `${rect.left}px`);
+        node.style.setProperty('--hero-dropdown-width', `${width}px`);
+        node.style.setProperty('--hero-dropdown-max-height', `${maxHeight}px`);
         // GPU-composited move instead of a layout-affecting `top` change
-        node.style.transform = `translate3d(0, ${rect.bottom + DROPDOWN_GAP}px, 0)`;
-        node.style.willChange = 'transform';
+        node.style.setProperty('--hero-dropdown-transform', `translate3d(0, ${rect.bottom + DROPDOWN_GAP}px, 0)`);
 
     }, [anchorRef, minWidth]);
 
@@ -129,7 +127,7 @@ const PortalDropdown = ({
     if (!open) return null;
 
     return ReactDOM.createPortal(
-        <div ref={nodeRef} style={{ display: 'none' }}>
+        <div className="ui-herobookingbar-1" ref={nodeRef} >
             {children}
         </div>,
         document.body
@@ -141,45 +139,17 @@ const PortalDropdown = ({
    Thin vertical separator
 ───────────────────────────────────────────── */
 const Sep = () => (
-    <div style={{
-        width: 1, background: '#e0e0e0',
-        alignSelf: 'stretch', margin: '12px 0', flexShrink: 0,
-    }} />
+    <div className="ui-herobookingbar-2"  />
 );
 
 /* ─────────────────────────────────────────────
    Shared dropdown list styles
 ───────────────────────────────────────────── */
-const dropdownListStyle = {
-    background: "#fff",
-    borderRadius: 14,
-    boxShadow: "0 12px 40px rgba(0,0,0,0.16)",
-    listStyle: "none",
-    margin: 0,
-    padding: "6px 0",
-    overflowY: "auto",
-    width: "100%",
-    scrollbarWidth: "thin",
-    scrollbarColor: "#d0d0d0 transparent",
-    border: "1px solid #f0f0f0"
-};
 
-const dropdownItemStyle = {
-    padding: '10px 16px',
-    cursor: 'pointer',
-    fontSize: 13,
-    borderBottom: '1px solid #f5f5f5',
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-    transition: 'background 0.12s',
-};
 
-const fieldInput = (hasValue = false) => ({
-    flex: 1, border: 'none', outline: 'none', background: 'transparent',
-    fontSize: 14, color: '#1a1a1a', fontWeight: hasValue ? 500 : 400,
-    padding: 0, lineHeight: 1, minWidth: 0,
-});
+
+
+
 
 /* ─────────────────────────────────────────────
    Service Search autocomplete
@@ -250,41 +220,41 @@ const InlineServiceSearch = ({ selectedService, onSelect }) => {
     }, [open]);
 
     return (
-        <div ref={wrapperRef} style={{ position: 'relative', width: '100%' }}>
+        <div className="ui-herobookingbar-3" ref={wrapperRef} >
             {/* anchor is the row that the dropdown will align to */}
-            <div ref={anchorRef} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <FaSearch size={13} style={{ color: '#aaa', flexShrink: 0 }} />
-                <input
+            <div className="ui-herobookingbar-4" ref={anchorRef} >
+                <FaSearch className="ui-herobookingbar-5" size={13}  />
+                <input className="ui-herobookingbar-6"
                     type="text"
                     value={query}
                     onChange={handleChange}
                     onFocus={() => suggestions.length > 0 && setOpen(true)}
                     placeholder="Search service..."
                     autoComplete="off"
-                    style={fieldInput(!!selectedService)}
+                    style={{ "--ui-herobookingbar-6-font-weight": cssValue(!!selectedService ? 500 : 400, "fontWeight") }}
                 />
                 {loading && (
-                    <span style={{ fontSize: 30, color: '#000000', flexShrink: 0, letterSpacing: 2 }}>···</span>
+                    <span className="ui-herobookingbar-7" >···</span>
                 )}
             </div>
 
             <PortalDropdown anchorRef={anchorRef} open={open} minWidth={280}>
-                <ul data-service-dropdown style={dropdownListStyle}>
+                <ul className="ui-herobookingbar-8" data-service-dropdown >
                     {suggestions.map((s) => (
-                        <li
+                        <li className="ui-herobookingbar-9"
                             key={s._id}
                             onMouseDown={() => handleSelect(s)}
-                            style={{ ...dropdownItemStyle, background: '#fff' }}
-                            onMouseEnter={e => e.currentTarget.style.background = '#f7f7f7'}
-                            onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+
+
+
                         >
-                            <FaSearch size={11} style={{ color: '#ccc', flexShrink: 0 }} />
-                            <div style={{ minWidth: 0 }}>
-                                <div style={{ fontWeight: 500, color: '#1a1a1a', fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            <FaSearch className="ui-herobookingbar-10" size={11}  />
+                            <div className="ui-herobookingbar-11" >
+                                <div className="ui-herobookingbar-12" >
                                     {s.name}
                                 </div>
                                 {(s.category?.name || s.subcategory?.name) && (
-                                    <div style={{ fontSize: 11, color: '#aaa', display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                                    <div className="ui-herobookingbar-13" >
                                         <FaTag size={9} />
                                         {[s.category?.name, s.subcategory?.name].filter(Boolean).join(' › ')}
                                     </div>
@@ -327,52 +297,31 @@ const BookingPeriodSelector = ({ value, onChange }) => {
     }, [open]);
 
     return (
-        <div ref={wrapperRef} style={{ position: 'relative', width: '100%' }}>
-            <button
+        <div className="ui-herobookingbar-14" ref={wrapperRef} >
+            <button className="ui-herobookingbar-15"
                 ref={anchorRef}
                 type="button"
                 onClick={() => setOpen(v => !v)}
-                style={{
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    width: '100%', border: 'none', background: 'transparent',
-                    cursor: 'pointer', padding: 0,
-                }}
+
             >
-                <span style={{
-                    fontSize: 14,
-                    color: value ? '#1a1a1a' : '#a0a0a0',
-                    fontWeight: value ? 500 : 400,
-                    flex: 1,
-                    textAlign: 'left',
-                }}>
+                <span className="ui-herobookingbar-16" style={{ "--ui-herobookingbar-16-color": cssValue(value ? "var(--ui-color-7)" : "var(--ui-color-270)", "color"), "--ui-herobookingbar-16-font-weight": cssValue(value ? 500 : 400, "fontWeight") }}>
                     {BOOKING_PERIODS.find(period => period.value === value)?.label || 'Select period'}
                 </span>
-                <FaChevronDown
+                <FaChevronDown className="ui-herobookingbar-17"
                     size={11}
-                    style={{
-                        color: '#aaa',
-                        flexShrink: 0,
-                        transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
-                        transition: 'transform 0.18s',
-                    }}
+                    style={{ "--ui-herobookingbar-17-transform": cssValue(open ? 'rotate(180deg)' : 'rotate(0deg)', "transform") }}
                 />
             </button>
 
             <PortalDropdown anchorRef={anchorRef} open={open} minWidth={160}>
-                <ul data-booking-period-dropdown style={dropdownListStyle}>
+                <ul className="ui-herobookingbar-18" data-booking-period-dropdown >
                     {BOOKING_PERIODS.map((period) => (
-                        <li
+                        <li className="ui-herobookingbar-19"
                             key={period.value}
                             onMouseDown={() => { onChange(period.value); setOpen(false); }}
-                            style={{
-                                ...dropdownItemStyle,
-                                background: value === period.value ? '#f5f5f5' : '#fff',
-                                fontWeight: value === period.value ? 700 : 400,
-                                color: '#1a1a1a',
-                                justifyContent: 'center',
-                            }}
-                            onMouseEnter={e => e.currentTarget.style.background = '#f5f5f5'}
-                            onMouseLeave={e => e.currentTarget.style.background = value === period.value ? '#f5f5f5' : '#fff'}
+                            style={{ "--ui-herobookingbar-19-background": cssValue(value === period.value ? "var(--ui-color-35)" : "var(--ui-color-2)", "background"), "--ui-herobookingbar-19-font-weight": cssValue(value === period.value ? 700 : 400, "fontWeight") }}
+
+
                         >
                             {period.label}
                         </li>
@@ -415,67 +364,26 @@ const HeroBookingBar = () => {
     };
 
     return (
-        <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            background: '#fff',
-            borderRadius: '30px',
-            boxShadow: '0 4px 28px rgba(0,0,0,0.14)',
-            height: 60,
-            maxWidth: 820,
-            width: '100%',
-            position: 'relative',
-            zIndex: 10,
-            border: '1.5px solid #e8e8e8',
-            overflow: 'visible',
-        }}>
+        <div className="ui-herobookingbar-20" >
 
             {/* ── Section 1: Service Search ── */}
-            <div style={{
-                flex: 1.4,
-                minWidth: 0,
-                display: 'flex',
-                alignItems: 'center',
-                padding: '0 20px',
-                height: '100%',
-            }}>
+            <div className="ui-herobookingbar-21" >
                 <InlineServiceSearch selectedService={selectedService} onSelect={setSelectedService} />
             </div>
 
             <Sep />
 
             {/* ── Section 2: Booking period ── */}
-            <div style={{
-                flex: 1,
-                minWidth: 0,
-                display: 'flex',
-                alignItems: 'center',
-                padding: '0 20px',
-                height: '100%',
-            }}>
+            <div className="ui-herobookingbar-22" >
                 <BookingPeriodSelector value={bookingPeriod} onChange={setBookingPeriod} />
             </div>
 
             {/* ── Book button ── */}
-            <button
+            <button className="ui-herobookingbar-23"
                 onClick={handleBook}
-                style={{
-                    height: '100%',
-                    padding: '0 36px',
-                    background: '#1a1a1a',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '0 30px 30px 0',
-                    fontSize: 15,
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    flexShrink: 0,
-                    letterSpacing: '0.3px',
-                    transition: 'background 0.18s',
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = '#333'}
-                onMouseLeave={e => e.currentTarget.style.background = '#1a1a1a'}
+
+
+
             >
                 Book
             </button>

@@ -1,0 +1,205 @@
+/* Extracted presentation styles; repeated class specificity preserves inline precedence. */
+.admin-main-layout-1.admin-main-layout-1.admin-main-layout-1 {
+  height: 100vh;
+  overflow: hidden;
+  background: var(--admin-color-page);
+}
+
+.admin-main-layout-2.admin-main-layout-2.admin-main-layout-2 {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  transition: width 0.25s ease;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  border-radius: 22px;
+  overflow: hidden;
+  border-right: 1px solid var(--admin-color-rgba-165--115--47--0-2-);
+}
+
+.admin-main-layout-3.admin-main-layout-3.admin-main-layout-3 {
+  border-bottom: none;
+  flex-shrink: 0;
+  justify-content: var(--admin-main-layout-3-justify-content);
+}
+
+.admin-main-layout-4.admin-main-layout-4.admin-main-layout-4 {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: #a9732c;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.admin-main-layout-5.admin-main-layout-5.admin-main-layout-5 {
+  color: #fff;
+}
+
+.admin-main-layout-6.admin-main-layout-6.admin-main-layout-6 {
+  color: #202938;
+  letter-spacing: 0;
+  font-family: var(--admin-font-family) !important;
+  font-size: 20px;
+}
+
+.admin-main-layout-7.admin-main-layout-7.admin-main-layout-7 {
+  color: #777;
+  font-size: 10px;
+}
+
+.admin-main-layout-8.admin-main-layout-8.admin-main-layout-8 {
+  overflow-y: auto;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: #e7d5ba transparent;
+}
+
+.admin-main-layout-9.admin-main-layout-9.admin-main-layout-9 {
+  color: #ae6b30;
+  font-size: 12px !important;
+  letter-spacing: 0.08em;
+}
+
+.admin-main-layout-10.admin-main-layout-10.admin-main-layout-10 {
+  border-top: none;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #fffaf3, #ffe0b2);
+}
+
+.admin-main-layout-11.admin-main-layout-11.admin-main-layout-11 {
+  background: var(--admin-color-rgba-165--115--47--0-12-);
+  border: 1.5px solid var(--admin-color-rgba-165-115-47-0-4-);
+  color: var(--admin-color-brand);
+  cursor: pointer;
+  font-size: var(--admin-font-size-0-9rem);
+  gap: var(--admin-main-layout-11-gap);
+}
+
+.admin-main-layout-12.admin-main-layout-12.admin-main-layout-12 {
+  min-width: 0;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.admin-main-layout-13.admin-main-layout-13.admin-main-layout-13 {
+  flex-shrink: 0;
+}
+
+.admin-main-layout-14.admin-main-layout-14.admin-main-layout-14 {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--admin-color-brand);
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.admin-main-layout-15.admin-main-layout-15.admin-main-layout-15 {
+  color: var(--admin-color-brand);
+  font-weight: 800;
+  font-size: var(--admin-font-size-0-85rem);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-family: var(--admin-font-monospace);
+}
+
+.admin-main-layout-16.admin-main-layout-16.admin-main-layout-16 {
+  color: var(--admin-color--ccc);
+}
+
+.admin-main-layout-17.admin-main-layout-17.admin-main-layout-17 {
+  font-size: var(--admin-font-size-0-95rem);
+}
+
+.admin-main-layout-18.admin-main-layout-18.admin-main-layout-18 {
+  width: 8px;
+  height: 8px;
+}
+
+.admin-main-layout-19.admin-main-layout-19.admin-main-layout-19 {
+  background: var(--admin-color--fdf6ee);
+  color: var(--admin-color-brand);
+  border: 1px solid var(--admin-color--f0e8dc);
+  border-radius: 20px;
+  padding: var(--admin-space-2px) var(--admin-space-10px);
+  font-size: var(--admin-font-size-0-72rem);
+  font-weight: 700;
+}
+
+.admin-main-layout-20.admin-main-layout-20.admin-main-layout-20 {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.admin-sidebar-link.admin-sidebar-link.admin-sidebar-link {
+  transition: all 0.2s ease;
+  justify-content: flex-start;
+  gap: 12px;
+  min-height: 39px;
+  border-radius: 12px !important;
+  font-size: 13px;
+  line-height: 21px;
+}
+
+.nav.nav-pills .nav-link.admin-sidebar-link.active-nav-link,
+.nav.nav-pills .nav-link.admin-sidebar-link.active-nav-link:hover,
+.nav.nav-pills .nav-link.admin-sidebar-link.active-nav-link:focus {
+  background-color: #ffe6bf;
+  color: #202938;
+}
+
+.admin-sidebar-link.inactive-nav-link {
+  background-color: transparent;
+  color: #303541;
+}
+
+.admin-sidebar-link.nav-link:hover,
+.admin-sidebar-link.nav-link:focus-visible {
+  background-color: #fff3e2;
+  color: #202938;
+  outline: 2px solid #a9732c;
+  outline-offset: -2px;
+}
+
+.admin-sidebar-link.admin-sidebar-link.admin-sidebar-link-collapsed {
+  justify-content: center;
+  gap: 0;
+}
+
+/* State-dependent presentation stays in CSS. */
+.admin-main-layout-state-1 {
+  --sidebar-width: 64px;
+}
+
+.admin-main-layout-state-2 {
+  --sidebar-width: 260px;
+}
+
+.admin-main-layout-state-3 {
+  --admin-main-layout-3-justify-content: center;
+}
+
+.admin-main-layout-state-4 {
+  --admin-main-layout-3-justify-content: flex-start;
+}
+
+.admin-main-layout-state-5 {
+  --admin-main-layout-11-gap: 0;
+}
+
+.admin-main-layout-state-6 {
+  --admin-main-layout-11-gap: 0.5rem;
+}
+
+.admin-sidebar-link svg { flex-shrink: 0; }
+.admin-sidebar-account { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.admin-sidebar-account-avatar { display: grid; place-items: center; width: 38px; height: 38px; flex-shrink: 0; border-radius: 50%; background: #a9732c; color: #fff; font-size: 15px; font-weight: 600; }
+.admin-sidebar-account-copy { display: flex; flex-direction: column; min-width: 0; }
+.admin-sidebar-account-copy strong { color: #202938; font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-sidebar-account-copy small { color: #777; font-size: 12px; }

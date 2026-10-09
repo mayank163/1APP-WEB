@@ -1,3 +1,4 @@
+import '../styles/LocationPicker.css';
 import React, { useEffect, useRef, useState } from 'react';
 
 const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
@@ -49,7 +50,7 @@ const parseComponents = (components = []) => {
  *   onChange – ({ address, lat, lng, addressLine, city, state, zipcode }) => void
  *   inputStyle – optional style override for the search input
  */
-const LocationPicker = ({ value, onChange, inputStyle: externalInputStyle }) => {
+const LocationPicker = ({ value, onChange, inputClassName = '' }) => {
     const inputRef   = useRef(null);
     const mapRef     = useRef(null);
     const markerRef  = useRef(null);
@@ -168,45 +169,35 @@ const LocationPicker = ({ value, onChange, inputStyle: externalInputStyle }) => 
 
     if (error) {
         return (
-            <div style={{ fontSize: 12, color: '#dc3545', padding: '6px 0' }}>
+            <div className="ui-locationpicker-1" >
                 ⚠ {error}
             </div>
         );
     }
 
-    const baseInputStyle = {
-        width: '100%', padding: '11px 14px', borderRadius: 10,
-        border: '1.5px solid #e0e0e0', background: '#f9f9f9',
-        fontSize: 14, color: '#333', outline: 'none', boxSizing: 'border-box',
-        marginBottom: 10,
-        ...externalInputStyle,
-    };
+
 
     return (
         <div>
             {/* Autocomplete search input — high z-index so the dropdown renders on top */}
-            <div style={{ position: 'relative', zIndex: 1100 }}>
-                <input
+            <div className="ui-locationpicker-2" >
+                <input className={`ui-locationpicker-3 ${inputClassName}`}
                     ref={inputCallbackRef}
                     type="text"
                     placeholder="Search address on map…"
                     defaultValue={value?.address || ''}
                     autoComplete="off"
-                    style={baseInputStyle}
+
                 />
             </div>
 
             {/* Map */}
-            <div
+            <div className="ui-locationpicker-4"
                 ref={mapCallbackRef}
-                style={{
-                    width: '100%', height: 220, borderRadius: 10,
-                    border: '1.5px solid #e0e0e0', overflow: 'hidden',
-                    background: '#f0f0f0',
-                }}
+
             >
                 {!ready && (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#aaa', fontSize: 13 }}>
+                    <div className="ui-locationpicker-5" >
                         Loading map…
                     </div>
                 )}
@@ -214,7 +205,7 @@ const LocationPicker = ({ value, onChange, inputStyle: externalInputStyle }) => 
 
             {/* Lat/lng hint */}
             {value?.lat && (
-                <div style={{ fontSize: 11, color: '#888', marginTop: 5 }}>
+                <div className="ui-locationpicker-6" >
                     📍 {value.address} &nbsp;·&nbsp; {Number(value.lat).toFixed(5)}, {Number(value.lng).toFixed(5)}
                 </div>
             )}

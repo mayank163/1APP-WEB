@@ -1,3 +1,5 @@
+import { cssValue } from '../utils/cssValue';
+import '../styles/Services.css';
 import React, { useEffect, useState, useContext, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { FaStar, FaTag, FaShoppingCart, FaCheckCircle, FaShieldAlt, FaCalendarAlt, FaMedal, FaArrowRight, FaChevronLeft, FaChevronRight, FaTimes } from 'react-icons/fa';
@@ -43,17 +45,17 @@ function ServicePagination({ total, page, onPageChange }) {
         .filter(number => number === 1 || number === totalPages || Math.abs(number - page) <= 1);
 
     return (
-        <nav aria-label="Service pages" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginTop: 16 }}>
-            <small style={{ color: '#666' }}>Showing {(page - 1) * SERVICES_PER_PAGE + 1} to {Math.min(page * SERVICES_PER_PAGE, total)} of {total} services</small>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <button type="button" aria-label="Previous page" disabled={page === 1} onClick={() => onPageChange(page - 1)} style={{ background: '#fff', border: '1px solid #ddd', borderRadius: 6, padding: '6px 9px', cursor: page === 1 ? 'default' : 'pointer' }}><FaChevronLeft size={11} /></button>
+        <nav className="ui-services-1" aria-label="Service pages" >
+            <small className="ui-services-2" >Showing {(page - 1) * SERVICES_PER_PAGE + 1} to {Math.min(page * SERVICES_PER_PAGE, total)} of {total} services</small>
+            <div className="ui-services-3" >
+                <button className="ui-services-4" type="button" aria-label="Previous page" disabled={page === 1} onClick={() => onPageChange(page - 1)} style={{ "--ui-services-4-cursor": cssValue(page === 1 ? 'default' : 'pointer', "cursor") }}><FaChevronLeft size={11} /></button>
                 {visiblePages.map((number, index) => (
                     <React.Fragment key={number}>
-                        {index > 0 && number - visiblePages[index - 1] > 1 && <span style={{ padding: '0 3px', color: '#777' }}>…</span>}
-                        <button type="button" aria-current={page === number ? 'page' : undefined} onClick={() => onPageChange(number)} style={{ minWidth: 32, padding: '5px 8px', background: page === number ? '#171717' : '#fff', color: page === number ? '#fff' : '#222', border: '1px solid #ddd', borderRadius: 6, cursor: 'pointer' }}>{number}</button>
+                        {index > 0 && number - visiblePages[index - 1] > 1 && <span className="ui-services-5" >…</span>}
+                        <button className="ui-services-6" type="button" aria-current={page === number ? 'page' : undefined} onClick={() => onPageChange(number)} style={{ "--ui-services-6-background": cssValue(page === number ? "var(--ui-color-275)" : "var(--ui-color-2)", "background"), "--ui-services-6-color": cssValue(page === number ? "var(--ui-color-2)" : "var(--ui-color-56)", "color") }}>{number}</button>
                     </React.Fragment>
                 ))}
-                <button type="button" aria-label="Next page" disabled={page === totalPages} onClick={() => onPageChange(page + 1)} style={{ background: '#fff', border: '1px solid #ddd', borderRadius: 6, padding: '6px 9px', cursor: page === totalPages ? 'default' : 'pointer' }}><FaChevronRight size={11} /></button>
+                <button className="ui-services-7" type="button" aria-label="Next page" disabled={page === totalPages} onClick={() => onPageChange(page + 1)} style={{ "--ui-services-7-cursor": cssValue(page === totalPages ? 'default' : 'pointer', "cursor") }}><FaChevronRight size={11} /></button>
             </div>
         </nav>
     );
@@ -64,34 +66,34 @@ function VariantPickerModal({ service, selectedVariantId, onSelect, onClose, onA
     const variants = (service.variants || []).filter(variant => variant.isActive !== false);
 
     return (
-        <div role="presentation" onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(16, 20, 18, 0.58)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-            <section role="dialog" aria-modal="true" aria-labelledby="variant-picker-title" onClick={event => event.stopPropagation()} style={{ width: '100%', maxWidth: 540, maxHeight: '90vh', overflowY: 'auto', background: '#fff', borderRadius: 14, boxShadow: '0 20px 60px rgba(0,0,0,0.25)' }}>
-                <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, padding: '20px 22px', borderBottom: '1px solid #eee' }}>
+        <div className="ui-services-8" role="presentation" onClick={onClose} >
+            <section className="ui-services-9" role="dialog" aria-modal="true" aria-labelledby="variant-picker-title" onClick={event => event.stopPropagation()} >
+                <header className="ui-services-10" >
                     <div>
-                        <h2 id="variant-picker-title" style={{ margin: 0, fontSize: 20, fontWeight: 750, color: '#161a18' }}>Choose an option</h2>
-                        <p style={{ margin: '5px 0 0', color: '#666', fontSize: 14 }}>{service.name}</p>
+                        <h2 className="ui-services-11" id="variant-picker-title" >Choose an option</h2>
+                        <p className="ui-services-12" >{service.name}</p>
                     </div>
-                    <button type="button" aria-label="Close variant selection" onClick={onClose} style={{ border: 0, background: 'transparent', padding: 6, cursor: 'pointer', color: '#555' }}><FaTimes /></button>
+                    <button className="ui-services-13" type="button" aria-label="Close variant selection" onClick={onClose} ><FaTimes /></button>
                 </header>
-                <div style={{ padding: 22, display: 'grid', gap: 10 }}>
+                <div className="ui-services-14" >
                     {variants.map(variant => {
                         const selected = String(selectedVariantId) === String(variant._id);
                         const price = getStartingPrice(variant.offerPrice || variant.actualPrice || variant.price);
                         return (
-                            <button key={variant._id} type="button" aria-pressed={selected} onClick={() => onSelect(String(variant._id))} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '14px 16px', textAlign: 'left', background: selected ? '#f3f7f4' : '#fff', border: `1.5px solid ${selected ? '#315b43' : '#dededb'}`, borderRadius: 9, cursor: 'pointer' }}>
+                            <button className="ui-services-15" key={variant._id} type="button" aria-pressed={selected} onClick={() => onSelect(String(variant._id))} style={{ "--ui-services-15-background": cssValue(selected ? "var(--ui-color-276)" : "var(--ui-color-2)", "background"), "--ui-services-15-border": cssValue(`1.5px solid ${selected ? '#315b43' : '#dededb'}`, "border") }}>
                                 <span>
-                                    <strong style={{ display: 'block', color: '#181c19', fontSize: 15 }}>{variant.name}</strong>
-                                    {(variant.sizeCapacity || variant.unit) && <small style={{ display: 'block', marginTop: 3, color: '#777' }}>{[variant.sizeCapacity, variant.unit].filter(Boolean).join(' ')}</small>}
+                                    <strong className="ui-services-16" >{variant.name}</strong>
+                                    {(variant.sizeCapacity || variant.unit) && <small className="ui-services-17" >{[variant.sizeCapacity, variant.unit].filter(Boolean).join(' ')}</small>}
                                 </span>
-                                <strong style={{ color: '#1e5034', whiteSpace: 'nowrap' }}>${Number(price).toFixed(2)}</strong>
+                                <strong className="ui-services-18" >${Number(price).toFixed(2)}</strong>
                             </button>
                         );
                     })}
-                    {!variants.length && <p style={{ margin: 0, color: '#777' }}>No active options are available for this service.</p>}
+                    {!variants.length && <p className="ui-services-19" >No active options are available for this service.</p>}
                 </div>
-                <footer style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, padding: '0 22px 20px' }}>
-                    <button type="button" onClick={onClose} disabled={saving} style={{ border: '1px solid #ddd', background: '#fff', borderRadius: 7, padding: '9px 14px', cursor: 'pointer' }}>Cancel</button>
-                    <button type="button" onClick={onAdd} disabled={saving || !selectedVariantId} style={{ border: 0, background: '#1e5034', color: '#fff', borderRadius: 7, padding: '9px 16px', fontWeight: 650, cursor: saving || !selectedVariantId ? 'not-allowed' : 'pointer', opacity: saving || !selectedVariantId ? 0.55 : 1 }}>{saving ? 'Adding…' : 'Add to cart'}</button>
+                <footer className="ui-services-20" >
+                    <button className="ui-services-21" type="button" onClick={onClose} disabled={saving} >Cancel</button>
+                    <button className="ui-services-22" type="button" onClick={onAdd} disabled={saving || !selectedVariantId} style={{ "--ui-services-22-cursor": cssValue(saving || !selectedVariantId ? 'not-allowed' : 'pointer', "cursor"), "--ui-services-22-opacity": cssValue(saving || !selectedVariantId ? 0.55 : 1, "opacity") }}>{saving ? 'Adding…' : 'Add to cart'}</button>
                 </footer>
             </section>
         </div>
@@ -295,33 +297,29 @@ export default function Services() {
     // ── Browse-all mode render ─────────────────────────────────────────────────
     if (isBrowseAll) {
         return (
-            <div style={{ background: '#f5f5f5', minHeight: '100vh', padding: '24px 16px' }}>
+            <div className="ui-services-23" >
                 <VariantPickerModal service={variantService} selectedVariantId={selectedVariantId} onSelect={setSelectedVariantId} onClose={() => setVariantService(null)} onAdd={handleAddSelectedVariant} saving={addingVariant} />
-                <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+                <div className="ui-services-24" >
 
                     {/* Hero banner */}
-                    <div style={{
-                        borderRadius: 16, overflow: 'hidden', marginBottom: 32,
-                        background: SLIDES[slide].bg,
-                        padding: '40px 36px', position: 'relative',
-                    }}>
-                        <div style={{ color: '#fff', maxWidth: 500, position: 'relative', zIndex: 1 }}>
-                            <div style={{ background: 'rgba(255,255,255,0.2)', display: 'inline-block', padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, letterSpacing: 1, marginBottom: 10 }}>
+                    <div className="ui-services-25" style={{ "--ui-services-25-background": cssValue(SLIDES[slide].bg, "background") }}>
+                        <div className="ui-services-26" >
+                            <div className="ui-services-27" >
                                 ALL SERVICES
                             </div>
-                            <h2 style={{ fontWeight: 800, fontSize: '1.8rem', lineHeight: 1.3, marginBottom: 8, color: '#fff' }}>
+                            <h2 className="ui-services-28" >
                                 Everything you need, all in one place.
                             </h2>
-                            <p style={{ fontSize: 14, opacity: 0.85, lineHeight: 1.6, margin: 0 }}>
+                            <p className="ui-services-29" >
                                 Trusted professionals across every service category.
                             </p>
                         </div>
                     </div>
 
                     {loading ? (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+                        <div className="ui-services-30" >
                             {Array(6).fill(0).map((_, i) => (
-                                <div key={i} style={{ background: '#fff', borderRadius: 16, padding: 20, height: 120 }} className="shimmer" />
+                                <div key={i}  className="shimmer ui-services-31" />
                             ))}
                         </div>
                     ) : (
@@ -337,12 +335,12 @@ export default function Services() {
                                 const categoryPage = Math.min(categoryPages[categoryKey] || 1, categoryTotalPages);
                                 const pageServices = catServices.slice((categoryPage - 1) * SERVICES_PER_PAGE, categoryPage * SERVICES_PER_PAGE);
                                 return (
-                                    <div key={cat.id || cat._id} style={{ marginBottom: 40 }}>
+                                    <div className="ui-services-32" key={cat.id || cat._id} >
                                         {/* Category header */}
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                        <div className="ui-services-33" >
+                                            <div className="ui-services-34" >
                                                 {cat.image && (
-                                                    <img
+                                                    <img className="ui-services-35"
                                                         src={(() => {
                                                             const img = cat.image;
                                                             if (!img) return null;
@@ -350,68 +348,60 @@ export default function Services() {
                                                             return `${UPLOAD_IMAGE_URL}${img.replace(/^\/uploads\//, '').replace(/^\//, '')}`;
                                                         })()}
                                                         alt={cat.name}
-                                                        style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 8 }}
-                                                        onError={(e) => { e.target.style.display = 'none'; }}
+
+                                                        onError={(e) => { e.target.classList.add('ui-image-hidden'); }}
                                                     />
                                                 )}
-                                                <h3 style={{ fontWeight: 800, fontSize: '1.2rem', margin: 0, color: '#1a1a1a' }}>{cat.name}</h3>
+                                                <h3 className="ui-services-36" >{cat.name}</h3>
                                             </div>
-                                            <button
+                                            <button className="ui-services-37"
                                                 onClick={() => navigate(`/services?category=${cat.id || cat._id}`)}
-                                                style={{
-                                                    display: 'flex', alignItems: 'center', gap: 6,
-                                                    background: 'none', border: 'none',
-                                                    color: '#555', fontWeight: 600, fontSize: 13, cursor: 'pointer',
-                                                }}
+
                                             >
                                                 See all <FaArrowRight size={11} />
                                             </button>
                                         </div>
 
                                         {/* Services grid */}
-                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+                                        <div className="ui-services-38" >
                                             {pageServices.map(svc => {
                                                 const qty = getQty(svc._id);
                                                 return (
-                                                    <div key={svc._id} style={{
-                                                        background: '#fff', borderRadius: 16, padding: 16,
-                                                        boxShadow: '0 2px 10px rgba(0,0,0,0.06)',
-                                                        display: 'flex', gap: 14, alignItems: 'flex-start',
-                                                    }}>
-                                                        <div style={{ width: 90, height: 90, borderRadius: 12, overflow: 'hidden', flexShrink: 0, background: '#f0f0f0' }}>
+                                                    <div className="ui-services-39" key={svc._id} >
+                                                        <div className="ui-services-40" >
                                                             {svc.featuredImage
-                                                                ? <img src={resolveImageUrl(svc.featuredImage)} alt={svc.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                                : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FaTag size={24} color="#ccc" /></div>
+                                                                ? <img className="ui-services-41" src={resolveImageUrl(svc.featuredImage)} alt={svc.name}  />
+                                                                : <div className="ui-services-42" ><FaTag size={24} color="#ccc" /></div>
                                                             }
                                                         </div>
-                                                        <div style={{ flex: 1, minWidth: 0 }}>
-                                                            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{svc.name}</div>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 6 }}>
-                                                                <FaStar style={{ color: '#111', fontSize: 11 }} />
-                                                                <span style={{ fontWeight: 700, fontSize: 12 }}>{svc.ratingsAverage || 4.8}</span>
+                                                        <div className="ui-services-43" >
+                                                            <div className="ui-services-44" >{svc.name}</div>
+                                                            <div className="ui-services-45" >
+                                                                <FaStar className="ui-services-46"  />
+                                                                <span className="ui-services-47" >{svc.ratingsAverage || 4.8}</span>
                                                             </div>
-                                                            <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>
+                                                            <div className="ui-services-48" >
                                                                 Starts at ${getStartingPrice(svc.price)}
                                                             </div>
-                                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                                <span
+                                                            <div className="ui-services-49" >
+                                                                <span className="ui-services-50"
                                                                     onClick={() => navigate(`/service/${svc._id}`)}
-                                                                    style={{ color: '#555', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}
+
                                                                 >
                                                                     View details
                                                                 </span>
                                                                 {qty === 0 || hasActiveVariants(svc) ? (
-                                                                    <button
+                                                                    <button className="ui-services-51"
                                                                         onClick={() => handleAddService(svc)}
-                                                                        style={{ border: '1.5px solid #000', background: '#fff', color: '#000', fontWeight: 700, borderRadius: 20, padding: '4px 16px', cursor: 'pointer', fontSize: 13 }}
+
                                                                     >
                                                                         {hasActiveVariants(svc) ? 'Choose option' : 'Add'}
                                                                     </button>
                                                                 ) : (
-                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, border: '1.5px solid #000', borderRadius: 20, padding: '3px 10px' }}>
-                                                                        <button onClick={() => updateQuantity(svc._id, qty - 1)} style={{ border: 'none', background: 'none', fontWeight: 700, fontSize: 15, cursor: 'pointer', color: '#000', lineHeight: 1 }}>−</button>
-                                                                        <span style={{ fontWeight: 700, minWidth: 14, textAlign: 'center', fontSize: 13 }}>{qty}</span>
-                                                                        <button onClick={() => updateQuantity(svc._id, qty + 1)} style={{ border: 'none', background: 'none', fontWeight: 700, fontSize: 15, cursor: 'pointer', color: '#000', lineHeight: 1 }}>+</button>
+                                                                    <div className="ui-services-52" >
+                                                                        <button className="ui-services-53" onClick={() => updateQuantity(svc._id, qty - 1)} >−</button>
+                                                                        <span className="ui-services-54" >{qty}</span>
+                                                                        <button className="ui-services-55" onClick={() => updateQuantity(svc._id, qty + 1)} >+</button>
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -428,30 +418,30 @@ export default function Services() {
                             {/* Fallback: if categories didn't match, show flat list */}
                             {allCategories.length === 0 && services.length > 0 && (
                                 <div>
-                                    <h3 style={{ fontWeight: 800, fontSize: '1.2rem', marginBottom: 16 }}>All Services</h3>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+                                    <h3 className="ui-services-56" >All Services</h3>
+                                    <div className="ui-services-57" >
                                         {paginatedServices.map(svc => {
                                             const qty = getQty(svc._id);
                                             return (
-                                                <div key={svc._id} style={{ background: '#fff', borderRadius: 16, padding: 16, boxShadow: '0 2px 10px rgba(0,0,0,0.06)', display: 'flex', gap: 14 }}>
-                                                    <div style={{ width: 90, height: 90, borderRadius: 12, overflow: 'hidden', flexShrink: 0, background: '#f0f0f0' }}>
+                                                <div className="ui-services-58" key={svc._id} >
+                                                    <div className="ui-services-59" >
                                                         {svc.featuredImage
-                                                            ? <img src={resolveImageUrl(svc.featuredImage)} alt={svc.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                            : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FaTag size={24} color="#ccc" /></div>
+                                                            ? <img className="ui-services-60" src={resolveImageUrl(svc.featuredImage)} alt={svc.name}  />
+                                                            : <div className="ui-services-61" ><FaTag size={24} color="#ccc" /></div>
                                                         }
                                                     </div>
-                                                    <div style={{ flex: 1 }}>
-                                                        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>{svc.name}</div>
-                                                        <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10 }}>Starts at ${getStartingPrice(svc.price)}</div>
-                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                            <span onClick={() => navigate(`/service/${svc._id}`)} style={{ color: '#555', fontWeight: 600, fontSize: 12, cursor: 'pointer' }}>View details</span>
+                                                    <div className="ui-services-62" >
+                                                        <div className="ui-services-63" >{svc.name}</div>
+                                                        <div className="ui-services-64" >Starts at ${getStartingPrice(svc.price)}</div>
+                                                        <div className="ui-services-65" >
+                                                            <span className="ui-services-66" onClick={() => navigate(`/service/${svc._id}`)} >View details</span>
                                                             {qty === 0 || hasActiveVariants(svc) ? (
-                                                                <button onClick={() => handleAddService(svc)} style={{ border: '1.5px solid #000', background: '#fff', color: '#000', fontWeight: 700, borderRadius: 20, padding: '4px 16px', cursor: 'pointer', fontSize: 13 }}>{hasActiveVariants(svc) ? 'Choose option' : 'Add'}</button>
+                                                                <button className="ui-services-67" onClick={() => handleAddService(svc)} >{hasActiveVariants(svc) ? 'Choose option' : 'Add'}</button>
                                                             ) : (
-                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, border: '1.5px solid #000', borderRadius: 20, padding: '3px 10px' }}>
-                                                                    <button onClick={() => updateQuantity(svc._id, qty - 1)} style={{ border: 'none', background: 'none', fontWeight: 700, fontSize: 15, cursor: 'pointer', color: '#000' }}>−</button>
-                                                                    <span style={{ fontWeight: 700, minWidth: 14, textAlign: 'center' }}>{qty}</span>
-                                                                    <button onClick={() => updateQuantity(svc._id, qty + 1)} style={{ border: 'none', background: 'none', fontWeight: 700, fontSize: 15, cursor: 'pointer', color: '#000' }}>+</button>
+                                                                <div className="ui-services-68" >
+                                                                    <button className="ui-services-69" onClick={() => updateQuantity(svc._id, qty - 1)} >−</button>
+                                                                    <span className="ui-services-70" >{qty}</span>
+                                                                    <button className="ui-services-71" onClick={() => updateQuantity(svc._id, qty + 1)} >+</button>
                                                                 </div>
                                                             )}
                                                         </div>
@@ -472,98 +462,61 @@ export default function Services() {
 
     // ── Normal mode (category / subcategory / search) ──────────────────────────
     return (
-        <div style={{ background: '#f5f5f5', minHeight: '100vh' }}>
+        <div className="ui-services-72" >
             <VariantPickerModal service={variantService} selectedVariantId={selectedVariantId} onSelect={setSelectedVariantId} onClose={() => setVariantService(null)} onAdd={handleAddSelectedVariant} saving={addingVariant} />
-            <div style={{ maxWidth: 1280, margin: '0 auto', padding: '24px 16px', display: 'grid', gridTemplateColumns: '300px 1fr 280px', gap: 20, alignItems: 'start' }}>
+            <div className="ui-services-73" >
 
                 {/* ── LEFT: Category + Subcategories ── */}
-                <div style={{ background: '#fff', borderRadius: 16, padding: 20, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-                    <h2 style={{ fontWeight: 800, fontSize: '1.4rem', marginBottom: 4 }}>{categoryName}</h2>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
-                        <FaStar style={{ color: '#111' }} />
-                        <span style={{ fontWeight: 700 }}>4.8</span>
-                        <span style={{ color: '#888', fontSize: 13 }}>(12M+ bookings)</span>
+                <div className="ui-services-74" >
+                    <h2 className="ui-services-75" >{categoryName}</h2>
+                    <div className="ui-services-76" >
+                        <FaStar className="ui-services-77"  />
+                        <span className="ui-services-78" >4.8</span>
+                        <span className="ui-services-79" >(12M+ bookings)</span>
                     </div>
 
                     {/* One-App Cover */}
-                    <div style={{ background: '#f5f5f5', border: '1px solid #ddd', borderRadius: 12, padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, cursor: 'pointer' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <FaShieldAlt style={{ color: '#000000', fontSize: 18 }} />
+                    <div className="ui-services-80" >
+                        <div className="ui-services-81" >
+                            <FaShieldAlt className="ui-services-82"  />
                             <div>
-                                <div style={{ fontWeight: 700, fontSize: 13 }}>One-App Cover</div>
-                                <div style={{ fontSize: 12, color: '#555' }}>Up to 30 days warranty</div>
+                                <div className="ui-services-83" >One-App Cover</div>
+                                <div className="ui-services-84" >Up to 30 days warranty</div>
                             </div>
                         </div>
-                       
+
                     </div>
 
                     {searchQuery ? (
-                        <div style={{ fontSize: 13, color: '#888', textAlign: 'center', padding: '12px 0' }}>
+                        <div className="ui-services-85" >
                             Showing results for<br />
-                            <strong style={{ color: '#333' }}>"{searchQuery}"</strong>
+                            <strong className="ui-services-86" >"{searchQuery}"</strong>
                         </div>
                     ) : (
                         <>
-                            <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 12, color: '#333' }}>Select a service</div>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                            <div className="ui-services-87" >Select a service</div>
+                            <div className="ui-services-88" >
                                 {subcategories.map((sub) => {
                                     const isActive = activeSubId === sub._id;
                                     return (
-                                        <div
+                                        <div className="ui-services-89"
                                             key={sub._id}
                                             onClick={() => handleSubClick(sub)}
-                                            style={{
-                                                cursor: 'pointer',
-                                                background: isActive ? '#f0f0f0' : '#fff',
-                                                border: isActive ? '1.5px solid #000' : '1.5px solid #ddd',
-                                                borderRadius: '18px',
-                                                padding: '12px 6px 10px',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                alignItems: 'center',
-                                                justifyContent: 'flex-start',
-                                                textAlign: 'center',
-                                                minHeight: '100px',
-                                                boxShadow: isActive
-                                                    ? '0 0 0 2px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.12)'
-                                                    : '0 0 0 1px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.06)',
-                                                transition: 'all 0.2s ease',
-                                            }}
+                                            style={{ "--ui-services-89-background": cssValue(isActive ? "var(--ui-color-3)" : "var(--ui-color-2)", "background"), "--ui-services-89-border": cssValue(isActive ? '1.5px solid #000' : '1.5px solid #ddd', "border"), "--ui-services-89-box-shadow": cssValue(isActive ? '0 0 0 2px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.12)' : '0 0 0 1px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.06)', "boxShadow") }}
                                         >
                                             {/* Icon area */}
-                                            <div style={{
-                                                width: 38,
-                                                height: 38,
-                                                marginBottom: 6,
-                                                flexShrink: 0,
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                            }}>
+                                            <div className="ui-services-90" >
                                                 {sub.icon
-                                                    ? <img
+                                                    ? <img className="ui-services-91"
                                                         src={resolveSubImg(sub.icon)}
                                                         alt={sub.name}
-                                                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+
                                                     />
                                                     : <FaTag size={22} color="#222" />
                                                 }
                                             </div>
                                             {/* Label — max 2 lines, no mid-word break */}
-                                            <div style={{
-                                                fontSize: 11,
-                                                color: '#1a1a1a',
-                                                fontWeight: 600,
-                                                lineHeight: 1.35,
-                                                textAlign: 'center',
-                                                width: '100%',
-                                                display: '-webkit-box',
-                                                WebkitLineClamp: 2,
-                                                WebkitBoxOrient: 'vertical',
-                                                overflow: 'hidden',
-                                                overflowWrap: 'break-word',
-                                                wordBreak: 'break-word',
-                                            }}>
+                                            <div className="ui-services-92" >
                                                 {sub.name}
                                             </div>
                                         </div>
@@ -577,24 +530,24 @@ export default function Services() {
                 {/* ── CENTER: Banner + Services ── */}
                 <div>
                     {/* Hero Slider */}
-                    <div style={{ borderRadius: 16, overflow: 'hidden', marginBottom: 24, position: 'relative', height: 220, background: SLIDES[slide].bg, display: 'flex', alignItems: 'center', padding: '0 36px' }}>
-                        <div style={{ color: '#fff', maxWidth: 420 }}>
-                            <div style={{ background: 'rgba(255,255,255,0.2)', display: 'inline-block', padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 700, letterSpacing: 1, marginBottom: 10 }}>
+                    <div className="ui-services-93" style={{ "--ui-services-93-background": cssValue(SLIDES[slide].bg, "background") }}>
+                        <div className="ui-services-94" >
+                            <div className="ui-services-95" >
                                 {SLIDES[slide].tag}
                             </div>
-                            <h2 style={{ fontWeight: 800, fontSize: '1.5rem', lineHeight: 1.3, marginBottom: 8 ,color: 'white'}}>{SLIDES[slide].title}</h2>
-                            <p style={{ fontSize: 13, opacity: 0.85, lineHeight: 1.6, margin: 0 }}>{SLIDES[slide].desc}</p>
+                            <h2 className="ui-services-96" >{SLIDES[slide].title}</h2>
+                            <p className="ui-services-97" >{SLIDES[slide].desc}</p>
                         </div>
                         {/* Dots */}
-                        <div style={{ position: 'absolute', bottom: 14, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 6 }}>
+                        <div className="ui-services-98" >
                             {SLIDES.map((_, i) => (
-                                <div key={i} onClick={() => setSlide(i)} style={{ width: i === slide ? 24 : 8, height: 8, borderRadius: 4, background: i === slide ? '#fff' : 'rgba(255,255,255,0.4)', cursor: 'pointer', transition: 'all 0.3s' }} />
+                                <div className="ui-services-99" key={i} onClick={() => setSlide(i)} style={{ "--ui-services-99-width": cssValue(i === slide ? 24 : 8, "width"), "--ui-services-99-background": cssValue(i === slide ? "var(--ui-color-2)" : "var(--ui-color-277)", "background") }} />
                             ))}
                         </div>
                     </div>
 
                     {/* Services List */}
-                    <div style={{ fontWeight: 700, fontSize: '1.1rem', marginBottom: 16 }}>
+                    <div className="ui-services-100" >
                         {searchQuery
                             ? `Search results for "${searchQuery}" (${services.length} found)`
                             : activeSubName ? `Popular ${activeSubName} Services` : 'Popular Home Services'
@@ -602,75 +555,75 @@ export default function Services() {
                     </div>
 
                     {loading ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        <div className="ui-services-101" >
                             {Array(3).fill(0).map((_, i) => (
-                                <div key={i} style={{ background: '#fff', borderRadius: 16, padding: 20, display: 'flex', gap: 16 }}>
-                                    <div className="shimmer" style={{ width: 110, height: 110, borderRadius: 12, flexShrink: 0 }} />
-                                    <div style={{ flex: 1 }}>
-                                        <div className="shimmer" style={{ height: 18, width: '70%', borderRadius: 8, marginBottom: 10 }} />
-                                        <div className="shimmer" style={{ height: 12, width: '35%', borderRadius: 6, marginBottom: 10 }} />
-                                        <div className="shimmer" style={{ height: 12, width: '90%', borderRadius: 6, marginBottom: 6 }} />
-                                        <div className="shimmer" style={{ height: 12, width: '80%', borderRadius: 6, marginBottom: 18 }} />
-                                        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <div className="shimmer" style={{ height: 14, width: '20%', borderRadius: 6 }} />
-                                            <div className="shimmer" style={{ height: 32, width: 80, borderRadius: 20 }} />
+                                <div className="ui-services-102" key={i} >
+                                    <div className="shimmer ui-services-103"  />
+                                    <div className="ui-services-104" >
+                                        <div className="shimmer ui-services-105"  />
+                                        <div className="shimmer ui-services-106"  />
+                                        <div className="shimmer ui-services-107"  />
+                                        <div className="shimmer ui-services-108"  />
+                                        <div className="ui-services-109" >
+                                            <div className="shimmer ui-services-110"  />
+                                            <div className="shimmer ui-services-111"  />
                                         </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     ) : services.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: 40, color: '#888' }}>No services found.</div>
+                        <div className="ui-services-112" >No services found.</div>
                     ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                            
+                        <div className="ui-services-113" >
+
                             {paginatedServices.map(svc => {
                                 const qty = getQty(svc._id);
                                 return (
-                                    <div key={svc._id} style={{ background: '#fff', borderRadius: 16, padding: 20, boxShadow: '0 2px 10px rgba(0,0,0,0.06)', display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+                                    <div className="ui-services-114" key={svc._id} >
                                         {/* Image */}
-                                        <div style={{ width: 110, height: 110, borderRadius: 12, overflow: 'hidden', flexShrink: 0, background: '#f0f0f0' }}>
+                                        <div className="ui-services-115" >
                                             {svc.featuredImage
-                                                ? <img src={resolveImageUrl(svc.featuredImage)} alt={svc.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FaTag size={28} color="#ccc" /></div>}
+                                                ? <img className="ui-services-116" src={resolveImageUrl(svc.featuredImage)} alt={svc.name}  />
+                                                : <div className="ui-services-117" ><FaTag size={28} color="#ccc" /></div>}
                                         </div>
 
                                         {/* Info */}
-                                        <div style={{ flex: 1 }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
-                                                <div style={{ fontWeight: 700, fontSize: '1rem' }}>{svc.name}</div>
-                                                <div style={{ textAlign: 'right', flexShrink: 0, marginLeft: 12 }}>
-                                                    <div style={{ fontWeight: 700, fontSize: 14 }}>Starts at ${getStartingPrice(svc.price)}</div>
+                                        <div className="ui-services-118" >
+                                            <div className="ui-services-119" >
+                                                <div className="ui-services-120" >{svc.name}</div>
+                                                <div className="ui-services-121" >
+                                                    <div className="ui-services-122" >Starts at ${getStartingPrice(svc.price)}</div>
                                                     {/* {svc.duration && <div style={{ fontSize: 12, color: '#888' }}>• {svc.duration}</div>} */}
                                                 </div>
                                             </div>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                                                <FaStar style={{ color: '#111', fontSize: 12 }} />
-                                                <span style={{ fontWeight: 700, fontSize: 13 }}>{svc.ratingsAverage || 4.8}</span>
-                                                {svc.ratingsCount && <span style={{ color: '#888', fontSize: 12 }}>({(svc.ratingsCount / 1000000).toFixed(1)}M reviews)</span>}
+                                            <div className="ui-services-123" >
+                                                <FaStar className="ui-services-124"  />
+                                                <span className="ui-services-125" >{svc.ratingsAverage || 4.8}</span>
+                                                {svc.ratingsCount && <span className="ui-services-126" >({(svc.ratingsCount / 1000000).toFixed(1)}M reviews)</span>}
                                             </div>
-                                            <p style={{ fontSize: 13, color: '#555', lineHeight: 1.6, margin: '0 0 12px' }}>
+                                            <p className="ui-services-127" >
                                                 {svc.shortDescription ? svc.shortDescription.slice(0, 100) + (svc.description.length > 100 ? '...' : '') : ''}
                                             </p>
-                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                <span
+                                            <div className="ui-services-128" >
+                                                <span className="ui-services-129"
                                                     onClick={() => navigate(`/service/${svc._id}`)}
-                                                    style={{ color: '#000000', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}
+
                                                 >
                                                     View details
                                                 </span>
                                                 {qty === 0 || hasActiveVariants(svc) ? (
-                                                    <button
+                                                    <button className="ui-services-130"
                                                         onClick={() => handleAddService(svc)}
-                                                        style={{ border: '1.5px solid #000000', background: '#fff', color: '#000000', fontWeight: 700, borderRadius: 20, padding: '6px 24px', cursor: 'pointer', fontSize: 14 }}
+
                                                     >
                                                         {hasActiveVariants(svc) ? 'Choose option' : 'Add'}
                                                     </button>
                                                 ) : (
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, border: '1.5px solid #000000', borderRadius: 20, padding: '4px 12px' }}>
-                                                        <button onClick={() => updateQuantity(svc._id, qty - 1)} style={{ border: 'none', background: 'none', fontWeight: 700, fontSize: 16, cursor: 'pointer', color: '#000000', lineHeight: 1 }}>−</button>
-                                                        <span style={{ fontWeight: 700, minWidth: 16, textAlign: 'center' }}>{qty}</span>
-                                                        <button onClick={() => updateQuantity(svc._id, qty + 1)} style={{ border: 'none', background: 'none', fontWeight: 700, fontSize: 16, cursor: 'pointer', color: '#000000', lineHeight: 1 }}>+</button>
+                                                    <div className="ui-services-131" >
+                                                        <button className="ui-services-132" onClick={() => updateQuantity(svc._id, qty - 1)} >−</button>
+                                                        <span className="ui-services-133" >{qty}</span>
+                                                        <button className="ui-services-134" onClick={() => updateQuantity(svc._id, qty + 1)} >+</button>
                                                     </div>
                                                 )}
                                             </div>
@@ -684,12 +637,12 @@ export default function Services() {
                 </div>
 
                 {/* ── RIGHT: Promise + Cart ── */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div className="ui-services-135" >
                     {/* One-App Promise */}
-                    <div style={{ background: '#fff', borderRadius: 16, padding: 20, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                            <FaMedal style={{ color: '#000000', fontSize: 22 }} />
-                            <span style={{ fontWeight: 700, fontSize: 15 }}>One-App Promise</span>
+                    <div className="ui-services-136" >
+                        <div className="ui-services-137" >
+                            <FaMedal className="ui-services-138"  />
+                            <span className="ui-services-139" >One-App Promise</span>
                         </div>
                         {[
                             'Verified Professionals',
@@ -697,43 +650,43 @@ export default function Services() {
                             'Easy Booking & Rescheduling',
                             'Quality Guaranteed',
                         ].map((item) => (
-                            <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-                                <FaCheckCircle style={{ color: '#000000', fontSize: 15, flexShrink: 0 }} />
-                                <span style={{ fontSize: 13, color: '#333' }}>{item}</span>
+                            <div className="ui-services-140" key={item} >
+                                <FaCheckCircle className="ui-services-141"  />
+                                <span className="ui-services-142" >{item}</span>
                             </div>
                         ))}
                     </div>
 
                     {/* Cart */}
-                    <div style={{ background: '#fff', borderRadius: 16, padding: 20, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
-                        <div style={{ fontWeight: 800, fontSize: '1.5rem', marginBottom: 16 }}>Cart</div>
+                    <div className="ui-services-143" >
+                        <div className="ui-services-144" >Cart</div>
 
                         {cartItems.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                                <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+                            <div className="ui-services-145" >
+                                <div className="ui-services-146" >
                                     <FaShoppingCart size={28} color="#aaa" />
                                 </div>
-                                <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>No items in your cart</div>
-                                <div style={{ fontSize: 13, color: '#888' }}>Add services to see them here.</div>
+                                <div className="ui-services-147" >No items in your cart</div>
+                                <div className="ui-services-148" >Add services to see them here.</div>
                             </div>
                         ) : (
                             <>
                                 {cartItems.map(({ service: svc, quantity, selectedAddons }) => (
-                                    <div key={svc._id} style={{ marginBottom: 16 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                                            <span style={{ fontSize: 14, fontWeight: 500 }}>{svc.subcategory?.name || svc.name}{selectedAddons?.length > 0 && <small style={{ display: 'block', marginTop: 3, color: '#777' }}>Add-ons: {selectedAddons.map(addon => addon.name).join(', ')}</small>}</span>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, border: '1px solid #ddd', borderRadius: 8, padding: '2px 8px' }}>
-                                                <button onClick={() => updateQuantity(svc._id, quantity - 1)} style={{ border: 'none', background: 'none', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>−</button>
-                                                <span style={{ fontWeight: 700, fontSize: 13 }}>{quantity}</span>
-                                                <button onClick={() => updateQuantity(svc._id, quantity + 1)} style={{ border: 'none', background: 'none', fontWeight: 700, cursor: 'pointer', fontSize: 14 }}>+</button>
+                                    <div className="ui-services-149" key={svc._id} >
+                                        <div className="ui-services-150" >
+                                            <span className="ui-services-151" >{svc.subcategory?.name || svc.name}{selectedAddons?.length > 0 && <small className="ui-services-152" >Add-ons: {selectedAddons.map(addon => addon.name).join(', ')}</small>}</span>
+                                            <div className="ui-services-153" >
+                                                <button className="ui-services-154" onClick={() => updateQuantity(svc._id, quantity - 1)} >−</button>
+                                                <span className="ui-services-155" >{quantity}</span>
+                                                <button className="ui-services-156" onClick={() => updateQuantity(svc._id, quantity + 1)} >+</button>
                                             </div>
                                         </div>
                                         {/* <div style={{ textAlign: 'right', fontWeight: 700, fontSize: 14 }}>${svc.price * quantity}</div> */}
                                     </div>
                                 ))}
-                                <button
+                                <button className="ui-services-157"
                                     onClick={() => navigate('/cart')}
-                                    style={{ width: '100%', background: '#000000', color: '#fff', border: 'none', borderRadius: 12, padding: '14px 0', fontWeight: 700, fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 20, paddingRight: 20, marginTop: 8 }}
+
                                 >
                                     <span>${cartTotal.toLocaleString()}</span>
                                     <span>View Cart</span>

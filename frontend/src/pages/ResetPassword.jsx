@@ -1,3 +1,5 @@
+import { cssValue } from '../utils/cssValue';
+import '../styles/ResetPassword.css';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { FaLock, FaEye, FaEyeSlash, FaArrowLeft } from 'react-icons/fa';
@@ -54,88 +56,81 @@ const ResetPassword = () => {
     };
 
     return (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: '100vh' }}>
+        <div className="ui-resetpassword-1" >
             {/* Left - illustration */}
             <ResetAuthPanel />
 
             {/* Right - Form */}
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '48px 64px', background: '#fff' }}>
-                <div style={{ maxWidth: 380, width: '100%', margin: '0 auto' }}>
-                    <Link to="/forgot-password" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#555', textDecoration: 'none', fontSize: '0.88rem', marginBottom: 32 }}>
+            <div className="ui-resetpassword-2" >
+                <div className="ui-resetpassword-3" >
+                    <Link className="ui-resetpassword-4" to="/forgot-password" >
                         <FaArrowLeft size={12} /> Back
                     </Link>
 
-                    <div style={{ marginBottom: 28 }}>
-                        <h2 style={{ fontWeight: 800, fontSize: '1.8rem', marginBottom: 8 }}>
-                            Reset <span style={{ color: '#000000' }}>Password</span>
+                    <div className="ui-resetpassword-5" >
+                        <h2 className="ui-resetpassword-6" >
+                            Reset <span className="ui-resetpassword-7" >Password</span>
                         </h2>
-                        <p style={{ color: '#777', fontSize: '0.9rem', lineHeight: 1.5 }}>
+                        <p className="ui-resetpassword-8" >
                             Create a new strong password for your account.
                         </p>
-                        <div style={{ width: 40, height: 3, background: '#000000', marginTop: 12 }} />
+                        <div className="ui-resetpassword-9"  />
                     </div>
 
                     <form onSubmit={handleSubmit}>
-                        <div style={{ marginBottom: 16 }}>
-                            <label style={{ fontWeight: 700, fontSize: '0.85rem', display: 'block', marginBottom: 6 }}>New Password</label>
-                            <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #ddd', borderRadius: 8, padding: '10px 14px', gap: 10 }}>
+                        <div className="ui-resetpassword-10" >
+                            <label className="ui-resetpassword-11" >New Password</label>
+                            <div className="ui-resetpassword-12" >
                                 <FaLock color="#888" size={14} />
-                                <input
+                                <input className="ui-resetpassword-13"
                                     type={showNew ? 'text' : 'password'}
                                     required
                                     placeholder="••••••••"
                                     value={newPassword}
                                     onChange={e => setNewPassword(e.target.value)}
-                                    style={{ border: 'none', outline: 'none', flex: 1, fontSize: '0.95rem' }}
+
                                 />
-                                <button type="button" onClick={() => setShowNew(!showNew)}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#888' }}>
+                                <button className="ui-resetpassword-14" type="button" onClick={() => setShowNew(!showNew)}
+                                    >
                                     {showNew ? <FaEye size={15} /> : <FaEyeSlash size={15} />}
                                 </button>
                             </div>
                         </div>
 
-                        <div style={{ marginBottom: 20 }}>
-                            <label style={{ fontWeight: 700, fontSize: '0.85rem', display: 'block', marginBottom: 6 }}>Confirm Password</label>
-                            <div style={{
-                                display: 'flex', alignItems: 'center', borderRadius: 8, padding: '10px 14px', gap: 10,
-                                border: `1.5px solid ${passwordsMismatch ? '#e53935' : passwordsMatch ? '#000000' : '#ddd'}`,
-                            }}>
+                        <div className="ui-resetpassword-15" >
+                            <label className="ui-resetpassword-16" >Confirm Password</label>
+                            <div className="ui-resetpassword-17" style={{ "--ui-resetpassword-17-border": cssValue(`1.5px solid ${passwordsMismatch ? '#e53935' : passwordsMatch ? '#000000' : '#ddd'}`, "border") }}>
                                 <FaLock color={passwordsMismatch ? '#e53935' : passwordsMatch ? '#000000' : '#888'} size={14} />
-                                <input
+                                <input className="ui-resetpassword-18"
                                     type={showConfirm ? 'text' : 'password'}
                                     required
                                     placeholder="••••••••"
                                     value={confirmPassword}
                                     onChange={e => setConfirmPassword(e.target.value)}
-                                    style={{ border: 'none', outline: 'none', flex: 1, fontSize: '0.95rem' }}
+
                                 />
-                                <button type="button" onClick={() => setShowConfirm(!showConfirm)}
-                                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: '#888' }}>
+                                <button className="ui-resetpassword-19" type="button" onClick={() => setShowConfirm(!showConfirm)}
+                                    >
                                     {showConfirm ? <FaEye size={15} /> : <FaEyeSlash size={15} />}
                                 </button>
                             </div>
                             {passwordsMismatch && (
-                                <p style={{ color: '#e53935', fontSize: '0.78rem', marginTop: 4, marginBottom: 0 }}>Passwords do not match</p>
+                                <p className="ui-resetpassword-20" >Passwords do not match</p>
                             )}
                             {passwordsMatch && (
-                                <p style={{ color: '#000000', fontSize: '0.78rem', marginTop: 4, marginBottom: 0 }}>✓ Passwords match</p>
+                                <p className="ui-resetpassword-21" >✓ Passwords match</p>
                             )}
                         </div>
 
-                        <button type="submit" disabled={loading || passwordsMismatch}
-                            style={{
-                                width: '100%', background: passwordsMismatch ? '#aaa' : '#000000', color: '#fff', border: 'none',
-                                borderRadius: 8, padding: '13px', fontWeight: 700, fontSize: '1rem', cursor: passwordsMismatch ? 'not-allowed' : 'pointer',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                            }}>
-                            {loading ? 'Resetting...' : 'Reset Password'} <span style={{ fontSize: '1.1rem' }}>→</span>
+                        <button className="ui-resetpassword-22" type="submit" disabled={loading || passwordsMismatch}
+                            style={{ "--ui-resetpassword-22-background": cssValue(passwordsMismatch ? "var(--ui-color-19)" : "var(--ui-color-27)", "background"), "--ui-resetpassword-22-cursor": cssValue(passwordsMismatch ? 'not-allowed' : 'pointer', "cursor") }}>
+                            {loading ? 'Resetting...' : 'Reset Password'} <span className="ui-resetpassword-23" >→</span>
                         </button>
                     </form>
 
-                    <p style={{ textAlign: 'center', marginTop: 20, fontSize: '0.88rem', color: '#555' }}>
+                    <p className="ui-resetpassword-24" >
                         Remember your Password?{' '}
-                        <Link to="/login" style={{ color: '#000000', fontWeight: 700, textDecoration: 'none' }}>Sign In</Link>
+                        <Link className="ui-resetpassword-25" to="/login" >Sign In</Link>
                     </p>
                 </div>
             </div>

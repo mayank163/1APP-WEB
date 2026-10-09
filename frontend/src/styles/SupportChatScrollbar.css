@@ -1,0 +1,90 @@
+.tech-chat-thread {
+    overflow-y: scroll;
+    scrollbar-color: #d6cabb #f2ede6;
+    scrollbar-width: thin;
+}
+
+.support-chat-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: calc(100vh - 74px);
+    min-height: 0;
+    overflow: hidden;
+    padding: var(--ui-space-251);
+    background: var(--ui-color-209);
+}
+
+.support-chat-shell {
+    width: min(100%, 980px);
+    height: min(720px, 100%);
+    min-height: 0;
+    margin: var(--ui-space-25);
+    border: 1px solid #dfe8e5;
+    border-radius: 10px;
+    box-shadow: 0 14px 36px #46615a1a;
+    background: var(--ui-color-2);
+}
+
+.support-chat-header {
+    display: flex;
+    align-items: center;
+    min-height: 96px;
+    padding: var(--ui-space-252);
+    border-bottom: 1px solid #e2eae7;
+    background: var(--ui-color-2);
+}
+
+.support-chat-avatar {
+    display: grid;
+    flex: 0 0 58px;
+    place-items: center;
+    width: 58px;
+    height: 58px;
+    overflow: hidden;
+    border-radius: 50%;
+    background: var(--ui-color-210);
+    color: var(--ui-color-211);
+    font-weight: 700;
+}
+
+.support-chat-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.support-chat-person { margin-left: var(--ui-space-1); }
+.support-chat-person h1 { margin: var(--ui-space-244); color: var(--ui-color-212); font: 700 21px/1.2 Arial, sans-serif; }
+.support-chat-person p { margin: var(--ui-space-16); color: var(--ui-color-213); font: 15px/1.3 Arial, sans-serif; }
+.support-chat-person p span { padding: var(--ui-space-185); }
+.support-chat-new { margin-left: var(--ui-space-176); padding: var(--ui-space-9); border: 0; background: var(--ui-color-120); color: var(--ui-color-214); cursor: pointer; }
+.support-chat-new svg { width: 24px; height: 24px; stroke-width: 2; }
+
+.support-chat-shell .tech-chat-thread {
+    padding: var(--ui-space-253);
+    background-color: var(--ui-color-215);
+    background-image: linear-gradient(#e9f0ee 1px, transparent 1px), linear-gradient(90deg, #e9f0ee 1px, transparent 1px);
+    background-size: 36px 36px;
+}
+
+.support-chat-shell .tech-chat-message { margin: var(--ui-space-45); }
+.support-chat-shell .tech-chat-bubble { max-width: min(72%, 520px); padding: var(--ui-space-254); border: 1px solid #edf1f0; border-radius: 5px 17px 17px 17px; background: var(--ui-color-2); box-shadow: 0 2px 4px #3d5a5210; }
+.support-chat-shell .tech-chat-message.mine .tech-chat-bubble { border-color: #ccefe5; border-radius: 17px 5px 17px 17px; background: var(--ui-color-216); }
+.support-chat-shell .tech-chat-bubble p { margin: var(--ui-space-171); color: var(--ui-color-217); font: 16px/1.35 Arial, sans-serif; }
+.support-chat-shell .tech-chat-bubble time { color: var(--ui-color-218); font-size: var(--ui-font-size-6); }
+.support-chat-check { color: var(--ui-color-219); }
+
+.support-chat-shell .tech-chat-composer { min-height: 90px; padding: var(--ui-space-255); border-top: 1px solid #e1eae7; background: var(--ui-color-2); }
+.support-chat-shell .tech-chat-composer > input { height: 54px; border: 1px solid #dce6e3; border-radius: 28px; padding: var(--ui-space-37); font-size: var(--ui-font-size-1); }
+.support-chat-shell .tech-chat-composer > button { width: 48px; height: 48px; border-radius: 50%; background: var(--ui-color-220); }
+.support-chat-shell .tech-chat-attach { color: var(--ui-color-221); }
+.support-chat-shell .tech-chat-hint { display: none; }
+
+@media (max-width: 640px) {
+    .support-chat-page { height: calc(100vh - 56px); padding: var(--ui-space-23); }
+    .support-chat-shell { height: 100%; border-radius: 8px; }
+    .support-chat-header { min-height: 78px; padding: var(--ui-space-256); }
+    .support-chat-avatar { flex-basis: 46px; width: 46px; height: 46px; }
+    .support-chat-person { margin-left: var(--ui-space-257); }
+    .support-chat-person h1 { font-size: var(--ui-font-size-5); }
+    .support-chat-person p { font-size: var(--ui-font-size-6); }
+    .support-chat-shell .tech-chat-thread { padding: var(--ui-space-258); }
+    .support-chat-shell .tech-chat-bubble { max-width: 82%; }
+    .support-chat-shell .tech-chat-composer { padding: var(--ui-space-259); }
+}

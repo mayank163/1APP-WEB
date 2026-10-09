@@ -1,0 +1,267 @@
+
+/* Extracted presentation styles; repeated class specificity preserves inline precedence. */
+.admin-login-1.admin-login-1.admin-login-1 {
+  background: linear-gradient(135deg, var(--admin-color--1a1208) 0%, var(--admin-color--2d1f0a) 50%, var(--admin-color--1a1208) 100%);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--admin-space-48px);
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-login-2.admin-login-2.admin-login-2 {
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: var(--admin-color-rgba-165--115--47--0-08-);
+}
+
+.admin-login-3.admin-login-3.admin-login-3 {
+  position: absolute;
+  bottom: -60px;
+  left: -60px;
+  width: 240px;
+  height: 240px;
+  border-radius: 50%;
+  background: var(--admin-color-rgba-165--115--47--0-06-);
+}
+
+.admin-login-4.admin-login-4.admin-login-4 {
+  position: absolute;
+  top: 40%;
+  left: -40px;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: var(--admin-color-rgba-165-115-47-0-05-);
+}
+
+.admin-login-5.admin-login-5.admin-login-5 {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: var(--admin-color-rgba-165-115-47-0-15-);
+  border: 2px solid var(--admin-color-rgba-165-115-47-0-4-);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--admin-space-28px);
+}
+
+.admin-login-6.admin-login-6.admin-login-6 {
+  font-weight: 800;
+  font-size: var(--admin-font-size-1-6rem);
+  color: var(--admin-color-white);
+  letter-spacing: 3px;
+  margin-bottom: var(--admin-space-8px);
+  font-family: var(--admin-font-monospace);
+}
+
+.admin-login-7.admin-login-7.admin-login-7 {
+  font-weight: 600;
+  font-size: var(--admin-font-size-0-85rem);
+  color: var(--admin-color-rgba-165-115-47-0-7-);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: var(--admin-space-32px);
+}
+
+.admin-login-8.admin-login-8.admin-login-8 {
+  width: 48px;
+  height: 3px;
+  background: var(--admin-color-brand);
+  border-radius: 2px;
+  margin-bottom: var(--admin-space-32px);
+  opacity: 0.6;
+}
+
+.admin-login-9.admin-login-9.admin-login-9 {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-10px);
+  margin-bottom: var(--admin-space-14px);
+  width: 100%;
+  max-width: 260px;
+}
+
+.admin-login-10.admin-login-10.admin-login-10 {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--admin-color-brand);
+  flex-shrink: 0;
+}
+
+.admin-login-11.admin-login-11.admin-login-11 {
+  color: var(--admin-color-rgba-255-255-255-0-6-);
+  font-size: var(--admin-font-size-0-88rem);
+}
+
+.admin-login-12.admin-login-12.admin-login-12 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.admin-login-13.admin-login-13.admin-login-13 {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--admin-space-48px) var(--admin-space-56px);
+  background: var(--admin-color-white);
+  height: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.admin-login-14.admin-login-14.admin-login-14 {
+  max-width: 400px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.admin-login-15.admin-login-15.admin-login-15 {
+  text-align: center;
+  margin-bottom: var(--admin-space-32px);
+}
+
+.admin-login-16.admin-login-16.admin-login-16 {
+  font-weight: 800;
+  font-size: var(--admin-font-size-1-25rem);
+  color: var(--admin-color-heading);
+  margin-bottom: var(--admin-space-4px);
+  letter-spacing: 0.5px;
+}
+
+.admin-login-17.admin-login-17.admin-login-17 {
+  color: var(--admin-color-brand);
+}
+
+.admin-login-18.admin-login-18.admin-login-18 {
+  font-weight: 800;
+  font-size: var(--admin-font-size-1-9rem);
+  color: var(--admin-color-brand);
+  margin: var(--admin-space-4px) 0 var(--admin-space-8px);
+}
+
+.admin-login-19.admin-login-19.admin-login-19 {
+  color: var(--admin-color--888);
+  font-size: var(--admin-font-size-0-9rem);
+  margin: 0;
+}
+
+.admin-login-20.admin-login-20.admin-login-20 {
+  width: 40px;
+  height: 3px;
+  background: var(--admin-color-brand);
+  margin: var(--admin-space-12px) auto 0;
+  border-radius: 2px;
+}
+
+.admin-login-21.admin-login-21.admin-login-21 {
+  margin-bottom: var(--admin-space-16px);
+}
+
+.admin-login-22.admin-login-22.admin-login-22 {
+  font-weight: 700;
+  font-size: var(--admin-font-size-0-85rem);
+  display: block;
+  margin-bottom: var(--admin-space-6px);
+  color: var(--admin-color-heading);
+}
+
+.admin-login-23.admin-login-23.admin-login-23 {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--admin-color--ccc);
+  border-radius: 8px;
+  padding: var(--admin-space-10px) var(--admin-space-14px);
+  gap: var(--admin-space-10px);
+}
+
+.admin-login-24.admin-login-24.admin-login-24 {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: var(--admin-font-size-0-95rem);
+  background: transparent;
+}
+
+.admin-login-25.admin-login-25.admin-login-25 {
+  margin-bottom: var(--admin-space-8px);
+}
+
+.admin-login-26.admin-login-26.admin-login-26 {
+  font-weight: 700;
+  font-size: var(--admin-font-size-0-85rem);
+  display: block;
+  margin-bottom: var(--admin-space-6px);
+  color: var(--admin-color-heading);
+}
+
+.admin-login-27.admin-login-27.admin-login-27 {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid var(--admin-color--ccc);
+  border-radius: 8px;
+  padding: var(--admin-space-10px) var(--admin-space-14px);
+  gap: var(--admin-space-10px);
+}
+
+.admin-login-28.admin-login-28.admin-login-28 {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: var(--admin-font-size-0-95rem);
+  background: transparent;
+  flex: 1;
+}
+
+.admin-login-29.admin-login-29.admin-login-29 {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: var(--admin-color--aaa);
+  display: flex;
+}
+
+.admin-login-30.admin-login-30.admin-login-30 {
+  width: 100%;
+  background: var(--admin-color-brand);
+  color: var(--admin-color-white);
+  border: none;
+  border-radius: 8px;
+  padding: var(--admin-space-13px);
+  font-weight: 700;
+  font-size: var(--admin-font-size-1rem);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--admin-space-8px);
+  margin-top: var(--admin-space-24px);
+  opacity: var(--admin-login-30-opacity);
+}
+
+.admin-login-31.admin-login-31.admin-login-31 {
+  font-size: var(--admin-font-size-1-1rem);
+}
+
+.admin-login-32.admin-login-32.admin-login-32 {
+  text-align: center;
+  margin-top: var(--admin-space-28px);
+  font-size: var(--admin-font-size-0-82rem);
+  color: var(--admin-color--bbb);
+}
+
+/* State-dependent presentation stays in CSS. */
+.admin-login-state-1 { --admin-login-30-opacity: 0.7; }
+.admin-login-state-2 { --admin-login-30-opacity: 1; }

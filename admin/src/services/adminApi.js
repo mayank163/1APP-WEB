@@ -72,6 +72,8 @@ const adminApi = {
     getTechnicianJobTemplates: async () => (await API.get('/admin/technician-job-templates')).data,
     createTechnicianJobTemplate: async (payload) => (await API.post('/admin/technician-job-templates', payload)).data,
     sendJobInvitation: async (jobId, payload) => (await API.post(`/admin/technician-jobs/${jobId}/invitations`, payload)).data,
+    saveTechnicianNote: async (id, note) => (await API.patch(`/admin/technicians/${id}/note`, { note })).data,
+    getTechnicianFinancials: async (id, params = {}) => (await API.get(`/admin/technicians/${id}/financials`, { params })).data,
     getTechnicianJobs: async () => (await API.get('/admin/technician-jobs')).data,
     createTechnicianJob: async (payload) => (await API.post('/admin/technician-jobs', payload)).data,
     updateTechnicianJob: async (id, payload) => (await API.put(`/admin/technician-jobs/${id}`, payload)).data,
@@ -92,6 +94,7 @@ const adminApi = {
 
     getTechnicianVerificationRequests: async () => (await API.get('/admin/technician-verifications')).data,
     updateTechnicianVerificationStatus: async (technicianId, payload) => (await API.patch(`/admin/technician-verifications/${technicianId}/status`, payload)).data,
+    assignTechnicianReviewer: async (technicianId, reviewerId) => (await API.patch(`/admin/technician-verifications/${technicianId}/reviewer`, { reviewerId })).data,
     updateDocumentStatus: async (technicianId, documentId, payload) => (await API.patch(`/admin/technician-verifications/${technicianId}/documents/${documentId}`, payload)).data,
 
     // ─── Users ─────────────────────────────────────────────────────────────────

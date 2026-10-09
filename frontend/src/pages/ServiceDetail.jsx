@@ -1,3 +1,5 @@
+import { cssValue } from '../utils/cssValue';
+import '../styles/ServiceDetail.css';
 import React, { useEffect, useState, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import serviceService from '../services/serviceService';
@@ -166,75 +168,68 @@ const ServiceDetail = () => {
     const discountPct = service.discountPercentage || 0;
 
     return (
-        <div style={{ maxWidth: '900px', margin: '20px auto', padding: '0 16px 80px' }}>
+        <div className="ui-servicedetail-1" >
 
             {/* Gallery Carousel */}
-            <div style={{ position: 'relative', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', gap: '8px', borderRadius: '16px', overflow: 'hidden', height: '260px' }}>
+            <div className="ui-servicedetail-2" >
+                <div className="ui-servicedetail-3" >
                     {visibleImages.map((img, i) => (
-                        <div key={i} style={{ flex: 1, overflow: 'hidden', borderRadius: '12px' }}>
-                            <img src={img || 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600'} alt=""
-                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <div className="ui-servicedetail-4" key={i} >
+                            <img className="ui-servicedetail-5" src={img || 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=600'} alt=""
+                                 />
                         </div>
                     ))}
                 </div>
                 {galleryIndex > 0 && (
-                    <button onClick={handlePrev} style={navBtnStyle('left')}>‹</button>
+                    <button className="ui-servicedetail-6" onClick={handlePrev} >‹</button>
                 )}
                 {galleryIndex < totalSlides - 1 && (
-                    <button onClick={handleNext} style={navBtnStyle('right')}>›</button>
+                    <button className="ui-servicedetail-7" onClick={handleNext} >›</button>
                 )}
                 {/* Dot indicators */}
-                <div style={{ display: 'flex', gap: '6px', marginTop: '10px' }}>
+                <div className="ui-servicedetail-8" >
                     {Array.from({ length: totalSlides }).map((_, i) => (
-                        <div key={i} onClick={() => setGalleryIndex(i)} style={{
-                            flex: i === galleryIndex ? 2 : 1,
-                            height: '4px',
-                            borderRadius: '2px',
-                            background: i === galleryIndex ? '#1a1a2e' : '#d0d0d0',
-                            cursor: 'pointer',
-                            transition: 'flex 0.3s'
-                        }} />
+                        <div className="ui-servicedetail-9" key={i} onClick={() => setGalleryIndex(i)} style={{ "--ui-servicedetail-9-flex": cssValue(i === galleryIndex ? 2 : 1, "flex"), "--ui-servicedetail-9-background": cssValue(i === galleryIndex ? "var(--ui-color-59)" : "var(--ui-color-274)", "background") }} />
                     ))}
                 </div>
             </div>
 
             {/* Title */}
-            <div style={{ borderBottom: '1px solid #eee', paddingBottom: '16px', marginBottom: '24px' }}>
-                <h1 style={{ fontSize: '24px', fontWeight: '700', margin: '0 0 6px' }}>
+            <div className="ui-servicedetail-10" >
+                <h1 className="ui-servicedetail-11" >
                     {service.name}
                 </h1>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                    <span style={{ color: '#1a1a2e', fontWeight: '600', fontSize: '14px' }}>★ {service.ratingsAverage?.toFixed(2) || '4.50'}</span>
-                    <a href="#reviews" style={{ color: '#888', fontSize: '13px', textDecoration: 'underline' }}>({service.ratingsQuantity > 0 ? `${service.ratingsQuantity}` : '6.1M'} reviews)</a>
+                <div className="ui-servicedetail-12" >
+                    <span className="ui-servicedetail-13" >★ {service.ratingsAverage?.toFixed(2) || '4.50'}</span>
+                    <a className="ui-servicedetail-14" href="#reviews" >({service.ratingsQuantity > 0 ? `${service.ratingsQuantity}` : '6.1M'} reviews)</a>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: discountPct > 0 ? '4px' : 0 }}>
-                    <span style={{ fontSize: '16px', fontWeight: '700', color: '#1a1a2e' }}>${formatServicePrice(service.price ?? (service.offerPrice || service.actualPrice), 2)}</span>
+                <div className="ui-servicedetail-15" style={{ "--ui-servicedetail-15-margin-bottom": cssValue(discountPct > 0 ? "var(--ui-space-14)" : 0, "marginBottom") }}>
+                    <span className="ui-servicedetail-16" >${formatServicePrice(service.price ?? (service.offerPrice || service.actualPrice), 2)}</span>
                     {discountPct > 0 && (
-                        <span style={{ fontSize: '14px', color: '#999', textDecoration: 'line-through' }}>${(service.actualPrice || 0).toFixed(2)}</span>
+                        <span className="ui-servicedetail-17" >${(service.actualPrice || 0).toFixed(2)}</span>
                     )}
-                    <span style={{ color: '#555', fontSize: '14px', display:'none'}}>• {service.duration} hrs</span>
+                    <span className="ui-servicedetail-18" >• {service.duration} hrs</span>
                 </div>
                 {service.hasVariants && service.variants?.length > 0 && (() => {
                     const cheapest = service.variants.reduce((min, v) => (v.offerPrice || v.actualPrice || v.price || 0) < (min.offerPrice || min.actualPrice || min.price || 0) ? v : min, service.variants[0]);
                     const perUnit = cheapest.quantity > 1 ? ((cheapest.offerPrice || cheapest.actualPrice || cheapest.price || 0) / cheapest.quantity).toFixed(2) : null;
                     return perUnit ? (
-                        <div style={{ color: '#000000', fontSize: '14px', fontWeight: '600' }}>♦ ${perUnit} per bathroom</div>
+                        <div className="ui-servicedetail-19" >♦ ${perUnit} per bathroom</div>
                     ) : null;
                 })()}
             </div>
 
             {/* Select Requirements / Variants — only show if hasVariants true with variants */}
             {service.hasVariants && service.variants?.length > 0 && <Section>
-                <h2 style={sectionTitle}>Select requirements</h2>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <span style={{ fontSize: '15px', color: '#333' }}>Select no. of bathrooms</span>
+                <h2 className="ui-servicedetail-20" >Select requirements</h2>
+                <div className="ui-servicedetail-21" >
+                    <span className="ui-servicedetail-22" >Select no. of bathrooms</span>
                     {/* <button onClick={() => setRequirementsOpen(o => !o)} style={plainBtn}>
                         {requirementsOpen ? '∧' : '∨'}
                     </button> */}
                 </div>
                 {requirementsOpen && (
-                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    <div className="ui-servicedetail-23" >
                         {service.variants.map(v => {
                             const isSelected = selectedVariant?._id === v._id;
                             const vDiscount = v.discountPercentage || 0;
@@ -242,19 +237,19 @@ const ServiceDetail = () => {
                             const vActual = getStartingPrice(v.actualPrice || v.price);
                             const perUnit = v.quantity > 1 ? (vOffer / v.quantity).toFixed(2) : null;
                             return (
-                                <div key={v._id} onClick={() => setSelectedVariant(v)}
-                                    style={{ ...variantCard, border: isSelected ? '2px solid #000000' : '1.5px solid #ddd', position: 'relative', overflow: 'hidden' }}>
+                                <div className="ui-servicedetail-24" key={v._id} onClick={() => setSelectedVariant(v)}
+                                    style={{ "--ui-servicedetail-24-border": cssValue(isSelected ? '2px solid #000000' : '1.5px solid #ddd', "border") }}>
                                     {vDiscount > 0 && (
-                                        <div style={{ position: 'absolute', top: 0, right: 0, background: '#fdf5ea', color: '#000000', fontSize: '11px', fontWeight: '700', padding: '3px 8px', borderBottomLeftRadius: '8px' }}>
+                                        <div className="ui-servicedetail-25" >
                                             {vDiscount}% OFF
                                         </div>
                                     )}
-                                    <div style={{ fontWeight: '700', fontSize: '15px', marginBottom: '6px', paddingRight: vDiscount > 0 ? '40px' : 0 }}>{v.name}</div>
-                                    <div style={{ fontWeight: '800', fontSize: '18px', color: '#1a1a2e' }}>${vOffer.toFixed(2)}</div>
+                                    <div className="ui-servicedetail-26" style={{ "--ui-servicedetail-26-padding-right": cssValue(vDiscount > 0 ? "var(--ui-space-79)" : 0, "paddingRight") }}>{v.name}</div>
+                                    <div className="ui-servicedetail-27" >${vOffer.toFixed(2)}</div>
                                     {vDiscount > 0 && (
-                                        <div style={{ color: '#999', fontSize: '12px', textDecoration: 'line-through', marginTop: '2px' }}>${vActual.toFixed(2)}</div>
+                                        <div className="ui-servicedetail-28" >${vActual.toFixed(2)}</div>
                                     )}
-                                    {perUnit && <div style={{ color: '#666', fontSize: '12px', marginTop: '2px' }}>(${perUnit}/bathroom)</div>}
+                                    {perUnit && <div className="ui-servicedetail-29" >(${perUnit}/bathroom)</div>}
                                 </div>
                             );
                         })}
@@ -265,20 +260,20 @@ const ServiceDetail = () => {
             {/* Select Add-ons */}
             {service.addons?.length > 0 && (
                 <Section>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <span style={{ fontSize: '17px', fontWeight: '600' }}>Select add-ons</span>
+                    <div className="ui-servicedetail-30" >
+                        <span className="ui-servicedetail-31" >Select add-ons</span>
                         {/* <button onClick={() => setAddonsOpen(o => !o)} style={plainBtn}>{addonsOpen ? '∨' : '∧'}</button> */}
                     </div>
                     {addonsOpen && (
-                        <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px' }}>
+                        <div className="ui-servicedetail-32" >
                             {service.addons.map(addon => {
                                 const added = selectedAddons.find(a => a._id === addon._id);
                                 return (
-                                    <div key={addon._id} style={{ minWidth: '180px', border: '1.5px solid #ddd', borderRadius: '12px', padding: '14px', flexShrink: 0 }}>
-                                        <div style={{ fontWeight: '600', fontSize: '14px', marginBottom: '6px' }}>{addon.name} (additional)</div>
-                                        <div style={{ color: '#000000', fontWeight: '600', fontSize: '14px', marginBottom: '12px' }}>+ ${(addon.price || 0).toFixed(2)}</div>
-                                        <button onClick={() => toggleAddon(addon)}
-                                            style={{ width: '100%', padding: '8px', border: '1.5px solid #000000', borderRadius: '8px', background: '#fff', color: '#000000', fontWeight: '600', cursor: 'pointer', fontSize: '14px' }}>
+                                    <div className="ui-servicedetail-33" key={addon._id} >
+                                        <div className="ui-servicedetail-34" >{addon.name} (additional)</div>
+                                        <div className="ui-servicedetail-35" >+ ${(addon.price || 0).toFixed(2)}</div>
+                                        <button className="ui-servicedetail-36" onClick={() => toggleAddon(addon)}
+                                            >
                                             {added ? 'Added ✓' : 'Add'}
                                         </button>
                                     </div>
@@ -292,68 +287,35 @@ const ServiceDetail = () => {
             {/* Our Process - exact 1App Company style */}
             {service.processSteps?.length > 0 && (
                 <Section>
-                    <h2 style={{ fontSize: '26px', fontWeight: '800', marginBottom: '24px', marginTop: 0, color: '#111' }}>Our process</h2>
-                    <div style={{ position: 'relative' }}>
+                    <h2 className="ui-servicedetail-37" >Our process</h2>
+                    <div className="ui-servicedetail-38" >
                         {/* Vertical connector line running through number circles */}
-                        <div style={{
-                            position: 'absolute',
-                            left: '15px',
-                            top: '28px',
-                            bottom: '28px',
-                            width: '1px',
-                            background: '#e0e0e0',
-                            zIndex: 0,
-                        }} />
+                        <div className="ui-servicedetail-39"  />
                         {service.processSteps.map((step, i) => {
                             const hasImage = step.image && step.image.trim() !== '';
                             return (
-                                <div key={step._id} style={{
-                                    display: 'flex',
-                                    gap: '20px',
-                                    marginBottom: i < service.processSteps.length - 1 ? '32px' : '0',
-                                    position: 'relative',
-                                    zIndex: 1,
-                                }}>
+                                <div className="ui-servicedetail-40" key={step._id} style={{ "--ui-servicedetail-40-margin-bottom": cssValue(i < service.processSteps.length - 1 ? "var(--ui-space-46)" : "var(--ui-space-16)", "marginBottom") }}>
                                     {/* Step number circle */}
-                                    <div style={{ flexShrink: 0, paddingTop: '2px' }}>
-                                        <div style={{
-                                            width: '30px',
-                                            height: '30px',
-                                            borderRadius: '50%',
-                                            background: '#f0f0f0',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            fontSize: '13px',
-                                            fontWeight: '700',
-                                            color: '#333',
-                                            zIndex: 1,
-                                            position: 'relative',
-                                        }}>
+                                    <div className="ui-servicedetail-41" >
+                                        <div className="ui-servicedetail-42" >
                                             {step.stepNumber}
                                         </div>
                                     </div>
                                     {/* Content */}
-                                    <div style={{ flex: 1, paddingTop: '4px' }}>
-                                        <div style={{ fontWeight: '700', fontSize: '16px', color: '#111', marginBottom: step.description ? '6px' : (hasImage ? '12px' : '0') }}>
+                                    <div className="ui-servicedetail-43" >
+                                        <div className="ui-servicedetail-44" style={{ "--ui-servicedetail-44-margin-bottom": cssValue(step.description ? "var(--ui-space-3)" : hasImage ? "var(--ui-space-11)" : "var(--ui-space-16)", "marginBottom") }}>
                                             {step.title}
                                         </div>
                                         {step.description && (
-                                            <div style={{ fontSize: '14px', color: '#555', lineHeight: '1.6', marginBottom: hasImage ? '14px' : '0' }}>
+                                            <div className="ui-servicedetail-45" style={{ "--ui-servicedetail-45-margin-bottom": cssValue(hasImage ? "var(--ui-space-13)" : "var(--ui-space-16)", "marginBottom") }}>
                                                 {step.description}
                                             </div>
                                         )}
                                         {hasImage && (
-                                            <img
+                                            <img className="ui-servicedetail-46"
                                                 src={resolveImageUrl(step.image)}
                                                 alt={step.title}
-                                                style={{
-                                                    width: '100%',
-                                                    height: '220px',
-                                                    objectFit: 'cover',
-                                                    borderRadius: '14px',
-                                                    display: 'block',
-                                                }}
+
                                             />
                                         )}
                                     </div>
@@ -365,44 +327,35 @@ const ServiceDetail = () => {
             )}
 
             {/* See the difference yourself */}
-            {galleryImages.length >= 2 && (
+            {/* {galleryImages.length >= 2 && (
                 <Section>
-                    <h2 style={sectionTitle}>See the difference yourself</h2>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <h2 className="ui-servicedetail-47" >See the difference yourself</h2>
+                    <div className="ui-servicedetail-48" >
                         {galleryImages.map((img, i) => (
-                            <div key={i} style={{ borderRadius: '12px', overflow: 'hidden', position: 'relative', height: '160px' }}>
-                                <div style={{ display: 'flex', height: '100%' }}>
-                                    <div style={{ flex: 1, overflow: 'hidden' }}>
-                                        <img src={img} alt="before" style={{ width: '200%', height: '100%', objectFit: 'cover', filter: 'grayscale(60%) brightness(0.8)' }} />
+                            <div className="ui-servicedetail-49" key={i} >
+                                <div className="ui-servicedetail-50" >
+                                    <div className="ui-servicedetail-51" >
+                                        <img className="ui-servicedetail-52" src={img} alt="before"  />
                                     </div>
-                                    <div style={{ width: '1px', background: '#fff', zIndex: 1 }} />
-                                    <div style={{ flex: 1, overflow: 'hidden' }}>
-                                        <img src={img} alt="after" style={{ width: '200%', height: '100%', objectFit: 'cover', marginLeft: '-100%' }} />
+                                    <div className="ui-servicedetail-53"  />
+                                    <div className="ui-servicedetail-54" >
+                                        <img className="ui-servicedetail-55" src={img} alt="after"  />
                                     </div>
                                 </div>
-                                <span style={beforeAfterBadge('left')}>Before</span>
-                                <span style={beforeAfterBadge('right')}>After</span>
+                                <span className="ui-servicedetail-56" >Before</span>
+                                <span className="ui-servicedetail-57" >After</span>
                             </div>
                         ))}
                     </div>
                 </Section>
-            )}
+            )} */}
 
             {/* Top Professionals */}
             <Section>
-                <h2 style={sectionTitle}>Top Professionals</h2>
-                <div style={{
-                    background: '#fff',
-                    border: '1px solid #ebebeb',
-                    borderRadius: '16px',
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    alignItems: 'stretch',
-                    minHeight: '220px',
-                }}>
+                <h2 className="ui-servicedetail-58" >Top Professionals</h2>
+                <div className="ui-servicedetail-59" >
                     {/* Left: bullet points */}
-                    <div style={{ flex: 1, padding: '22px 20px 22px 22px' }}>
+                    <div className="ui-servicedetail-60" >
                         {[
                             {
                                 text: 'Background verified',
@@ -425,83 +378,52 @@ const ServiceDetail = () => {
                                 icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
                             },
                         ].map((item, i) => (
-                            <div key={i} style={{
-                                display: 'flex',
-                                alignItems: 'flex-start',
-                                gap: '10px',
-                                marginBottom: i < 3 ? '14px' : '0',
-                            }}>
-                                <div style={{
-                                    width: '36px',
-                                    height: '36px',
-                                    borderRadius: '9px',
-                                    background: '#deddda',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    flexShrink: 0,
-                                }}>
+                            <div className="ui-servicedetail-61" key={i} style={{ "--ui-servicedetail-61-margin-bottom": cssValue(i < 3 ? "var(--ui-space-13)" : "var(--ui-space-16)", "marginBottom") }}>
+                                <div className="ui-servicedetail-62" >
                                     {item.icon}
                                 </div>
-                                <div style={{ paddingTop: '2px' }}>
-                                    <div style={{ fontWeight: '600', fontSize: '13px', color: '#1a1a2e' }}>{item.text}</div>
-                                    <div style={{ fontSize: '12px', color: '#888', marginTop: '1px' }}>{item.sub}</div>
+                                <div className="ui-servicedetail-63" >
+                                    <div className="ui-servicedetail-64" >{item.text}</div>
+                                    <div className="ui-servicedetail-65" >{item.sub}</div>
                                 </div>
                             </div>
                         ))}
                     </div>
                     {/* Right: image fills completely, no background color showing */}
-                    <div style={{
-                        width: '400px',
-                        // height:'00px',
-                        flexShrink: 0,
-                        position: 'relative',
-                        overflow: 'hidden',
-                    }}>
-                        <img
+                    <div className="ui-servicedetail-66" >
+                        <img className="ui-servicedetail-67"
                             src={technicianImage}
                             alt="Top professionals"
-                            style={{
-                                position: 'absolute',
-                                bottom: 0,
-                                right: 0,
-                                height: '100%',
-                                width: '100%',
-                                objectFit: 'cover',
-                                objectPosition: 'top center',
-                            }}
+
                         />
                     </div>
                 </div>
             </Section>
 
             {/* Our Cleaning Equipments */}
-            {service.tools?.length > 0 && (
+            {/* {service.tools?.length > 0 && (
                 <Section>
-                    <h2 style={sectionTitle}>Our cleaning equipments</h2>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px 12px',background: '#fff',
-                    border: '1px solid #ebebeb',
-                    borderRadius: '16px',
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',}}>
+                    <h2 className="ui-servicedetail-68" >Our Equipments</h2>
+                    <div className="ui-servicedetail-69" >
                         {service.tools.map(tool => (
-                            <div key={tool._id} style={{ textAlign: 'center' }}>
-                                <img src={resolveImageUrl(tool.image)} alt={tool.name}
-                                    style={{ height: '80px', objectFit: 'contain', borderRadius: '10px', marginBottom: '8px' }} />
-                                <div style={{ fontSize: '13px', color: '#555' }}>{tool.name}</div>
+                            <div className="ui-servicedetail-70" key={tool._id} >
+                                <img className="ui-servicedetail-71" src={resolveImageUrl(tool.image)} alt={tool.name}
+                                     />
+                                <div className="ui-servicedetail-72" >{tool.name}</div>
                             </div>
                         ))}
                     </div>
                 </Section>
-            )}
+            )} */}
 
             {/* What is covered */}
             {service.includedItems?.length > 0 && (
                 <Section>
-                    <h2 style={sectionTitle}>What is covered</h2>
+                    <h2 className="ui-servicedetail-73" >What is covered</h2>
                     {service.includedItems.map(item => (
-                        <div key={item._id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: '1px solid #f0f0f0' }}>
-                            <span style={{ color: '#000000', fontWeight: '700', fontSize: '16px' }}>✓</span>
-                            <span style={{ fontSize: '15px', color: '#444' }}>{item.title}</span>
+                        <div className="ui-servicedetail-74" key={item._id} >
+                            <span className="ui-servicedetail-75" >✓</span>
+                            <span className="ui-servicedetail-76" >{item.title}</span>
                         </div>
                     ))}
                 </Section>
@@ -510,13 +432,13 @@ const ServiceDetail = () => {
             {/* What we will need from you */}
             {service.requirements?.length > 0 && (
                 <Section>
-                    <h2 style={sectionTitle}>What we will need from you</h2>
-                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    <h2 className="ui-servicedetail-77" >What we will need from you</h2>
+                    <div className="ui-servicedetail-78" >
                         {service.requirements.map(req => (
-                            <div key={req._id} style={{ flex: '1 1 120px', background: '#f7f8fa', borderRadius: '10px', padding: '16px 12px', textAlign: 'center', minWidth: '100px' }}>
-                                <img src={resolveImageUrl(req.image)} alt={req.title}
-                                    style={{ width: '56px', height: '56px', objectFit: 'contain', marginBottom: '8px' }} />
-                                <div style={{ fontSize: '13px', color: '#444' }}>{req.title}</div>
+                            <div className="ui-servicedetail-79" key={req._id} >
+                                {/* <img className="ui-servicedetail-80" src={resolveImageUrl(req.image)} alt={req.title}
+                                     /> */}
+                                <div className="ui-servicedetail-81" >{req.title}</div>
                             </div>
                         ))}
                     </div>
@@ -526,75 +448,55 @@ const ServiceDetail = () => {
             {/* What is not covered */}
             {service.excludedItems?.length > 0 && (
                 <Section>
-                    <h2 style={sectionTitle}>What is not covered</h2>
+                    <h2 className="ui-servicedetail-82" >What is not covered</h2>
                     {service.excludedItems.map(item => (
-                        <div key={item._id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 0', borderBottom: '1px solid #f0f0f0' }}>
-                            <span style={{ color: '#e53935', fontWeight: '700', fontSize: '16px' }}>✕</span>
-                            <span style={{ fontSize: '15px', color: '#888' }}>{item.title}</span>
+                        <div className="ui-servicedetail-83" key={item._id} >
+                            <span className="ui-servicedetail-84" >✕</span>
+                            <span className="ui-servicedetail-85" >{item.title}</span>
                         </div>
                     ))}
                 </Section>
             )}
 
             {/* Damage Protection */}
-            <Section style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Section className="ui-servicedetail-86" >
                 <div>
-                    <h2 style={{ ...sectionTitle, marginBottom: '4px' }}>Damage protection</h2>
-                    <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>Up to $5,000 cover if any damage happens<br />during the job</p>
+                    <h2 className="ui-servicedetail-87" >Damage protection</h2>
+                    <p className="ui-servicedetail-88" >Up to $5,000 cover if any damage happens<br />during the job</p>
                 </div>
-                <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <span style={{ color: '#fff', fontSize: '22px' }}>✓</span>
+                <div className="ui-servicedetail-89" >
+                    <span className="ui-servicedetail-90" >✓</span>
                 </div>
             </Section>
 
             {/* FAQs */}
             {service.faqs?.length > 0 && (
                 <div>
-                    <h2 style={sectionTitle}>Frequently asked questions</h2>
+                    <h2 className="ui-servicedetail-91" >Frequently asked questions</h2>
                     {service.faqs.map((faq, i) => (
-                        <div key={faq._id} style={{ borderBottom: '1px solid #eee'}}>
-                            <button onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                                style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '16px 0', fontSize: '15px', color: '#222', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
-                                    <div style={{
-                                        width: '32px',
-                                        height: '32px',
-                                        borderRadius: '8px',
-                                        background: openFaq === i ? '#fdf5ea' : '#f7f8fa',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        flexShrink: 0,
-                                        transition: 'background 0.2s',
-                                    }}>
+                        <div className="ui-servicedetail-92" key={faq._id} >
+                            <button className="ui-servicedetail-93" onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                                >
+                                <div className="ui-servicedetail-94" >
+                                    <div className="ui-servicedetail-95" style={{ "--ui-servicedetail-95-background": cssValue(openFaq === i ? "var(--ui-color-67)" : "var(--ui-color-75)", "background") }}>
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={openFaq === i ? '#000000' : '#888'} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                                             <circle cx="12" cy="12" r="10"/>
                                             <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
                                             <line x1="12" y1="17" x2="12.01" y2="17"/>
                                         </svg>
                                     </div>
-                                    <span style={{ fontWeight: openFaq === i ? '600' : '400', color: openFaq === i ? '#1a1a2e' : '#333', lineHeight: '1.4' }}>{faq.question}</span>
+                                    <span className="ui-servicedetail-96" style={{ "--ui-servicedetail-96-font-weight": cssValue(openFaq === i ? '600' : '400', "fontWeight"), "--ui-servicedetail-96-color": cssValue(openFaq === i ? "var(--ui-color-59)" : "var(--ui-color-4)", "color") }}>{faq.question}</span>
                                 </div>
-                                <div style={{
-                                    width: '28px',
-                                    height: '28px',
-                                    borderRadius: '50%',
-                                    background: openFaq === i ? '#000000' : '#f0f0f0',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    flexShrink: 0,
-                                    transition: 'all 0.2s',
-                                }}>
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={openFaq === i ? '#fff' : '#888'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-                                        style={{ transform: openFaq === i ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
+                                <div className="ui-servicedetail-97" style={{ "--ui-servicedetail-97-background": cssValue(openFaq === i ? "var(--ui-color-27)" : "var(--ui-color-3)", "background") }}>
+                                    <svg className="ui-servicedetail-98" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={openFaq === i ? '#fff' : '#888'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+                                        style={{ "--ui-servicedetail-98-transform": cssValue(openFaq === i ? 'rotate(180deg)' : 'rotate(0deg)', "transform") }}>
                                         <polyline points="6 9 12 15 18 9"/>
                                     </svg>
                                 </div>
                             </button>
                             {openFaq === i && (
-                                <div style={{ display: 'flex', gap: '12px', paddingBottom: '16px', paddingLeft: '44px' }}>
-                                    <p style={{ color: '#666', fontSize: '14px', margin: 0, lineHeight: '1.65' }}>{faq.answer}</p>
+                                <div className="ui-servicedetail-99" >
+                                    <p className="ui-servicedetail-100" >{faq.answer}</p>
                                 </div>
                             )}
                         </div>
@@ -606,14 +508,14 @@ const ServiceDetail = () => {
             {/* Ratings & Reviews */}
             <Section id="reviews">
                 {/* Summary */}
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '32px', fontWeight: '700' }}>
+                <div className="ui-servicedetail-101" >
+                    <span className="ui-servicedetail-102" >
                         ★ {reviewData?.totalReviews > 0
                             ? (Object.entries(reviewData.starCounts).reduce((sum, [star, cnt]) => sum + Number(star) * cnt, 0) / reviewData.totalReviews).toFixed(2)
                             : service.ratingsAverage?.toFixed(2) || '0.00'}
                     </span>
                 </div>
-                <p style={{ color: '#888', fontSize: '14px', marginBottom: '20px' }}>
+                <p className="ui-servicedetail-103" >
                     {reviewData?.totalReviews ?? service.ratingsQuantity ?? 0} reviews
                 </p>
 
@@ -623,59 +525,55 @@ const ServiceDetail = () => {
                     const total = reviewData?.totalReviews ?? 0;
                     const pct   = total > 0 ? Math.round((cnt / total) * 100) : 0;
                     return (
-                        <div key={star} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                            <span style={{ fontSize: '13px', width: '24px' }}>★{star}</span>
-                            <div style={{ flex: 1, height: '4px', background: '#e0e0e0', borderRadius: '2px' }}>
-                                <div style={{ width: `${pct}%`, height: '100%', background: '#1a1a2e', borderRadius: '2px', transition: 'width 0.4s' }} />
+                        <div className="ui-servicedetail-104" key={star} >
+                            <span className="ui-servicedetail-105" >★{star}</span>
+                            <div className="ui-servicedetail-106" >
+                                <div className="ui-servicedetail-107" style={{ "--ui-servicedetail-107-width": cssValue(`${pct}%`, "width") }} />
                             </div>
-                            <span style={{ fontSize: '13px', color: '#888', width: '30px', textAlign: 'right' }}>{cnt}</span>
+                            <span className="ui-servicedetail-108" >{cnt}</span>
                         </div>
                     );
                 })}
 
-        
+
 
                 {/* All Reviews list */}
-                <div style={{ borderTop: '1px solid #eee', marginTop: '24px', paddingTop: '16px' }}>
-                    <h3 style={{ margin: '0 0 16px', fontSize: '18px', fontWeight: '700' }}>All reviews</h3>
+                <div className="ui-servicedetail-109" >
+                    <h3 className="ui-servicedetail-110" >All reviews</h3>
 
                     {reviewsLoading && (
-                        <div style={{ textAlign: 'center', padding: '20px', color: '#888' }}>Loading reviews…</div>
+                        <div className="ui-servicedetail-111" >Loading reviews…</div>
                     )}
 
                     {!reviewsLoading && reviewData?.reviews?.length === 0 && (
-                        <p style={{ color: '#aaa', fontSize: '14px', textAlign: 'center', padding: '20px 0' }}>
+                        <p className="ui-servicedetail-112" >
                             No reviews yet. Be the first to share your experience!
                         </p>
                     )}
 
                     {!reviewsLoading && reviewData?.reviews?.map((r, i) => (
-                        <div key={r._id} style={{ paddingBottom: '20px', marginBottom: '20px', borderBottom: i < reviewData.reviews.length - 1 ? '1px solid #f0f0f0' : 'none' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div className="ui-servicedetail-113" key={r._id} style={{ "--ui-servicedetail-113-border-bottom": cssValue(i < reviewData.reviews.length - 1 ? '1px solid #f0f0f0' : 'none', "borderBottom") }}>
+                            <div className="ui-servicedetail-114" >
+                                <div className="ui-servicedetail-115" >
                                     {/* Avatar */}
-                                    <div style={{
-                                        width: '40px', height: '40px', borderRadius: '50%',
-                                        background: '#1a1a2e', display: 'flex', alignItems: 'center',
-                                        justifyContent: 'center', flexShrink: 0,
-                                    }}>
-                                        <span style={{ color: '#fff', fontWeight: '700', fontSize: '15px' }}>
+                                    <div className="ui-servicedetail-116" >
+                                        <span className="ui-servicedetail-117" >
                                             {(r.user?.name || 'U')[0].toUpperCase()}
                                         </span>
                                     </div>
                                     <div>
-                                        <div style={{ fontWeight: '700', fontSize: '15px' }}>{r.user?.name || 'User'}</div>
-                                        <div style={{ color: '#888', fontSize: '12px', marginTop: '1px' }}>
+                                        <div className="ui-servicedetail-118" >{r.user?.name || 'User'}</div>
+                                        <div className="ui-servicedetail-119" >
                                             {new Date(r.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
                                         </div>
                                     </div>
                                 </div>
-                                <div style={{ background: '#1a1a2e', color: '#fff', borderRadius: '6px', padding: '4px 10px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                                <div className="ui-servicedetail-120" >
                                     ★ {r.rating}
                                 </div>
                             </div>
                             {r.review && (
-                                <p style={{ color: '#333', fontSize: '14px', lineHeight: '1.65', marginTop: '12px', marginBottom: 0 }}>
+                                <p className="ui-servicedetail-121" >
                                     {r.review}
                                 </p>
                             )}
@@ -684,17 +582,17 @@ const ServiceDetail = () => {
 
                     {/* Pagination */}
                     {reviewData?.totalPages > 1 && (
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '16px' }}>
-                            <button
+                        <div className="ui-servicedetail-122" >
+                            <button className="ui-servicedetail-123"
                                 onClick={() => setReviewsPage(p => Math.max(1, p - 1))}
                                 disabled={reviewsPage === 1}
-                                style={{ padding: '7px 16px', border: '1.5px solid #ddd', borderRadius: '8px', background: '#fff', cursor: reviewsPage === 1 ? 'not-allowed' : 'pointer', color: reviewsPage === 1 ? '#ccc' : '#333', fontWeight: '600' }}
+                                style={{ "--ui-servicedetail-123-cursor": cssValue(reviewsPage === 1 ? 'not-allowed' : 'pointer', "cursor"), "--ui-servicedetail-123-color": cssValue(reviewsPage === 1 ? "var(--ui-color-29)" : "var(--ui-color-4)", "color") }}
                             >← Prev</button>
-                            <span style={{ padding: '7px 12px', fontSize: '14px', color: '#555' }}>{reviewsPage} / {reviewData.totalPages}</span>
-                            <button
+                            <span className="ui-servicedetail-124" >{reviewsPage} / {reviewData.totalPages}</span>
+                            <button className="ui-servicedetail-125"
                                 onClick={() => setReviewsPage(p => Math.min(reviewData.totalPages, p + 1))}
                                 disabled={reviewsPage === reviewData?.totalPages}
-                                style={{ padding: '7px 16px', border: '1.5px solid #ddd', borderRadius: '8px', background: '#fff', cursor: reviewsPage === reviewData?.totalPages ? 'not-allowed' : 'pointer', color: reviewsPage === reviewData?.totalPages ? '#ccc' : '#333', fontWeight: '600' }}
+                                style={{ "--ui-servicedetail-125-cursor": cssValue(reviewsPage === reviewData?.totalPages ? 'not-allowed' : 'pointer', "cursor"), "--ui-servicedetail-125-color": cssValue(reviewsPage === reviewData?.totalPages ? "var(--ui-color-29)" : "var(--ui-color-4)", "color") }}
                             >Next →</button>
                         </div>
                     )}
@@ -702,20 +600,20 @@ const ServiceDetail = () => {
             </Section>
 
             {/* Sticky Add to Cart */}
-            <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: '#fff', borderTop: '1px solid #eee', padding: '12px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 100 }}>
+            <div className="ui-servicedetail-126" >
                 <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '20px', fontWeight: '800', color: '#1a1a2e' }}>${getTotalPrice().toFixed(2)}</span>
+                    <div className="ui-servicedetail-127" >
+                        <span className="ui-servicedetail-128" >${getTotalPrice().toFixed(2)}</span>
                         {discountPct > 0 && !selectedVariant && (
-                            <span style={{ background: '#fdf5ea', color: '#000000', fontSize: '12px', fontWeight: '700', padding: '2px 8px', borderRadius: '20px' }}>{discountPct}% OFF</span>
+                            <span className="ui-servicedetail-129" >{discountPct}% OFF</span>
                         )}
                     </div>
                     {discountPct > 0 && !selectedVariant && (
-                        <div style={{ fontSize: '12px', color: '#999', textDecoration: 'line-through' }}>${getStartingPrice(service.actualPrice || service.price).toFixed(2)}</div>
+                        <div className="ui-servicedetail-130" >${getStartingPrice(service.actualPrice || service.price).toFixed(2)}</div>
                     )}
                 </div>
-                <button onClick={handleAddToCart}
-                    style={{ background: '#000000', color: '#fff', border: 'none', borderRadius: '10px', padding: '12px 32px', fontWeight: '700', fontSize: '16px', cursor: 'pointer' }}>
+                <button className="ui-servicedetail-131" onClick={handleAddToCart}
+                    >
                     Add to cart
                 </button>
             </div>
@@ -723,45 +621,18 @@ const ServiceDetail = () => {
     );
 };
 
-const Section = ({ children, style = {} }) => (
-    <div style={{ borderBottom: '1px solid #eee', paddingBottom: '24px', marginBottom: '24px', ...style }}>
+const Section = ({ children, style = {}, className = '' }) => (
+    <div className={`ui-servicedetail-132 ${className}`} style={{ ...style }}>
         {children}
     </div>
 );
 
-const sectionTitle = { fontSize: '20px', fontWeight: '700', marginBottom: '16px', marginTop: 0 };
-const plainBtn = { background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#555' };
-const variantCard = { flex: '1 1 140px', minWidth: '130px', maxWidth: '200px', borderRadius: '12px', padding: '14px', cursor: 'pointer' };
 
-const navBtnStyle = (side) => ({
-    position: 'absolute',
-    top: '50%',
-    [side]: '10px',
-    transform: 'translateY(-50%)',
-    width: '36px',
-    height: '36px',
-    borderRadius: '50%',
-    background: 'rgba(255,255,255,0.9)',
-    border: 'none',
-    fontSize: '20px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-    zIndex: 2,
-});
 
-const beforeAfterBadge = (side) => ({
-    position: 'absolute',
-    top: '10px',
-    [side]: '10px',
-    background: 'rgba(50,50,50,0.75)',
-    color: '#fff',
-    fontSize: '12px',
-    fontWeight: '600',
-    padding: '3px 10px',
-    borderRadius: '6px',
-});
+
+
+
+
+
 
 export default ServiceDetail;

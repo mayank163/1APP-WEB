@@ -1,29 +1,17 @@
+import { cssValue } from '../utils/cssValue';
+import '../styles/AuthPanel.css';
 import heroImg from '../assets/hero/login_image.png';
 import resetImg from '../assets/hero/reset_password.png';
 
 export const AuthPanel = () => (
-    <div
-        style={{
-            background: '#f5ede0',
-            backgroundImage: `url(${heroImg})`,
-            backgroundRepeat: 'no-repeat',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            height: '100%',
-        }}
+    <div className="ui-authpanel-1"
+        style={{ "--ui-authpanel-1-background-image": cssValue(`url(${heroImg})`, "backgroundImage") }}
     />
 );
 
 export const ResetAuthPanel = () => (
-    <div
-        style={{
-            background: '#f5ede0',
-            backgroundImage: `url(${resetImg})`,
-            backgroundRepeat: 'no-repeat',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            height: '100%',
-        }}
+    <div className="ui-authpanel-2"
+        style={{ "--ui-authpanel-2-background-image": cssValue(`url(${resetImg})`, "backgroundImage") }}
     />
 );
 

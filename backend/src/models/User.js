@@ -55,6 +55,7 @@ const userSchema = new mongoose.Schema({
     createdByAdmin: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
     accountStatus: { type: String, enum: ['active', 'inactive', 'invited', 'suspended', 'blocked'], default: 'active' },
     tokenVersion: { type: Number, default: 0 },
+    technicianAdminNote: { type: String, default: '', maxlength: 1000, select: false },
     dateOfBirth: Date,
     gender: {
         type: String,
@@ -104,7 +105,10 @@ const userSchema = new mongoose.Schema({
         portfolioPhotos: [{ type: String, trim: true }],
         previousCompanyName: { type: String, default: '' },
         certificateImages: [{ type: String, trim: true }],
+        professionalBio: { type: String, default: '' },
         drivingLicense: {
+            issuedDate: { type: Date, default: null },
+            expiryDate: { type: Date, default: null },
             front: { type: String, default: '' },
             back:  { type: String, default: '' },
         },
@@ -120,6 +124,7 @@ const userSchema = new mongoose.Schema({
             enum: ['not-started', 'pending', 'approved', 'rejected'],
             default: 'not-started'
         },
+        reviewer: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin', default: null },
         verificationNotes: { type: String, default: '' },
         submittedAt: { type: Date, default: null },
         documents: [{
@@ -139,6 +144,13 @@ const userSchema = new mongoose.Schema({
     workOrderRatings: [{
         job: { type: mongoose.Schema.Types.ObjectId, ref: 'TechnicianJob' },
         score: { type: Number, min: 1, max: 5 },
+        ratedAt: Date
+    }],
+    customerBookingRatings: [{
+        booking: { type: mongoose.Schema.Types.ObjectId, ref: 'Booking' },
+        customer: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        score: { type: Number, min: 1, max: 5 },
+        review: { type: String, default: '', maxlength: 500 },
         ratedAt: Date
     }],
     totalJobsDone: {

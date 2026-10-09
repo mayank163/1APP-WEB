@@ -1,0 +1,87 @@
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-searchautocomplete-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  position: relative;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-searchautocomplete-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+  gap: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-searchautocomplete-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-searchautocomplete-3-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-searchautocomplete-4:not(#ui-style-priority):not(#ui-style-priority-2) {
+  outline: none;
+  font-size: var(--ui-font-size-9);
+  color: var(--ui-color-34);
+  flex: 1;
+  min-width: 120px;
+  max-width: 220px;
+  width: var(--ui-searchautocomplete-4-width);
+  transition: width 0.2s;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-searchautocomplete-5:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 18px;
+  justify-content: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-searchautocomplete-6:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border: 2px solid #e0e0e0;
+  border-top: 2px solid #888;
+  border-radius: 50%;
+  animation: loc-spin 0.7s linear infinite;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-searchautocomplete-7:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-26);
+  border: none;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  padding: var(--ui-space-16);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-searchautocomplete-8:not(#ui-style-priority):not(#ui-style-priority-2) {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 2000;
+  overflow: hidden;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-searchautocomplete-9:not(#ui-style-priority):not(#ui-style-priority-2) {
+  cursor: pointer;
+  font-size: var(--ui-font-size-9);
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-searchautocomplete-10:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 100%;
+}
+@keyframes loc-spin { to { transform: rotate(360deg); } }
+.ui-searchautocomplete-9:not(#ui-style-priority):not(#ui-style-priority-2):hover {
+  background: var(--ui-color-178);
+}

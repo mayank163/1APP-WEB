@@ -1,0 +1,7 @@
+
+/* Extracted presentation styles; repeated class specificity preserves inline precedence. */
+.admin-app-1.admin-app-1.admin-app-1 {
+  padding: var(--admin-space-40px);
+  text-align: center;
+  color: var(--admin-color--888);
+}

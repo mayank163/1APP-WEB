@@ -1,3 +1,4 @@
+import '../styles/ServiceManagement.css';
 import React, { useEffect, useState } from 'react';
 import adminApi from '../services/adminApi';
 import { ShimmerCategoryTable } from '../components/Shimmer';
@@ -128,16 +129,16 @@ const ServiceManagement = () => {
 
         <input
             type="text"
-            className="form-control"
+            className="form-control admin-service-management-1"
             placeholder="Search category..."
-            style={{ maxWidth: "350px" }}
+
             value={searchTerm}
             onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
         />
 
         <select
-            className="form-select"
-            style={{ width: "200px" }}
+            className="form-select admin-service-management-2"
+
             value={sortOrder}
             onChange={(e) => { setSortOrder(e.target.value); setPage(1); }}
         >
@@ -161,7 +162,7 @@ const ServiceManagement = () => {
                                 {filteredCategories.map((cat) => (
                                     <tr key={cat._id}>
                                         <td className="fw-bold text-dark">
-                                            <FaFolder style={{ color: "#A5732F" }} className="me-2" />{cat.name}
+                                            <FaFolder  className="me-2 admin-service-management-3" />{cat.name}
                                         </td>
                                         <td>
                                             {cat.isActive ? (
@@ -173,7 +174,7 @@ const ServiceManagement = () => {
                                         <td className="text-muted small">{new Date(cat.createdAt).toLocaleDateString()}</td>
                                         <td>
                                             <div className="d-flex gap-1">
-                                                <button onClick={() => handleOpenEdit(cat)} className="btn btn-sm btn-light border" style={{ color: "#A5732F" }} title="Edit"><FaEdit /></button>
+                                                <button onClick={() => handleOpenEdit(cat)} className="btn btn-sm btn-light border admin-service-management-4"  title="Edit"><FaEdit /></button>
                                                 <button onClick={() => handleDelete(cat._id)} className="btn btn-sm btn-light border text-danger" title="Delete"><FaTrash /></button>
                                             </div>
                                         </td>

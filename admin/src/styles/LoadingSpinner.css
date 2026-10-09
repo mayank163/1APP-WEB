@@ -1,0 +1,11 @@
+
+/* Extracted presentation styles; repeated class specificity preserves inline precedence. */
+.admin-loading-spinner-1.admin-loading-spinner-1.admin-loading-spinner-1 {
+  width: 3rem;
+  height: 3rem;
+  color: var(--admin-color-brand);
+}
+
+.admin-loading-spinner-2.admin-loading-spinner-2.admin-loading-spinner-2 {
+  color: var(--admin-color-brand);
+}

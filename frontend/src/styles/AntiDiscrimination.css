@@ -1,0 +1,115 @@
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-antidiscrimination-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  min-height: 100vh;
+  background: var(--ui-color-35);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-antidiscrimination-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 760px;
+  margin: var(--ui-space-25);
+  padding: var(--ui-space-72);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-antidiscrimination-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: var(--ui-space-73);
+  text-align: center;
+  margin-bottom: var(--ui-space-10);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-antidiscrimination-4:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-25);
+  margin-bottom: var(--ui-space-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-antidiscrimination-5:not(#ui-style-priority):not(#ui-style-priority-2) {
+  position: relative;
+  display: inline-block;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-antidiscrimination-6:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-9);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: var(--ui-space-74);
+  background: var(--ui-color-2);
+  cursor: pointer;
+  font-size: var(--ui-font-size-3);
+  font-weight: 600;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-antidiscrimination-7:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-29);
+  color: var(--ui-color-6);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-antidiscrimination-8:not(#ui-style-priority):not(#ui-style-priority-2) {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  background: var(--ui-color-2);
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  z-index: 100;
+  min-width: 160px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-antidiscrimination-9:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-36);
+  cursor: pointer;
+  font-size: var(--ui-font-size-3);
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-9);
+  background: var(--ui-antidiscrimination-9-background);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-antidiscrimination-10:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: var(--ui-antidiscrimination-10-font-weight);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-antidiscrimination-11:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: var(--ui-space-46);
+  direction: var(--ui-antidiscrimination-11-direction);
+  text-align: var(--ui-antidiscrimination-11-text-align);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-antidiscrimination-12:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  font-size: var(--ui-font-size-8);
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-antidiscrimination-13:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-9);
+  color: var(--ui-color-34);
+  line-height: 1.9;
+  margin-bottom: var(--ui-antidiscrimination-13-margin-bottom);
+  font-style: italic;
+}
+
+.ui-antidiscrimination-9:not(#ui-style-priority):not(#ui-style-priority-2):hover {
+  background: var(--ui-color-35);
+}

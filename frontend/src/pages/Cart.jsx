@@ -1,3 +1,4 @@
+import '../styles/Cart.css';
 import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CartContext } from '../context/CartContext';
@@ -16,10 +17,10 @@ const groupByCategory = (items) =>
     }, {});
 
 const QtyControl = ({ quantity, onDec, onInc }) => (
-    <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #e0e0e0', borderRadius: 8, overflow: 'hidden' }}>
-        <button onClick={onDec} style={{ border: 'none', background: 'none', width: 32, height: 32, cursor: 'pointer', fontSize: 16, color: '#555', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>−</button>
-        <span style={{ minWidth: 28, textAlign: 'center', fontWeight: 700, fontSize: 14 }}>{quantity}</span>
-        <button onClick={onInc} style={{ border: 'none', background: 'none', width: 32, height: 32, cursor: 'pointer', fontSize: 16, color: '#000000', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
+    <div className="ui-cart-1" >
+        <button className="ui-cart-2" onClick={onDec} >−</button>
+        <span className="ui-cart-3" >{quantity}</span>
+        <button className="ui-cart-4" onClick={onInc} >+</button>
     </div>
 );
 
@@ -38,8 +39,8 @@ const Cart = () => {
     // ── Empty State ──
     if (cartItems.length === 0) {
         return (
-            <div style={{ minHeight: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#f5f5f5' }}>
-                <svg width="160" height="155" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginBottom: 24 }}>
+            <div className="ui-cart-5" >
+                <svg className="ui-cart-6" width="160" height="155" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" >
                     {/* Cart body */}
                     <rect x="52" y="82" width="96" height="66" rx="7" fill="#d4d4d4" />
                     <rect x="58" y="88" width="84" height="54" rx="5" fill="#e9e9e9" />
@@ -61,21 +62,11 @@ const Cart = () => {
                     <line x1="140" y1="103" x2="147" y2="109" stroke="#f5a623" strokeWidth="2.5" />
                 </svg>
 
-                <h2 style={{ fontWeight: 800, fontSize: '2rem', color: '#111', marginBottom: 8 }}>Your Cart is Empty</h2>
-                <p style={{ color: '#888', fontSize: '1.05rem', marginBottom: 28 }}>Lets add some services</p>
-                <Link
+                <h2 className="ui-cart-7" >Your Cart is Empty</h2>
+                <p className="ui-cart-8" >Lets add some services</p>
+                <Link className="ui-cart-9"
                     to="/services"
-                    style={{
-                        background: '#000000',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 12,
-                        padding: '10px 40px',
-                        fontWeight: 700,
-                        fontSize: '1.05rem',
-                        textDecoration: 'none',
-                        display: 'inline-block',
-                    }}
+
                 >
                     Explore Services
                 </Link>
@@ -89,48 +80,48 @@ const Cart = () => {
     const total = getCartTotal();
 
     return (
-        <div style={{ background: '#f5f5f5', minHeight: '100vh', padding: '28px 0' }}>
-            <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 20px' }}>
+        <div className="ui-cart-10" >
+            <div className="ui-cart-11" >
 
                 {/* Back + Title */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-                    <button onClick={() => navigate(-1)} style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}>
+                <div className="ui-cart-12" >
+                    <button className="ui-cart-13" onClick={() => navigate(-1)} >
                         <FaArrowLeft size={18} color="#111" />
                     </button>
-                    <h2 style={{ fontWeight: 800, fontSize: '1.5rem', margin: 0, color: '#111' }}>Your Cart</h2>
+                    <h2 className="ui-cart-14" >Your Cart</h2>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 20, alignItems: 'start' }}>
+                <div className="ui-cart-15" >
 
                     {/* ── LEFT ── */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    <div className="ui-cart-16" >
 
                         {/* Saving banner */}
-                        <div style={{ background: '#fff', borderRadius: 14, padding: '12px 18px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#f5ede0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <div className="ui-cart-17" >
+                            <div className="ui-cart-18" >
                                 <FaTag size={13} color="#000000" />
                             </div>
-                            <span style={{ fontSize: 14, color: '#333' }}>
+                            <span className="ui-cart-19" >
                                 Saving <strong>$0.00</strong> on this order
                             </span>
                         </div>
 
                         {/* Account card */}
-                        <div style={{ background: '#fff', borderRadius: 14, padding: '20px 22px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
-                            <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 6, color: '#111' }}>Account</div>
+                        <div className="ui-cart-20" >
+                            <div className="ui-cart-21" >Account</div>
                             {isAuthenticated ? (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <div className="ui-cart-22" >
                                     <FaCheckCircle color="#000000" size={15} />
-                                    <span style={{ fontSize: 14, color: '#555' }}>
+                                    <span className="ui-cart-23" >
                                         Logged in as <strong>{user?.name || user?.email}</strong>
                                     </span>
                                 </div>
                             ) : (
                                 <>
-                                    <p style={{ fontSize: 14, color: '#888', margin: '0 0 14px' }}>To book the service, please login or sign up</p>
-                                    <button
+                                    <p className="ui-cart-24" >To book the service, please login or sign up</p>
+                                    <button className="ui-cart-25"
                                         onClick={() => navigate('/login')}
-                                        style={{ width: '100%', background: '#000000', color: '#fff', border: 'none', borderRadius: 10, padding: '13px 0', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
+
                                     >
                                         Login
                                     </button>
@@ -141,27 +132,27 @@ const Cart = () => {
                     </div>
 
                     {/* ── RIGHT ── */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    <div className="ui-cart-26" >
 
                         {/* Services grouped by category */}
-                        <div style={{ background: '#fff', borderRadius: 14, padding: '20px 22px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
+                        <div className="ui-cart-27" >
                             {Object.entries(grouped).map(([category, items], catIdx, arr) => (
                                 <div key={category}>
                                     {/* <div style={{ fontWeight: 800, fontSize: 16, color: '#111', marginBottom: 14 }}>{category}</div> */}
                                     {items.map((item, idx) => (
                                         <div key={item.service._id}>
-                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
+                                            <div className="ui-cart-28" >
+                                                <div className="ui-cart-29" >
                                                     {item.service.imageUrl && (
-                                                        <img
+                                                        <img className="ui-cart-30"
                                                             src={resolveImageUrl(item.service.imageUrl)}
                                                             alt={item.service.name}
-                                                            style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }}
+
                                                         />
                                                     )}
-                                                    <span style={{ fontSize: 14, color: '#333', lineHeight: 1.4 }}>{item.service.name}{item.selectedAddons?.length > 0 && <small style={{ display: 'block', marginTop: 3, color: '#777' }}>Add-ons: {item.selectedAddons.map(addon => addon.name).join(', ')}</small>}</span>
+                                                    <span className="ui-cart-31" >{item.service.name}{item.selectedAddons?.length > 0 && <small className="ui-cart-32" >Add-ons: {item.selectedAddons.map(addon => addon.name).join(', ')}</small>}</span>
                                                 </div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0, marginLeft: 12 }}>
+                                                <div className="ui-cart-33" >
                                                     <QtyControl
                                                         quantity={item.quantity}
                                                         onDec={() => {
@@ -170,69 +161,69 @@ const Cart = () => {
                                                         }}
                                                         onInc={() => updateQuantity(item.service._id, item.quantity + 1)}
                                                     />
-                                                    <span style={{ fontWeight: 700, fontSize: 14, minWidth: 64, textAlign: 'right', color: '#111' }}>
+                                                    <span className="ui-cart-34" >
                                                         ${(item.service.price * item.quantity).toFixed(2)}
                                                     </span>
                                                 </div>
                                             </div>
-                                            {idx < items.length - 1 && <hr style={{ border: 'none', borderTop: '1px solid #f0f0f0', margin: '0 0 14px' }} />}
+                                            {idx < items.length - 1 && <hr className="ui-cart-35"  />}
                                         </div>
                                     ))}
-                                    {catIdx < arr.length - 1 && <hr style={{ border: 'none', borderTop: '1px solid #ebebeb', margin: '6px 0 16px' }} />}
+                                    {catIdx < arr.length - 1 && <hr className="ui-cart-36"  />}
                                 </div>
                             ))}
 
                             {/* Avoid calling checkbox */}
-                            <hr style={{ border: 'none', borderTop: '1.5px dashed #e0e0e0', margin: '8px 0 14px' }} />
-                            <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-                                <input type="checkbox" defaultChecked style={{ width: 17, height: 17, accentColor: '#000000', cursor: 'pointer' }} />
-                                <span style={{ fontSize: 13, color: '#666' }}>Avoid calling before reaching the location</span>
+                            <hr className="ui-cart-37"  />
+                            <label className="ui-cart-38" >
+                                <input className="ui-cart-39" type="checkbox" defaultChecked  />
+                                <span className="ui-cart-40" >Avoid calling before reaching the location</span>
                             </label>
                         </div>
 
                         {/* Coupons */}
-                        <div style={{ background: '#fff', borderRadius: 14, padding: '16px 22px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: 14 }}>
-                            <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#f5ede0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <div className="ui-cart-41" >
+                            <div className="ui-cart-42" >
                                 <FaPercent size={14} color="#000000" />
                             </div>
                             <div>
-                                <div style={{ fontWeight: 700, fontSize: 14, color: '#111' }}>Coupons and offers</div>
-                                <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>
+                                <div className="ui-cart-43" >Coupons and offers</div>
+                                <div className="ui-cart-44" >
                                     {isAuthenticated ? 'No coupons available' : 'Login/Sign up to view offers'}
                                 </div>
                             </div>
                         </div>
 
                         {/* Payment Summary */}
-                        <div style={{ background: '#fff', borderRadius: 14, padding: '20px 22px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)' }}>
-                            <div style={{ fontWeight: 800, fontSize: 16, color: '#111', marginBottom: 18 }}>Payment summary</div>
+                        <div className="ui-cart-45" >
+                            <div className="ui-cart-46" >Payment summary</div>
 
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: 14, color: '#555' }}>
+                            <div className="ui-cart-47" >
                                 <span>Item total</span>
                                 <span>${total.toFixed(2)}</span>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: 14 }}>
-                                <span style={{ color: '#000000', fontWeight: 600 }}>Free service offer</span>
-                                <span style={{ color: '#000000', fontWeight: 600 }}>-$0.00</span>
+                            <div className="ui-cart-48" >
+                                <span className="ui-cart-49" >Free service offer</span>
+                                <span className="ui-cart-50" >-$0.00</span>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, fontSize: 14, color: '#555' }}>
+                            <div className="ui-cart-51" >
                                 <span>Total amount</span>
                                 <span>${total.toFixed(2)}</span>
                             </div>
 
-                            <hr style={{ border: 'none', borderTop: '1px solid #f0f0f0', margin: '0 0 14px' }} />
+                            <hr className="ui-cart-52"  />
 
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                                <span style={{ fontWeight: 700, fontSize: 15, color: '#111' }}>Amount to pay</span>
-                                <span style={{ fontWeight: 800, fontSize: '1.3rem', color: '#111' }}>${total.toFixed(2)}</span>
+                            <div className="ui-cart-53" >
+                                <span className="ui-cart-54" >Amount to pay</span>
+                                <span className="ui-cart-55" >${total.toFixed(2)}</span>
                             </div>
-                            <div style={{ textAlign: 'right', marginBottom: 20 }}>
-                                <span style={{ fontSize: 13, fontWeight: 600, textDecoration: 'underline', cursor: 'pointer', color: '#333' }}>View breakup</span>
+                            <div className="ui-cart-56" >
+                                <span className="ui-cart-57" >View breakup</span>
                             </div>
 
-                            <button
+                            <button className="ui-cart-58"
                                 onClick={handleCheckout}
-                                style={{ width: '100%', background: '#000000', color: '#fff', border: 'none', borderRadius: 12, padding: '15px 0', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
+
                             >
                                 Proceed to Pay
                             </button>

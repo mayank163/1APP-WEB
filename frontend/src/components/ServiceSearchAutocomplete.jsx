@@ -1,9 +1,11 @@
+import { cssValue } from '../utils/cssValue';
+import '../styles/ServiceSearchAutocomplete.css';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { FaTag } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import serviceService from '../services/serviceService';
 
-const ServiceSearchAutocomplete = ({ placeholder = "Search services...", wrapperStyle = {} }) => {
+const ServiceSearchAutocomplete = ({ placeholder = "Search services...", wrapperClassName = '' }) => {
     const [query, setQuery] = useState('');
     const [suggestions, setSuggestions] = useState([]);
     const [open, setOpen] = useState(false);
@@ -69,67 +71,59 @@ const ServiceSearchAutocomplete = ({ placeholder = "Search services...", wrapper
     }, []);
 
     return (
-        <div ref={wrapperRef} style={{ position: 'relative', ...wrapperStyle }}>
-            <form onSubmit={handleSubmit} className="d-flex align-items-center px-3 py-2 rounded-pill border" style={{ background: '#fff', fontSize: '13px', color: '#444', cursor: 'text', gap: 0 }}>
+        <div className={`ui-servicesearchautocomplete-1 ${wrapperClassName}`} ref={wrapperRef} >
+            <form onSubmit={handleSubmit} className="d-flex align-items-center px-3 py-2 rounded-pill border ui-servicesearchautocomplete-2" >
                 <input
                     type="text"
-                    className="border-0 bg-transparent"
+                    className="border-0 bg-transparent ui-servicesearchautocomplete-3"
                     placeholder={placeholder}
                     value={query}
                     onChange={handleChange}
                     onFocus={() => suggestions.length > 0 && setOpen(true)}
-                    style={{ outline: 'none', fontSize: '13px', color: '#444', width: query ? `${Math.max(80, query.length * 8)}px` : '150px', minWidth: '80px', maxWidth: '160px', transition: 'width 0.2s', flex: 1 }}
+                    style={{ "--ui-servicesearchautocomplete-3-width": cssValue(query ? `${Math.max(80, query.length * 8)}px` : '150px', "width") }}
                     autoComplete="off"
                 />
                 {/* Loader sits flush on the right inside the pill */}
                 <span
-                    className="flex-shrink-0 d-flex align-items-center"
-                    style={{ width: 28, justifyContent: 'center' }}
+                    className="flex-shrink-0 d-flex align-items-center ui-servicesearchautocomplete-4"
+
                 >
                     {loading ? (
-                        <span
-                            style={{
-                                display: 'inline-block',
-                                width: 14,
-                                height: 14,
-                                border: '2px solid #e0e0e0',
-                                borderTop: '2px solid #888',
-                                borderRadius: '50%',
-                                animation: 'spin 0.7s linear infinite',
-                            }}
+                        <span className="ui-servicesearchautocomplete-5"
+
                         />
                     ) : (
-                        <svg width="13" height="13" viewBox="0 0 20 20" fill="none" style={{ opacity: 0.4 }}>
+                        <svg className="ui-servicesearchautocomplete-6" width="13" height="13" viewBox="0 0 20 20" fill="none" >
                             <circle cx="8.5" cy="8.5" r="5.5" stroke="#444" strokeWidth="2" />
                             <path d="M13 13l4 4" stroke="#444" strokeWidth="2" strokeLinecap="round" />
                         </svg>
                     )}
                 </span>
             </form>
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+
 
             {open && (
                 <ul
-                    className="list-unstyled mb-0 shadow-sm border rounded-3 bg-white"
-                    style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0, zIndex: 2000, overflow: 'hidden', maxHeight: '320px', overflowY: 'auto' }}
+                    className="list-unstyled mb-0 shadow-sm border rounded-3 bg-white ui-servicesearchautocomplete-7"
+
                 >
                     {suggestions.map((service) => (
                         <li
                             key={service._id}
                             onMouseDown={() => handleSelect(service)}
-                            className="d-flex align-items-center gap-2 px-3 py-2"
-                            style={{ cursor: 'pointer', fontSize: '13px', borderBottom: '1px solid #f0f0f0' }}
-                            onMouseEnter={e => e.currentTarget.style.background = '#f8f8f8'}
-                            onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+                            className="d-flex align-items-center gap-2 px-3 py-2 ui-servicesearchautocomplete-8"
+
+
+
                         >
-                            <svg width="11" height="11" viewBox="0 0 20 20" fill="none" className="flex-shrink-0" style={{ opacity: 0.35 }}>
+                            <svg width="11" height="11" viewBox="0 0 20 20" fill="none" className="flex-shrink-0 ui-servicesearchautocomplete-9" >
                                     <circle cx="8.5" cy="8.5" r="5.5" stroke="#444" strokeWidth="2" />
                                     <path d="M13 13l4 4" stroke="#444" strokeWidth="2" strokeLinecap="round" />
                                 </svg>
-                            <div style={{ flex: 1, overflow: 'hidden' }}>
-                                <div className="text-truncate" style={{ fontWeight: 500 }}>{service.name}</div>
+                            <div className="ui-servicesearchautocomplete-10" >
+                                <div className="text-truncate ui-servicesearchautocomplete-11" >{service.name}</div>
                                 {(service.category?.name || service.subcategory?.name) && (
-                                    <div className="d-flex align-items-center gap-1" style={{ fontSize: 11, color: '#888', marginTop: 1 }}>
+                                    <div className="d-flex align-items-center gap-1 ui-servicesearchautocomplete-12" >
                                         <FaTag size={9} />
                                         <span className="text-truncate">
                                             {[service.category?.name, service.subcategory?.name].filter(Boolean).join(' › ')}

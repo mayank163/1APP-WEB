@@ -1,0 +1,94 @@
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-servicesearchautocomplete-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  position: relative;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-servicesearchautocomplete-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+  font-size: var(--ui-font-size-9);
+  color: var(--ui-color-34);
+  cursor: text;
+  gap: var(--ui-space-16);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-servicesearchautocomplete-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+  outline: none;
+  font-size: var(--ui-font-size-9);
+  color: var(--ui-color-34);
+  width: var(--ui-servicesearchautocomplete-3-width);
+  min-width: 80px;
+  max-width: 160px;
+  transition: width 0.2s;
+  flex: 1;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-servicesearchautocomplete-4:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 28px;
+  justify-content: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-servicesearchautocomplete-5:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #e0e0e0;
+  border-top: 2px solid #888;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-servicesearchautocomplete-6:not(#ui-style-priority):not(#ui-style-priority-2) {
+  opacity: 0.4;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-servicesearchautocomplete-7:not(#ui-style-priority):not(#ui-style-priority-2) {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 2000;
+  overflow: hidden;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-servicesearchautocomplete-8:not(#ui-style-priority):not(#ui-style-priority-2) {
+  cursor: pointer;
+  font-size: var(--ui-font-size-9);
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-servicesearchautocomplete-9:not(#ui-style-priority):not(#ui-style-priority-2) {
+  opacity: 0.35;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-servicesearchautocomplete-10:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-servicesearchautocomplete-11:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 500;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-servicesearchautocomplete-12:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-4);
+  color: var(--ui-color-6);
+  margin-top: var(--ui-space-19);
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.ui-servicesearchautocomplete-8:not(#ui-style-priority):not(#ui-style-priority-2):hover {
+  background: var(--ui-color-178);
+}

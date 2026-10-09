@@ -1,0 +1,78 @@
+
+/* Extracted presentation styles; repeated class specificity preserves inline precedence. */
+.admin-technician-job-form-1.admin-technician-job-form-1.admin-technician-job-form-1 {
+  color: var(--admin-color-brand);
+}
+
+.admin-technician-job-form-2.admin-technician-job-form-2.admin-technician-job-form-2 {
+  align-items: flex-start;
+}
+
+.admin-technician-job-form-3.admin-technician-job-form-3.admin-technician-job-form-3 {
+  margin-top: var(--admin-space-4px);
+}
+
+.admin-technician-job-form-4.admin-technician-job-form-4.admin-technician-job-form-4 {
+  flex: 1;
+}
+
+.admin-technician-job-form-5.admin-technician-job-form-5.admin-technician-job-form-5 {
+  background: var(--admin-color-rgba-165-115-47-0-05-);
+  border: 1px solid var(--admin-color-rgba-165-115-47-0-15-);
+}
+
+.admin-technician-job-form-6.admin-technician-job-form-6.admin-technician-job-form-6 {
+  color: var(--admin-color-brand);
+}
+
+.admin-technician-job-form-7.admin-technician-job-form-7.admin-technician-job-form-7 {
+  background: var(--admin-color-rgba-37-99-235-0-04-);
+  border: 1px solid var(--admin-color-rgba-37-99-235-0-15-);
+}
+
+.admin-technician-job-form-8.admin-technician-job-form-8.admin-technician-job-form-8 {
+  color: var(--admin-color-blue);
+}
+
+.admin-technician-job-form-9.admin-technician-job-form-9.admin-technician-job-form-9 {
+  padding: var(--admin-space-6px) var(--admin-space-20px);
+  border-radius: 6px;
+  border: var(--admin-technician-job-form-9-border);
+  background: var(--admin-technician-job-form-9-background);
+  font-weight: var(--admin-technician-job-form-9-font-weight);
+  color: var(--admin-technician-job-form-9-color);
+  cursor: pointer;
+  font-size: var(--admin-font-size-14px);
+}
+
+.admin-technician-job-form-10.admin-technician-job-form-10.admin-technician-job-form-10 {
+  background: var(--admin-color-rgba-37-99-235-0-04-);
+  border: 1px solid var(--admin-color-rgba-37-99-235-0-15-);
+}
+
+.admin-technician-job-form-11.admin-technician-job-form-11.admin-technician-job-form-11 {
+  color: var(--admin-color-blue);
+}
+
+.admin-technician-job-form-12.admin-technician-job-form-12.admin-technician-job-form-12 {
+  background: var(--admin-color-white);
+  border-radius: 8px;
+}
+
+.admin-technician-job-form-13.admin-technician-job-form-13.admin-technician-job-form-13 {
+  opacity: 0;
+  height: 0;
+  padding: 0;
+  border: none;
+  position: absolute;
+}
+
+/* State-dependent presentation stays in CSS. */
+.admin-technician-job-form-state-1 { --admin-technician-job-form-9-border: 2px solid var(--admin-color-blue); }
+.admin-technician-job-form-state-2 { --admin-technician-job-form-9-border: 1.5px solid var(--admin-color--ced4da); }
+.admin-technician-job-form-state-3 { --admin-technician-job-form-9-background: var(--admin-color-white); }
+.admin-technician-job-form-state-4 { --admin-technician-job-form-9-background: transparent; }
+.admin-technician-job-form-state-5 { --admin-technician-job-form-9-font-weight: 700; }
+.admin-technician-job-form-state-6 { --admin-technician-job-form-9-font-weight: 500; }
+.admin-technician-job-form-state-7 { --admin-technician-job-form-9-color: var(--admin-color-blue); }
+.admin-technician-job-form-state-8 { --admin-technician-job-form-9-color: var(--admin-color--6c757d); }

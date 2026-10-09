@@ -49,6 +49,11 @@ const bookingService = {
         return response.data;
     },
 
+    submitTechnicianReview: async (bookingId, payload) => {
+        const response = await API.post(`/bookings/${bookingId}/technician-review`, payload);
+        return response.data;
+    },
+
     submitServiceReview: async (serviceId, payload) => {
         // payload: { rating, review, bookingId }
         const response = await API.post(`/services/${serviceId}/reviews`, payload);

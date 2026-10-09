@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FiCheck, FiLoader, FiMessageCircle, FiPaperclip, FiPlus, FiSearch, FiSend, FiUsers } from 'react-icons/fi';
+import { useSearchParams } from 'react-router-dom';
 import adminApi from '../services/adminApi';
 import socket from '../services/socket';
 import { getImageUrl } from '../utils/helpers';
-import './TechnicianChat.css';
+import '../styles/TechnicianChat.css';
 
 const keyOf = message => String(message._id || `${message.createdAt}-${message.senderId}`);
 const timeOf = value => value ? new Date(value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
@@ -21,6 +22,8 @@ function Avatar({ person, large = false }) {
 
 export default function TechnicianChat() {
     const [type, setType] = useState('technician');
+    const [searchParams] = useSearchParams();
+    const requestedTechnician = searchParams.get('technician');
     const [conversations, setConversations] = useState([]);
     const [selected, setSelected] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -41,10 +44,10 @@ export default function TechnicianChat() {
         adminApi.getChatInbox(type).then(response => {
             if (!active) return;
             const list = response.data?.conversations || [];
-            setConversations(list); setSelected(list[0] || null);
+            setConversations(list); setSelected((type === 'technician' && list.find(item => String(item.participant?._id) === requestedTechnician)) || list[0] || null);
         }).catch(() => active && setError(`Unable to load ${type} conversations.`)).finally(() => active && setLoading(false));
         return () => { active = false; };
-    }, [type]);
+    }, [type, requestedTechnician]);
 
     useEffect(() => {
         if (!selectedParticipantId) return undefined;

@@ -1,0 +1,35 @@
+
+/* Extracted presentation styles; repeated class specificity preserves inline precedence. */
+.admin-notification-bell-1.admin-notification-bell-1.admin-notification-bell-1 {
+  color: var(--admin-color-brand);
+}
+
+.admin-notification-bell-2.admin-notification-bell-2.admin-notification-bell-2 {
+  font-size: var(--admin-font-size-9px);
+}
+
+.admin-notification-bell-3.admin-notification-bell-3.admin-notification-bell-3 {
+  width: 340px;
+  z-index: 1100;
+}
+
+.admin-notification-bell-4.admin-notification-bell-4.admin-notification-bell-4 {
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.admin-notification-bell-5.admin-notification-bell-5.admin-notification-bell-5 {
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  cursor: var(--admin-notification-bell-5-cursor);
+}
+
+.admin-notification-bell-6.admin-notification-bell-6.admin-notification-bell-6 {
+  width: 6px;
+  height: 6px;
+}
+
+/* State-dependent presentation stays in CSS. */
+.admin-notification-bell-state-1 { --admin-notification-bell-5-cursor: pointer; }
+.admin-notification-bell-state-2 { --admin-notification-bell-5-cursor: default; }

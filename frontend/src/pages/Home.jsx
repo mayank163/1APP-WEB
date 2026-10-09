@@ -1,3 +1,5 @@
+import { cssValue } from '../utils/cssValue';
+import '../styles/Home.css';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import serviceService from '../services/serviceService';
@@ -65,7 +67,7 @@ const HomeBrandLogos = ({ brands }) => (
             <div className="home-brand-logo" key={name}>
                 <img src={logo} alt={wordmark ? name : ''} loading="lazy"
                     onError={(event) => {
-                        event.currentTarget.style.display = 'none';
+                        event.currentTarget.classList.add('ui-image-hidden');
                         event.currentTarget.nextElementSibling.hidden = false;
                     }} />
                 <span hidden={wordmark}>{name}</span>
@@ -204,10 +206,10 @@ const Home = () => {
         const hasHalfStar = (rating || 0) % 1 >= 0.5;
 
         for (let i = 0; i < fullStars; i++) {
-            stars.push(<FaStar key={i} className="text-warning" style={{ fontSize: '12px' }} />);
+            stars.push(<FaStar key={i} className="text-warning ui-home-1"  />);
         }
         if (hasHalfStar) {
-            stars.push(<FaStar key="half" className="text-warning" style={{ fontSize: '12px', opacity: 0.5 }} />);
+            stars.push(<FaStar key="half" className="text-warning ui-home-2"  />);
         }
         return stars;
     };
@@ -226,130 +228,7 @@ const Home = () => {
 
     return (
         <div className="home-page">
-            <style>{`
-                .home-brand-band {
-                    display: grid;
-                    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-                    align-items: center;
-                    gap: 28px;
-                }
-                .home-brand-logos {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    gap: 24px;
-                }
-                .home-brand-logo {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 10px;
-                    min-height: 48px;
-                    font-size: 20px;
-                    font-weight: 600;
-                    color: #343434;
-                    line-height: 1.3;
-                }
-                .home-brand-logo img {
-                    width: auto;
-                    height: 48px;
-                    max-width: 180px;
-                    max-height: 48px;
-                    object-fit: contain;
-                }
-                .home-brand-logo span[hidden] { display: none; }
-                .home-brand-title {
-                    font-size: clamp(100px, 19vw, 260px);
-                    font-weight: 900;
-                    letter-spacing: -8px;
-                    background: linear-gradient(to bottom, #e6e6e6, #000);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                }
-                @media (max-width: 767px) {
-                    .home-brand-band { gap: 12px; }
-                    .home-brand-title { font-size: clamp(70px, 17vw, 130px); letter-spacing: -4px; }
-                    .home-brand-logos { gap: 18px; }
-                    .home-brand-logo { flex-direction: column; gap: 4px; font-size: 12px; min-height: 48px; }
-                    .home-brand-logo img { height: 32px; max-width: 92px; max-height: 32px; }
-                }
-                .hero-three-col {
-                    position: relative;
-                    z-index: 2;
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    padding: 0 40px;
-                    height: 100%;
-                    gap: 24px;
-                    flex-wrap: wrap;
-                    overflow: hidden;
-                    
-                }
 
-                .hero-side-card {
-                    background: rgba(255,255,255,1);
-                    backdrop-filter: blur(15px);
-                    -webkit-backdrop-filter: blur(15px);
-                    border-radius: 28px;
-                    padding: 28px 24px 24px;
-                    width: 290px;
-                    max-width: 100%;
-                    flex: 0 0 290px;
-                    min-width: 0;
-                    overflow: hidden;
-                    box-shadow: 0 8px 40px rgba(0,0,0,0.16);
-                    align-self: center;
-                }
-
-                .hero-center-panel {
-                    margin-bottom: 220px;
-                    flex: 1 1 320px;
-                    min-width: 0;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    text-align: center;
-                    padding: 0 16px;
-                }
-
-                @media (max-width: 1150px) {
-                    .hero-three-col {
-                        justify-content: center;
-                        padding: 0 20px;
-                        
-                    }
-
-                    .hero-side-card {
-                        flex-basis: min(290px, 100%);
-                        width: min(290px, 100%);
-                    }
-
-                    .hero-center-panel {
-                        order: -1;
-                        width: 100%;
-                        flex-basis: 100%;
-                    }
-                }
-
-                @media (max-width: 768px) {
-                    .hero-three-col {
-                        height: auto;
-                        min-height: 100%;
-                        padding: 24px 16px 120px;
-                    }
-
-                    .hero-side-card {
-                        width: 100%;
-                        flex-basis: 100%;
-                    }
-
-                    .hero-center-panel {
-                        padding: 0;
-                    }
-                }
-            `}</style>
 
             {/* Category Popup */}
             {popupCategory && (
@@ -378,21 +257,16 @@ const Home = () => {
 
 
 {/* ── Hero Section ── */}
-<div style={{ padding: 0, background: '#fff',}}>
-    <div style={{
-        position: 'relative',
-        overflow: 'hidden',
-        minHeight: '380px',
-        height: '440px',
-    }}>
+<div className="ui-home-3" >
+    <div className="ui-home-4" >
         {/* Background photo */}
-        <img
+        <img className="ui-home-5"
             src={tryHeroImg('BG.png')}
             alt="Hero"
-            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }}
-            onError={(e) => { e.target.style.display = 'none'; }}
+
+            onError={(e) => { e.target.classList.add('ui-image-hidden'); }}
         />
-        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(255,255,255,0.08)', zIndex: 1 }} />
+        <div className="ui-home-6"  />
 
         <div className="hero-three-col">
             {/* LEFT CARD - Home Services */}
@@ -410,68 +284,39 @@ const Home = () => {
                     <FaBolt size={13} />,
                 ];
                 return (
-                    <div className="hero-side-card" style={{ padding: '20px 18px 18px', width: '250px', flex: '0 0 250px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '14px' }}>
-                            <div style={{
-                                width: '44px', height: '44px',
-                                borderRadius: '50%',
-                                background: '#1a1a1a',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                marginBottom: '8px',
-                            }}>
-                                <FaHome size={18} style={{ color: '#fff' }} />
+                    <div className="hero-side-card ui-home-7" >
+                        <div className="ui-home-8" >
+                            <div className="ui-home-9" >
+                                <FaHome className="ui-home-10" size={18}  />
                             </div>
-                            <span style={{ fontWeight: 700, fontSize: '15px', color: '#1a1a1a' }}>Home Services</span>
+                            <span className="ui-home-11" >Home Services</span>
                         </div>
 
-                        <div style={{ marginBottom: '14px' }}>
+                        <div className="ui-home-12" >
                             {homeSubcategories.map((sub, i) => (
-                                <div
+                                <div className="ui-home-13"
                                     key={i}
                                     onClick={() => sub._id
                                         ? navigate(`/services?category=${sub.category?._id || sub.category || homeCat?.id}&subcategory=${sub._id}`)
                                         : (homeCat ? navigate(`/services?category=${homeCat.id}`) : handleCategoryClick('Home Services'))
                                     }
-                                    style={{
-                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                        padding: '8px 0',
-                                        borderBottom: i < homeSubcategories.length - 1 ? '1px solid rgba(0,0,0,0.07)' : 'none',
-                                        cursor: 'pointer',
-                                    }}
+                                    style={{ "--ui-home-13-border-bottom": cssValue(i < homeSubcategories.length - 1 ? '1px solid rgba(0,0,0,0.07)' : 'none', "borderBottom") }}
                                 >
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ color: '#555', flexShrink: 0 }}>{subIcons[i] || <FaTools size={13} />}</span>
-                                        <span style={{ fontSize: '13px', color: '#2a2a2a', fontWeight: 600 }}>{sub.name}</span>
+                                    <div className="ui-home-14" >
+                                        <span className="ui-home-15" >{subIcons[i] || <FaTools size={13} />}</span>
+                                        <span className="ui-home-16" >{sub.name}</span>
                                     </div>
-                                    <FaArrowRight size={10} style={{ color: '#bbb', flexShrink: 0 }} />
+                                    <FaArrowRight className="ui-home-17" size={10}  />
                                 </div>
                             ))}
                         </div>
 
-                        <button
+                        <button className="ui-home-18"
                             onClick={() => homeCat ? navigate(`/services?category=${homeCat.id}`) : handleCategoryClick('Home Services')}
-                            style={{
-                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                width: '100%',
-                                background: '#1a1a1a',
-                                color: '#fff',
-                                border: 'none',
-                                borderRadius: '999px',
-                                padding: '8px 14px',
-                                fontSize: '12px',
-                                fontWeight: 600,
-                                cursor: 'pointer',
-                            }}
+
                         >
                             <span>Explore All Services</span>
-                            <span style={{
-                                background: '#fff',
-                                color: '#1a1a1a',
-                                borderRadius: '50%',
-                                width: '22px', height: '22px',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                flexShrink: 0,
-                            }}>
+                            <span className="ui-home-19" >
                                 <FaArrowRight size={10} />
                             </span>
                         </button>
@@ -480,7 +325,7 @@ const Home = () => {
             })()}
 
             {/* CENTRE PANEL */}
-            <div className="hero-center-panel" style={{ padding: '0 8px' }}>
+            <div className="hero-center-panel ui-home-20" >
                 {/* <div style={{
                     display: 'inline-flex', alignItems: 'center', gap: '5px',
                     background: 'rgba(255,255,255,0.20)',
@@ -495,17 +340,9 @@ const Home = () => {
                     TRUSTED BY 10,000+ CUSTOMERS
                 </div> */}
 
-                <h1 style={{
-                    fontSize: 'clamp(26px, 3.2vw, 44px)',
-                    fontWeight: 800,
-                    color: '#1a1a1a',
-                    textAlign: 'center',
-                    lineHeight: 1.12,
-                    marginBottom: '10px',
-                    textShadow: '0 1px 8px rgba(255,255,255,0.6)',
-                }}>
+                <h1 className="ui-home-21" >
                     At your ease,<br />
-                    at your <em style={{ fontStyle: 'italic', fontWeight: 900, fontFamily: 'playfair display' }}>Doorsteps!</em>
+                    at your <em className="ui-home-22" >Doorsteps!</em>
                 </h1>
 
                 <HeroBookingBar />
@@ -530,68 +367,39 @@ const Home = () => {
                 ];
 
                 return (
-                    <div className="hero-side-card" style={{ padding: '20px 18px 18px', width: '250px', flex: '0 0 250px' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '14px' }}>
-                            <div style={{
-                                width: '44px', height: '44px',
-                                borderRadius: '50%',
-                                background: '#1a1a1a',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                marginBottom: '8px',
-                            }}>
-                                <FaBriefcase size={18} style={{ color: '#fff' }} />
+                    <div className="hero-side-card ui-home-23" >
+                        <div className="ui-home-24" >
+                            <div className="ui-home-25" >
+                                <FaBriefcase className="ui-home-26" size={18}  />
                             </div>
-                            <span style={{ fontWeight: 700, fontSize: '15px', color: '#1a1a1a' }}>All Services</span>
+                            <span className="ui-home-27" >All Services</span>
                         </div>
 
-                        <div style={{ marginBottom: '14px' }}>
+                        <div className="ui-home-28" >
                             {otherCats.map((cat, i) => (
-                                <div
+                                <div className="ui-home-29"
                                     key={cat.id || cat._id || i}
                                     onClick={() => cat.subcategories && cat.subcategories.length > 0
                                         ? setPopupCategory({ label: cat.name, categoryId: cat.id || cat._id, subcategories: cat.subcategories })
                                         : navigate(`/services?category=${cat.id || cat._id}`)
                                     }
-                                    style={{
-                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                        padding: '8px 0',
-                                        borderBottom: i < otherCats.length - 1 ? '1px solid rgba(0,0,0,0.07)' : 'none',
-                                        cursor: 'pointer',
-                                    }}
+                                    style={{ "--ui-home-29-border-bottom": cssValue(i < otherCats.length - 1 ? '1px solid rgba(0,0,0,0.07)' : 'none', "borderBottom") }}
                                 >
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ color: '#555', flexShrink: 0 }}>{catIcons[i] || <FaTools size={13} />}</span>
-                                        <span style={{ fontSize: '13px', color: '#2a2a2a', fontWeight: 600 }}>{cat.name}</span>
+                                    <div className="ui-home-30" >
+                                        <span className="ui-home-31" >{catIcons[i] || <FaTools size={13} />}</span>
+                                        <span className="ui-home-32" >{cat.name}</span>
                                     </div>
-                                    <FaArrowRight size={10} style={{ color: '#bbb', flexShrink: 0 }} />
+                                    <FaArrowRight className="ui-home-33" size={10}  />
                                 </div>
                             ))}
                         </div>
 
-                        <button
+                        <button className="ui-home-34"
                             onClick={() => setShowAllCategories(true)}
-                            style={{
-                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                width: '100%',
-                                background: '#1a1a1a',
-                                color: '#fff',
-                                border: 'none',
-                                borderRadius: '999px',
-                                padding: '8px 14px',
-                                fontSize: '12px',
-                                fontWeight: 600,
-                                cursor: 'pointer',
-                            }}
+
                         >
                             <span>Explore All Services</span>
-                            <span style={{
-                                background: '#fff',
-                                color: '#1a1a1a',
-                                borderRadius: '50%',
-                                width: '22px', height: '22px',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                flexShrink: 0,
-                            }}>
+                            <span className="ui-home-35" >
                                 <FaArrowRight size={10} />
                             </span>
                         </button>
@@ -651,13 +459,13 @@ const Home = () => {
 {/* ── Exclusive Home Services Offers ── */}
 <section className="py-3 bg-white" >
     <div className="container">
-        <h2 className="fw-bold mb-1" style={{ fontSize: '1.5rem', marginTop: '10px' }}>Exclusive Home Services Offers</h2>
-        <p className="text-muted mb-3" style={{ fontSize: '0.9rem' }}>Book Cleaner, Plumber, Handyman, Gardner or any one for your home help.</p>
+        <h2 className="fw-bold mb-1 ui-home-36" >Exclusive Home Services Offers</h2>
+        <p className="text-muted mb-3 ui-home-37" >Book Cleaner, Plumber, Handyman, Gardner or any one for your home help.</p>
         <div className="position-relative">
             <div
                 id="offersScrollRow"
-                className="d-flex gap-3 pb-1"
-                style={{ overflowX: 'auto', scrollbarWidth: 'none', scrollBehavior: 'smooth' }}
+                className="d-flex gap-3 pb-1 ui-home-38"
+
             >
                 {[
                     { badge: 'UP TO $500 OFF', title: 'Home Cleaning', desc: 'Deep Cleaning. Sofa Cleaning. Spotless Spaces.', img: 'cleaning_image.png', categoryName: 'Cleaning', subcategoryName: 'Home Cleaning' },
@@ -685,27 +493,27 @@ const Home = () => {
                     return (
                         <div
                             key={idx}
-                            className="rounded-4 overflow-hidden position-relative flex-shrink-0"
-                            style={{ width: 'calc(33.33% - 8px)', minWidth: '220px', minHeight: '200px', background: '#222', cursor: 'pointer' }}
+                            className="rounded-4 overflow-hidden position-relative flex-shrink-0 ui-home-39"
+
                             onClick={handleOfferClick}
                         >
                             <img
                                 src={tryHeroImg(item.img)}
                                 alt={item.title}
-                                className="position-absolute w-100 h-100"
-                                style={{ objectFit: 'cover', top: 0, left: 0, opacity: 0.55 }}
-                                onError={(e) => { e.target.style.display = 'none'; }}
+                                className="position-absolute w-100 h-100 ui-home-40"
+
+                                onError={(e) => { e.target.classList.add('ui-image-hidden'); }}
                             />
-                            <div className="position-relative p-3 d-flex flex-column justify-content-between" style={{ minHeight: '200px' }}>
+                            <div className="position-relative p-3 d-flex flex-column justify-content-between ui-home-41" >
                                 <div>
-                                    <span className="fw-bold text-white px-2 py-1 rounded-2 mb-2 d-inline-block" style={{ background: '#000000', fontSize: '9px', letterSpacing: '0.5px' }}>{item.badge}</span>
-                                    <p className="text-white mb-1" style={{ fontSize: '10px', opacity: 0.7, letterSpacing: '1px' }}>ONE-APP</p>
-                                    <h4 className="fw-bold text-white mb-1" style={{ fontSize: '1rem' }}>{item.title}</h4>
-                                    <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '11px', lineHeight: 1.5 }}>{item.desc}</p>
+                                    <span className="fw-bold text-white px-2 py-1 rounded-2 mb-2 d-inline-block ui-home-42" >{item.badge}</span>
+                                    <p className="text-white mb-1 ui-home-43" >ONE-APP</p>
+                                    <h4 className="fw-bold text-white mb-1 ui-home-44" >{item.title}</h4>
+                                    <p className="ui-home-45" >{item.desc}</p>
                                 </div>
                                 <button
-                                    className="btn fw-semibold rounded-3 px-3 py-1"
-                                    style={{ width: 'fit-content', background: '#000000', color: '#fff', border: '1px solid #fff', fontSize: '12px' }}
+                                    className="btn fw-semibold rounded-3 px-3 py-1 ui-home-46"
+
                                     onClick={(e) => { e.stopPropagation(); handleOfferClick(); }}
                                 >
                                     Book Now
@@ -717,19 +525,19 @@ const Home = () => {
             </div>
             {/* Left Arrow */}
             <button
-                className="position-absolute d-flex align-items-center justify-content-center border-0 bg-white rounded-circle shadow"
-                style={{ top: '50%', left: '-14px', transform: 'translateY(-50%)', width: '30px', height: '30px', zIndex: 2, cursor: 'pointer' }}
+                className="position-absolute d-flex align-items-center justify-content-center border-0 bg-white rounded-circle shadow ui-home-47"
+
                 onClick={() => { const el = document.getElementById('offersScrollRow'); el.scrollBy({ left: -250, behavior: 'smooth' }); }}
             >
-                <FaArrowRight style={{ transform: 'rotate(180deg)', fontSize: '12px' }} />
+                <FaArrowRight className="ui-home-48"  />
             </button>
             {/* Right Arrow */}
             <button
-                className="position-absolute d-flex align-items-center justify-content-center border-0 bg-white rounded-circle shadow"
-                style={{ top: '50%', right: '-14px', transform: 'translateY(-50%)', width: '30px', height: '30px', zIndex: 2, cursor: 'pointer' }}
+                className="position-absolute d-flex align-items-center justify-content-center border-0 bg-white rounded-circle shadow ui-home-49"
+
                 onClick={() => { const el = document.getElementById('offersScrollRow'); el.scrollBy({ left: 250, behavior: 'smooth' }); }}
             >
-                <FaArrowRight style={{ fontSize: '12px' }} />
+                <FaArrowRight className="ui-home-50"  />
             </button>
         </div>
     </div>
@@ -754,24 +562,24 @@ const Home = () => {
                                 {cat.subcategories.slice(0, 4).map((sub, idx) => (
                                     <div key={idx} className="col-lg-3 col-md-6">
                                         <div
-                                            className="border rounded-3 p-3 h-100 d-flex flex-column justify-content-between"
-                                            style={{ cursor: 'pointer', background: '#fff' }}
+                                            className="border rounded-3 p-3 h-100 d-flex flex-column justify-content-between ui-home-51"
+
                                             onClick={() => navigate(`/services?subcategory=${sub._id}`)}
                                         >
                                             <div>
-                                                <div className="fw-semibold mb-1" style={{ fontSize: '14px', lineHeight: 1.4 }}>{sub.name}</div>
-                                                <div className="text-muted" style={{ fontSize: '12px', lineHeight: 1.5 }}>{subtitle}</div>
+                                                <div className="fw-semibold mb-1 ui-home-52" >{sub.name}</div>
+                                                <div className="text-muted ui-home-53" >{subtitle}</div>
                                             </div>
                                             <div className="d-flex align-items-center justify-content-between mt-3 pt-3 border-top">
                                                 <div>
-                                                    <div className="text-muted" style={{ fontSize: '11px' }}>Standard Package</div>
-                                                    <div style={{ fontSize: '13px' }}>Starts From <span className="fw-bold">${sub.startingFromPrice}</span></div>
+                                                    <div className="text-muted ui-home-54" >Standard Package</div>
+                                                    <div className="ui-home-55" >Starts From <span className="fw-bold">${sub.startingFromPrice}</span></div>
                                                 </div>
-                                                <button className="btn p-2 rounded-2" style={{ background: '#f5f5f5', border: 'none', height: '30px' }}>
+                                                <button className="btn p-2 rounded-2 ui-home-56" >
                                                     <FaArrowRight
                                                         size={14}
-                                                        className="text-dark"
-                                                        style={{ display: 'flex' }}
+                                                        className="text-dark ui-home-57"
+
                                                     />
                                                 </button>
                                             </div>
@@ -789,23 +597,23 @@ const Home = () => {
 
             <section className="py-5 bg-white">
                 <div className="container">
-                    <div className="rounded-4 overflow-hidden d-flex" style={{ background: '#fdfdf0', minHeight: '200px' }}>
-                        <div className="p-5 d-flex flex-column justify-content-center" style={{ flex: '0 0 45%' }}>
-                            <h2 className="fw-bold mb-2" style={{ color: '#1a1a1a', fontSize: '1.6rem', lineHeight: 1.3 }}>Give your space the glow-up it deserves</h2>
-                            <p className="text-muted mb-5" style={{ fontSize: '16px', lineHeight: 1.8 }}>
+                    <div className="rounded-4 overflow-hidden d-flex ui-home-58" >
+                        <div className="p-5 d-flex flex-column justify-content-center ui-home-59" >
+                            <h2 className="fw-bold mb-2 ui-home-60" >Give your space the glow-up it deserves</h2>
+                            <p className="text-muted mb-5 ui-home-61" >
                                 We believe deeply in driving social and economic progress across the region. We use our app to connect customers to the communities that need the most support.
                             </p>
-                            <button className="btn rounded-3 px-4 py-2" onClick={() => navigate('/blogs')}  style={{ width: 'fit-content', background: '#000000', color: '#fff', border: 'none' }} >Read More</button>
+                            <button className="btn rounded-3 px-4 py-2 ui-home-62" onClick={() => navigate('/blogs')}   >Read More</button>
                         </div>
-                        <div style={{ flex: '0 0 55%', overflow: 'hidden' }}>
+                        <div className="ui-home-63" >
                             <img
                                 src={tryHeroImg('Home Painting.png')}
                                 alt="Home Painting"
-                                className="w-100 h-100"
-                                style={{ objectFit: 'cover' }}
-                                onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                                className="w-100 h-100 ui-home-64"
+
+                                onError={(e) => { e.target.classList.add('ui-image-hidden'); e.target.nextSibling.classList.add('ui-image-fallback'); }}
                             />
-                            <div className="w-100 h-100 align-items-center justify-content-center bg-light" style={{ display: 'none', minHeight: '200px' }}>
+                            <div className="w-100 h-100 align-items-center justify-content-center bg-light ui-home-65" >
                                 <FaPaintRoller size={60} className="text-muted" />
                             </div>
                         </div>
@@ -861,17 +669,17 @@ const Home = () => {
                                 </div>
                                 <button onClick={() => navigate(`/services?category=${cat.id}`)} className="btn btn-link text-dark fw-semibold text-decoration-none p-0">See all</button>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
+                            <div className="ui-home-66" >
                                 {cat.subcategories.slice(0, 4).map((sub, idx) => (
-                                    <div key={idx} onClick={() => navigate(`/services?subcategory=${sub._id}`)} style={{ cursor: 'pointer', minWidth: 0 }}>
-                                        <div className="rounded-4 overflow-hidden mb-3" style={{ height: '220px', background: '#f0f0f0' }}>
+                                    <div className="ui-home-67" key={idx} onClick={() => navigate(`/services?subcategory=${sub._id}`)} >
+                                        <div className="rounded-4 overflow-hidden mb-3 ui-home-68" >
                                             {sub.image ? (
-                                                <img src={resolveCategoryImage(sub.image)} alt={sub.name} className="w-100 h-100" style={{ objectFit: 'cover' }} />
+                                                <img src={resolveCategoryImage(sub.image)} alt={sub.name} className="w-100 h-100 ui-home-69"  />
                                             ) : (
                                                 <div className="w-100 h-100 d-flex align-items-center justify-content-center"><FaWrench size={40} className="text-muted" /></div>
                                             )}
                                         </div>
-                                        <div className="fw-semibold text-dark mb-1" style={{ fontSize: '15px' }}>{sub.name}</div>
+                                        <div className="fw-semibold text-dark mb-1 ui-home-70" >{sub.name}</div>
                                         <div className="d-flex align-items-center gap-2">
                                             <span className="fw-bold">${sub.startingFromPrice}</span>
                                         </div>
@@ -936,7 +744,7 @@ const Home = () => {
                                 alt="RO Water Purifier"
                                 className="w-100 h-100"
                                 style={{ objectFit: 'cover' }}
-                                onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                                onError={(e) => { e.target.classList.add('ui-image-hidden'); e.target.nextSibling.classList.add('ui-image-fallback'); }}
                             />
                             <div className="w-100 h-100 align-items-center justify-content-center" style={{ display: 'none', minHeight: '220px', background: '#c8cdd6' }}>
                                 <FaTint size={60} className="text-muted" />
@@ -958,17 +766,17 @@ const Home = () => {
                                 </div>
                                 <button onClick={() => navigate(`/services?category=${cat.id}`)} className="btn btn-link text-dark fw-semibold text-decoration-none p-0">See all</button>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
+                            <div className="ui-home-71" >
                                 {cat.subcategories.slice(0, 4).map((sub, idx) => (
-                                    <div key={idx} onClick={() => navigate(`/services?subcategory=${sub._id}`)} style={{ cursor: 'pointer', minWidth: 0 }}>
-                                        <div className="rounded-4 overflow-hidden mb-3" style={{ height: '220px', background: '#f0f0f0' }}>
+                                    <div className="ui-home-72" key={idx} onClick={() => navigate(`/services?subcategory=${sub._id}`)} >
+                                        <div className="rounded-4 overflow-hidden mb-3 ui-home-73" >
                                             {sub.image ? (
-                                                <img src={resolveCategoryImage(sub.image)} alt={sub.name} className="w-100 h-100" style={{ objectFit: 'cover' }} />
+                                                <img src={resolveCategoryImage(sub.image)} alt={sub.name} className="w-100 h-100 ui-home-74"  />
                                             ) : (
                                                 <div className="w-100 h-100 d-flex align-items-center justify-content-center"><FaUser size={40} className="text-muted" /></div>
                                             )}
                                         </div>
-                                        <div className="fw-semibold text-dark mb-1" style={{ fontSize: '15px' }}>{sub.name}</div>
+                                        <div className="fw-semibold text-dark mb-1 ui-home-75" >{sub.name}</div>
                                         <div className="d-flex align-items-center gap-2">
                                             <span className="fw-bold">${sub.startingFromPrice}</span>
                                         </div>
@@ -1019,7 +827,7 @@ const Home = () => {
 
 
             {/* All Home Services Banner */}
-            {/* 
+            {/*
 
             <section className="py-5 bg-white">
                 <div className="container">
@@ -1029,7 +837,7 @@ const Home = () => {
                             alt="All Home Services"
                             className="position-absolute h-100"
                             style={{ objectFit: 'cover', top: 0, right: 0, width: '55%', opacity: 0.9 }}
-                            onError={(e) => { e.target.style.display = 'none'; }}
+                            onError={(e) => { e.target.classList.add('ui-image-hidden'); }}
                         />
 
                         <div className="position-absolute h-100" style={{ top: 0, left: 0, width: '60%', background: 'linear-gradient(to right, #111 60%, transparent 100%)' }} />
@@ -1074,7 +882,7 @@ const Home = () => {
                         </div>
                     </div>
                 </div>
-            </section> 
+            </section>
 
 
             */}
@@ -1092,35 +900,35 @@ const Home = () => {
                     </div>
                     <div className="row g-3 mb-3">
                         <div className="col-lg-7">
-                            <div className="rounded-4 overflow-hidden position-relative" style={{ minHeight: '385px', background: '#1a1a2e', cursor: 'pointer' }} onClick={() => handleCategoryClick('IT & Technology')}>
-                                <img src={tryHeroImg('it-featured.png')} alt="Software Development" className="position-absolute w-100 h-100" style={{ objectFit: 'cover', top: 0, left: 0, opacity: 0.6 }} onError={(e) => { e.target.style.display = 'none'; }} />
-                                <div className="position-relative p-4 d-flex flex-column justify-content-end" style={{ minHeight: '300px' }}>
-                                    <span className="fw-bold text-white px-2 py-1 rounded-2 mb-3 d-inline-block" style={{ background: '#7c3aed', fontSize: '10px', width: 'fit-content' }}>Top Rated</span>
+                            <div className="rounded-4 overflow-hidden position-relative ui-home-76"  onClick={() => handleCategoryClick('IT & Technology')}>
+                                <img src={tryHeroImg('it-featured.png')} alt="Software Development" className="position-absolute w-100 h-100 ui-home-77"  onError={(e) => { e.target.classList.add('ui-image-hidden'); }} />
+                                <div className="position-relative p-4 d-flex flex-column justify-content-end ui-home-78" >
+                                    <span className="fw-bold text-white px-2 py-1 rounded-2 mb-3 d-inline-block ui-home-79" >Top Rated</span>
                                     <h4 className="fw-bold text-white mb-2">Custom Software &amp; App Development</h4>
-                                    <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '13px' }}>Build your dream product with our expert development teams.</p>
-                                    <button className="btn fw-semibold rounded-3 px-4 py-2 mt-2" style={{ width: 'fit-content', background: '#000000', color: '#fff', border: 'none' }} onClick={(e) => { e.stopPropagation(); handleCategoryClick('IT & Technology'); }}>Get a Quote</button>
+                                    <p className="ui-home-80" >Build your dream product with our expert development teams.</p>
+                                    <button className="btn fw-semibold rounded-3 px-4 py-2 mt-2 ui-home-81"  onClick={(e) => { e.stopPropagation(); handleCategoryClick('IT & Technology'); }}>Get a Quote</button>
                                 </div>
                             </div>
                         </div>
                         <div className="col-lg-5 d-flex flex-column gap-3">
                             {[{ icon: <FaLaptop size={20} />, title: 'Web Design', desc: 'Stunning UI/UX for your brand.' }, { icon: <FaUserMd size={20} />, title: 'Technical Assistance.', desc: '24/7' }].map((item, idx) => (
-                                <div key={idx} className="rounded-4 border p-4 d-flex flex-column justify-content-between flex-grow-1" style={{ cursor: 'pointer' }} >
-                                    <div className="mb-3"><div className="mb-3 text-dark">{item.icon}</div><div className="fw-bold mb-1" style={{ fontSize: '15px' }}>{item.title}</div><div className="text-muted small">{item.desc}</div></div>
-                                    <button className="btn btn-sm rounded-3 px-3" style={{ width: 'fit-content', background: '#000000', color: '#fff', border: 'none' }} onClick={(e) => { navigate('/contact'); }}>Contact now</button>
+                                <div key={idx} className="rounded-4 border p-4 d-flex flex-column justify-content-between flex-grow-1 ui-home-82"  >
+                                    <div className="mb-3"><div className="mb-3 text-dark">{item.icon}</div><div className="fw-bold mb-1 ui-home-83" >{item.title}</div><div className="text-muted small">{item.desc}</div></div>
+                                    <button className="btn btn-sm rounded-3 px-3 ui-home-84"  onClick={(e) => { navigate('/contact'); }}>Contact now</button>
                                 </div>
                             ))}
                         </div>
                     </div>
-                    <div className="rounded-4 overflow-hidden d-flex" style={{ background: '#faf7f2' }}>
-                        <div className="p-5 d-flex flex-column justify-content-between" style={{ flex: '0 0 55%' }}>
+                    <div className="rounded-4 overflow-hidden d-flex ui-home-85" >
+                        <div className="p-5 d-flex flex-column justify-content-between ui-home-86" >
                             <div>
-                                <h2 className="fw-bold mb-2" style={{ fontSize: '2.2rem', lineHeight: 1.2 }}>IT &amp; Marketing</h2>
+                                <h2 className="fw-bold mb-2 ui-home-87" >IT &amp; Marketing</h2>
                                 <p className="text-muted mb-4">Digital solutions to grow your business</p>
                                 <div className="row g-2">
                                     <div className="col-6">
                                         <div className="fw-semibold small mb-2">Technology</div>
                                         {(getCategoryByName('IT & Technology')?.subcategories || []).map(sub => (
-                                            <div key={sub._id} className="d-flex align-items-center gap-2 mb-1" style={{ fontSize: '13px', color: '#444', cursor: 'pointer' }}
+                                            <div key={sub._id} className="d-flex align-items-center gap-2 mb-1 ui-home-88"
                                                 onClick={() => navigate(`/services?subcategory=${sub._id}`)}>
                                                 <FaLaptop size={10} className="text-muted" />{sub.name}
                                             </div>
@@ -1129,7 +937,7 @@ const Home = () => {
                                     <div className="col-6">
                                         <div className="fw-semibold small mb-2">Marketing</div>
                                         {(getCategoryByName('Marketing & Branding')?.subcategories || []).map(sub => (
-                                            <div key={sub._id} className="d-flex align-items-center gap-2 mb-1" style={{ fontSize: '13px', color: '#444', cursor: 'pointer' }}
+                                            <div key={sub._id} className="d-flex align-items-center gap-2 mb-1 ui-home-89"
                                                 onClick={() => navigate(`/services?subcategory=${sub._id}`)}>
                                                 <FaBullhorn size={10} className="text-muted" />{sub.name}
                                             </div>
@@ -1137,21 +945,21 @@ const Home = () => {
                                     </div>
                                 </div>
                             </div>
-                            <button className="btn rounded-3 px-4 py-2 mt-4" style={{ width: 'fit-content', background: '#000000', color: '#fff', border: 'none' }} onClick={() => {
+                            <button className="btn rounded-3 px-4 py-2 mt-4 ui-home-90"  onClick={() => {
                                 const cat = getCategoryByName('IT');
                                 if (cat) navigate(`/services?category=${cat.id}`);
                                 else handleCategoryClick('IT & Technology');
                             }}>Know more</button>
                         </div>
-                        <div style={{ flex: '0 0 45%', position: 'relative', minHeight: '320px' }}>
-                            <img src={tryHeroImg('it-marketing.png')} alt="IT & Marketing" className="position-absolute w-100 h-100" style={{ objectFit: 'cover', top: 0, left: 0 }} onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
-                            <div className="position-absolute w-100 h-100 align-items-center justify-content-center bg-light" style={{ display: 'none', top: 0, left: 0 }}><FaLaptop size={60} className="text-muted" /></div>
+                        <div className="ui-home-91" >
+                            <img src={tryHeroImg('it-marketing.png')} alt="IT & Marketing" className="position-absolute w-100 h-100 ui-home-92"  onError={(e) => { e.target.classList.add('ui-image-hidden'); e.target.nextSibling.classList.add('ui-image-fallback'); }} />
+                            <div className="position-absolute w-100 h-100 align-items-center justify-content-center bg-light ui-home-93" ><FaLaptop size={60} className="text-muted" /></div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            
+
 
 
 
@@ -1235,7 +1043,7 @@ const Home = () => {
                             alt="Accounting & Finance"
                             className="position-absolute w-100 h-100"
                             style={{ objectFit: 'cover', top: 0, left: 0, opacity: 0.55 }}
-                            onError={(e) => { e.target.style.display = 'none'; }}
+                            onError={(e) => { e.target.classList.add('ui-image-hidden'); }}
                         />
                         <div className="position-absolute w-100 h-100" style={{ top: 0, left: 0, background: 'linear-gradient(to right, rgba(15,15,15,0.95) 40%, transparent 100%)' }} />
                         <div className="position-relative p-5 d-flex flex-column justify-content-center" style={{ minHeight: '300px', maxWidth: '420px' }}>
@@ -1293,7 +1101,7 @@ const Home = () => {
                             alt="Education"
                             className="position-absolute h-100"
                             style={{ objectFit: 'cover', top: 0, right: 0, width: '100%', borderRadius: '0 16px 16px 0' }}
-                            onError={(e) => { e.target.style.display = 'none'; }}
+                            onError={(e) => { e.target.classList.add('ui-image-hidden'); }}
                         />
 
                     </div>
@@ -1320,7 +1128,7 @@ const Home = () => {
                         ].map((item, idx) => (
                             <div key={idx} className="col-6">
                                 <div className="rounded-4 overflow-hidden position-relative" style={{ minHeight: '215px', background: '#222', cursor: 'pointer' }} onClick={() => handleCategoryClick('Education')}>
-                                    <img src={tryHeroImg(item.img)} alt={item.title} className="position-absolute w-100 h-100" style={{ objectFit: 'cover', top: 0, left: 0, opacity: 0.55 }} onError={(e) => { e.target.style.display = 'none'; }} />
+                                    <img src={tryHeroImg(item.img)} alt={item.title} className="position-absolute w-100 h-100" style={{ objectFit: 'cover', top: 0, left: 0, opacity: 0.55 }} onError={(e) => { e.target.classList.add('ui-image-hidden'); }} />
                                     <div className="position-relative p-3 d-flex flex-column justify-content-between" style={{ minHeight: '200px' }}>
                                         <div>
                                             <span className="fw-bold text-white px-2 py-1 rounded-2 mb-2 d-inline-block" style={{ background: item.badgeBg, fontSize: '9px', letterSpacing: '0.5px' }}>{item.badge}</span>
@@ -1362,7 +1170,7 @@ const Home = () => {
 
 
                     <div className="rounded-4 overflow-hidden position-relative" style={{ minHeight: '280px', background: '#111' }}>
-                        <img src={tryHeroImg('events.png')} alt="Events & Media" className="position-absolute w-100 h-100" style={{ objectFit: 'cover', top: 0, left: 0, opacity: 0.55 }} onError={(e) => { e.target.style.display = 'none'; }} />
+                        <img src={tryHeroImg('events.png')} alt="Events & Media" className="position-absolute w-100 h-100" style={{ objectFit: 'cover', top: 0, left: 0, opacity: 0.55 }} onError={(e) => { e.target.classList.add('ui-image-hidden'); }} />
                         <div className="position-absolute w-100 h-100" style={{ top: 0, left: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.85) 45%, transparent 100%)' }} />
                         <div className="position-relative p-5 d-flex flex-column justify-content-center" style={{ minHeight: '280px', maxWidth: '420px' }}>
                             <span className="fw-bold text-white px-2 py-1 rounded-2 mb-3 d-inline-block" style={{ background: '#7c3aed', fontSize: '10px', width: 'fit-content' }}>UP TO $3,100 OFF</span>
@@ -1427,18 +1235,18 @@ const Home = () => {
                             <img
                                 src={tryHeroImg('social-impact.png')}
                                 alt="Our Social Impact"
-                                className="w-100"
-                                style={{ objectFit: 'cover', height: '380px', padding: '10px', borderRadius: '30px' }}
-                                onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                                className="w-100 ui-home-94"
+
+                                onError={(e) => { e.target.classList.add('ui-image-hidden'); e.target.nextSibling.classList.add('ui-image-fallback'); }}
                             />
 
                         </div>
                         <div className="col-lg-7 p-5">
-                            <h2 className="fw-bold mb-4" style={{ fontSize: '2.2rem' }}>Our social impact</h2>
-                            <p className="text-muted mb-5" style={{ fontSize: '16px', lineHeight: 1.8 }}>
+                            <h2 className="fw-bold mb-4 ui-home-95" >Our social impact</h2>
+                            <p className="text-muted mb-5 ui-home-96" >
                                 We believe deeply in driving social and economic progress across the region. We use our app to connect customers to the communities that need the most support.
                             </p>
-                            <button className="btn fw-bold px-4 py-2 rounded-3 on" style={{ background: '#000000', color: '#fff', fontSize: '15px', border: 'none' }} onClick={() => navigate("/blogs")}>
+                            <button className="btn fw-bold px-4 py-2 rounded-3 on ui-home-97"  onClick={() => navigate("/blogs")}>
                                 Read more
                             </button>
                         </div>
@@ -1446,33 +1254,22 @@ const Home = () => {
                 </div>
             </section>
 
-            
+
 
             {/* Stay Tuned / ONE APP Section */}
             <section
-                className="py-5"
-                style={{
-                    background: "#fff",
-                    overflow: "hidden",
-                }}
+                className="py-5 ui-home-98"
+
             >
                 <div className="container">
                     <div
-                        className="position-relative d-flex justify-content-center align-items-start"
-                        style={{
-                            minHeight: "500px",
-                        }}
+                        className="position-relative d-flex justify-content-center align-items-start ui-home-99"
+
                     >
                         {/* Background ONE APP */}
                         <div
-                            className="position-absolute w-100 text-center"
-                            style={{
-                                top: "260px",
-                                left: 0,
-                                zIndex: 1,
-                                userSelect: "none",
-                                lineHeight: 0.82,
-                            }}
+                            className="position-absolute w-100 text-center ui-home-100"
+
                         >
                             <div className="home-brand-band">
                                 <HomeBrandLogos brands={homeBrands.slice(0, 3)} />
@@ -1483,81 +1280,41 @@ const Home = () => {
 
                         {/* Card Wrapper */}
                         <div
-                            className="position-relative"
-                            style={{
-                                width: "100%",
-                                maxWidth: "1500px",
-                                zIndex: 2,
-                            }}
+                            className="position-relative ui-home-101"
+
                         >
                             {/* White Blur / Glow */}
-                            <div
-                                style={{
-                                    position: "absolute",
-                                    left: "50%",
-                                    bottom: "-55px",
-                                    transform: "translateX(-50%)",
-                                    width: "88%",
-                                    height: "120px",
-                                    background: "rgba(255,255,255,0.95)",
-                                    filter: "blur(55px)",
-                                    borderRadius: "100px",
-                                    zIndex: -1,
-                                }}
+                            <div className="ui-home-102"
+
                             />
 
                             {/* Black Card */}
                             <div
-                                className="text-center rounded-4"
-                                style={{
-                                    background: "#0d0d0d",
-                                    padding: "30px 20px",
-                                    borderRadius: "24px",
-                                    boxShadow: "0px 0px 20px 20px rgba(0, 0, 0, .28)",
-                                }}
+                                className="text-center rounded-4 ui-home-103"
+
                             >
-                                <div
-                                    style={{
-                                        color: "#fff",
-                                        fontSize: "28px",
-                                        opacity: 0.9,
-                                        lineHeight: 1,
-                                    }}
+                                <div className="ui-home-104"
+
                                 >
                                     ❝
                                 </div>
 
                                 <h2
-                                    className="mb-4"
-                                    style={{
-                                        color: "#fff",
-                                        fontFamily: "Georgia, serif",
-                                        fontStyle: "italic",
-                                        fontWeight: 400,
-                                        fontSize: "clamp(30px,3vw,52px)",
-                                    }}
+                                    className="mb-4 ui-home-105"
+
                                 >
                                     "Stay Tuned For More"
                                 </h2>
 
                                 <p
-                                    className="mb-1"
-                                    style={{
-                                        color: "#d8d8d8",
-                                        fontSize: "16px",
-                                    }}
+                                    className="mb-1 ui-home-106"
+
                                 >
                                     We're continuously expanding our service networking to deliver
                                 </p>
 
-                                <p
-                                    style={{
-                                        color: "#d8d8d8",
-                                        fontStyle: "italic",
-                                        fontWeight: 600,
-                                        fontSize: "16px",
-                                        margin: 0,
-                                    }}
+                                <p className="ui-home-107"
+
                                 >
                                     more value, more expertise and more possibilities.
                                 </p>

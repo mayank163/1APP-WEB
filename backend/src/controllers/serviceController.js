@@ -64,6 +64,8 @@ const buildServiceData = async (
         name: body.name,
         shortDescription: shortDescription,
         longDescription: body.longDescription || '',
+        ...(body.cardDescription !== undefined && { cardDescription: body.cardDescription }),
+        ...(body.pricingType !== undefined && { pricingType: body.pricingType }),
         category: body.category,
         subcategory: body.subcategory,
         serviceType: body.serviceType || '',

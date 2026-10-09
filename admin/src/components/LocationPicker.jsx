@@ -1,3 +1,4 @@
+import '../styles/LocationPicker.css';
 import React, { useEffect, useRef, useState } from 'react';
 
 const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
@@ -163,7 +164,7 @@ const LocationPicker = ({ value, onChange }) => {
   return (
     <div>
       {/* Autocomplete input — z-index ensures dropdown renders above modal */}
-      <div style={{ position: 'relative', zIndex: 1100 }}>
+      <div className="admin-location-picker-1" >
         <input
           ref={inputCallbackRef}
           className="form-control tj-input mb-2"
@@ -177,27 +178,17 @@ const LocationPicker = ({ value, onChange }) => {
       {/* Map */}
       <div
         ref={mapCallbackRef}
-        style={{
-          width: '100%',
-          height: 260,
-          borderRadius: 10,
-          border: '1.5px solid #e9e0d5',
-          overflow: 'hidden',
-          background: '#f0f0f0',
-        }}
+        className="admin-location-picker-2"
       >
         {!ready && (
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            height: '100%', color: '#adb5bd', fontSize: '0.85rem',
-          }}>
+          <div className="admin-location-picker-3" >
             Loading map…
           </div>
         )}
       </div>
 
       {value?.lat && (
-        <div style={{ fontSize: '0.75rem', color: '#6c757d', marginTop: 4 }}>
+        <div className="admin-location-picker-4" >
           📍 {value.address} &nbsp;·&nbsp; {Number(value.lat).toFixed(6)}, {Number(value.lng).toFixed(6)}
         </div>
       )}

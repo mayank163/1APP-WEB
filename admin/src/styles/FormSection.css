@@ -1,0 +1,9 @@
+
+/* Extracted presentation styles; repeated class specificity preserves inline precedence. */
+.admin-form-section-1.admin-form-section-1.admin-form-section-1 {
+  cursor: pointer;
+}
+
+.admin-form-section-2.admin-form-section-2.admin-form-section-2 {
+  font-size: var(--admin-font-size-11px);
+}

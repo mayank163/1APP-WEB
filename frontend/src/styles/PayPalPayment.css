@@ -1,0 +1,26 @@
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-paypalpayment-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-10);
+  text-align: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-paypalpayment-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: var(--ui-paypalpayment-2-display);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-paypalpayment-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-32);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-paypalpayment-4:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: block;
+  margin: var(--ui-space-40);
+  border: none;
+  background: var(--ui-color-134);
+  color: var(--ui-color-33);
+  cursor: pointer;
+}

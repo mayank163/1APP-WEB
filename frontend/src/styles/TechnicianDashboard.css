@@ -1,0 +1,3100 @@
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-153);
+  border-radius: 20px;
+  font-size: var(--ui-font-size-17);
+  font-weight: 700;
+  background: var(--ui-techniciandashboard-1-background);
+  color: var(--ui-techniciandashboard-1-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-153);
+  border-radius: 20px;
+  font-size: var(--ui-font-size-17);
+  font-weight: 700;
+  background: var(--ui-techniciandashboard-2-background);
+  color: var(--ui-techniciandashboard-2-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+  position: fixed;
+  inset: 0;
+  background: var(--ui-color-1);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-4:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--ui-space-154);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-5:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-6:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin: var(--ui-space-16);
+  font-weight: 800;
+  color: var(--ui-color-83);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-7:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-134);
+  border: none;
+  font-size: var(--ui-font-size-35);
+  cursor: pointer;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-8:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-39);
+  color: var(--ui-color-84);
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-9:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-85);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-10:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-40);
+  font-weight: 600;
+  color: var(--ui-color-69);
+  display: block;
+  margin-bottom: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-11:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  border: 1.5px solid #e9e0d5;
+  border-radius: 8px;
+  padding: var(--ui-space-155);
+  font-size: var(--ui-font-size-54);
+  outline: none;
+  margin-bottom: var(--ui-space-11);
+  font-family: var(--ui-font-family-4);
+  resize: vertical;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-12:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-40);
+  font-weight: 600;
+  color: var(--ui-color-69);
+  display: block;
+  margin-bottom: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-13:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #e9e0d5;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-14:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-156);
+  font-weight: 700;
+  color: var(--ui-color-85);
+  background: var(--ui-color-86);
+  border-right: 1.5px solid #e9e0d5;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-15:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: var(--ui-space-155);
+  font-size: var(--ui-font-size-23);
+  font-weight: 600;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-16:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-17:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-40);
+  font-weight: 600;
+  color: var(--ui-color-69);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-18:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-18-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-157);
+  font-weight: 700;
+  font-size: var(--ui-font-size-50);
+  cursor: var(--ui-techniciandashboard-18-cursor);
+  opacity: var(--ui-techniciandashboard-18-opacity);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-19:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-87);
+  border: 1px solid #f0e8dc;
+  border-radius: 10px;
+  padding: var(--ui-space-158);
+  margin-bottom: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-20:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-9);
+  margin-bottom: var(--ui-space-3);
+  flex-wrap: wrap;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-21:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: 1.5px solid #e9e0d5;
+  border-radius: 7px;
+  padding: var(--ui-space-159);
+  font-size: var(--ui-font-size-39);
+  background: var(--ui-color-2);
+  flex: 1;
+  min-width: 120px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-22:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #e9e0d5;
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-23:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-113);
+  font-weight: 700;
+  color: var(--ui-color-85);
+  background: var(--ui-color-86);
+  border-right: 1.5px solid #e9e0d5;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  font-size: var(--ui-font-size-15);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-24:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: none;
+  outline: none;
+  padding: var(--ui-space-21);
+  font-size: var(--ui-font-size-23);
+  font-weight: 700;
+  width: 90px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-25:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-88);
+  color: var(--ui-color-30);
+  border: none;
+  border-radius: 7px;
+  padding: var(--ui-space-21);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-26:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  border: 1.5px solid #e9e0d5;
+  border-radius: 7px;
+  padding: var(--ui-space-21);
+  font-size: var(--ui-font-size-40);
+  outline: none;
+  box-sizing: border-box;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-27:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-23);
+  margin-top: var(--ui-space-1);
+  justify-content: flex-end;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-28:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-120);
+  border: 1.5px solid #e9e0d5;
+  border-radius: 8px;
+  padding: var(--ui-space-120);
+  font-weight: 600;
+  font-size: var(--ui-font-size-39);
+  cursor: pointer;
+  color: var(--ui-color-69);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-29:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-29-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: var(--ui-techniciandashboard-29-cursor);
+  opacity: var(--ui-techniciandashboard-29-opacity);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-30:not(#ui-style-priority):not(#ui-style-priority-2) {
+  position: fixed;
+  inset: 0;
+  background: var(--ui-color-1);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-31:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--ui-space-154);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-32:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-33:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin: var(--ui-space-16);
+  font-weight: 800;
+  color: var(--ui-color-83);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-34:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-134);
+  border: none;
+  font-size: var(--ui-font-size-35);
+  cursor: pointer;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-35:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-39);
+  color: var(--ui-color-84);
+  margin-top: var(--ui-space-16);
+  margin-bottom: var(--ui-space-13);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-36:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-87);
+  border: 1px solid #f0e8dc;
+  border-radius: 10px;
+  padding: var(--ui-space-158);
+  margin-bottom: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-37:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-9);
+  margin-bottom: var(--ui-space-3);
+  flex-wrap: wrap;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-38:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: 1.5px solid #e9e0d5;
+  border-radius: 7px;
+  padding: var(--ui-space-159);
+  font-size: var(--ui-font-size-39);
+  background: var(--ui-color-2);
+  flex: 1;
+  min-width: 120px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-39:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #e9e0d5;
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-40:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-113);
+  font-weight: 700;
+  color: var(--ui-color-85);
+  background: var(--ui-color-86);
+  border-right: 1.5px solid #e9e0d5;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  font-size: var(--ui-font-size-15);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-41:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: none;
+  outline: none;
+  padding: var(--ui-space-21);
+  font-size: var(--ui-font-size-23);
+  font-weight: 700;
+  width: 90px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-42:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-88);
+  color: var(--ui-color-30);
+  border: none;
+  border-radius: 7px;
+  padding: var(--ui-space-21);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-43:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  border: 1.5px solid #e9e0d5;
+  border-radius: 7px;
+  padding: var(--ui-space-21);
+  font-size: var(--ui-font-size-40);
+  outline: none;
+  box-sizing: border-box;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-44:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-44-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-157);
+  font-weight: 700;
+  font-size: var(--ui-font-size-50);
+  cursor: var(--ui-techniciandashboard-44-cursor);
+  opacity: var(--ui-techniciandashboard-44-opacity);
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-45:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-23);
+  justify-content: flex-end;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-46:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-120);
+  border: 1.5px solid #e9e0d5;
+  border-radius: 8px;
+  padding: var(--ui-space-120);
+  font-weight: 600;
+  font-size: var(--ui-font-size-39);
+  cursor: pointer;
+  color: var(--ui-color-69);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-47:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-47-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: var(--ui-techniciandashboard-47-cursor);
+  opacity: var(--ui-techniciandashboard-47-opacity);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-48:not(#ui-style-priority):not(#ui-style-priority-2) {
+  position: fixed;
+  inset: 0;
+  background: var(--ui-color-8);
+  z-index: 2100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-49:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 580px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--ui-space-154);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-50:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-51:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin: var(--ui-space-16);
+  font-weight: 800;
+  color: var(--ui-color-83);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-52:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-134);
+  border: none;
+  font-size: var(--ui-font-size-35);
+  cursor: pointer;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-53:not(#ui-style-priority):not(#ui-style-priority-2) {
+  text-align: center;
+  padding: var(--ui-space-160);
+  color: var(--ui-color-89);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-54:not(#ui-style-priority):not(#ui-style-priority-2) {
+  text-align: center;
+  padding: var(--ui-space-160);
+  color: var(--ui-color-30);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-55:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: 1px solid #e9e0d5;
+  border-radius: 12px;
+  padding: var(--ui-space-161);
+  background: var(--ui-color-2);
+  margin-bottom: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-56:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-26);
+  color: var(--ui-color-83);
+  margin-bottom: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-57:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-40);
+  color: var(--ui-color-84);
+  margin-bottom: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-58:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-54);
+  color: var(--ui-color-69);
+  margin: var(--ui-space-162);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-59:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-11);
+  flex-wrap: wrap;
+  font-size: var(--ui-font-size-39);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-60:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-85);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-61:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: 1px solid #e9e0d5;
+  border-radius: 12px;
+  padding: var(--ui-space-161);
+  background: var(--ui-color-2);
+  margin-bottom: var(--ui-space-16);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-62:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  color: var(--ui-color-83);
+  margin-bottom: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-63:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-55);
+  color: var(--ui-color-69);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-64:not(#ui-style-priority):not(#ui-style-priority-2) {
+  position: fixed;
+  inset: 0;
+  background: var(--ui-color-1);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-65:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 420px;
+  padding: var(--ui-space-154);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-66:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-67:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin: var(--ui-space-16);
+  font-weight: 800;
+  color: var(--ui-color-83);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-68:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-134);
+  border: none;
+  font-size: var(--ui-font-size-35);
+  cursor: pointer;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-69:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-15);
+  color: var(--ui-color-84);
+  margin-bottom: var(--ui-space-13);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-70:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-90);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-71:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-40);
+  font-weight: 600;
+  color: var(--ui-color-69);
+  display: block;
+  margin-bottom: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-72:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #e9e0d5;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-73:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-156);
+  font-weight: 700;
+  color: var(--ui-color-85);
+  background: var(--ui-color-86);
+  border-right: 1.5px solid #e9e0d5;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-74:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: var(--ui-space-155);
+  font-size: var(--ui-font-size-23);
+  font-weight: 600;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-75:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-40);
+  font-weight: 600;
+  color: var(--ui-color-69);
+  display: block;
+  margin-bottom: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-76:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  border: 1.5px solid #e9e0d5;
+  border-radius: 8px;
+  padding: var(--ui-space-155);
+  font-size: var(--ui-font-size-54);
+  background: var(--ui-color-2);
+  margin-bottom: var(--ui-space-11);
+  outline: none;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-77:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-40);
+  font-weight: 600;
+  color: var(--ui-color-69);
+  display: block;
+  margin-bottom: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-78:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  border: 1.5px solid #e9e0d5;
+  border-radius: 8px;
+  padding: var(--ui-space-155);
+  font-size: var(--ui-font-size-54);
+  outline: none;
+  margin-bottom: var(--ui-space-1);
+  font-family: var(--ui-font-family-4);
+  resize: vertical;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-79:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-23);
+  justify-content: flex-end;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-80:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-120);
+  border: 1.5px solid #e9e0d5;
+  border-radius: 8px;
+  padding: var(--ui-space-120);
+  font-weight: 600;
+  font-size: var(--ui-font-size-39);
+  cursor: pointer;
+  color: var(--ui-color-69);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-81:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-81-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: var(--ui-techniciandashboard-81-cursor);
+  opacity: var(--ui-techniciandashboard-81-opacity);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-82:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-82-background);
+  border: var(--ui-techniciandashboard-82-border);
+  border-radius: var(--ui-techniciandashboard-82-border-radius);
+  padding: var(--ui-space-22);
+  color: var(--ui-techniciandashboard-82-color);
+  font-size: var(--ui-font-size-55);
+  line-height: 1.5;
+  max-width: 85%;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-83:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  font-size: var(--ui-font-size-14);
+  color: var(--ui-techniciandashboard-83-color);
+  margin-bottom: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-84:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: var(--ui-techniciandashboard-84-border-bottom);
+  padding-bottom: var(--ui-space-9);
+  margin-bottom: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-85:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 600;
+  font-size: var(--ui-font-size-40);
+  color: var(--ui-techniciandashboard-85-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-86:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-37);
+  color: var(--ui-techniciandashboard-86-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-87:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-88:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-134);
+  border: none;
+  cursor: pointer;
+  padding: var(--ui-space-16);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  color: var(--ui-techniciandashboard-88-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-89:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-50);
+  font-weight: 600;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-90:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-91:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-10);
+  color: var(--ui-techniciandashboard-91-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-92:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-14);
+  color: var(--ui-techniciandashboard-92-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-93:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-94:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--ui-space-124);
+  background: var(--ui-techniciandashboard-94-background);
+  border-radius: 6px;
+  font-size: var(--ui-font-size-50);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-95:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 600;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-96:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-techniciandashboard-96-color);
+  margin-left: var(--ui-space-17);
+  font-size: var(--ui-font-size-47);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-97:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-98:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-14);
+  font-weight: 700;
+  color: var(--ui-techniciandashboard-98-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-99:not(#ui-style-priority):not(#ui-style-priority-2) {
+  text-decoration: line-through;
+  color: var(--ui-techniciandashboard-99-color);
+  font-size: var(--ui-font-size-47);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-100:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  color: var(--ui-color-90);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-101:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-102:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: var(--ui-techniciandashboard-102-border-top);
+  padding-top: var(--ui-space-9);
+  margin-top: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-103:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  font-size: var(--ui-font-size-39);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-104:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-11);
+  color: var(--ui-techniciandashboard-104-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-105:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-9);
+  font-size: var(--ui-font-size-50);
+  color: var(--ui-techniciandashboard-105-color);
+  border-top: var(--ui-techniciandashboard-105-border-top);
+  padding-top: var(--ui-space-3);
+  font-style: italic;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-106:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-107:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-101);
+  border-radius: 12px;
+  font-size: var(--ui-font-size-56);
+  font-weight: 700;
+  background: var(--ui-techniciandashboard-107-background);
+  color: var(--ui-techniciandashboard-107-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-108:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-49);
+  color: var(--ui-techniciandashboard-108-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-109:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 75%;
+  padding: var(--ui-space-155);
+  font-size: var(--ui-font-size-40);
+  font-weight: 600;
+  border-radius: var(--ui-techniciandashboard-109-border-radius);
+  background: var(--ui-techniciandashboard-109-background);
+  border: var(--ui-techniciandashboard-109-border);
+  color: var(--ui-techniciandashboard-109-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-110:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  font-size: var(--ui-font-size-14);
+  margin-bottom: var(--ui-space-91);
+  opacity: 0.8;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-111:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-91);
+  font-size: var(--ui-font-size-47);
+  font-style: italic;
+  opacity: 0.8;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-112:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-49);
+  margin-top: var(--ui-space-14);
+  text-align: right;
+  opacity: 0.6;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-113:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-114:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-134);
+  border: none;
+  cursor: pointer;
+  font-size: var(--ui-font-size-47);
+  font-weight: 600;
+  color: var(--ui-color-89);
+  padding: var(--ui-space-163);
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-115:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-3);
+  border-left: 2px solid #e9e0d5;
+  padding-left: var(--ui-space-23);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-116:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-116-background);
+  border: var(--ui-techniciandashboard-116-border);
+  border-radius: 6px;
+  padding: var(--ui-space-159);
+  font-size: var(--ui-font-size-17);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-117:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--ui-space-15);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-118:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  color: var(--ui-techniciandashboard-118-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-119:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-89);
+  font-size: var(--ui-font-size-56);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-120:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-121:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  color: var(--ui-techniciandashboard-121-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-122:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  color: var(--ui-color-83);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-123:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-15);
+  color: var(--ui-color-84);
+  font-style: italic;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-124:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-154);
+  text-align: center;
+  color: var(--ui-color-89);
+  font-size: var(--ui-font-size-15);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-125:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-34);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-126:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-155);
+  background: var(--ui-color-91);
+  border: 1px solid rgba(165,115,47,0.2);
+  border-radius: 8px;
+  font-size: var(--ui-font-size-39);
+  font-weight: 600;
+  color: var(--ui-color-92);
+  margin-bottom: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-127:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-9);
+  flex-wrap: wrap;
+  margin-bottom: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-128:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-153);
+  border-radius: 20px;
+  font-size: var(--ui-font-size-17);
+  font-weight: 700;
+  background: var(--ui-color-93);
+  color: var(--ui-color-94);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-129:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-153);
+  border-radius: 20px;
+  font-size: var(--ui-font-size-17);
+  font-weight: 700;
+  background: var(--ui-color-95);
+  color: var(--ui-color-96);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-130:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-153);
+  border-radius: 20px;
+  font-size: var(--ui-font-size-17);
+  font-weight: 700;
+  background: var(--ui-color-97);
+  color: var(--ui-color-90);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-131:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-153);
+  border-radius: 20px;
+  font-size: var(--ui-font-size-17);
+  font-weight: 700;
+  background: var(--ui-color-88);
+  color: var(--ui-color-30);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-132:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-89);
+  text-align: center;
+  padding: var(--ui-space-154);
+  font-size: var(--ui-font-size-15);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-133:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-87);
+  border: 1px solid #f0e8dc;
+  border-radius: 10px;
+  padding: var(--ui-space-108);
+  margin-bottom: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-134:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-135:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  font-size: var(--ui-font-size-23);
+  color: var(--ui-color-83);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-136:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-17);
+  color: var(--ui-color-84);
+  margin-top: var(--ui-space-15);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-137:not(#ui-style-priority):not(#ui-style-priority-2) {
+  text-align: right;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-138:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  color: var(--ui-color-85);
+  font-size: var(--ui-font-size-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-139:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-50);
+  color: var(--ui-color-90);
+  font-weight: 700;
+  margin-top: var(--ui-space-15);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-140:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-141:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-9);
+  padding: var(--ui-space-158);
+  background: var(--ui-color-98);
+  border: 1px solid rgba(37,99,235,0.18);
+  border-radius: 8px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-142:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-39);
+  font-weight: 700;
+  color: var(--ui-color-96);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-143:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-50);
+  color: var(--ui-color-84);
+  margin-top: var(--ui-space-91);
+  font-style: italic;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-144:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-9);
+  margin-top: var(--ui-space-23);
+  flex-wrap: wrap;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-145:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-145-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: var(--ui-techniciandashboard-145-cursor);
+  opacity: var(--ui-techniciandashboard-145-opacity);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-146:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-146-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: var(--ui-techniciandashboard-146-cursor);
+  opacity: var(--ui-techniciandashboard-146-opacity);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-147:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-148:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-50);
+  font-weight: 600;
+  color: var(--ui-color-96);
+  margin-bottom: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-149:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-89);
+  font-weight: 400;
+  margin-left: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-150:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-9);
+  flex-wrap: wrap;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-151:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #e9e0d5;
+  border-radius: 7px;
+  overflow: hidden;
+  flex: 1;
+  min-width: 130px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-152:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-113);
+  font-weight: 700;
+  color: var(--ui-color-85);
+  background: var(--ui-color-86);
+  border-right: 1.5px solid #e9e0d5;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  font-size: var(--ui-font-size-15);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-153:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: none;
+  outline: none;
+  padding: var(--ui-space-21);
+  font-size: var(--ui-font-size-23);
+  font-weight: 700;
+  width: 100%;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-154:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-154-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: var(--ui-techniciandashboard-154-cursor);
+  opacity: var(--ui-techniciandashboard-154-opacity);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-155:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-120);
+  border: 1.5px solid #e9e0d5;
+  border-radius: 8px;
+  padding: var(--ui-space-120);
+  font-weight: 600;
+  font-size: var(--ui-font-size-39);
+  cursor: pointer;
+  color: var(--ui-color-69);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-156:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-3);
+  width: 100%;
+  border: 1.5px solid #e9e0d5;
+  border-radius: 7px;
+  padding: var(--ui-space-21);
+  font-size: var(--ui-font-size-40);
+  outline: none;
+  box-sizing: border-box;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-157:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-9);
+  padding: var(--ui-space-18);
+  background: var(--ui-color-99);
+  border: 1px solid rgba(165,115,47,0.18);
+  border-radius: 8px;
+  font-size: var(--ui-font-size-40);
+  font-weight: 600;
+  color: var(--ui-color-92);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-158:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-3);
+  font-size: var(--ui-font-size-50);
+  color: var(--ui-color-84);
+  border-left: 3px solid #dee2e6;
+  padding-left: var(--ui-space-9);
+  font-style: italic;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-159:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-1);
+  border: 1.5px solid #f0e8dc;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-160:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-87);
+  padding: var(--ui-space-108);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f0e8dc;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-161:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  color: var(--ui-color-83);
+  font-size: var(--ui-font-size-13);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-162:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-153);
+  border-radius: 20px;
+  font-size: var(--ui-font-size-17);
+  font-weight: 700;
+  background: var(--ui-techniciandashboard-162-background);
+  color: var(--ui-techniciandashboard-162-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-163:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-22);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-164:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--ui-font-size-55);
+  margin-bottom: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-165:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border-bottom: 2px solid #f0e8dc;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-166:not(#ui-style-priority):not(#ui-style-priority-2) {
+  text-align: left;
+  padding: var(--ui-space-35);
+  color: var(--ui-color-84);
+  font-weight: 600;
+  font-size: var(--ui-font-size-47);
+  text-transform: uppercase;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-167:not(#ui-style-priority):not(#ui-style-priority-2) {
+  text-align: right;
+  padding: var(--ui-space-35);
+  color: var(--ui-color-84);
+  font-weight: 600;
+  font-size: var(--ui-font-size-47);
+  text-transform: uppercase;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-168:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border-bottom: 1px solid #f8f3ed;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-169:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-164);
+  font-weight: 600;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-170:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-164);
+  text-align: right;
+  font-weight: 700;
+  color: var(--ui-color-85);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-171:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border-bottom: 1px solid #f8f3ed;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-172:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-164);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-173:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 600;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-174:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-47);
+  color: var(--ui-color-84);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-175:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-164);
+  text-align: right;
+  font-weight: 700;
+  color: var(--ui-color-85);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-176:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-87);
+  border-radius: 8px;
+  padding: var(--ui-space-158);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-177:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--ui-font-size-55);
+  color: var(--ui-color-69);
+  margin-bottom: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-178:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--ui-font-size-55);
+  color: var(--ui-color-69);
+  margin-bottom: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-179:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 800;
+  font-size: var(--ui-font-size-26);
+  color: var(--ui-color-83);
+  border-top: 2px solid #f0e8dc;
+  padding-top: var(--ui-space-9);
+  margin-top: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-180:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-85);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-181:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-9);
+  font-size: var(--ui-font-size-50);
+  color: var(--ui-color-90);
+  font-weight: 600;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-182:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-9);
+  font-size: var(--ui-font-size-50);
+  color: var(--ui-color-96);
+  font-weight: 600;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-183:not(#ui-style-priority):not(#ui-style-priority-2) {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  background: var(--ui-color-100);
+  display: grid;
+  place-items: center;
+  padding: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-184:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--ui-color-2);
+  border-radius: 16px;
+  padding: var(--ui-space-10);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-185:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--ui-space-11);
+  align-items: center;
+  margin-bottom: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-186:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin: var(--ui-space-16);
+  color: var(--ui-color-83);
+  font-weight: 800;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-187:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: 0;
+  background: var(--ui-color-134);
+  font-size: var(--ui-font-size-7);
+  cursor: pointer;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-188:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin: var(--ui-space-165);
+  color: var(--ui-color-84);
+  font-size: var(--ui-font-size-57);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-189:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin: var(--ui-space-166);
+  padding: var(--ui-space-158);
+  border-radius: 8px;
+  background: var(--ui-color-87);
+  border: 1px solid #e9e0d5;
+  color: var(--ui-color-84);
+  font-size: var(--ui-font-size-58);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-190:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-83);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-191:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: block;
+  font-weight: 700;
+  font-size: var(--ui-font-size-58);
+  margin-bottom: var(--ui-space-17);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-192:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-30);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-193:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1.5px solid #e9e0d5;
+  border-radius: 8px;
+  padding: var(--ui-space-23);
+  margin-bottom: var(--ui-space-13);
+  font-family: var(--ui-font-family-4);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-194:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: block;
+  font-weight: 700;
+  font-size: var(--ui-font-size-58);
+  margin-bottom: var(--ui-space-17);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-195:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-30);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-196:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-13);
+  font-size: var(--ui-font-size-58);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-197:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-90);
+  font-size: var(--ui-font-size-59);
+  margin-top: var(--ui-space-167);
+  margin-bottom: var(--ui-space-13);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-198:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--ui-space-17);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-199:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  font-size: var(--ui-font-size-58);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-200:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-30);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-201:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: 0;
+  background: var(--ui-color-134);
+  color: var(--ui-color-85);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: var(--ui-font-size-59);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-202:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  height: 130px;
+  touch-action: none;
+  border: 1.5px dashed #A5732F;
+  border-radius: 8px;
+  background: var(--ui-color-87);
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-203:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-204:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-120);
+  border: 1.5px solid #e9e0d5;
+  border-radius: 8px;
+  padding: var(--ui-space-120);
+  font-weight: 600;
+  font-size: var(--ui-font-size-39);
+  cursor: pointer;
+  color: var(--ui-color-69);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-205:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-205-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: var(--ui-techniciandashboard-205-cursor);
+  opacity: var(--ui-techniciandashboard-205-opacity);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-206:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-46);
+  text-align: center;
+  color: var(--ui-color-84);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-207:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-10);
+  max-width: 960px;
+  margin: var(--ui-space-25);
+  font-family: var(--ui-font-family-5);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-208:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  color: var(--ui-color-83);
+  margin-bottom: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-209:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: 1px solid #e9e0d5;
+  border-radius: 12px;
+  padding: var(--ui-space-161);
+  background: var(--ui-color-2);
+  margin-bottom: var(--ui-space-7);
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-210:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-211:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #A5732F;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-212:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--ui-color-245);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ui-color-2);
+  font-size: var(--ui-font-size-25);
+  font-weight: 800;
+  border: 3px solid #A5732F;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-213:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-214:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-37);
+  color: var(--ui-color-83);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-215:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-84);
+  font-size: var(--ui-font-size-15);
+  margin-bottom: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-216:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-153);
+  border-radius: 20px;
+  font-size: var(--ui-font-size-17);
+  font-weight: 700;
+  background: var(--ui-techniciandashboard-216-background);
+  color: var(--ui-techniciandashboard-216-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-217:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-23);
+  flex-wrap: wrap;
+  margin-top: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-218:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-218-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: pointer;
+  opacity: var(--ui-techniciandashboard-218-opacity);
+  display: inline-block;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-219:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-219-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: var(--ui-techniciandashboard-219-cursor);
+  opacity: var(--ui-techniciandashboard-219-opacity);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-220:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(160px,1fr));
+  gap: var(--ui-space-11);
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-221:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: 1px solid #e9e0d5;
+  border-radius: 12px;
+  padding: var(--ui-space-161);
+  background: var(--ui-color-2);
+  margin-bottom: var(--ui-space-16);
+  text-align: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-222:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-33);
+  color: var(--ui-techniciandashboard-222-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-223:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-47);
+  color: var(--ui-color-84);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: var(--ui-space-15);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-224:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(180px,1fr));
+  gap: var(--ui-space-11);
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-225:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: 1px solid #e9e0d5;
+  border-radius: 12px;
+  padding: var(--ui-space-161);
+  background: var(--ui-color-246);
+  margin-bottom: var(--ui-space-16);
+  text-align: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-226:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-35);
+  color: var(--ui-techniciandashboard-226-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-227:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-47);
+  color: var(--ui-color-84);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: var(--ui-space-15);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-228:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-228-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: var(--ui-techniciandashboard-228-cursor);
+  opacity: var(--ui-techniciandashboard-228-opacity);
+  margin-bottom: var(--ui-space-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-229:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-14);
+  border-bottom: 2px solid #f0e8dc;
+  margin-bottom: var(--ui-space-7);
+  flex-wrap: wrap;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-230:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-125);
+  border: none;
+  border-radius: 8px 8px 0 0;
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: pointer;
+  background: var(--ui-techniciandashboard-230-background);
+  color: var(--ui-techniciandashboard-230-color);
+  border-bottom: var(--ui-techniciandashboard-230-border-bottom);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-231:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  margin-bottom: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-232:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-89);
+  padding: var(--ui-space-160);
+  text-align: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-233:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: 1px solid #e9e0d5;
+  border-radius: 12px;
+  padding: var(--ui-space-161);
+  background: var(--ui-color-2);
+  margin-bottom: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-234:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-235:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  font-size: var(--ui-font-size-26);
+  color: var(--ui-color-83);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-236:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-40);
+  color: var(--ui-color-84);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-237:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-85);
+  margin-top: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-238:not(#ui-style-priority):not(#ui-style-priority-2) {
+  text-align: right;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-239:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  color: var(--ui-color-85);
+  font-size: var(--ui-font-size-37);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-240:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-17);
+  color: var(--ui-color-84);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-241:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-69);
+  font-size: var(--ui-font-size-54);
+  margin: var(--ui-space-168);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-242:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-9);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-243:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-50);
+  color: var(--ui-color-84);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-244:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-244-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: var(--ui-techniciandashboard-244-cursor);
+  opacity: var(--ui-techniciandashboard-244-opacity);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-245:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-120);
+  border: 1.5px solid #e9e0d5;
+  border-radius: 8px;
+  padding: var(--ui-space-169);
+  font-weight: 600;
+  font-size: var(--ui-font-size-50);
+  cursor: pointer;
+  color: var(--ui-color-69);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-246:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-247:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  margin: var(--ui-space-16);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-248:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-120);
+  border: 1.5px solid #e9e0d5;
+  border-radius: 8px;
+  padding: var(--ui-space-120);
+  font-weight: 600;
+  font-size: var(--ui-font-size-50);
+  cursor: pointer;
+  color: var(--ui-color-69);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-249:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-89);
+  padding: var(--ui-space-160);
+  text-align: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-250:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: 1px solid #e9e0d5;
+  border-radius: 12px;
+  padding: var(--ui-space-161);
+  background: var(--ui-color-2);
+  margin-bottom: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-251:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-252:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  font-size: var(--ui-font-size-26);
+  color: var(--ui-color-83);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-253:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-40);
+  color: var(--ui-color-84);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-254:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-85);
+  margin-top: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-255:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-153);
+  border-radius: 20px;
+  font-size: var(--ui-font-size-17);
+  font-weight: 700;
+  background: var(--ui-techniciandashboard-255-background);
+  color: var(--ui-techniciandashboard-255-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-256:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-40);
+  color: var(--ui-color-85);
+  font-weight: 600;
+  margin: var(--ui-space-35);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-257:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-87);
+  border-radius: 8px;
+  padding: var(--ui-space-155);
+  margin: var(--ui-space-98);
+  border: 1px solid #f0e8dc;
+  font-size: var(--ui-font-size-40);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-258:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-96);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-259:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-techniciandashboard-259-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-260:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-90);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-261:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-techniciandashboard-261-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-262:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-85);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-263:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin: var(--ui-space-45);
+  border: 1px solid #f0e8dc;
+  border-radius: 10px;
+  background: var(--ui-color-87);
+  overflow: hidden;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-264:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-108);
+  border-bottom: 1px solid #f0e8dc;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-265:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-266:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  color: var(--ui-color-83);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-267:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-17);
+  font-weight: 700;
+  color: var(--ui-techniciandashboard-267-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-268:not(#ui-style-priority):not(#ui-style-priority-2) {
+  height: 6px;
+  background: var(--ui-color-101);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-269:not(#ui-style-priority):not(#ui-style-priority-2) {
+  height: 100%;
+  width: var(--ui-techniciandashboard-269-width);
+  background: var(--ui-techniciandashboard-269-background);
+  border-radius: 10px;
+  transition: width 0.4s ease;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-270:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-74);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-271:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-56);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ui-color-85);
+  border-bottom: 1px solid #f0e8dc;
+  padding-bottom: var(--ui-space-91);
+  margin-bottom: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-272:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-23);
+  padding: var(--ui-space-164);
+  border-bottom: 1px solid #f8f3ed;
+  opacity: var(--ui-techniciandashboard-272-opacity);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-273:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: var(--ui-techniciandashboard-273-border);
+  background: var(--ui-techniciandashboard-273-background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: var(--ui-techniciandashboard-273-cursor);
+  padding: var(--ui-space-16);
+  transition: background 0.2s;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-274:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+  font-size: var(--ui-font-size-15);
+  color: var(--ui-techniciandashboard-274-color);
+  text-decoration: var(--ui-techniciandashboard-274-text-decoration);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-275:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--ui-space-15);
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-276:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-49);
+  color: var(--ui-color-89);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-277:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-49);
+  font-weight: 700;
+  color: var(--ui-techniciandashboard-277-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-278:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-23);
+  margin-top: var(--ui-space-23);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-279:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-279-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: var(--ui-techniciandashboard-279-cursor);
+  opacity: var(--ui-techniciandashboard-279-opacity);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-280:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-280-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: var(--ui-techniciandashboard-280-cursor);
+  opacity: var(--ui-techniciandashboard-280-opacity);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-281:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-39);
+  color: var(--ui-color-90);
+  font-weight: 700;
+  padding: var(--ui-space-98);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-282:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-39);
+  font-weight: 700;
+  color: var(--ui-color-85);
+  padding: var(--ui-space-98);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-283:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-120);
+  border: 1.5px solid #e9e0d5;
+  border-radius: 8px;
+  padding: var(--ui-space-169);
+  font-weight: 600;
+  font-size: var(--ui-font-size-50);
+  cursor: pointer;
+  color: var(--ui-color-69);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-284:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-284-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: var(--ui-techniciandashboard-284-cursor);
+  opacity: var(--ui-techniciandashboard-284-opacity);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-285:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-285-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: var(--ui-techniciandashboard-285-cursor);
+  opacity: var(--ui-techniciandashboard-285-opacity);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-286:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-287:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  margin: var(--ui-space-16);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-288:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-120);
+  border: 1.5px solid #e9e0d5;
+  border-radius: 8px;
+  padding: var(--ui-space-120);
+  font-weight: 600;
+  font-size: var(--ui-font-size-50);
+  cursor: pointer;
+  color: var(--ui-color-69);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-289:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-89);
+  padding: var(--ui-space-160);
+  text-align: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-290:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: 1px solid #e9e0d5;
+  border-radius: 12px;
+  padding: var(--ui-space-161);
+  background: var(--ui-color-2);
+  margin-bottom: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-291:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--ui-space-9);
+  margin-bottom: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-292:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  color: var(--ui-color-83);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-293:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-40);
+  color: var(--ui-color-84);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-294:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-9);
+  flex-wrap: wrap;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-295:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-153);
+  border-radius: 20px;
+  font-size: var(--ui-font-size-17);
+  font-weight: 700;
+  background: var(--ui-color-93);
+  color: var(--ui-color-94);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-296:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-153);
+  border-radius: 20px;
+  font-size: var(--ui-font-size-17);
+  font-weight: 700;
+  background: var(--ui-techniciandashboard-296-background);
+  color: var(--ui-techniciandashboard-296-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-297:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-84);
+  font-size: var(--ui-font-size-39);
+  margin: var(--ui-space-126);
+  font-style: italic;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-298:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-158);
+  background: var(--ui-color-98);
+  border: 1px solid rgba(37,99,235,0.2);
+  border-radius: 8px;
+  margin-bottom: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-299:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-15);
+  font-weight: 700;
+  color: var(--ui-color-96);
+  margin-bottom: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-300:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-50);
+  color: var(--ui-color-84);
+  margin-bottom: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-301:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-9);
+  flex-wrap: wrap;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-302:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-302-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: var(--ui-techniciandashboard-302-cursor);
+  opacity: var(--ui-techniciandashboard-302-opacity);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-303:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 120px;
+  border: 1px solid #ced4da;
+  border-radius: 7px;
+  padding: var(--ui-space-159);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-304:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-304-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: var(--ui-techniciandashboard-304-cursor);
+  opacity: var(--ui-techniciandashboard-304-opacity);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-305:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-305-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: var(--ui-techniciandashboard-305-cursor);
+  opacity: var(--ui-techniciandashboard-305-opacity);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-306:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  color: var(--ui-color-90);
+  font-size: var(--ui-font-size-23);
+  margin-bottom: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-307:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-102);
+  border: 1px solid #ead2b0;
+  border-radius: 10px;
+  padding: var(--ui-space-13);
+  margin-bottom: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-308:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin: var(--ui-space-35);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-309:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin: var(--ui-space-35);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-310:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-120);
+  border: 1.5px solid #e9e0d5;
+  border-radius: 8px;
+  padding: var(--ui-space-120);
+  font-weight: 600;
+  font-size: var(--ui-font-size-39);
+  cursor: pointer;
+  color: var(--ui-color-69);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-311:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-9);
+  margin-top: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-312:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-312-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: var(--ui-techniciandashboard-312-cursor);
+  opacity: var(--ui-techniciandashboard-312-opacity);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-313:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-313-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: var(--ui-techniciandashboard-313-cursor);
+  opacity: var(--ui-techniciandashboard-313-opacity);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-314:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-9);
+  flex-wrap: wrap;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-315:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-315-background);
+  color: var(--ui-techniciandashboard-315-color);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-120);
+  font-size: var(--ui-font-size-50);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-316:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-316-background);
+  color: var(--ui-color-85);
+  border: 1.5px solid rgba(165,115,47,0.3);
+  border-radius: 8px;
+  padding: var(--ui-space-120);
+  font-size: var(--ui-font-size-50);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-317:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-left: var(--ui-space-14);
+  color: var(--ui-color-94);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-318:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-103);
+  color: var(--ui-color-30);
+  border: 1.5px solid rgba(220,53,69,0.25);
+  border-radius: 8px;
+  padding: var(--ui-space-120);
+  font-size: var(--ui-font-size-50);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-319:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-104);
+  color: var(--ui-color-90);
+  border: 1.5px solid rgba(22,163,74,0.3);
+  border-radius: 8px;
+  padding: var(--ui-space-120);
+  font-size: var(--ui-font-size-50);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-320:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-94);
+  font-size: var(--ui-font-size-50);
+  align-self: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-321:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-11);
+  border: 1px solid #e9e0d5;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-322:not(#ui-style-priority):not(#ui-style-priority-2) {
+  height: 260px;
+  overflow-y: auto;
+  padding: var(--ui-space-11);
+  background: var(--ui-color-87);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-323:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-89);
+  text-align: center;
+  margin-top: var(--ui-space-75);
+  font-size: var(--ui-font-size-15);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-324:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-89);
+  text-align: center;
+  margin-top: var(--ui-space-75);
+  font-size: var(--ui-font-size-15);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-325:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: var(--ui-techniciandashboard-325-justify-content);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-326:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: var(--ui-techniciandashboard-326-justify-content);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-327:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-328:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-47);
+  color: var(--ui-color-89);
+  background: var(--ui-color-105);
+  border: 1px solid #e9e0d5;
+  border-radius: 20px;
+  padding: var(--ui-space-153);
+  font-style: italic;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-329:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: var(--ui-techniciandashboard-329-justify-content);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-330:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 72%;
+  padding: var(--ui-space-155);
+  border-radius: var(--ui-techniciandashboard-330-border-radius);
+  background: var(--ui-techniciandashboard-330-background);
+  color: var(--ui-techniciandashboard-330-color);
+  border: var(--ui-techniciandashboard-330-border);
+  font-size: var(--ui-font-size-55);
+  line-height: 1.45;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-331:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 600;
+  font-size: var(--ui-font-size-14);
+  margin-bottom: var(--ui-space-91);
+  color: var(--ui-techniciandashboard-331-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-332:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-49);
+  margin-top: var(--ui-space-14);
+  color: var(--ui-techniciandashboard-332-color);
+  text-align: right;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-333:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-9);
+  padding: var(--ui-space-158);
+  background: var(--ui-color-2);
+  border-top: 1px solid #e9e0d5;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-334:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+  border: 1.5px solid #e9e0d5;
+  border-radius: 8px;
+  padding: var(--ui-space-155);
+  font-size: var(--ui-font-size-15);
+  outline: none;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-335:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-335-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: var(--ui-techniciandashboard-335-cursor);
+  opacity: var(--ui-techniciandashboard-335-opacity);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-336:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-11);
+  border: 1px solid #f0e8dc;
+  border-radius: 10px;
+  background: var(--ui-color-106);
+  padding: var(--ui-space-123);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-337:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-338:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  margin: var(--ui-space-16);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-339:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-339-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: var(--ui-techniciandashboard-339-cursor);
+  opacity: var(--ui-techniciandashboard-339-opacity);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-340:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-89);
+  padding: var(--ui-space-160);
+  text-align: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-341:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: 1px solid #e9e0d5;
+  border-radius: 12px;
+  padding: var(--ui-space-161);
+  background: var(--ui-color-2);
+  margin-bottom: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-342:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-343:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-11);
+  color: var(--ui-color-83);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-344:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-40);
+  color: var(--ui-color-84);
+  margin-top: var(--ui-space-15);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-345:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-50);
+  color: var(--ui-color-84);
+  margin-top: var(--ui-space-15);
+  font-style: italic;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-346:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-153);
+  border-radius: 20px;
+  font-size: var(--ui-font-size-17);
+  font-weight: 700;
+  background: var(--ui-techniciandashboard-346-background);
+  color: var(--ui-techniciandashboard-346-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-347:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-3);
+  font-size: var(--ui-font-size-50);
+  color: var(--ui-color-84);
+  border-left: 3px solid #dee2e6;
+  padding-left: var(--ui-space-9);
+  font-style: italic;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-348:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  margin-bottom: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-349:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-89);
+  padding: var(--ui-space-160);
+  text-align: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-350:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: 1px solid #e9e0d5;
+  border-radius: 12px;
+  padding: var(--ui-space-161);
+  background: var(--ui-color-2);
+  margin-bottom: var(--ui-space-11);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ui-space-1);
+  flex-wrap: wrap;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-351:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-352:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  color: var(--ui-color-83);
+  margin-bottom: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-353:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-153);
+  border-radius: 20px;
+  font-size: var(--ui-font-size-17);
+  font-weight: 700;
+  background: var(--ui-techniciandashboard-353-background);
+  color: var(--ui-techniciandashboard-353-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-354:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-3);
+  padding: var(--ui-space-21);
+  background: var(--ui-color-107);
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  font-size: var(--ui-font-size-39);
+  color: var(--ui-color-30);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-techniciandashboard-355:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-techniciandashboard-355-background);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  cursor: pointer;
+  opacity: var(--ui-techniciandashboard-355-opacity);
+  display: inline-block;
+}

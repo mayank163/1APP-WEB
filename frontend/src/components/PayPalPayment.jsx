@@ -1,3 +1,5 @@
+import { cssValue } from '../utils/cssValue';
+import '../styles/PayPalPayment.css';
 import React, { useEffect, useRef, useState } from 'react';
 import bookingService from '../services/bookingService';
 
@@ -69,14 +71,14 @@ export default function PayPalPayment({ paymentAttempt, paymentOrder, onSuccess,
     }, [paymentOrder, reload]);
 
     return (
-        <div style={{ padding: 24, textAlign: 'center' }}>
+        <div className="ui-paypalpayment-1" >
             <p>Amount to pay: <strong>{paymentOrder.currency} {(paymentOrder.amount / 100).toFixed(2)}</strong></p>
             {loading && <p role="status">Loading PayPal…</p>}
-            <div ref={container} style={{ display: approved ? 'none' : 'block' }} />
+            <div className="ui-paypalpayment-2" ref={container} style={{ "--ui-paypalpayment-2-display": cssValue(approved ? 'none' : 'block', "display") }} />
             {processing && <p role="status">Confirming payment…</p>}
-            {error && <p role="alert" style={{ color: '#c62828' }}>{error}</p>}
+            {error && <p className="ui-paypalpayment-3" role="alert" >{error}</p>}
             {error && <button type="button" disabled={processing} onClick={() => approved ? verify() : (setError(''), setReload(v => v + 1))}>Retry {approved ? 'payment verification' : 'PayPal'}</button>}
-            <button type="button" disabled={processing || approved} onClick={onCancel} style={{ display: 'block', margin: '18px auto 0', border: 'none', background: 'none', color: '#666', cursor: 'pointer' }}>Back to checkout</button>
+            <button className="ui-paypalpayment-4" type="button" disabled={processing || approved} onClick={onCancel} >Back to checkout</button>
         </div>
     );
 }

@@ -1,0 +1,144 @@
+.privacy-policy-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 260px;
+    grid-template-areas: 'content toc';
+    gap: var(--ui-space-46);
+    align-items: start;
+}
+
+.privacy-policy-content {
+    grid-area: content;
+    min-width: 0;
+}
+
+.privacy-policy-toc {
+    position: sticky;
+    top: 80px;
+    grid-area: toc;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+}
+
+@media (max-width: 760px) {
+    .privacy-policy-layout {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas: 'toc' 'content';
+        gap: var(--ui-space-10);
+        padding: var(--ui-space-41) !important;
+    }
+
+    .privacy-policy-toc {
+        position: static;
+        max-height: 40vh;
+    }
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-privacypolicy-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-27);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-privacypolicy-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+  white-space: pre-line;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-privacypolicy-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 1200px;
+  margin: var(--ui-space-25);
+  padding: var(--ui-space-121);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-privacypolicy-4:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-25);
+  margin-bottom: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-privacypolicy-5:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-6);
+  font-style: italic;
+  margin-bottom: var(--ui-space-10);
+  font-size: var(--ui-font-size-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-privacypolicy-6:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-46);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-privacypolicy-7:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-13);
+  margin-bottom: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-privacypolicy-8:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: var(--ui-space-7);
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-privacypolicy-9:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-4);
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--ui-color-6);
+  margin-bottom: var(--ui-space-13);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-privacypolicy-10:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-6);
+  padding: var(--ui-space-122);
+  cursor: pointer;
+  color: var(--ui-privacypolicy-10-color);
+  font-weight: var(--ui-privacypolicy-10-font-weight);
+  border-left: var(--ui-privacypolicy-10-border-left);
+  margin-bottom: var(--ui-space-15);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-privacypolicy-11:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: var(--ui-space-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-privacypolicy-12:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-9);
+  font-weight: 700;
+  margin-bottom: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-privacypolicy-13:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-9);
+  color: var(--ui-color-41);
+  margin-bottom: var(--ui-space-13);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-privacypolicy-14:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: block;
+  background: var(--ui-color-27);
+  color: var(--ui-color-2);
+  text-align: center;
+  padding: var(--ui-space-11);
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: var(--ui-font-size-3);
+  text-decoration: none;
+}
+
+.legal-intro-paragraph, .legal-section-paragraph { font-size: var(--ui-font-size-3); line-height: 1.8; color: var(--ui-color-4); }
+.legal-intro-paragraph { margin-bottom: var(--ui-space-11); }
+.legal-section-paragraph { margin-bottom: var(--ui-space-23); }

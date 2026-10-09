@@ -1,0 +1,356 @@
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  display: block;
+  margin-bottom: var(--ui-space-3);
+  color: var(--ui-color-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #ccc;
+  border-radius: 8px;
+  padding: var(--ui-space-108);
+  gap: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-4:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-5:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--ui-space-115);
+  background: var(--ui-color-2);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-6:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 420px;
+  width: 100%;
+  margin: var(--ui-space-25);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-7:not(#ui-style-priority):not(#ui-style-priority-2) {
+  text-align: center;
+  margin-bottom: var(--ui-space-4);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-8:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  font-size: var(--ui-font-size-11);
+  color: var(--ui-color-7);
+  margin-bottom: var(--ui-space-15);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-9:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-27);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-10:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-46);
+  color: var(--ui-color-27);
+  margin: var(--ui-space-150);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-11:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-6);
+  font-size: var(--ui-font-size-23);
+  margin: var(--ui-space-16);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-12:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 40px;
+  height: 3px;
+  background: var(--ui-color-27);
+  margin: var(--ui-space-151);
+  border-radius: 2px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-13:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: var(--ui-font-size-13);
+  background: var(--ui-color-120);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-14:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: var(--ui-font-size-13);
+  background: var(--ui-color-120);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-15:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-16:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  display: block;
+  margin-bottom: var(--ui-space-3);
+  color: var(--ui-color-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-17:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #ccc;
+  border-radius: 8px;
+  padding: var(--ui-space-108);
+  gap: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-18:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: var(--ui-font-size-13);
+  background: var(--ui-color-120);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-19:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-134);
+  border: none;
+  cursor: pointer;
+  padding: var(--ui-space-16);
+  color: var(--ui-color-19);
+  display: flex;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-20:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-21:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-22:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--ui-signuppage-22-background);
+  transition: background 0.3s;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-23:not(#ui-style-priority):not(#ui-style-priority-2) {
+  text-align: right;
+  font-size: var(--ui-font-size-17);
+  color: var(--ui-signuppage-23-color);
+  font-weight: 600;
+  margin-top: var(--ui-space-91);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-24:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-82);
+  border: 1px solid #d7eadb;
+  border-radius: 8px;
+  padding: var(--ui-space-11);
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-25:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-27);
+  font-weight: 800;
+  font-size: var(--ui-font-size-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-26:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-41);
+  font-size: var(--ui-font-size-15);
+  margin-top: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-27:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-134);
+  border: none;
+  color: var(--ui-color-27);
+  font-weight: 700;
+  padding: var(--ui-space-152);
+  cursor: pointer;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-28:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: var(--ui-font-size-13);
+  background: var(--ui-color-120);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-29:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--ui-color-67);
+  border: 1.5px dashed #000000;
+  border-radius: 10px;
+  padding: var(--ui-space-36);
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-30:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-15);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-31:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-47);
+  font-weight: 700;
+  color: var(--ui-color-27);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-32:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-48);
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: var(--ui-color-7);
+  font-family: var(--ui-font-family-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-33:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-27);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-120);
+  font-weight: 700;
+  font-size: var(--ui-font-size-40);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-34:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  background: var(--ui-color-27);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-109);
+  font-weight: 700;
+  font-size: var(--ui-font-size-26);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ui-space-9);
+  margin-top: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-35:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-36:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  margin: var(--ui-space-110);
+  gap: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-37:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+  height: 1px;
+  background: var(--ui-color-26);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-38:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-19);
+  font-size: var(--ui-font-size-40);
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-39:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+  height: 1px;
+  background: var(--ui-color-26);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-40:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  background: var(--ui-color-2);
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  padding: var(--ui-space-11);
+  font-weight: 700;
+  font-size: var(--ui-font-size-13);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-41:not(#ui-style-priority):not(#ui-style-priority-2) {
+  text-align: center;
+  margin-top: var(--ui-space-7);
+  font-size: var(--ui-font-size-10);
+  color: var(--ui-color-41);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-signuppage-42:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-27);
+  font-weight: 700;
+  text-decoration: none;
+}

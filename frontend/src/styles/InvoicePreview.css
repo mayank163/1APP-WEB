@@ -1,0 +1,5 @@
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-invoicepreview-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: none;
+}

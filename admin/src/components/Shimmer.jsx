@@ -1,10 +1,12 @@
+import '../styles/Shimmer.css';
+import { adminCssValue } from '../utils/adminCssValue';
 import React from 'react';
 
 // ─── Base shimmer block ───────────────────────────────────────────────────────
 export const ShimmerBlock = ({ width = '100%', height = 16, className = '', style = {} }) => (
     <div
-        className={`shimmer ${className}`}
-        style={{ width, height, borderRadius: 6, ...style }}
+        className={`shimmer admin-shimmer-block ${className}`}
+        style={{ '--admin-shimmer-width': adminCssValue(width), '--admin-shimmer-height': adminCssValue(height), ...style }}
     />
 );
 
@@ -12,7 +14,7 @@ export const ShimmerBlock = ({ width = '100%', height = 16, className = '', styl
 const ShimmerRow = ({ cols }) => (
     <tr>
         {cols.map((w, i) => (
-            <td key={i} style={{ padding: '14px 12px' }}>
+            <td key={i} className="admin-shimmer-1" >
                 <ShimmerBlock width={w} height={14} />
             </td>
         ))}
@@ -22,7 +24,7 @@ const ShimmerRow = ({ cols }) => (
 // ─── Generic table shimmer ────────────────────────────────────────────────────
 export const ShimmerTable = ({ cols, rows = 6 }) => (
     <div className="table-responsive">
-        <table className="table align-middle" style={{ tableLayout: 'fixed' }}>
+        <table className="table align-middle admin-shimmer-2" >
             <tbody>
                 {Array.from({ length: rows }).map((_, i) => (
                     <ShimmerRow key={i} cols={cols} />
@@ -40,7 +42,7 @@ export const ShimmerStatCards = () => (
                 <div className="card border-0 shadow-sm rounded-3 p-4 bg-white">
                     <div className="d-flex justify-content-between align-items-center mb-3">
                         <ShimmerBlock width="60%" height={12} />
-                        <ShimmerBlock width={34} height={34} style={{ borderRadius: 8, flexShrink: 0 }} />
+                        <ShimmerBlock width={34} height={34} className="admin-shimmer-3"  />
                     </div>
                     <ShimmerBlock width="50%" height={28} className="mb-2" />
                     <ShimmerBlock width="70%" height={11} />
@@ -56,7 +58,7 @@ export const ShimmerDashboardCharts = () => (
         <div className="col-lg-8">
             <div className="card border-0 shadow-sm rounded-3 p-4 bg-white h-100">
                 <ShimmerBlock width="50%" height={18} className="mb-4" />
-                <ShimmerBlock width="100%" height={300} style={{ borderRadius: 10 }} />
+                <ShimmerBlock width="100%" height={300} className="admin-shimmer-4"  />
             </div>
         </div>
         <div className="col-lg-4">
@@ -66,7 +68,7 @@ export const ShimmerDashboardCharts = () => (
                     {Array.from({ length: 5 }).map((_, i) => (
                         <div key={i} className="d-flex justify-content-between align-items-center">
                             <ShimmerBlock width="55%" height={13} />
-                            <ShimmerBlock width={36} height={22} style={{ borderRadius: 12 }} />
+                            <ShimmerBlock width={36} height={22} className="admin-shimmer-5"  />
                         </div>
                     ))}
                 </div>
@@ -80,14 +82,14 @@ export const ShimmerOfferCards = ({ count = 3 }) => (
     <div className="row g-4">
         {Array.from({ length: count }).map((_, i) => (
             <div key={i} className="col-md-4">
-                <div className="card border-0 shadow-sm rounded-3 p-4 bg-white" style={{ borderTop: '3px solid #e0e0e0' }}>
+                <div className="card border-0 shadow-sm rounded-3 p-4 bg-white admin-shimmer-6" >
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                        <ShimmerBlock width="45%" height={26} style={{ borderRadius: 12 }} />
+                        <ShimmerBlock width="45%" height={26} className="admin-shimmer-7"  />
                         <ShimmerBlock width="25%" height={14} />
                     </div>
                     <ShimmerBlock width="60%" height={22} className="mb-2" />
                     <ShimmerBlock width="85%" height={13} className="mb-3" />
-                    <ShimmerBlock width="100%" height={34} style={{ borderRadius: 8 }} />
+                    <ShimmerBlock width="100%" height={34} className="admin-shimmer-8"  />
                 </div>
             </div>
         ))}

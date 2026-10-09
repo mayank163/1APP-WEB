@@ -1,0 +1,262 @@
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--ui-space-115);
+  background: var(--ui-color-2);
+  height: 100%;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 400px;
+  width: 100%;
+  margin: var(--ui-space-25);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-4:not(#ui-style-priority):not(#ui-style-priority-2) {
+  text-align: center;
+  margin-bottom: var(--ui-space-46);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-5:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-45);
+  color: var(--ui-color-65);
+  margin-bottom: var(--ui-space-14);
+  letter-spacing: 0.5px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-6:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-27);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-7:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 800;
+  font-size: var(--ui-font-size-46);
+  color: var(--ui-color-27);
+  margin: var(--ui-space-116);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-8:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-6);
+  font-size: var(--ui-font-size-23);
+  margin: var(--ui-space-16);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-9:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 40px;
+  height: 3px;
+  background: var(--ui-color-27);
+  margin: var(--ui-space-117);
+  border-radius: 2px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-10:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-11:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  display: block;
+  margin-bottom: var(--ui-space-3);
+  color: var(--ui-color-65);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-12:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #ccc;
+  border-radius: 8px;
+  padding: var(--ui-space-108);
+  gap: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-13:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: var(--ui-font-size-13);
+  background: var(--ui-color-120);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-14:not(#ui-style-priority):not(#ui-style-priority-2) {
+  text-align: right;
+  margin-top: var(--ui-space-17);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-15:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-134);
+  border: none;
+  color: var(--ui-color-27);
+  font-size: var(--ui-font-size-39);
+  font-weight: 700;
+  cursor: pointer;
+  padding: var(--ui-space-16);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-16:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-17:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 700;
+  font-size: var(--ui-font-size-15);
+  display: block;
+  margin-bottom: var(--ui-space-3);
+  color: var(--ui-color-65);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-18:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #ccc;
+  border-radius: 8px;
+  padding: var(--ui-space-108);
+  gap: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-19:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-size: var(--ui-font-size-13);
+  background: var(--ui-color-120);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-20:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-134);
+  border: none;
+  cursor: pointer;
+  padding: var(--ui-space-16);
+  color: var(--ui-color-19);
+  display: flex;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-21:not(#ui-style-priority):not(#ui-style-priority-2) {
+  text-align: right;
+  margin-top: var(--ui-space-17);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-22:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-27);
+  font-size: var(--ui-font-size-39);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-23:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  background: var(--ui-color-27);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 8px;
+  padding: var(--ui-space-109);
+  font-weight: 700;
+  font-size: var(--ui-font-size-26);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ui-space-9);
+  margin-top: var(--ui-space-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-24:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-25:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  margin: var(--ui-space-118);
+  gap: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-26:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+  height: 1px;
+  background: var(--ui-color-66);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-27:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-19);
+  font-size: var(--ui-font-size-40);
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-28:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+  height: 1px;
+  background: var(--ui-color-66);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-29:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  background: var(--ui-color-2);
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  padding: var(--ui-space-11);
+  font-weight: 700;
+  font-size: var(--ui-font-size-13);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-30:not(#ui-style-priority):not(#ui-style-priority-2) {
+  text-align: center;
+  margin-top: var(--ui-space-119);
+  font-size: var(--ui-font-size-10);
+  color: var(--ui-color-41);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loginpage-31:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-27);
+  font-weight: 700;
+  text-decoration: none;
+}

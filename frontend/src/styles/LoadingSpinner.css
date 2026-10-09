@@ -1,0 +1,6 @@
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-loadingspinner-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 3rem;
+  height: 3rem;
+}

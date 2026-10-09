@@ -1,3 +1,4 @@
+import '../styles/FormSection.css';
 import React, { useState } from 'react';
 import { FaChevronDown, FaChevronUp } from 'react-icons/fa';
 
@@ -5,13 +6,13 @@ const FormSection = ({ title, children, defaultOpen = true, badge, required = fa
     const [open, setOpen] = useState(defaultOpen);
     return (
         <div className="card border-0 shadow-sm rounded-3 mb-3 overflow-hidden">
-            <div className="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3 px-4"
-                style={{ cursor: 'pointer' }} onClick={() => setOpen(o => !o)}>
+            <div className="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3 px-4 admin-form-section-1"
+                 onClick={() => setOpen(o => !o)}>
                 <div className="d-flex align-items-center gap-2">
                     <span className="fw-bold text-dark">{title}</span>
                     {required && <span className="text-danger small">*</span>}
                     {badge !== undefined && badge !== null && (
-                        <span className="badge bg-primary rounded-pill" style={{ fontSize: 11 }}>{badge}</span>
+                        <span className="badge bg-primary rounded-pill admin-form-section-2" >{badge}</span>
                     )}
                 </div>
                 {open ? <FaChevronUp className="text-muted" /> : <FaChevronDown className="text-muted" />}

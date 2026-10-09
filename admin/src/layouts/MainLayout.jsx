@@ -1,3 +1,4 @@
+import '../styles/MainLayout.css';
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import adminApi from '../services/adminApi';
@@ -6,7 +7,7 @@ import NotificationBell from '../components/NotificationBell';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import {
     FaChartBar, FaTasks, FaFolderOpen,
-    FaUsers, FaTag, FaSignOutAlt, FaTools,
+    FaUsers, FaTag, FaSignOutAlt,
     FaLayerGroup, FaBlog, FaHardHat, FaCheckCircle, FaComments,
     FaBars, FaChevronLeft, FaUserShield, FaSitemap, FaCogs, FaGem
 } from 'react-icons/fa';
@@ -41,21 +42,22 @@ const MainLayout = () => {
     const allNavItems = [
         { to: "/", icon: <FaChartBar size={14} />, label: "Dashboard", end: true, resource: 'dashboard' },
         { to: "/bookings", icon: <FaTasks size={14} />, label: "Bookings", resource: 'bookings' },
+        { to: "/technician-jobs", icon: <FaHardHat size={14} />, label: "Technician Jobs", resource: 'technician_jobs' },
+        { to: "/job-templates", icon: <FaFolderOpen size={14} />, label: "Job Templates", resource: 'technician_jobs' },
+        { to: "/work-types", icon: <FaSitemap size={14} />, label: "Work Types", resource: 'work_types' },
+        { to: "/service-types", icon: <FaCogs size={14} />, label: "Service Types", resource: 'service_types' },
         { to: can('categories', 'read') ? "/categories" : "/subcategories", icon: <FaLayerGroup size={14} />, label: "Service Management", resources: ['categories', 'subcategories'], activePaths: ['/categories', '/subcategories'] },
         { to: "/services", icon: <FaLayerGroup size={14} />, label: "Services", resource: 'services' },
         { to: "/users", icon: <FaUsers size={14} />, label: "Users", resource: 'users' },
-        { to: "/offers", icon: <FaTag size={14} />, label: "Offers & Coupons", resource: 'offers' },
         { to: "/plans", icon: <FaGem size={14} />, label: "Plans", resource: 'offers' },
-        { to: "/job-templates", icon: <FaFolderOpen size={14} />, label: "Job Templates", resource: 'technician_jobs' },
-        { to: "/technician-jobs", icon: <FaHardHat size={14} />, label: "Technician Jobs", resource: 'technician_jobs' },
         { to: "/technician-overview", icon: <FaUsers size={14} />, label: "Technicians", resource: 'technician_jobs' },
-        { to: "/technician-chat", icon: <FaComments size={14} />, label: "Legacy Chat", resource: 'technician_jobs' },
+        { to: "/technician-verification", icon: <FaCheckCircle size={14} />, label: "Technicians Verification", resource: 'technician_verification' },
         { to: "/support", icon: <FaComments size={14} />, label: "Support Ticket", resource: 'support' },
-        { to: "/technician-verification", icon: <FaCheckCircle size={14} />, label: "Verification", resource: 'technician_verification' },
+        { to: "/technician-chat", icon: <FaComments size={14} />, label: "Legacy Chat", resource: 'technician_jobs' },
         { to: "/blogs", icon: <FaBlog size={14} />, label: "Blogs", resource: 'blogs' },
+        { to: "/offers", icon: <FaTag size={14} />, label: "Offers & Coupons", resource: 'offers' },
         { to: "/sub-admins", icon: <FaUserShield size={14} />, label: "Sub-Admins", resource: 'sub_admins' },
-        { to: "/work-types", icon: <FaSitemap size={14} />, label: "Work Types", resource: 'work_types' },
-        { to: "/service-types", icon: <FaCogs size={14} />, label: "Service Types", resource: 'service_types' },
+        
     ];
 
     // Show nav item if super admin OR has at least read permission
@@ -63,44 +65,29 @@ const MainLayout = () => {
 
     return (
         <div
-            className="d-flex"
-            style={{ "--admin-header-height": `${headerHeight}px`, "--sidebar-width": collapsed ? "64px" : "260px", height: "100vh", overflow: "hidden", background: "#f8f9fa" }}
+            className={["d-flex admin-main-layout-1 ", collapsed ? "admin-main-layout-state-1" : "admin-main-layout-state-2"].join('')}
+            style={{ "--admin-header-height": `${headerHeight}px` }}
         >
             {/* Sidebar */}
             <aside
-                className="d-flex flex-column"
-                style={{
-                    width: "var(--sidebar-width)",
-                    flexShrink: 0,
-                    transition: "width 0.25s ease",
-                    height: "100vh",
-                    position: "sticky",
-                    top: 0,
-                    background: "linear-gradient(180deg, #1a1208 0%, #2d1f0a 100%)",
-                    borderRight: "1px solid rgba(165,115,47,0.2)",
-                }}
+                className="d-flex flex-column admin-main-layout-2"
+                
             >
                 {/* Logo */}
-                <div className="p-3 d-flex align-items-center gap-2" style={{ borderBottom: "1px solid rgba(165,115,47,0.25)", justifyContent: collapsed ? "center" : "flex-start" }}>
-                    <div style={{
-                        width: 38, height: 38, borderRadius: 10,
-                        background: "rgba(165,115,47,0.2)",
-                        border: "1.5px solid rgba(165,115,47,0.5)",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        flexShrink: 0,
-                    }}>
-                        <FaTools style={{ color: "#A5732F" }} size={18} />
+                <div className={["p-3 d-flex align-items-center gap-2 admin-main-layout-3 ", collapsed ? "admin-main-layout-state-3" : "admin-main-layout-state-4"].join('')} >
+                    <div className="admin-main-layout-4" >
+                        <FaCheckCircle className="admin-main-layout-5" size={18} />
                     </div>
                     {!collapsed && (
                         <div>
-                            <h5 className="fw-bold mb-0 font-monospace" style={{ color: "#fff", letterSpacing: 2 }}>1APP</h5>
-                            <small className="tracking-wider text-uppercase font-monospace fs-8" style={{ color: "rgba(165,115,47,0.8)" }}>Admin Portal</small>
+                            <h5 className="fw-bold mb-0 font-monospace admin-main-layout-6" >1APP</h5>
+                            <small className="tracking-wider text-uppercase font-monospace fs-8 admin-main-layout-7" >Admin Portal</small>
                         </div>
                     )}
                 </div>
 
-                <div className="p-3 flex-grow-1" style={{ overflowY: "auto" }}>
-                    {!collapsed && <p className="text-uppercase fw-bold fs-8 mb-2 px-2" style={{ color: "rgba(255,255,255,0.35)", letterSpacing: "0.08em" }}>Navigation</p>}
+                <div className="p-3 flex-grow-1 admin-main-layout-8" >
+                    {!collapsed && <p className="text-uppercase fw-bold fs-8 mb-2 px-2 admin-main-layout-9" >Navigation</p>}
                     <ul className="nav nav-pills flex-column gap-1">
                         {navItems.map(({ to, icon, label, end, activePaths }) => (
                             <li key={to} className="nav-item">
@@ -109,15 +96,8 @@ const MainLayout = () => {
                                     end={end}
                                     title={collapsed ? label : undefined}
                                     className={({ isActive }) =>
-                                        `nav-link d-flex align-items-center py-2 px-3 rounded-3 fw-medium ${(isActive || activePaths?.includes(location.pathname)) ? 'active-nav-link' : 'inactive-nav-link'}`
+                                        `nav-link d-flex align-items-center py-2 px-3 rounded-3 fw-medium admin-sidebar-link ${collapsed ? 'admin-sidebar-link-collapsed' : ''} ${(isActive || activePaths?.includes(location.pathname)) ? 'active-nav-link' : 'inactive-nav-link'}`
                                     }
-                                    style={({ isActive }) => ({
-                                        backgroundColor: (isActive || activePaths?.includes(location.pathname)) ? "#A5732F" : "transparent",
-                                        color: (isActive || activePaths?.includes(location.pathname)) ? "#fff" : "rgba(255,255,255,0.65)",
-                                        transition: "all 0.2s ease",
-                                        justifyContent: collapsed ? "center" : "flex-start",
-                                        gap: collapsed ? 0 : "0.75rem",
-                                    })}
                                 >
                                     {icon}
                                     {!collapsed && <span>{label}</span>}
@@ -127,19 +107,19 @@ const MainLayout = () => {
                     </ul>
                 </div>
 
-                <div className="p-3" style={{ borderTop: "1px solid rgba(165,115,47,0.25)" }}>
+                <div className="p-3 admin-main-layout-10" >
+                    {!collapsed && <div className="admin-sidebar-account">
+                        <span className="admin-sidebar-account-avatar" aria-hidden="true">{(admin?.name || 'Admin').charAt(0).toUpperCase()}</span>
+                        <div className="admin-sidebar-account-copy">
+                            <strong>{admin?.name || 'Admin'}</strong>
+                            <small>{admin?.isSuperAdmin ? 'Super Admin' : 'Admin'}</small>
+                        </div>
+                    </div>}
                     <button
                         onClick={handleLogout}
                         title={collapsed ? "Logout" : undefined}
-                        className="w-100 d-flex align-items-center justify-content-center py-2 rounded-3 fw-bold"
-                        style={{
-                            background: "rgba(165,115,47,0.12)",
-                            border: "1.5px solid rgba(165,115,47,0.4)",
-                            color: "#A5732F",
-                            cursor: "pointer",
-                            fontSize: "0.9rem",
-                            gap: collapsed ? 0 : "0.5rem",
-                        }}
+                        className={["w-100 d-flex align-items-center justify-content-center py-2 rounded-3 fw-bold admin-main-layout-11 ", collapsed ? "admin-main-layout-state-5" : "admin-main-layout-state-6"].join('')}
+                        
                     >
                         <FaSignOutAlt />
                         {!collapsed && <span>Logout</span>}
@@ -149,47 +129,37 @@ const MainLayout = () => {
 
             {/* Main Content Area */}
             <div
-                className="flex-grow-1 d-flex flex-column"
-                style={{
-                    minWidth: 0,
-                    height: "100vh",
-                    overflow: "hidden"
-                }}
+                className="flex-grow-1 d-flex flex-column admin-main-layout-12"
+                
             >
                 {/* Topbar Header */}
-                <header ref={headerRef} className="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center" style={{ flexShrink: 0, borderBottomColor: "#f0e8dc !important" }}>
+                <header ref={headerRef} className="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center admin-main-layout-13" >
                     <div className="d-flex align-items-center gap-3">
                         <button
                             onClick={() => setCollapsed(c => !c)}
-                            style={{
-                                background: "none", border: "none", cursor: "pointer",
-                                color: "#A5732F", padding: 0, display: "flex", alignItems: "center"
-                            }}
+                            className="admin-main-layout-14" 
                             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                         >
                             {collapsed ? <FaBars size={18} /> : <FaChevronLeft size={18} />}
                         </button>
-                        <span style={{ color: "#A5732F", fontWeight: 800, fontSize: "0.85rem", letterSpacing: 1, textTransform: "uppercase", fontFamily: "monospace" }}>1APP</span>
-                        <span style={{ color: "#ccc" }}>/</span>
-                        <h5 className="fw-bold text-dark mb-0" style={{ fontSize: "0.95rem" }}>Admin Dashboard</h5>
+                        <span className="admin-main-layout-15" >1APP</span>
+                        <span className="admin-main-layout-16" >/</span>
+                        <h5 className="fw-bold text-dark mb-0 admin-main-layout-17" >Admin Dashboard</h5>
                     </div>
                     <div className="d-flex align-items-center gap-2">
                         <NotificationBell />
-                        <span className="dot bg-success rounded-circle" style={{ width: '8px', height: '8px' }}></span>
+                        <span className="dot bg-success rounded-circle admin-main-layout-18" ></span>
                         <span className="text-muted small fw-medium">{admin?.name || 'Admin'}</span>
                         {admin?.isSuperAdmin && (
-                            <span style={{ background: '#fdf6ee', color: '#A5732F', border: '1px solid #f0e8dc', borderRadius: 20, padding: '2px 10px', fontSize: '0.72rem', fontWeight: 700 }}>Super Admin</span>
+                            <span className="admin-main-layout-19" >Super Admin</span>
                         )}
                     </div>
                 </header>
 
                 {/* Nested Routes Render */}
                 <main
-    className="p-4 flex-grow-1"
-    style={{
-        overflowY: "auto",
-        overflowX: "hidden"
-    }}
+    className="p-4 flex-grow-1 admin-main-layout-20"
+    
 >
                     <Outlet />
                 </main>

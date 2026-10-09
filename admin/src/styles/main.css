@@ -1,0 +1,1147 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Shared design values. Existing sizes and colors are preserved. */
+:root {
+  --admin-color--000: #000;
+  --admin-color--00000014: #00000014;
+  --admin-color--0001: #0001;
+  --admin-color--0002: #0002;
+  --admin-color--0003: #0003;
+  --admin-color--0004: #0004;
+  --admin-color--0007: #0007;
+  --admin-color--007f5e: #007f5e;
+  --admin-color--00894e: #00894e;
+  --admin-color--008a35: #008a35;
+  --admin-color--008aca: #008aca;
+  --admin-color--009863: #009863;
+  --admin-color--00996a: #00996a;
+  --admin-color--00be80: #00be80;
+  --admin-color--08743b: #08743b;
+  --admin-color--0891b2: #0891b2;
+  --admin-color--0d0d0d: #0d0d0d;
+  --admin-color--0d1220: #0d1220;
+  --admin-color--0fba65: #0fba65;
+  --admin-color--10182808: #10182808;
+  --admin-color--10b981: #10b981;
+  --admin-color--111: #111;
+  --admin-color--111725: #111725;
+  --admin-color--121b2d: #121b2d;
+  --admin-color--14833d: #14833d;
+  --admin-color--152037: #152037;
+  --admin-color--15803d: #15803d;
+  --admin-color--159a52: #159a52;
+  --admin-color--161616: #161616;
+  --admin-color--16352b12: #16352b12;
+  --admin-color--168343: #168343;
+  --admin-color--168442: #168442;
+  --admin-color--16864c: #16864c;
+  --admin-color--168b56: #168b56;
+  --admin-color--168c78: #168c78;
+  --admin-color--171717: #171717;
+  --admin-color--17202a: #17202a;
+  --admin-color--172030: #172030;
+  --admin-color--17203366: #17203366;
+  --admin-color--172034: #172034;
+  --admin-color--172239: #172239;
+  --admin-color--172b4d0a: #172b4d0a;
+  --admin-color--1768e8: #1768e8;
+  --admin-color--178443: #178443;
+  --admin-color--182033: #182033;
+  --admin-color--18223366: #18223366;
+  --admin-color--182d4f03: #182d4f03;
+  --admin-color--19233315: #19233315;
+  --admin-color--19233318: #19233318;
+  --admin-color--199944: #199944;
+  --admin-color--19a34d: #19a34d;
+  --admin-color--19c55b: #19c55b;
+  --admin-color--1a1208: #1a1208;
+  --admin-color--1c1b19: #1c1b19;
+  --admin-color--1d4ed8: #1d4ed8;
+  --admin-color--1f2937: #1f2937;
+  --admin-color--202020: #202020;
+  --admin-color--202124: #202124;
+  --admin-color--20242d: #20242d;
+  --admin-color--20375708: #20375708;
+  --admin-color--222: #222;
+  --admin-color--222a36: #222a36;
+  --admin-color--242424: #242424;
+  --admin-color--24443912: #24443912;
+  --admin-color--2477f3: #2477f3;
+  --admin-color--253148: #253148;
+  --admin-color--25833d: #25833d;
+  --admin-color--26332f: #26332f;
+  --admin-color--273b57: #273b57;
+  --admin-color--2764e8: #2764e8;
+  --admin-color--28221d: #28221d;
+  --admin-color--282626: #282626;
+  --admin-color--282828: #282828;
+  --admin-color--28744d: #28744d;
+  --admin-color--28c953: #28c953;
+  --admin-color--292522: #292522;
+  --admin-color--29374e: #29374e;
+  --admin-color--2b2013: #2b2013;
+  --admin-color--2d1f0a: #2d1f0a;
+  --admin-color--2d261f: #2d261f;
+  --admin-color--2d2d2d: #2d2d2d;
+  --admin-color--30271e: #30271e;
+  --admin-color--303743: #303743;
+  --admin-color--303947: #303947;
+  --admin-color--31435e: #31435e;
+  --admin-color--315c92: #315c92;
+  --admin-color--333: #333;
+  --admin-color--333b49: #333b49;
+  --admin-color--343059: #343059;
+  --admin-color--343a46: #343a46;
+  --admin-color--344054: #344054;
+  --admin-color--34445b: #34445b;
+  --admin-color--344864: #344864;
+  --admin-color--354256: #354256;
+  --admin-color--367fff: #367fff;
+  --admin-color--374151: #374151;
+  --admin-color--38445a: #38445a;
+  --admin-color--389942: #389942;
+  --admin-color--394456: #394456;
+  --admin-color--3a2810: #3a2810;
+  --admin-color--3b4d67: #3b4d67;
+  --admin-color--3b82f6: #3b82f6;
+  --admin-color--3d2c1e: #3d2c1e;
+  --admin-color--4031da: #4031da;
+  --admin-color--40434b: #40434b;
+  --admin-color--405372: #405372;
+  --admin-color--415572: #415572;
+  --admin-color--42554e: #42554e;
+  --admin-color--435571: #435571;
+  --admin-color--444: #444;
+  --admin-color--465166: #465166;
+  --admin-color--468cff: #468cff;
+  --admin-color--46c984: #46c984;
+  --admin-color--493317: #493317;
+  --admin-color--495057: #495057;
+  --admin-color--497ba9: #497ba9;
+  --admin-color--4aa779: #4aa779;
+  --admin-color--4e82dd: #4e82dd;
+  --admin-color--4f9a65: #4f9a65;
+  --admin-color--5042ff: #5042ff;
+  --admin-color--505b6c: #505b6c;
+  --admin-color--526175: #526175;
+  --admin-color--52647b: #52647b;
+  --admin-color--52647e: #52647e;
+  --admin-color--536074: #536074;
+  --admin-color--536174: #536174;
+  --admin-color--53627a: #53627a;
+  --admin-color--536680: #536680;
+  --admin-color--536783: #536783;
+  --admin-color--555: #555;
+  --admin-color--555866: #555866;
+  --admin-color--56627a: #56627a;
+  --admin-color--5789d2: #5789d2;
+  --admin-color--58657a: #58657a;
+  --admin-color--59657a: #59657a;
+  --admin-color--59667d: #59667d;
+  --admin-color--596982: #596982;
+  --admin-color--59716a: #59716a;
+  --admin-color--5b83d7: #5b83d7;
+  --admin-color--5e5042: #5e5042;
+  --admin-color--5e6c7f: #5e6c7f;
+  --admin-color--617087: #617087;
+  --admin-color--62d5c5: #62d5c5;
+  --admin-color--63738c: #63738c;
+  --admin-color--647085: #647085;
+  --admin-color--64748b: #64748b;
+  --admin-color--647793: #647793;
+  --admin-color--657187: #657187;
+  --admin-color--657a9a: #657a9a;
+  --admin-color--665093: #665093;
+  --admin-color--666: #666;
+  --admin-color--666975: #666975;
+  --admin-color--667eea: #667eea;
+  --admin-color--685c54: #685c54;
+  --admin-color--687386: #687386;
+  --admin-color--687993: #687993;
+  --admin-color--697586: #697586;
+  --admin-color--6b5a47: #6b5a47;
+  --admin-color--6b7280: #6b7280;
+  --admin-color--6c757d: #6c757d;
+  --admin-color--6c7891: #6c7891;
+  --admin-color--6d778b: #6d778b;
+  --admin-color--6d81a2: #6d81a2;
+  --admin-color--6e7481: #6e7481;
+  --admin-color--6f7783: #6f7783;
+  --admin-color--70839e: #70839e;
+  --admin-color--7083a4: #7083a4;
+  --admin-color--718099: #718099;
+  --admin-color--71809b: #71809b;
+  --admin-color--71829a: #71829a;
+  --admin-color--71839f: #71839f;
+  --admin-color--71847d: #71847d;
+  --admin-color--7184a3: #7184a3;
+  --admin-color--7185a5: #7185a5;
+  --admin-color--72847e: #72847e;
+  --admin-color--738097: #738097;
+  --admin-color--73809a: #73809a;
+  --admin-color--746d65: #746d65;
+  --admin-color--75808a: #75808a;
+  --admin-color--758094: #758094;
+  --admin-color--758096: #758096;
+  --admin-color--758297: #758297;
+  --admin-color--7588a8: #7588a8;
+  --admin-color--765023: #765023;
+  --admin-color--765126: #765126;
+  --admin-color--768197: #768197;
+  --admin-color--777: #777;
+  --admin-color--795029: #795029;
+  --admin-color--795225: #795225;
+  --admin-color--795429: #795429;
+  --admin-color--795629: #795629;
+  --admin-color--796c63: #796c63;
+  --admin-color--798497: #798497;
+  --admin-color--7a5124: #7a5124;
+  --admin-color--7a5520: #7a5520;
+  --admin-color--7a8492: #7a8492;
+  --admin-color--7aafff: #7aafff;
+  --admin-color--7b8492: #7b8492;
+  --admin-color--7c3aed: #7c3aed;
+  --admin-color--7c8ca6: #7c8ca6;
+  --admin-color--7c8d88: #7c8d88;
+  --admin-color--7d5529: #7d5529;
+  --admin-color--7e5426: #7e5426;
+  --admin-color--7e8794: #7e8794;
+  --admin-color--7e93b4: #7e93b4;
+  --admin-color--7f5328: #7f5328;
+  --admin-color--7f572a: #7f572a;
+  --admin-color--80521e: #80521e;
+  --admin-color--805522: #805522;
+  --admin-color--805726: #805726;
+  --admin-color--805825: #805825;
+  --admin-color--8139d9: #8139d9;
+  --admin-color--818895: #818895;
+  --admin-color--8190a3: #8190a3;
+  --admin-color--825923: #825923;
+  --admin-color--825b28: #825b28;
+  --admin-color--825c2a: #825c2a;
+  --admin-color--82918b: #82918b;
+  --admin-color--84918e: #84918e;
+  --admin-color--8491a2: #8491a2;
+  --admin-color--855a29: #855a29;
+  --admin-color--855c28: #855c28;
+  --admin-color--858d99: #858d99;
+  --admin-color--8590a2: #8590a2;
+  --admin-color--875522: #875522;
+  --admin-color--885c28: #885c28;
+  --admin-color--887254: #887254;
+  --admin-color--888: #888;
+  --admin-color--899590: #899590;
+  --admin-color--8a5926: #8a5926;
+  --admin-color--8a7258: #8a7258;
+  --admin-color--8a9fbf: #8a9fbf;
+  --admin-color--8b6027: #8b6027;
+  --admin-color--8b795f: #8b795f;
+  --admin-color--8b9ab5: #8b9ab5;
+  --admin-color--8b9db8: #8b9db8;
+  --admin-color--8c5f25: #8c5f25;
+  --admin-color--8c6bc2: #8c6bc2;
+  --admin-color--8d63dc: #8d63dc;
+  --admin-color--8d9a96: #8d9a96;
+  --admin-color--8e651f: #8e651f;
+  --admin-color--8f5311: #8f5311;
+  --admin-color--8f6022: #8f6022;
+  --admin-color--8f642c: #8f642c;
+  --admin-color--906126: #906126;
+  --admin-color--908273: #908273;
+  --admin-color--918477: #918477;
+  --admin-color--91a09b: #91a09b;
+  --admin-color--91a2bf: #91a2bf;
+  --admin-color--91a3bd: #91a3bd;
+  --admin-color--91a3bf: #91a3bf;
+  --admin-color--91a4c1: #91a4c1;
+  --admin-color--926020: #926020;
+  --admin-color--927449: #927449;
+  --admin-color--929aa6: #929aa6;
+  --admin-color--92a5c5: #92a5c5;
+  --admin-color--93a5c2: #93a5c2;
+  --admin-color--945e1b: #945e1b;
+  --admin-color--948b80: #948b80;
+  --admin-color--94a09c: #94a09c;
+  --admin-color--956122: #956122;
+  --admin-color--986423: #986423;
+  --admin-color--98a1b2: #98a1b2;
+  --admin-color--98a2b3: #98a2b3;
+  --admin-color--98a5a1: #98a5a1;
+  --admin-color--99652d: #99652d;
+  --admin-color--997851: #997851;
+  --admin-color--999: #999;
+  --admin-color--99a3b3: #99a3b3;
+  --admin-color--9a5d15: #9a5d15;
+  --admin-color--9aa3b2: #9aa3b2;
+  --admin-color--9aa3b3: #9aa3b3;
+  --admin-color--9aa7a3: #9aa7a3;
+  --admin-color--9b682b: #9b682b;
+  --admin-color--9b948b: #9b948b;
+  --admin-color--9ca3af: #9ca3af;
+  --admin-color--9df0cb: #9df0cb;
+  --admin-color--9e5415: #9e5415;
+  --admin-color--9f641b: #9f641b;
+  --admin-color--a09a92: #a09a92;
+  --admin-color--a0a7b2: #a0a7b2;
+  --admin-color--a17b47: #a17b47;
+  --admin-color--a18154: #a18154;
+  --admin-color--a1a9b6: #a1a9b6;
+  --admin-color--a25808: #a25808;
+  --admin-color--a36a2a: #a36a2a;
+  --admin-color--a39b91: #a39b91;
+  --admin-color--a43e3e: #a43e3e;
+  --admin-color--a4bce3: #a4bce3;
+  --admin-color--a5896c: #a5896c;
+  --admin-color--a5eccb: #a5eccb;
+  --admin-color--a63e39: #a63e39;
+  --admin-color--a66b1d: #a66b1d;
+  --admin-color--a7732c: #a7732c;
+  --admin-color--a87126: #a87126;
+  --admin-color--a8a8a8: #a8a8a8;
+  --admin-color--a96c25: #a96c25;
+  --admin-color--a97737: #a97737;
+  --admin-color--aaa: #aaa;
+  --admin-color--ab2626: #ab2626;
+  --admin-color--abf3cf: #abf3cf;
+  --admin-color--ad782d: #ad782d;
+  --admin-color--adb5bd: #adb5bd;
+  --admin-color--ae792f: #ae792f;
+  --admin-color--b08968: #b08968;
+  --admin-color--b0e5ff: #b0e5ff;
+  --admin-color--b1cbc1: #b1cbc1;
+  --admin-color--b27a29: #b27a29;
+  --admin-color--b32828: #b32828;
+  --admin-color--b37530: #b37530;
+  --admin-color--b3f2cb: #b3f2cb;
+  --admin-color--b42318: #b42318;
+  --admin-color--b45309: #b45309;
+  --admin-color--b54b4b: #b54b4b;
+  --admin-color--b5b5b5: #b5b5b5;
+  --admin-color--b67c32: #b67c32;
+  --admin-color--b77b35: #b77b35;
+  --admin-color--b78137: #b78137;
+  --admin-color--b7edc5: #b7edc5;
+  --admin-color--b8791d: #b8791d;
+  --admin-color--b91c1c: #b91c1c;
+  --admin-color--b9b8ee: #b9b8ee;
+  --admin-color--ba8540: #ba8540;
+  --admin-color--ba873f: #ba873f;
+  --admin-color--bbb: #bbb;
+  --admin-color--bc1c23: #bc1c23;
+  --admin-color--bc650f: #bc650f;
+  --admin-color--bd690c: #bd690c;
+  --admin-color--c04444: #c04444;
+  --admin-color--c1c1c1: #c1c1c1;
+  --admin-color--c2c6ce: #c2c6ce;
+  --admin-color--c43b3b: #c43b3b;
+  --admin-color--c49655: #c49655;
+  --admin-color--c49a62: #c49a62;
+  --admin-color--c4dcff: #c4dcff;
+  --admin-color--c5efdb: #c5efdb;
+  --admin-color--c7d2fe: #c7d2fe;
+  --admin-color--c8f5d9: #c8f5d9;
+  --admin-color--c92525: #c92525;
+  --admin-color--c9893a: #c9893a;
+  --admin-color--c9a96e: #c9a96e;
+  --admin-color--cb1918: #cb1918;
+  --admin-color--cb94fa: #cb94fa;
+  --admin-color--ccc: #ccc;
+  --admin-color--ccd7e7: #ccd7e7;
+  --admin-color--cdd2da: #cdd2da;
+  --admin-color--ced4da: #ced4da;
+  --admin-color--cf984f: #cf984f;
+  --admin-color--cfab7d: #cfab7d;
+  --admin-color--cfd7e3: #cfd7e3;
+  --admin-color--d0d0d0: #d0d0d0;
+  --admin-color--d18a13: #d18a13;
+  --admin-color--d1d1d1: #d1d1d1;
+  --admin-color--d1d5db: #d1d5db;
+  --admin-color--d2a967: #d2a967;
+  --admin-color--d2d6dc: #d2d6dc;
+  --admin-color--d3d3d3: #d3d3d3;
+  --admin-color--d4a050: #d4a050;
+  --admin-color--d4bfa4: #d4bfa4;
+  --admin-color--d4deed: #d4deed;
+  --admin-color--d59426: #d59426;
+  --admin-color--d67a10: #d67a10;
+  --admin-color--d69a54: #d69a54;
+  --admin-color--d6a05b: #d6a05b;
+  --admin-color--d6a368: #d6a368;
+  --admin-color--d6f3e9: #d6f3e9;
+  --admin-color--d74750: #d74750;
+  --admin-color--d76c65: #d76c65;
+  --admin-color--d7b686: #d7b686;
+  --admin-color--d7d7d7: #d7d7d7;
+  --admin-color--d85819: #d85819;
+  --admin-color--d8eee8: #d8eee8;
+  --admin-color--d9273d: #d9273d;
+  --admin-color--d97706: #d97706;
+  --admin-color--d9b37b: #d9b37b;
+  --admin-color--d9b98e: #d9b98e;
+  --admin-color--d9dce3: #d9dce3;
+  --admin-color--d9dde4: #d9dde4;
+  --admin-color--d9e2ed: #d9e2ed;
+  --admin-color--dab276: #dab276;
+  --admin-color--dba455: #dba455;
+  --admin-color--dcc5fa: #dcc5fa;
+  --admin-color--dce1e8: #dce1e8;
+  --admin-color--dce3ed: #dce3ed;
+  --admin-color--dce4ef: #dce4ef;
+  --admin-color--dce7e3: #dce7e3;
+  --admin-color--dce9fc: #dce9fc;
+  --admin-color--ddd: #ddd;
+  --admin-color--dde2ea: #dde2ea;
+  --admin-color--dde3eb: #dde3eb;
+  --admin-color--ddfce8: #ddfce8;
+  --admin-color--dee2e6: #dee2e6;
+  --admin-color--df1414: #df1414;
+  --admin-color--dfbd92: #dfbd92;
+  --admin-color--dfc49f: #dfc49f;
+  --admin-color--dfc9bd: #dfc9bd;
+  --admin-color--dfe6ee: #dfe6ee;
+  --admin-color--dfe6f0: #dfe6f0;
+  --admin-color--dfe7e5: #dfe7e5;
+  --admin-color--dfe8e4: #dfe8e4;
+  --admin-color--dff7e6: #dff7e6;
+  --admin-color--e0b66d: #e0b66d;
+  --admin-color--e0e0e0: #e0e0e0;
+  --admin-color--e0e1e5: #e0e1e5;
+  --admin-color--e0e4eb: #e0e4eb;
+  --admin-color--e0e5ed: #e0e5ed;
+  --admin-color--e0e7f1: #e0e7f1;
+  --admin-color--e0f3ff: #e0f3ff;
+  --admin-color--e1e6ef: #e1e6ef;
+  --admin-color--e1e8e6: #e1e8e6;
+  --admin-color--e1e8f0: #e1e8f0;
+  --admin-color--e1f8e8: #e1f8e8;
+  --admin-color--e2c7a4: #e2c7a4;
+  --admin-color--e3a535: #e3a535;
+  --admin-color--e3d8c8: #e3d8c8;
+  --admin-color--e3e7ed: #e3e7ed;
+  --admin-color--e3eaf4: #e3eaf4;
+  --admin-color--e3edff: #e3edff;
+  --admin-color--e3f6ec: #e3f6ec;
+  --admin-color--e4e5e9: #e4e5e9;
+  --admin-color--e4e6eb: #e4e6eb;
+  --admin-color--e4e8ef: #e4e8ef;
+  --admin-color--e4e9f1: #e4e9f1;
+  --admin-color--e4ebf5: #e4ebf5;
+  --admin-color--e52d3c: #e52d3c;
+  --admin-color--e5cda9: #e5cda9;
+  --admin-color--e5d3ba: #e5d3ba;
+  --admin-color--e5e7eb: #e5e7eb;
+  --admin-color--e62221: #e62221;
+  --admin-color--e69a43: #e69a43;
+  --admin-color--e6ecea: #e6ecea;
+  --admin-color--e6f0fd: #e6f0fd;
+  --admin-color--e77a00: #e77a00;
+  --admin-color--e7bf80: #e7bf80;
+  --admin-color--e7d8c5: #e7d8c5;
+  --admin-color--e7d9c8: #e7d9c8;
+  --admin-color--e7e7e7: #e7e7e7;
+  --admin-color--e8c97a: #e8c97a;
+  --admin-color--e8d9c3: #e8d9c3;
+  --admin-color--e8e8e8: #e8e8e8;
+  --admin-color--e8e8ed: #e8e8ed;
+  --admin-color--e8ecef: #e8ecef;
+  --admin-color--e8eef5: #e8eef5;
+  --admin-color--e8f1ee: #e8f1ee;
+  --admin-color--e8f4f0: #e8f4f0;
+  --admin-color--e8f8ef: #e8f8ef;
+  --admin-color--e8f8f0: #e8f8f0;
+  --admin-color--e8faf1: #e8faf1;
+  --admin-color--e9cda6: #e9cda6;
+  --admin-color--e9d7c1: #e9d7c1;
+  --admin-color--e9e0d5: #e9e0d5;
+  --admin-color--e9e4da: #e9e4da;
+  --admin-color--e9ecef: #e9ecef;
+  --admin-color--e9ecf1: #e9ecf1;
+  --admin-color--ead2b0: #ead2b0;
+  --admin-color--eadfd0: #eadfd0;
+  --admin-color--eaeaea: #eaeaea;
+  --admin-color--eaf2ff: #eaf2ff;
+  --admin-color--eafff3: #eafff3;
+  --admin-color--ebd0ac: #ebd0ac;
+  --admin-color--ec2054: #ec2054;
+  --admin-color--ec222b: #ec222b;
+  --admin-color--ecfdf5: #ecfdf5;
+  --admin-color--ed252c: #ed252c;
+  --admin-color--ed4047: #ed4047;
+  --admin-color--edb3b3: #edb3b3;
+  --admin-color--edcfa9: #edcfa9;
+  --admin-color--edd5ad: #edd5ad;
+  --admin-color--eddcc6: #eddcc6;
+  --admin-color--edf0f4: #edf0f4;
+  --admin-color--edf0f5: #edf0f5;
+  --admin-color--edf1f6: #edf1f6;
+  --admin-color--edf1f7: #edf1f7;
+  --admin-color--edf2f7: #edf2f7;
+  --admin-color--edf4ff: #edf4ff;
+  --admin-color--edf5ee: #edf5ee;
+  --admin-color--edf9f2: #edf9f2;
+  --admin-color--edfff6: #edfff6;
+  --admin-color--ee9300: #ee9300;
+  --admin-color--eee2d2: #eee2d2;
+  --admin-color--eeefff: #eeefff;
+  --admin-color--eef0f3: #eef0f3;
+  --admin-color--eef0ff: #eef0ff;
+  --admin-color--ef252f: #ef252f;
+  --admin-color--ef292e: #ef292e;
+  --admin-color--ef4444: #ef4444;
+  --admin-color--ef4545: #ef4545;
+  --admin-color--ef6d63: #ef6d63;
+  --admin-color--ef8a13: #ef8a13;
+  --admin-color--ef9c00: #ef9c00;
+  --admin-color--efe1cb: #efe1cb;
+  --admin-color--efe9ff: #efe9ff;
+  --admin-color--eff3f8: #eff3f8;
+  --admin-color--effbf3: #effbf3;
+  --admin-color--effcf6: #effcf6;
+  --admin-color--f0dfc8: #f0dfc8;
+  --admin-color--f0e6dc: #f0e6dc;
+  --admin-color--f0e8dc: #f0e8dc;
+  --admin-color--f0ebe4: #f0ebe4;
+  --admin-color--f0edff: #f0edff;
+  --admin-color--f0f0f0: #f0f0f0;
+  --admin-color--f0f1f3: #f0f1f3;
+  --admin-color--f0f1f4: #f0f1f4;
+  --admin-color--f0f2f5: #f0f2f5;
+  --admin-color--f0f3f7: #f0f3f7;
+  --admin-color--f0f3f8: #f0f3f8;
+  --admin-color--f0f3f9: #f0f3f9;
+  --admin-color--f0f4f9: #f0f4f9;
+  --admin-color--f0f5f3: #f0f5f3;
+  --admin-color--f0f7ff: #f0f7ff;
+  --admin-color--f12128: #f12128;
+  --admin-color--f1e2d4: #f1e2d4;
+  --admin-color--f1e8dc: #f1e8dc;
+  --admin-color--f1f1f1: #f1f1f1;
+  --admin-color--f1f4f7: #f1f4f7;
+  --admin-color--f1f4f8: #f1f4f8;
+  --admin-color--f22832: #f22832;
+  --admin-color--f2e6d5: #f2e6d5;
+  --admin-color--f2eee8: #f2eee8;
+  --admin-color--f2f8f6: #f2f8f6;
+  --admin-color--f3a008: #f3a008;
+  --admin-color--f3d477: #f3d477;
+  --admin-color--f3ddd8: #f3ddd8;
+  --admin-color--f3e7d5: #f3e7d5;
+  --admin-color--f3e8d9: #f3e8d9;
+  --admin-color--f3e8db: #f3e8db;
+  --admin-color--f3ede5: #f3ede5;
+  --admin-color--f3f3f3: #f3f3f3;
+  --admin-color--f3f4f6: #f3f4f6;
+  --admin-color--f4c6c6: #f4c6c6;
+  --admin-color--f4ece1: #f4ece1;
+  --admin-color--f4f4f4: #f4f4f4;
+  --admin-color--f59e0b: #f59e0b;
+  --admin-color--f5ddb0: #f5ddb0;
+  --admin-color--f5f0eb: #f5f0eb;
+  --admin-color--f5f5f5: #f5f5f5;
+  --admin-color--f5f6f8: #f5f6f8;
+  --admin-color--f5f7fb: #f5f7fb;
+  --admin-color--f5f8fb: #f5f8fb;
+  --admin-color--f5f9ff: #f5f9ff;
+  --admin-color--f7efe2: #f7efe2;
+  --admin-color--f7f7f8: #f7f7f8;
+  --admin-color--f7f8fa: #f7f8fa;
+  --admin-color--f7f8ff: #f7f8ff;
+  --admin-color--f7f9fc: #f7f9fc;
+  --admin-color--f7faf9: #f7faf9;
+  --admin-color--f8d6d6: #f8d6d6;
+  --admin-color--f8efe0: #f8efe0;
+  --admin-color--f8f3ec: #f8f3ec;
+  --admin-color--f8f3ed: #f8f3ed;
+  --admin-color--f8f4ee: #f8f4ee;
+  --admin-color--f8f8f8: #f8f8f8;
+  --admin-color--f8f9fb: #f8f9fb;
+  --admin-color--f8fbfa: #f8fbfa;
+  --admin-color--f9f5f0: #f9f5f0;
+  --admin-color--fa3153: #fa3153;
+  --admin-color--fae9e5: #fae9e5;
+  --admin-color--faf4eb: #faf4eb;
+  --admin-color--faf6f1: #faf6f1;
+  --admin-color--faf6f3: #faf6f3;
+  --admin-color--faf7f2: #faf7f2;
+  --admin-color--fafafa: #fafafa;
+  --admin-color--fafbfc: #fafbfc;
+  --admin-color--fbfbfc: #fbfbfc;
+  --admin-color--fbfdfc: #fbfdfc;
+  --admin-color--fcf3c8: #fcf3c8;
+  --admin-color--fcfdfe: #fcfdfe;
+  --admin-color--fde5c4: #fde5c4;
+  --admin-color--fde5e1: #fde5e1;
+  --admin-color--fde8b1: #fde8b1;
+  --admin-color--fdeaea: #fdeaea;
+  --admin-color--fdf1e1: #fdf1e1;
+  --admin-color--fdf6e3: #fdf6e3;
+  --admin-color--fdf6ee: #fdf6ee;
+  --admin-color--fdf9f5: #fdf9f5;
+  --admin-color--fdfefe: #fdfefe;
+  --admin-color--ff9700: #ff9700;
+  --admin-color--ffa268: #ffa268;
+  --admin-color--ffb02b: #ffb02b;
+  --admin-color--ffb4b8: #ffb4b8;
+  --admin-color--ffba20: #ffba20;
+  --admin-color--ffbb19: #ffbb19;
+  --admin-color--ffc4bd: #ffc4bd;
+  --admin-color--ffc4c8: #ffc4c8;
+  --admin-color--ffc8cc: #ffc8cc;
+  --admin-color--ffcd94: #ffcd94;
+  --admin-color--ffcf3d: #ffcf3d;
+  --admin-color--ffd469: #ffd469;
+  --admin-color--ffdaad: #ffdaad;
+  --admin-color--ffdf75: #ffdf75;
+  --admin-color--ffdf87: #ffdf87;
+  --admin-color--ffe28b: #ffe28b;
+  --admin-color--ffe4b6: #ffe4b6;
+  --admin-color--ffe5bd: #ffe5bd;
+  --admin-color--ffe5be: #ffe5be;
+  --admin-color--ffe6bc: #ffe6bc;
+  --admin-color--ffe6bf: #ffe6bf;
+  --admin-color--ffe6ea: #ffe6ea;
+  --admin-color--ffe7c2: #ffe7c2;
+  --admin-color--ffe7c3: #ffe7c3;
+  --admin-color--ffe7e9: #ffe7e9;
+  --admin-color--ffe8c2: #ffe8c2;
+  --admin-color--fff0d5: #fff0d5;
+  --admin-color--fff0d9: #fff0d9;
+  --admin-color--fff0dd: #fff0dd;
+  --admin-color--fff0e7: #fff0e7;
+  --admin-color--fff0ef: #fff0ef;
+  --admin-color--fff0f0: #fff0f0;
+  --admin-color--fff0f2: #fff0f2;
+  --admin-color--fff1bb: #fff1bb;
+  --admin-color--fff1ef: #fff1ef;
+  --admin-color--fff1f1: #fff1f1;
+  --admin-color--fff1f3: #fff1f3;
+  --admin-color--fff2dc: #fff2dc;
+  --admin-color--fff2f2: #fff2f2;
+  --admin-color--fff2f3: #fff2f3;
+  --admin-color--fff3d9: #fff3d9;
+  --admin-color--fff3df: #fff3df;
+  --admin-color--fff3e1: #fff3e1;
+  --admin-color--fff3e2: #fff3e2;
+  --admin-color--fff3e3: #fff3e3;
+  --admin-color--fff3e5: #fff3e5;
+  --admin-color--fff3f3: #fff3f3;
+  --admin-color--fff4d9: #fff4d9;
+  --admin-color--fff4df: #fff4df;
+  --admin-color--fff5c9: #fff5c9;
+  --admin-color--fff5e6: #fff5e6;
+  --admin-color--fff5e7: #fff5e7;
+  --admin-color--fff6e5: #fff6e5;
+  --admin-color--fff6e8: #fff6e8;
+  --admin-color--fff6e9: #fff6e9;
+  --admin-color--fff6f6: #fff6f6;
+  --admin-color--fff7ea: #fff7ea;
+  --admin-color--fff7ed: #fff7ed;
+  --admin-color--fff8ec: #fff8ec;
+  --admin-color--fff8ef: #fff8ef;
+  --admin-color--fff8f1: #fff8f1;
+  --admin-color--fff8f2: #fff8f2;
+  --admin-color--fff9f1: #fff9f1;
+  --admin-color--fff9f3: #fff9f3;
+  --admin-color--fffaf2: #fffaf2;
+  --admin-color--fffaf4: #fffaf4;
+  --admin-color--fffaf5: #fffaf5;
+  --admin-color--fffafa: #fffafa;
+  --admin-color--fffbeb: #fffbeb;
+  --admin-color--fffbec: #fffbec;
+  --admin-color--fffbed: #fffbed;
+  --admin-color--fffbf0: #fffbf0;
+  --admin-color--fffbf7: #fffbf7;
+  --admin-color--fffcf1: #fffcf1;
+  --admin-color--fffcf7: #fffcf7;
+  --admin-color--fffdf6: #fffdf6;
+  --admin-color--fffdf9: #fffdf9;
+  --admin-color--fffdfa: #fffdfa;
+  --admin-color--ffffff55: #ffffff55;
+  --admin-color-blue: #2563eb;
+  --admin-color-brand: #A5732F;
+  --admin-color-brand-disabled: #c9975a;
+  --admin-color-brand-hover: #8f6228;
+  --admin-color-brand-light: #fdf5ea;
+  --admin-color-danger: #dc3545;
+  --admin-color-heading: #1a1a1a;
+  --admin-color-page: #f8f9fa;
+  --admin-color-rgba-0--0--0---1-: rgba(0, 0, 0, .1);
+  --admin-color-rgba-0--0--0--0-35-: rgba(0, 0, 0, 0.35);
+  --admin-color-rgba-0--0--0--0-45-: rgba(0, 0, 0, 0.45);
+  --admin-color-rgba-0-0-0--22-: rgba(0, 0, 0, .22);
+  --admin-color-rgba-0-0-0-0-05-: rgba(0, 0, 0, 0.05);
+  --admin-color-rgba-0-0-0-0-07-: rgba(0, 0, 0, 0.07);
+  --admin-color-rgba-0-0-0-0-08-: rgba(0, 0, 0, 0.08);
+  --admin-color-rgba-0-0-0-0-1-: rgba(0, 0, 0, 0.1);
+  --admin-color-rgba-0-0-0-0-14-: rgba(0, 0, 0, 0.14);
+  --admin-color-rgba-0-0-0-0-15-: rgba(0, 0, 0, 0.15);
+  --admin-color-rgba-0-0-0-0-25-: rgba(0, 0, 0, 0.25);
+  --admin-color-rgba-108--117--125--0-1-: rgba(108, 117, 125, 0.1);
+  --admin-color-rgba-165--115--47--0-06-: rgba(165, 115, 47, 0.06);
+  --admin-color-rgba-165--115--47--0-08-: rgba(165, 115, 47, 0.08);
+  --admin-color-rgba-165--115--47--0-1-: rgba(165, 115, 47, 0.1);
+  --admin-color-rgba-165--115--47--0-12-: rgba(165, 115, 47, 0.12);
+  --admin-color-rgba-165--115--47--0-2-: rgba(165, 115, 47, 0.2);
+  --admin-color-rgba-165--115--47--0-22-: rgba(165, 115, 47, 0.22);
+  --admin-color-rgba-165--115--47--0-25-: rgba(165, 115, 47, 0.25);
+  --admin-color-rgba-165--115--47--0-35-: rgba(165, 115, 47, 0.35);
+  --admin-color-rgba-165-115-47-0-04-: rgba(165, 115, 47, 0.04);
+  --admin-color-rgba-165-115-47-0-05-: rgba(165, 115, 47, 0.05);
+  --admin-color-rgba-165-115-47-0-07-: rgba(165, 115, 47, 0.07);
+  --admin-color-rgba-165-115-47-0-15-: rgba(165, 115, 47, 0.15);
+  --admin-color-rgba-165-115-47-0-4-: rgba(165, 115, 47, 0.4);
+  --admin-color-rgba-165-115-47-0-5-: rgba(165, 115, 47, 0.5);
+  --admin-color-rgba-165-115-47-0-7-: rgba(165, 115, 47, 0.7);
+  --admin-color-rgba-165-115-47-0-8-: rgba(165, 115, 47, 0.8);
+  --admin-color-rgba-173-120-45--18-: rgba(173, 120, 45, .18);
+  --admin-color-rgba-180-83-9-0-12-: rgba(180, 83, 9, 0.12);
+  --admin-color-rgba-22--163--74--0-05-: rgba(22, 163, 74, 0.05);
+  --admin-color-rgba-22--163--74--0-1-: rgba(22, 163, 74, 0.1);
+  --admin-color-rgba-22--163--74--0-12-: rgba(22, 163, 74, 0.12);
+  --admin-color-rgba-22--163--74--0-2-: rgba(22, 163, 74, 0.2);
+  --admin-color-rgba-22--163--74--0-35-: rgba(22, 163, 74, 0.35);
+  --admin-color-rgba-22-163-74-0-07-: rgba(22, 163, 74, 0.07);
+  --admin-color-rgba-22-163-74-0-08-: rgba(22, 163, 74, 0.08);
+  --admin-color-rgba-220--53--69--0-08-: rgba(220, 53, 69, 0.08);
+  --admin-color-rgba-220--53--69--0-1-: rgba(220, 53, 69, 0.1);
+  --admin-color-rgba-220--53--69--0-18-: rgba(220, 53, 69, 0.18);
+  --admin-color-rgba-220-53-69-0-07-: rgba(220, 53, 69, 0.07);
+  --admin-color-rgba-220-53-69-0-2-: rgba(220, 53, 69, 0.2);
+  --admin-color-rgba-229-45-60--25-: rgba(229, 45, 60, .25);
+  --admin-color-rgba-234--179--8--0-15-: rgba(234, 179, 8, 0.15);
+  --admin-color-rgba-234-179-8-0-1-: rgba(234, 179, 8, 0.1);
+  --admin-color-rgba-234-179-8-0-3-: rgba(234, 179, 8, 0.3);
+  --admin-color-rgba-245-158-11-0-12-: rgba(245, 158, 11, 0.12);
+  --admin-color-rgba-25-24-21--48-: rgba(25, 24, 21, .48);
+  --admin-color-rgba-255--255--255--0-05-: rgba(255, 255, 255, 0.05);
+  --admin-color-rgba-255-255-255-0-15-: rgba(255, 255, 255, 0.15);
+  --admin-color-rgba-255-255-255-0-25-: rgba(255, 255, 255, 0.25);
+  --admin-color-rgba-255-255-255-0-35-: rgba(255, 255, 255, 0.35);
+  --admin-color-rgba-255-255-255-0-6-: rgba(255, 255, 255, 0.6);
+  --admin-color-rgba-255-255-255-0-65-: rgba(255, 255, 255, 0.65);
+  --admin-color-rgba-255-255-255-0-8-: rgba(255, 255, 255, 0.8);
+  --admin-color-rgba-37--99--235--0-08-: rgba(37, 99, 235, 0.08);
+  --admin-color-rgba-37--99--235--0-1-: rgba(37, 99, 235, 0.1);
+  --admin-color-rgba-37--99--235--0-16-: rgba(37, 99, 235, 0.16);
+  --admin-color-rgba-37--99--235--0-18-: rgba(37, 99, 235, 0.18);
+  --admin-color-rgba-37-99-235-0-04-: rgba(37, 99, 235, 0.04);
+  --admin-color-rgba-37-99-235-0-05-: rgba(37, 99, 235, 0.05);
+  --admin-color-rgba-37-99-235-0-06-: rgba(37, 99, 235, 0.06);
+  --admin-color-rgba-37-99-235-0-07-: rgba(37, 99, 235, 0.07);
+  --admin-color-rgba-37-99-235-0-12-: rgba(37, 99, 235, 0.12);
+  --admin-color-rgba-37-99-235-0-15-: rgba(37, 99, 235, 0.15);
+  --admin-color-rgba-37-99-235-0-2-: rgba(37, 99, 235, 0.2);
+  --admin-color-rgba-61--44--30--0-04-: rgba(61, 44, 30, 0.04);
+  --admin-color-rgba-61--44--30--0-08-: rgba(61, 44, 30, 0.08);
+  --admin-color-rgba-8-145-178-0-07-: rgba(8, 145, 178, 0.07);
+  --admin-color-rgba-8-145-178-0-12-: rgba(8, 145, 178, 0.12);
+  --admin-color-rgba-8-145-178-0-2-: rgba(8, 145, 178, 0.2);
+  --admin-color-success: #16a34a;
+  --admin-color-text: #212529;
+  --admin-color-white: #fff;
+  --admin-font-code: Menlo, Monaco, Consolas, 'Courier New', monospace;
+  --admin-font-family: 'Inter', sans-serif;
+  --admin-font-family-1: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  --admin-font-family-2: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --admin-font-family-3: Inter, system-ui, sans-serif;
+  --admin-font-family-4: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --admin-font-family-5: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --admin-font-family-6: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --admin-font-monospace: monospace;
+  --admin-font-size-0-55rem: 0.55rem;
+  --admin-font-size-0-65rem: 0.65rem;
+  --admin-font-size-0-68rem: 0.68rem;
+  --admin-font-size-0-6rem: 0.6rem;
+  --admin-font-size-0-72rem: 0.72rem;
+  --admin-font-size-0-73rem: 0.73rem;
+  --admin-font-size-0-75rem: 0.75rem;
+  --admin-font-size-0-78rem: 0.78rem;
+  --admin-font-size-0-7rem: 0.7rem;
+  --admin-font-size-0-82rem: 0.82rem;
+  --admin-font-size-0-85rem: 0.85rem;
+  --admin-font-size-0-875rem: 0.875rem;
+  --admin-font-size-0-88rem: 0.88rem;
+  --admin-font-size-0-8rem: 0.8rem;
+  --admin-font-size-0-95rem: 0.95rem;
+  --admin-font-size-0-9rem: 0.9rem;
+  --admin-font-size-1-05rem: 1.05rem;
+  --admin-font-size-1-07em: 1.07em;
+  --admin-font-size-1-1rem: 1.1rem;
+  --admin-font-size-1-25em: 1.25em;
+  --admin-font-size-1-25rem: 1.25rem;
+  --admin-font-size-1-2rem: 1.2rem;
+  --admin-font-size-1-4rem: 1.4rem;
+  --admin-font-size-1-5rem: 1.5rem;
+  --admin-font-size-1-6rem: 1.6rem;
+  --admin-font-size-1-75rem: 1.75rem;
+  --admin-font-size-1-7rem: 1.7rem;
+  --admin-font-size-1-9rem: 1.9rem;
+  --admin-font-size-10-5px: 10.5px;
+  --admin-font-size-10px: 10px;
+  --admin-font-size-11-5px: 11.5px;
+  --admin-font-size-11px: 11px;
+  --admin-font-size-12-5px: 12.5px;
+  --admin-font-size-12px: 12px;
+  --admin-font-size-13-5px: 13.5px;
+  --admin-font-size-13px: 13px;
+  --admin-font-size-14px: 14px;
+  --admin-font-size-15px: 15px;
+  --admin-font-size-16px: 16px;
+  --admin-font-size-17px: 17px;
+  --admin-font-size-18px: 18px;
+  --admin-font-size-19px: 19px;
+  --admin-font-size-1em: 1em;
+  --admin-font-size-1rem: 1rem;
+  --admin-font-size-20px: 20px;
+  --admin-font-size-21px: 21px;
+  --admin-font-size-22px: 22px;
+  --admin-font-size-23px: 23px;
+  --admin-font-size-24px: 24px;
+  --admin-font-size-25px: 25px;
+  --admin-font-size-26px: 26px;
+  --admin-font-size-27px: 27px;
+  --admin-font-size-28px: 28px;
+  --admin-font-size-29px: 29px;
+  --admin-font-size-2rem: 2rem;
+  --admin-font-size-30px: 30px;
+  --admin-font-size-32px: 32px;
+  --admin-font-size-35px: 35px;
+  --admin-font-size-36px: 36px;
+  --admin-font-size-38px: 38px;
+  --admin-font-size-40px: 40px;
+  --admin-font-size-44px: 44px;
+  --admin-font-size-46px: 46px;
+  --admin-font-size-8px: 8px;
+  --admin-font-size-9px: 9px;
+  --admin-space-0-18em: 0.18em;
+  --admin-space-0-1em: 0.1em;
+  --admin-space-0-22em: 0.22em;
+  --admin-space-0-25em: 0.25em;
+  --admin-space-0-25rem: 0.25rem;
+  --admin-space-0-28rem: 0.28rem;
+  --admin-space-0-2em: 0.2em;
+  --admin-space-0-2rem: 0.2rem;
+  --admin-space-0-35em: 0.35em;
+  --admin-space-0-35rem: 0.35rem;
+  --admin-space-0-375rem: 0.375rem;
+  --admin-space-0-38rem: 0.38rem;
+  --admin-space-0-3em: 0.3em;
+  --admin-space-0-3rem: 0.3rem;
+  --admin-space-0-42rem: 0.42rem;
+  --admin-space-0-45em: 0.45em;
+  --admin-space-0-45rem: 0.45rem;
+  --admin-space-0-4rem: 0.4rem;
+  --admin-space-0-55em: 0.55em;
+  --admin-space-0-55rem: 0.55rem;
+  --admin-space-0-5em: 0.5em;
+  --admin-space-0-5rem: 0.5rem;
+  --admin-space-0-65em: 0.65em;
+  --admin-space-0-65rem: 0.65rem;
+  --admin-space-0-6em: 0.6em;
+  --admin-space-0-6rem: 0.6rem;
+  --admin-space-0-75em: 0.75em;
+  --admin-space-0-75rem: 0.75rem;
+  --admin-space-0-7em: 0.7em;
+  --admin-space-0-7rem: 0.7rem;
+  --admin-space-0-85rem: 0.85rem;
+  --admin-space-0-8em: 0.8em;
+  --admin-space-0-8rem: 0.8rem;
+  --admin-space-0-95rem: 0.95rem;
+  --admin-space-0-9rem: 0.9rem;
+  --admin-space-1-1rem: 1.1rem;
+  --admin-space-1-25rem: 1.25rem;
+  --admin-space-1-2rem: 1.2rem;
+  --admin-space-1-3rem: 1.3rem;
+  --admin-space-1-4rem: 1.4rem;
+  --admin-space-1-5rem: 1.5rem;
+  --admin-space-1-75rem: 1.75rem;
+  --admin-space-1-9rem: 1.9rem;
+  --admin-space-10px: 10px;
+  --admin-space-113px: 113px;
+  --admin-space-11px: 11px;
+  --admin-space-12px: 12px;
+  --admin-space-13px: 13px;
+  --admin-space-140px: 140px;
+  --admin-space-14px: 14px;
+  --admin-space-15px: 15px;
+  --admin-space-16px: 16px;
+  --admin-space-17px: 17px;
+  --admin-space-18px: 18px;
+  --admin-space-19px: 19px;
+  --admin-space-1em: 1em;
+  --admin-space-1px: 1px;
+  --admin-space-1rem: 1rem;
+  --admin-space-2-2rem: 2.2rem;
+  --admin-space-2-4rem: 2.4rem;
+  --admin-space-2-5rem: 2.5rem;
+  --admin-space-20px: 20px;
+  --admin-space-22px: 22px;
+  --admin-space-23px: 23px;
+  --admin-space-24px: 24px;
+  --admin-space-25px: 25px;
+  --admin-space-26px: 26px;
+  --admin-space-27px: 27px;
+  --admin-space-28px: 28px;
+  --admin-space-2px: 2px;
+  --admin-space-2rem: 2rem;
+  --admin-space-3-5rem: 3.5rem;
+  --admin-space-30px: 30px;
+  --admin-space-31px: 31px;
+  --admin-space-32px: 32px;
+  --admin-space-35px: 35px;
+  --admin-space-36px: 36px;
+  --admin-space-3px: 3px;
+  --admin-space-3rem: 3rem;
+  --admin-space-40px: 40px;
+  --admin-space-44px: 44px;
+  --admin-space-46px: 46px;
+  --admin-space-48px: 48px;
+  --admin-space-4px: 4px;
+  --admin-space-56px: 56px;
+  --admin-space-5px: 5px;
+  --admin-space-6px: 6px;
+  --admin-space-7px: 7px;
+  --admin-space-84px: 84px;
+  --admin-space-8px: 8px;
+  --admin-space-90px: 90px;
+  --admin-space-9px: 9px;
+}
+
+body {
+  margin: 0;
+  font-family: var(--admin-font-family-1);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--admin-color-page);
+  color: var(--admin-color-text);
+  font-size: var(--admin-font-size-1rem);
+}
+
+* {
+  font-family: var(--admin-font-family-1);
+}
+
+code {
+  font-family: var(--admin-font-code);
+}
+
+/* ── Typography: Headings ── */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
+  font-family: var(--admin-font-family);
+  font-weight: 700;
+  color: var(--admin-color-heading);
+}
+
+h1,
+.h1 {
+  font-size: var(--admin-font-size-2rem);
+}
+
+h2,
+.h2 {
+  font-size: var(--admin-font-size-1-75rem);
+}
+
+h3,
+.h3 {
+  font-size: var(--admin-font-size-1-5rem);
+}
+
+h4,
+.h4 {
+  font-size: var(--admin-font-size-1-25rem);
+}
+
+h5,
+.h5 {
+  font-size: var(--admin-font-size-1-1rem);
+}
+
+h6,
+.h6 {
+  font-size: var(--admin-font-size-1rem);
+}
+
+p {
+  font-size: var(--admin-font-size-1rem);
+  line-height: 1.6;
+}
+
+.small,
+small {
+  font-size: var(--admin-font-size-0-875rem);
+}
+
+/* ── Brand Color: #A5732F ── */
+.btn-brand {
+  background-color: var(--admin-color-brand);
+  color: var(--admin-color-white) !important;
+  border: none;
+  font-weight: 700;
+}
+
+.btn-brand:hover,
+.btn-brand:focus {
+  background-color: var(--admin-color-brand-hover);
+  color: var(--admin-color-white) !important;
+  box-shadow: 0 4px 12px var(--admin-color-rgba-165--115--47--0-35-);
+}
+
+.btn-brand:disabled {
+  background-color: var(--admin-color-brand-disabled);
+  color: var(--admin-color-white) !important;
+  opacity: 0.75;
+}
+
+.btn-outline-brand {
+  background-color: transparent;
+  color: var(--admin-color-brand) !important;
+  border: 1.5px solid var(--admin-color-brand);
+  font-weight: 700;
+}
+
+.btn-outline-brand:hover,
+.btn-outline-brand:focus {
+  background-color: var(--admin-color-brand);
+  color: var(--admin-color-white) !important;
+  box-shadow: 0 4px 12px var(--admin-color-rgba-165--115--47--0-25-);
+}
+
+/* Sidebar navigation styling hover states */
+.hover-bg-muted:hover {
+  background-color: var(--admin-color-rgba-255--255--255--0-05-);
+}
+
+.table-dark-subtle {
+  background-color: var(--admin-color-brand-light) !important;
+}
+
+/* Custom premium hover transitions */
+.hover-shadow {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+
+.hover-shadow:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 1rem 3rem var(--admin-color-rgba-0--0--0---1-) !important;
+}
+
+.hover-lift {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px);
+  background-color: var(--admin-color--fffbeb) !important;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--admin-color--f1f1f1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--admin-color--c1c1c1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--admin-color--a8a8a8);
+}
+
+/* Utility Styles */
+.font-monospace {
+  font-family: var(--admin-font-monospace);
+}
+
+.fw-extrabold {
+  font-weight: 800 !important;
+}
+
+.fs-7 {
+  font-size: var(--admin-font-size-0-85rem);
+}
+
+.fs-8 {
+  font-size: var(--admin-font-size-0-75rem);
+}
+
+.fs-9 {
+  font-size: var(--admin-font-size-0-65rem);
+}
+
+.tracking-wider {
+  letter-spacing: 0.05em;
+}
+
+.dot {
+  display: inline-block;
+  border-radius: 50%;
+}
+
+.text-brand {
+  color: var(--admin-color-brand) !important;
+}
+
+.bg-brand {
+  background-color: var(--admin-color-brand) !important;
+}
+
+.bg-brand-light {
+  background-color: var(--admin-color-brand-light) !important;
+}
+
+.border-brand {
+  border-color: var(--admin-color-brand) !important;
+}
+
+.transition-all {
+  transition: all 0.3s ease;
+}
+
+/* ── Shimmer / Skeleton Loading ── */
+@keyframes shimmer {
+  0% {
+    background-position: -800px 0;
+  }
+
+  100% {
+    background-position: 800px 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(90deg,
+      var(--admin-color--f0f0f0) 25%,
+      var(--admin-color--e0e0e0) 37%,
+      var(--admin-color--f0f0f0) 63%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+}

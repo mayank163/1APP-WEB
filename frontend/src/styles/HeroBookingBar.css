@@ -1,0 +1,250 @@
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: none;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 1px;
+  background: var(--ui-color-26);
+  align-self: stretch;
+  margin: var(--ui-space-34);
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+  position: relative;
+  width: 100%;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-4:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-5:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-19);
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-6:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: var(--ui-color-120);
+  font-size: var(--ui-font-size-3);
+  color: var(--ui-color-7);
+  font-weight: var(--ui-herobookingbar-6-font-weight);
+  padding: var(--ui-space-16);
+  line-height: 1;
+  min-width: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-7:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-20);
+  color: var(--ui-color-27);
+  flex-shrink: 0;
+  letter-spacing: 2px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-8:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.16);
+  list-style: none;
+  margin: var(--ui-space-16);
+  padding: var(--ui-space-35);
+  overflow-y: auto;
+  width: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ui-color-28);
+  border: 1px solid #f0f0f0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-9:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-36);
+  cursor: pointer;
+  font-size: var(--ui-font-size-9);
+  border-bottom: 1px solid #f5f5f5;
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-23);
+  transition: background 0.12s;
+  background: var(--ui-color-2);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-10:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-29);
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-11:not(#ui-style-priority):not(#ui-style-priority-2) {
+  min-width: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-12:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-weight: 500;
+  color: var(--ui-color-7);
+  font-size: var(--ui-font-size-9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-13:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-4);
+  color: var(--ui-color-19);
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-14);
+  margin-top: var(--ui-space-15);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-14:not(#ui-style-priority):not(#ui-style-priority-2) {
+  position: relative;
+  width: 100%;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-15:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-9);
+  width: 100%;
+  border: none;
+  background: var(--ui-color-120);
+  cursor: pointer;
+  padding: var(--ui-space-16);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-16:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-3);
+  color: var(--ui-herobookingbar-16-color);
+  font-weight: var(--ui-herobookingbar-16-font-weight);
+  flex: 1;
+  text-align: left;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-17:not(#ui-style-priority):not(#ui-style-priority-2) {
+  color: var(--ui-color-19);
+  flex-shrink: 0;
+  transform: var(--ui-herobookingbar-17-transform);
+  transition: transform 0.18s;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-18:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.16);
+  list-style: none;
+  margin: var(--ui-space-16);
+  padding: var(--ui-space-35);
+  overflow-y: auto;
+  width: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ui-color-28);
+  border: 1px solid #f0f0f0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-19:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-36);
+  cursor: pointer;
+  font-size: var(--ui-font-size-9);
+  border-bottom: 1px solid #f5f5f5;
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-23);
+  transition: background 0.12s;
+  background: var(--ui-herobookingbar-19-background);
+  font-weight: var(--ui-herobookingbar-19-font-weight);
+  color: var(--ui-color-7);
+  justify-content: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-20:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  background: var(--ui-color-2);
+  border-radius: 30px;
+  box-shadow: 0 4px 28px rgba(0,0,0,0.14);
+  height: 60px;
+  max-width: 820px;
+  width: 100%;
+  position: relative;
+  z-index: 10;
+  border: 1.5px solid #e8e8e8;
+  overflow: visible;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-21:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1.4;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: var(--ui-space-37);
+  height: 100%;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-22:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: var(--ui-space-37);
+  height: 100%;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-herobookingbar-23:not(#ui-style-priority):not(#ui-style-priority-2) {
+  height: 100%;
+  padding: var(--ui-space-38);
+  background: var(--ui-color-7);
+  color: var(--ui-color-2);
+  border: none;
+  border-radius: 0 30px 30px 0;
+  font-size: var(--ui-font-size-8);
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: 0.3px;
+  transition: background 0.18s;
+}
+
+.hero-positioned-dropdown.ui-herobookingbar-1:not(#ui-style-priority):not(#ui-style-priority-2) { display: block; position: fixed; top: 0; left: var(--hero-dropdown-left); width: var(--hero-dropdown-width); max-height: var(--hero-dropdown-max-height); overflow-y: auto; z-index: 9999; transform: var(--hero-dropdown-transform); will-change: transform; }
+.hero-dropdown-hidden { display: none !important; }
+
+.ui-herobookingbar-9:not(#ui-style-priority):not(#ui-style-priority-2):hover {
+  background: var(--ui-color-163);
+}
+
+
+.ui-herobookingbar-19:not(#ui-style-priority):not(#ui-style-priority-2):hover {
+  background: var(--ui-color-35);
+}
+
+
+.ui-herobookingbar-23:not(#ui-style-priority):not(#ui-style-priority-2):hover {
+  background: var(--ui-color-4);
+}

@@ -1,3 +1,4 @@
+import '../styles/TechnicianTrackingMap.css';
 import React, { useEffect, useRef, useState } from 'react';
 import socket from '../services/socket';
 
@@ -256,28 +257,11 @@ const TechnicianTrackingMap = ({ job }) => {
   return (
     <div>
       {/* ── Status bar ── */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 8,
-        flexWrap: 'wrap', marginBottom: 8, fontSize: '0.82rem',
-      }}>
+      <div className="admin-technician-tracking-map-1" >
 
         {/* Live / waiting / on-site badge */}
-        <span style={{
-          display: 'inline-flex', alignItems: 'center', gap: 5,
-          padding: '3px 10px', borderRadius: 20, fontWeight: 600,
-          background: isLive
-            ? 'rgba(22,163,74,0.1)'
-            : isOnSite
-              ? 'rgba(37,99,235,0.08)'
-              : 'rgba(108,117,125,0.1)',
-          color: isLive ? '#16a34a' : isOnSite ? '#2563eb' : '#6c757d',
-        }}>
-          <span style={{
-            width: 8, height: 8, borderRadius: '50%',
-            display: 'inline-block',
-            background: isLive ? '#16a34a' : isOnSite ? '#2563eb' : '#adb5bd',
-            animation: isLive ? 'tj-pulse 1.5s infinite' : 'none',
-          }} />
+        <span className={["admin-technician-tracking-map-2 ", isLive ? "admin-technician-tracking-map-state-1" : (isOnSite ? "admin-technician-tracking-map-state-2" : "admin-technician-tracking-map-state-3"), " ", isLive ? "admin-technician-tracking-map-state-4" : (isOnSite ? "admin-technician-tracking-map-state-5" : "admin-technician-tracking-map-state-6")].join('')} >
+          <span className={["admin-technician-tracking-map-3 ", isLive ? "admin-technician-tracking-map-state-7" : (isOnSite ? "admin-technician-tracking-map-state-8" : "admin-technician-tracking-map-state-9"), " ", isLive ? "admin-technician-tracking-map-state-10" : "admin-technician-tracking-map-state-11"].join('')}  />
           {isLive
             ? 'Live'
             : isOnSite
@@ -287,63 +271,47 @@ const TechnicianTrackingMap = ({ job }) => {
 
         {/* Road distance */}
         {routeInfo && (
-          <span style={{
-            padding: '3px 10px', borderRadius: 20, fontWeight: 700,
-            background: 'rgba(165,115,47,0.1)', color: '#A5732F',
-          }}>
+          <span className="admin-technician-tracking-map-4" >
             🛣️ {routeInfo.distance}
           </span>
         )}
 
         {/* ETA */}
         {routeInfo && (
-          <span style={{
-            padding: '3px 10px', borderRadius: 20, fontWeight: 700,
-            background: 'rgba(37,99,235,0.08)', color: '#2563eb',
-          }}>
+          <span className="admin-technician-tracking-map-5" >
             🕐 ETA {routeInfo.duration}
           </span>
         )}
 
         {/* Last updated */}
         {lastSeen && (
-          <span style={{ color: '#adb5bd', fontSize: '0.72rem' }}>
+          <span className="admin-technician-tracking-map-6" >
             Updated {lastSeen}
           </span>
         )}
       </div>
 
       {/* ── Legend ── */}
-      <div style={{
-        display: 'flex', gap: 16, marginBottom: 6,
-        fontSize: '0.75rem', color: '#6c757d',
-      }}>
+      <div className="admin-technician-tracking-map-7" >
         <span>🔵 Job Location</span>
         <span>🔴 Technician</span>
-        <span style={{ color: '#A5732F' }}>━━ Route</span>
+        <span className="admin-technician-tracking-map-8" >━━ Route</span>
       </div>
 
       {/* ── Map canvas ── */}
       <div
         ref={mapCallbackRef}
-        style={{
-          width: '100%', height: 320,
-          borderRadius: 10, border: '1.5px solid #e9e0d5',
-          overflow: 'hidden', background: '#f0f0f0',
-        }}
+        className="admin-technician-tracking-map-9"
       >
         {!ready && (
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            height: '100%', color: '#adb5bd', fontSize: '0.85rem',
-          }}>
+          <div className="admin-technician-tracking-map-10" >
             Loading map…
           </div>
         )}
       </div>
 
       {!jobCoords && (
-        <div style={{ fontSize: '0.75rem', color: '#b45309', marginTop: 4 }}>
+        <div className="admin-technician-tracking-map-11" >
           ⚠️ No job coordinates set — road route cannot be calculated
         </div>
       )}

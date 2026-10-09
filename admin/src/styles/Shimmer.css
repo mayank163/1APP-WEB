@@ -1,0 +1,36 @@
+
+/* Extracted presentation styles; repeated class specificity preserves inline precedence. */
+.admin-shimmer-1.admin-shimmer-1.admin-shimmer-1 {
+  padding: var(--admin-space-14px) var(--admin-space-12px);
+}
+
+.admin-shimmer-2.admin-shimmer-2.admin-shimmer-2 {
+  table-layout: fixed;
+}
+
+.admin-shimmer-3.admin-shimmer-3.admin-shimmer-3 {
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.admin-shimmer-4.admin-shimmer-4.admin-shimmer-4 {
+  border-radius: 10px;
+}
+
+.admin-shimmer-5.admin-shimmer-5.admin-shimmer-5 {
+  border-radius: 12px;
+}
+
+.admin-shimmer-6.admin-shimmer-6.admin-shimmer-6 {
+  border-top: 3px solid var(--admin-color--e0e0e0);
+}
+
+.admin-shimmer-7.admin-shimmer-7.admin-shimmer-7 {
+  border-radius: 12px;
+}
+
+.admin-shimmer-8.admin-shimmer-8.admin-shimmer-8 {
+  border-radius: 8px;
+}
+
+.admin-shimmer-block { width: var(--admin-shimmer-width); height: var(--admin-shimmer-height); border-radius: 6px; }

@@ -1,0 +1,11 @@
+
+/* Extracted presentation styles; repeated class specificity preserves inline precedence. */
+.admin-offer-management-1.admin-offer-management-1.admin-offer-management-1 {
+  border-top: 3px solid var(--admin-color-brand);
+}
+
+.admin-offer-management-2.admin-offer-management-2.admin-offer-management-2 {
+  background: var(--admin-color-brand-light);
+  color: var(--admin-color-brand);
+  border: 1px solid var(--admin-color-brand);
+}

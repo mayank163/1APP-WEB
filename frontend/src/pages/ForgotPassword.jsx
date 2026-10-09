@@ -1,3 +1,4 @@
+import '../styles/ForgotPassword.css';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaEnvelope, FaPhone,FaPhoneAlt, FaArrowLeft } from 'react-icons/fa';
@@ -31,65 +32,65 @@ const ForgotPassword = () => {
     };
 
     return (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', minHeight: '100vh' }}>
+        <div className="ui-forgotpassword-1" >
             {/* Left - Illustration */}
             <ResetAuthPanel />
-            {/* Right - form */}  
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '48px 64px', background: '#fff' }}>
-                <div style={{ maxWidth: 380, width: '100%', margin: '0 auto' }}>
-                    <Link to="/login" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#555', textDecoration: 'none', fontSize: '0.88rem', marginBottom: 32 }}>
+            {/* Right - form */}
+            <div className="ui-forgotpassword-2" >
+                <div className="ui-forgotpassword-3" >
+                    <Link className="ui-forgotpassword-4" to="/login" >
                         <FaArrowLeft size={12} /> Back to Login
                     </Link>
 
-                    <div style={{ marginBottom: 28 }}>
-                        <h2 style={{ fontWeight: 800, fontSize: '1.8rem', marginBottom: 8 }}>
-                            Forgot <span style={{ color: '#000000' }}>Password?</span>
+                    <div className="ui-forgotpassword-5" >
+                        <h2 className="ui-forgotpassword-6" >
+                            Forgot <span className="ui-forgotpassword-7" >Password?</span>
                         </h2>
-                        <p style={{ color: '#777', fontSize: '0.9rem', lineHeight: 1.5 }}>
+                        <p className="ui-forgotpassword-8" >
                             No worries! Enter your {useEmail ? 'email address' : 'phone number'} and we'll send you a link to reset your password.
                         </p>
-                        <div style={{ width: 40, height: 3, background: '#000000', marginTop: 12 }} />
+                        <div className="ui-forgotpassword-9"  />
                     </div>
 
                     <form onSubmit={handleSubmit}>
-                        <div style={{ marginBottom: 8 }}>
-                            <label style={{ fontWeight: 700, fontSize: '0.85rem', display: 'block', marginBottom: 6 }}>
+                        <div className="ui-forgotpassword-10" >
+                            <label className="ui-forgotpassword-11" >
                                 {useEmail ? 'Email Address' : 'Phone Number'}
                             </label>
-                            <div style={{ display: 'flex', alignItems: 'center', border: '1.5px solid #ddd', borderRadius: 8, padding: '10px 14px', gap: 10 }}>
+                            <div className="ui-forgotpassword-12" >
                                 {useEmail ? <FaEnvelope color="#888" size={14} /> : <FaPhoneAlt color="#888" size={14} />}
-                                <input
+                                <input className="ui-forgotpassword-13"
                                     type={useEmail ? 'email' : 'tel'}
                                     required
                                     placeholder={useEmail ? 'name@example.com' : '+91 98765 43210'}
                                     value={identifier}
                                     onChange={e => setIdentifier(e.target.value)}
-                                    style={{ border: 'none', outline: 'none', flex: 1, fontSize: '0.95rem' }}
+
                                 />
                             </div>
-                            <div style={{ textAlign: 'right', marginTop: 4 }}>
-                                <button type="button" onClick={() => { setUseEmail(!useEmail); setIdentifier(''); }}
-                                    style={{ background: 'none', border: 'none', color: '#000000', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', padding: 0 }}>
+                            <div className="ui-forgotpassword-14" >
+                                <button className="ui-forgotpassword-15" type="button" onClick={() => { setUseEmail(!useEmail); setIdentifier(''); }}
+                                    >
                                     {useEmail ? 'Use Phone Number' : 'Use Email'}
                                 </button>
                             </div>
                         </div>
 
-                        <button type="submit" disabled={loading}
-                            style={{ width: '100%', background: '#000000', color: '#fff', border: 'none', borderRadius: 8, padding: '13px', fontWeight: 700, fontSize: '1rem', cursor: 'pointer', marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                            {loading ? 'Sending...' : 'Send Reset Link'} <span style={{ fontSize: '1.1rem' }}>→</span>
+                        <button className="ui-forgotpassword-16" type="submit" disabled={loading}
+                            >
+                            {loading ? 'Sending...' : 'Send Reset Link'} <span className="ui-forgotpassword-17" >→</span>
                         </button>
                     </form>
 
-                    <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0', gap: 10 }}>
-                        <div style={{ flex: 1, height: 1, background: '#e0e0e0' }} />
-                        <span style={{ color: '#aaa', fontSize: '0.8rem', fontWeight: 600 }}>OR</span>
-                        <div style={{ flex: 1, height: 1, background: '#e0e0e0' }} />
+                    <div className="ui-forgotpassword-18" >
+                        <div className="ui-forgotpassword-19"  />
+                        <span className="ui-forgotpassword-20" >OR</span>
+                        <div className="ui-forgotpassword-21"  />
                     </div>
 
-                    <p style={{ textAlign: 'center', fontSize: '0.88rem', color: '#555' }}>
+                    <p className="ui-forgotpassword-22" >
                         Remember your Password?{' '}
-                        <Link to="/login" style={{ color: '#000000', fontWeight: 700, textDecoration: 'none' }}>Sign In</Link>
+                        <Link className="ui-forgotpassword-23" to="/login" >Sign In</Link>
                     </p>
                 </div>
             </div>
@@ -98,34 +99,34 @@ const ForgotPassword = () => {
 };
 
 const ForgotIllustration = () => (
-    <div style={{ background: '#f5ede0', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: 48, position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', top: 32, right: 32, display: 'grid', gridTemplateColumns: 'repeat(5,8px)', gap: 6 }}>
+    <div className="ui-forgotpassword-24" >
+        <div className="ui-forgotpassword-25" >
             {Array.from({ length: 25 }).map((_, i) => (
-                <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: '#3a7d44', opacity: 0.5 }} />
+                <div className="ui-forgotpassword-26" key={i}  />
             ))}
         </div>
-        <div style={{ textAlign: 'center', maxWidth: 420 }}>
+        <div className="ui-forgotpassword-27" >
             {/* Lock icons row */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginBottom: 24 }}>
+            <div className="ui-forgotpassword-28" >
                 {['📧', '🔒', '🔄'].map((icon, i) => (
-                    <div key={i} style={{ width: 56, height: 56, background: '#fff', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+                    <div className="ui-forgotpassword-29" key={i} >
                         {icon}
                     </div>
                 ))}
             </div>
             {/* Phone mockup placeholder */}
-            <div style={{ background: '#fff', borderRadius: 32, padding: '32px 24px', boxShadow: '0 8px 32px rgba(0,0,0,0.1)', display: 'inline-block', minWidth: 200 }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: 8 }}>🏠</div>
-                <div style={{ color: '#000000', fontWeight: 800, fontSize: '1.2rem' }}>OneApp</div>
-                <div style={{ color: '#888', fontSize: '0.8rem' }}>All Services, One App</div>
-                <div style={{ marginTop: 20, background: '#f5f5f5', borderRadius: 12, padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                    <span style={{ fontSize: '1.5rem' }}>🔒</span>
-                    <span style={{ fontSize: '1.2rem', letterSpacing: 4, color: '#555' }}>* * * *</span>
+            <div className="ui-forgotpassword-30" >
+                <div className="ui-forgotpassword-31" >🏠</div>
+                <div className="ui-forgotpassword-32" >OneApp</div>
+                <div className="ui-forgotpassword-33" >All Services, One App</div>
+                <div className="ui-forgotpassword-34" >
+                    <span className="ui-forgotpassword-35" >🔒</span>
+                    <span className="ui-forgotpassword-36" >* * * *</span>
                 </div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 24 }}>
-                <div style={{ width: 48, height: 48, background: '#000000', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>✓</div>
-                <div style={{ width: 48, height: 48, background: '#000000', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>✓</div>
+            <div className="ui-forgotpassword-37" >
+                <div className="ui-forgotpassword-38" >✓</div>
+                <div className="ui-forgotpassword-39" >✓</div>
             </div>
         </div>
     </div>

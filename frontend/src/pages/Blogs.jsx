@@ -1,3 +1,5 @@
+import { cssValue } from '../utils/cssValue';
+import '../styles/Blogs.css';
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -47,38 +49,31 @@ export default function Blogs() {
     const scroll = (ref, dir) => ref.current?.scrollBy({ left: dir * 220, behavior: 'smooth' });
 
     const Tag = ({ label }) => (
-        <span style={{
-            background: '#f0f0f0', fontSize: 10, fontWeight: 700, letterSpacing: 1,
-            padding: '3px 8px', borderRadius: 4, color: '#555', textTransform: 'uppercase',
-            display: 'inline-block',
-        }}>{label}</span>
+        <span className="ui-blogs-1" >{label}</span>
     );
 
     const BlogCard = ({ blog, onClick }) => (
-        <div onClick={onClick} style={{ cursor: 'pointer', minWidth: 160, flex: '0 0 160px' }}>
-            <div style={{ borderRadius: 10, overflow: 'hidden', height: 130, background: '#eee', marginBottom: 8 }}>
-                <img
+        <div className="ui-blogs-2" onClick={onClick} >
+            <div className="ui-blogs-3" >
+                <img className="ui-blogs-4"
                     src={resolveImg(blog.featuredImage)}
                     alt={blog.title}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+
                     onError={e => { e.target.src = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600'; }}
                 />
             </div>
             <Tag label={blog.subcategory?.category?.name || 'BLOG'} />
-            <div style={{ fontWeight: 700, fontSize: 13, marginTop: 6, lineHeight: 1.4 }}>{blog.title}</div>
+            <div className="ui-blogs-5" >{blog.title}</div>
         </div>
     );
 
     const ScrollRow = ({ items, refEl, label }) => (
-        <div style={{ marginBottom: 32 }}>
-            {label && <h2 style={{ fontWeight: 800, fontSize: '1.4rem', marginBottom: 16 }}>{label}</h2>}
-            <div style={{ position: 'relative' }}>
-                <div
+        <div className="ui-blogs-6" >
+            {label && <h2 className="ui-blogs-7" >{label}</h2>}
+            <div className="ui-blogs-8" >
+                <div className="ui-blogs-9"
                     ref={refEl}
-                    style={{
-                        display: 'flex', gap: 16, overflowX: 'auto', paddingBottom: 4,
-                        scrollbarWidth: 'none', msOverflowStyle: 'none',
-                    }}
+
                 >
                     {items.map((b, i) => (
                         <BlogCard key={b._id + i} blog={b} onClick={() => navigate(`/blogs/${b._id}`)} />
@@ -86,8 +81,8 @@ export default function Blogs() {
                 </div>
                 {items.length > 4 && (
                     <>
-                        <button onClick={() => scroll(refEl, -1)} style={arrowBtn('left')}>‹</button>
-                        <button onClick={() => scroll(refEl, 1)} style={arrowBtn('right')}>›</button>
+                        <button className="ui-blogs-10" onClick={() => scroll(refEl, -1)} >‹</button>
+                        <button className="ui-blogs-11" onClick={() => scroll(refEl, 1)} >›</button>
                     </>
                 )}
             </div>
@@ -97,24 +92,17 @@ export default function Blogs() {
     const EmptyState = () => {
         const cat = categories.find(c => c._id === activeTab);
         return (
-            <div style={{
-                textAlign: 'center', padding: '64px 20px', background: '#fafafa',
-                borderRadius: 16, border: '1.5px dashed #e0e0e0', marginBottom: 40,
-            }}>
-                <div style={{ fontSize: 48, marginBottom: 16 }}>📭</div>
-                <h3 style={{ fontWeight: 800, fontSize: '1.2rem', marginBottom: 8, color: '#111' }}>
+            <div className="ui-blogs-12" >
+                <div className="ui-blogs-13" >📭</div>
+                <h3 className="ui-blogs-14" >
                     No blogs in {cat?.name || 'this category'} yet
                 </h3>
-                <p style={{ fontSize: 14, color: '#888', marginBottom: 24, maxWidth: 340, margin: '0 auto 24px' }}>
+                <p className="ui-blogs-15" >
                     We're working on bringing you great content here. Check back soon or explore other categories.
                 </p>
-                <button
+                <button className="ui-blogs-16"
                     onClick={() => setActiveTab(null)}
-                    style={{
-                        background: '#000000', color: '#fff', border: 'none',
-                        borderRadius: 8, padding: '10px 24px', fontWeight: 700,
-                        fontSize: 14, cursor: 'pointer',
-                    }}
+
                 >
                     Browse All Blogs
                 </button>
@@ -125,44 +113,44 @@ export default function Blogs() {
     if (loading) return <BlogsShimmer />;
 
     return (
-        <div style={{ maxWidth: 960, margin: '0 auto', padding: '32px 20px' }}>
+        <div className="ui-blogs-17" >
 
             {/* ── Header ── */}
-            <h2 style={{ fontWeight: 800, fontSize: '1.5rem', marginBottom: 20 }}>Checkout Our Latest Blogs</h2>
+            <h2 className="ui-blogs-18" >Checkout Our Latest Blogs</h2>
 
             {/* ── Hero Section (only when blogs exist) ── */}
             {filteredBlogs.length > 0 && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 260px', gap: 16, marginBottom: 32 }}>
+                <div className="ui-blogs-19" >
                     {hero && (
-                        <div onClick={() => navigate(`/blogs/${hero._id}`)} style={{ cursor: 'pointer' }}>
-                            <div style={{ borderRadius: 12, overflow: 'hidden', height: 260, background: '#eee', marginBottom: 12 }}>
-                                <img
+                        <div className="ui-blogs-20" onClick={() => navigate(`/blogs/${hero._id}`)} >
+                            <div className="ui-blogs-21" >
+                                <img className="ui-blogs-22"
                                     src={resolveImg(hero.featuredImage)}
                                     alt={hero.title}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+
                                     onError={e => { e.target.src = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600'; }}
                                 />
                             </div>
                             <Tag label={hero.subcategory?.category?.name || 'BLOG'} />
-                            <h3 style={{ fontWeight: 800, fontSize: '1.2rem', margin: '8px 0 4px', lineHeight: 1.3 }}>{hero.title}</h3>
-                            <p style={{ fontSize: 13, color: '#666', margin: 0 }}>{hero.description?.slice(0, 80)}</p>
+                            <h3 className="ui-blogs-23" >{hero.title}</h3>
+                            <p className="ui-blogs-24" >{hero.description?.slice(0, 80)}</p>
                         </div>
                     )}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <div className="ui-blogs-25" >
                         {sideBlogs.map(b => (
-                            <div key={b._id} onClick={() => navigate(`/blogs/${b._id}`)} style={{ cursor: 'pointer', display: 'flex', gap: 10 }}>
-                                <div style={{ width: 110, height: 80, borderRadius: 8, overflow: 'hidden', flexShrink: 0, background: '#eee' }}>
-                                    <img
+                            <div className="ui-blogs-26" key={b._id} onClick={() => navigate(`/blogs/${b._id}`)} >
+                                <div className="ui-blogs-27" >
+                                    <img className="ui-blogs-28"
                                         src={resolveImg(b.featuredImage)}
                                         alt={b.title}
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+
                                         onError={e => { e.target.src = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600'; }}
                                     />
                                 </div>
                                 <div>
                                     <Tag label={b.subcategory?.category?.name || 'BLOG'} />
-                                    <div style={{ fontWeight: 700, fontSize: 13, marginTop: 4, lineHeight: 1.4 }}>{b.title}</div>
-                                    <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>{b.description?.slice(0, 40)}</div>
+                                    <div className="ui-blogs-29" >{b.title}</div>
+                                    <div className="ui-blogs-30" >{b.description?.slice(0, 40)}</div>
                                 </div>
                             </div>
                         ))}
@@ -171,33 +159,22 @@ export default function Blogs() {
             )}
 
             {/* ── Tabs ── */}
-            <div style={{ marginBottom: 28 }}>
-                <div style={{
-                    display: 'flex', gap: 4, overflowX: 'auto',
-                    scrollbarWidth: 'none', msOverflowStyle: 'none', paddingBottom: 2,
-                }}>
+            <div className="ui-blogs-31" >
+                <div className="ui-blogs-32" >
                     {[{ _id: null, name: 'All' }, ...categories].map(cat => {
                         const isActive = activeTab === cat._id;
                         return (
-                            <button
+                            <button className="ui-blogs-33"
                                 key={cat._id ?? 'all'}
                                 onClick={() => setActiveTab(cat._id)}
-                                style={{
-                                    border: 'none', background: isActive ? '#000000' : '#f5f5f5',
-                                    color: isActive ? '#fff' : '#555',
-                                    padding: '7px 16px', borderRadius: 20,
-                                    fontWeight: isActive ? 700 : 500, fontSize: 13,
-                                    cursor: 'pointer', whiteSpace: 'nowrap',
-                                    transition: 'all 0.2s',
-                                    flexShrink: 0,
-                                }}
+                                style={{ "--ui-blogs-33-background": cssValue(isActive ? "var(--ui-color-27)" : "var(--ui-color-35)", "background"), "--ui-blogs-33-color": cssValue(isActive ? "var(--ui-color-2)" : "var(--ui-color-41)", "color"), "--ui-blogs-33-font-weight": cssValue(isActive ? 700 : 500, "fontWeight") }}
                             >
                                 {cat.name}
                             </button>
                         );
                     })}
                 </div>
-                <div style={{ height: 1, background: '#e8e8e8', marginTop: 12 }} />
+                <div className="ui-blogs-34"  />
             </div>
 
             {/* ── Empty State ── */}
@@ -209,52 +186,27 @@ export default function Blogs() {
 
             {/* ── Featured Two Cards ── */}
             {featuredTwo.length >= 2 && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 40 }}>
+                <div className="ui-blogs-35" >
                     {featuredTwo.map(b => (
-                        <div key={b._id} onClick={() => navigate(`/blogs/${b._id}`)} style={{
-                            cursor: 'pointer', background: '#ecececb3', borderRadius: 12,
-                            display: 'flex', gap: 12, padding: 12, alignItems: 'center',
-                        }}>
-                            <div style={{ width: 120, height: 90, borderRadius: 8, overflow: 'hidden', flexShrink: 0, background: '#eee' }}>
-                                <img
+                        <div className="ui-blogs-36" key={b._id} onClick={() => navigate(`/blogs/${b._id}`)} >
+                            <div className="ui-blogs-37" >
+                                <img className="ui-blogs-38"
                                     src={resolveImg(b.featuredImage)}
                                     alt={b.title}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+
                                     onError={e => { e.target.src = 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600'; }}
                                 />
                             </div>
                             <div>
                                 <Tag label={b.subcategory?.category?.name || 'BLOG'} />
-                                <div style={{ fontWeight: 700, fontSize: 14, marginTop: 6, lineHeight: 1.4 }}>{b.title}</div>
-                                <div style={{ fontSize: 12, color: '#888', marginTop: 4 }}>{b.description?.slice(0, 50)}</div>
+                                <div className="ui-blogs-39" >{b.title}</div>
+                                <div className="ui-blogs-40" >{b.description?.slice(0, 50)}</div>
                             </div>
                         </div>
                     ))}
                 </div>
             )}
-            
+
         </div>
     );
 }
-
-const arrowBtn = (side) => ({
-    position: 'absolute',
-    [side]: -14,
-    top: '50%',
-    transform: 'translateY(-50%)',
-    width: 30,
-    height: 30,
-    borderRadius: '50%',
-    border: '1px solid #e0e0e0',
-    background: '#fff',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.12)',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: 18,
-    fontWeight: 700,
-    color: '#333',
-    zIndex: 2,
-    lineHeight: 1,
-});

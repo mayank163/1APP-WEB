@@ -1,0 +1,792 @@
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: var(--ui-shimmer-1-width);
+  height: var(--ui-shimmer-1-height);
+  border-radius: var(--ui-shimmer-1-border-radius);
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-10);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-4:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--ui-space-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-5:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-6:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-10);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-7:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--ui-space-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-8:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-9:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-10:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-11:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--ui-space-10);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-12:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--ui-space-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-13:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-14:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-15:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-35);
+  min-height: 100vh;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-16:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 1280px;
+  margin: var(--ui-space-25);
+  padding: var(--ui-space-41);
+  display: grid;
+  grid-template-columns: 300px 1fr 280px;
+  gap: var(--ui-space-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-17:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+  border-radius: 16px;
+  padding: var(--ui-space-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-18:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-19:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-20:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-21:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-22:not(#ui-style-priority):not(#ui-style-priority-2) {
+  text-align: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-23:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin: var(--ui-space-42);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-24:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin: var(--ui-space-25);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-25:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-10);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-26:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-27:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+  border-radius: 16px;
+  padding: var(--ui-space-7);
+  margin-bottom: var(--ui-space-1);
+  display: flex;
+  gap: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-28:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-29:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-30:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-31:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-32:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-33:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-6);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-34:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-35:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-36:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+  border-radius: 16px;
+  padding: var(--ui-space-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-37:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-38:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-23);
+  margin-bottom: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-39:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-40:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+  border-radius: 16px;
+  padding: var(--ui-space-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-41:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-42:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 900px;
+  margin: var(--ui-space-43);
+  padding: var(--ui-space-44);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-43:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-9);
+  margin-bottom: var(--ui-space-10);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-44:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+  border-radius: 12px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-45:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+  border-radius: 12px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-46:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-47:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-48:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-10);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-49:not(#ui-style-priority):not(#ui-style-priority-2) {
+  height: 1px;
+  background: var(--ui-color-36);
+  margin-bottom: var(--ui-space-10);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-50:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-51:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-11);
+  margin-bottom: var(--ui-space-10);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-52:not(#ui-style-priority):not(#ui-style-priority-2) {
+  height: 1px;
+  background: var(--ui-color-36);
+  margin-bottom: var(--ui-space-10);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-53:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-54:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-7);
+  margin-bottom: var(--ui-space-4);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-55:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-56:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-57:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-58:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-59:not(#ui-style-priority):not(#ui-style-priority-2) {
+  height: 1px;
+  background: var(--ui-color-36);
+  margin-bottom: var(--ui-space-10);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-60:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-61:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-11);
+  padding: var(--ui-space-45);
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-62:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-46);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-63:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-64:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-10);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-65:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-13);
+  padding-bottom: var(--ui-space-7);
+  margin-bottom: var(--ui-space-7);
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-66:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-67:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-68:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-69:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-70:not(#ui-style-priority):not(#ui-style-priority-2) {
+  height: 70px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-71:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: center;
+  padding: var(--ui-space-47);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-72:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 360px));
+  gap: var(--ui-space-7);
+  width: 100%;
+  max-width: 1140px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-73:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-2);
+  border-radius: 16px;
+  padding: var(--ui-space-7);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-74:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-11);
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-75:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-76:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-77:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-78:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-79:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-3);
+  margin-bottom: var(--ui-space-13);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-80:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-81:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-82:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-83:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 960px;
+  margin: var(--ui-space-25);
+  padding: var(--ui-space-48);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-84:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-10);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-85:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: var(--ui-space-1);
+  margin-bottom: var(--ui-space-46);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-86:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-87:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-88:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-89:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-90:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-91:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-92:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-93:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-94:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-14);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-95:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-9);
+  margin-bottom: var(--ui-space-4);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-96:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-1);
+  margin-bottom: var(--ui-space-46);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-97:not(#ui-style-priority):not(#ui-style-priority-2) {
+  min-width: 160px;
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-98:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-99:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-100:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 1000px;
+  margin: var(--ui-space-25);
+  padding: var(--ui-space-49);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-101:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin: var(--ui-space-50);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-102:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin: var(--ui-space-51);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-103:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin: var(--ui-space-52);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-104:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin: var(--ui-space-53);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-105:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-10);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-106:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-9);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-107:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-108:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-54);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-109:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  gap: var(--ui-space-46);
+  background: var(--ui-color-37);
+  border-radius: 16px;
+  padding: var(--ui-space-10);
+  margin-bottom: var(--ui-space-54);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-110:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex-shrink: 0;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-111:not(#ui-style-priority):not(#ui-style-priority-2) {
+  flex: 1;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-112:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-23);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-113:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-114:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-115:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-116:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-46);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-117:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin: var(--ui-space-50);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-118:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin: var(--ui-space-42);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-119:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin: var(--ui-space-55);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-120:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-121:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-11);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-122:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-10);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-123:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-124:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-125:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-bottom: var(--ui-space-3);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-126:not(#ui-style-priority):not(#ui-style-priority-2) {
+  margin-top: var(--ui-space-1);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-127:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-35);
+  min-height: 100vh;
+  padding: var(--ui-space-56);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-128:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 1100px;
+  margin: var(--ui-space-25);
+  padding: var(--ui-space-37);
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: var(--ui-space-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-129:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-13);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-130:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-13);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-131:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-35);
+  min-height: 100vh;
+  padding: var(--ui-space-56);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-132:not(#ui-style-priority):not(#ui-style-priority-2) {
+  max-width: 1100px;
+  margin: var(--ui-space-25);
+  padding: var(--ui-space-37);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-133:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  gap: var(--ui-space-11);
+  margin-bottom: var(--ui-space-10);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-134:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: var(--ui-space-7);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-shimmer-135:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ui-space-13);
+}

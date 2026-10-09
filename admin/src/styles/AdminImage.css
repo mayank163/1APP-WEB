@@ -1,0 +1,50 @@
+
+/* Extracted presentation styles; repeated class specificity preserves inline precedence. */
+.admin-admin-image-1.admin-admin-image-1.admin-admin-image-1 {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--admin-color--f0f0f0);
+  z-index: 1;
+}
+
+.admin-admin-image-2.admin-admin-image-2.admin-admin-image-2 {
+  width: var(--admin-admin-image-2-width);
+  height: var(--admin-admin-image-2-height);
+  border-radius: 50%;
+  border: 2px solid var(--admin-color--d0d0d0);
+  border-top-color: var(--admin-color--999);
+  animation: adminImgSpin 0.75s linear infinite;
+}
+
+.admin-admin-image-3.admin-admin-image-3.admin-admin-image-3 {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--admin-color--f0f0f0);
+  flex-direction: column;
+  gap: var(--admin-space-4px);
+}
+
+.admin-image-container {
+  position: relative;
+  width: var(--admin-image-width);
+  height: var(--admin-image-height);
+  border-radius: var(--admin-image-radius);
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--admin-color--f0f0f0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.admin-image-content { width: 100%; height: 100%; object-fit: var(--admin-image-fit); display: var(--admin-image-display); }
+@keyframes adminImgSpin { to { transform: rotate(360deg); } }
+
+/* State-dependent presentation stays in CSS. */
+.admin-admin-image-state-1 { --admin-image-display: block; }
+.admin-admin-image-state-2 { --admin-image-display: none; }

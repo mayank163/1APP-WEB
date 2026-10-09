@@ -1,3 +1,5 @@
+import { cssValue } from '../utils/cssValue';
+import '../styles/AntiDiscrimination.css';
 import React, { useState } from 'react';
 
 const COUNTRIES = [
@@ -57,34 +59,34 @@ export default function AntiDiscrimination() {
     const content = CONTENT[country];
 
     return (
-        <div style={{ minHeight: '100vh', background: '#f5f5f5' }}>
-            <div style={{ maxWidth: 760, margin: '0 auto', padding: '48px 20px' }}>
+        <div className="ui-antidiscrimination-1" >
+            <div className="ui-antidiscrimination-2" >
 
                 {/* Title card */}
-                <div style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 12, padding: '40px 32px', textAlign: 'center', marginBottom: 24 }}>
-                    <h1 style={{ fontWeight: 800, fontSize: '1.8rem', marginBottom: 20 }}>{content.title}</h1>
+                <div className="ui-antidiscrimination-3" >
+                    <h1 className="ui-antidiscrimination-4" >{content.title}</h1>
 
                     {/* Country dropdown */}
-                    <div style={{ position: 'relative', display: 'inline-block' }}>
-                        <button
+                    <div className="ui-antidiscrimination-5" >
+                        <button className="ui-antidiscrimination-6"
                             onClick={() => setOpen(o => !o)}
-                            style={{ display: 'flex', alignItems: 'center', gap: 8, border: '1px solid #ddd', borderRadius: 8, padding: '8px 14px', background: '#fff', cursor: 'pointer', fontSize: '14px', fontWeight: 600 }}
+
                         >
                             <span>{selected.flag}</span>
                             <span>{selected.code}</span>
-                            <span style={{ fontSize: 10, color: '#888' }}>▼</span>
+                            <span className="ui-antidiscrimination-7" >▼</span>
                         </button>
                         {open && (
-                            <div style={{ position: 'absolute', top: '110%', left: 0, background: '#fff', border: '1px solid #e0e0e0', borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.1)', zIndex: 100, minWidth: 160 }}>
+                            <div className="ui-antidiscrimination-8" >
                                 {COUNTRIES.map(c => (
-                                    <div key={c.code}
+                                    <div className="ui-antidiscrimination-9" key={c.code}
                                         onClick={() => { setCountry(c.code); setOpen(false); }}
-                                        style={{ padding: '10px 16px', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', gap: 8, background: c.code === country ? '#f5f5f5' : '#fff' }}
-                                        onMouseEnter={e => e.currentTarget.style.background = '#f5f5f5'}
-                                        onMouseLeave={e => e.currentTarget.style.background = c.code === country ? '#f5f5f5' : '#fff'}
+                                        style={{ "--ui-antidiscrimination-9-background": cssValue(c.code === country ? "var(--ui-color-35)" : "var(--ui-color-2)", "background") }}
+
+
                                     >
                                         <span>{c.flag}</span>
-                                        <span style={{ fontWeight: c.code === country ? 700 : 400 }}>{c.label}</span>
+                                        <span className="ui-antidiscrimination-10" style={{ "--ui-antidiscrimination-10-font-weight": cssValue(c.code === country ? 700 : 400, "fontWeight") }}>{c.label}</span>
                                     </div>
                                 ))}
                             </div>
@@ -93,14 +95,14 @@ export default function AntiDiscrimination() {
                 </div>
 
                 {/* Policy content card */}
-                <div
-                    style={{ background: '#fff', border: '1px solid #e8e8e8', borderRadius: 12, padding: '32px', direction: content.dir, textAlign: content.dir === 'rtl' ? 'right' : 'left' }}
+                <div className="ui-antidiscrimination-11"
+                    style={{ "--ui-antidiscrimination-11-direction": cssValue(content.dir, "direction"), "--ui-antidiscrimination-11-text-align": cssValue(content.dir === 'rtl' ? 'right' : 'left', "textAlign") }}
                 >
-                    <h2 style={{ fontWeight: 700, fontSize: '15px', marginBottom: 16 }}>{content.heading}</h2>
+                    <h2 className="ui-antidiscrimination-12" >{content.heading}</h2>
                     {content.paragraphs.map((para, i) => (
-                        <p
+                        <p className="ui-antidiscrimination-13"
                             key={i}
-                            style={{ fontSize: '13px', color: '#444', lineHeight: 1.9, marginBottom: i < content.paragraphs.length - 1 ? 16 : 0, fontStyle: 'italic' }}
+                            style={{ "--ui-antidiscrimination-13-margin-bottom": cssValue(i < content.paragraphs.length - 1 ? 16 : 0, "marginBottom") }}
                         >
                             {para}
                         </p>

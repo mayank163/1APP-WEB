@@ -1,64 +1,493 @@
-.profile-page { padding-bottom: 32px !important; }
+.profile-page {
+  padding-bottom: var(--ui-space-46) !important;
+}
+
 .profile-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
-    grid-template-areas: 'overview info' 'delete addresses';
-    gap: 24px;
-    align-items: stretch;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  grid-template-areas: 'overview info' 'delete addresses';
+  gap: var(--ui-space-10);
+  align-items: stretch;
 }
-.profile-layout.profile-has-plans { grid-template-areas: 'overview info' 'delete addresses' 'plans plans'; }
-.profile-panel { min-width: 0; margin: 0; }
-.profile-overview { grid-area: overview; }
-.profile-info { grid-area: info; }
-.profile-addresses { grid-area: addresses; }
-.profile-delete { grid-area: delete; }
-.profile-plans { grid-area: plans; }
-.profile-overview h4 { overflow-wrap: anywhere; }
-.profile-contact-row, .profile-phone-row { gap: 12px; min-width: 0; }
-.profile-contact-row > svg, .profile-phone-row svg { flex-shrink: 0; }
-.profile-contact-row span, .profile-phone-row .small { overflow-wrap: anywhere; min-width: 0; }
-.profile-phone-row > div { min-width: 0; }
-.profile-phone-row > .badge { flex-shrink: 0; }
-.profile-info form { display: flex; flex-direction: column; flex: 1; }
-.profile-info .form-control, .profile-info .form-select { min-height: 42px; width: 100%; min-width: 0; }
-.profile-info .form-label { display: block; }
-.profile-info form > button { align-self: flex-start; }
-.profile-delete > .btn { margin-top: auto; width: 100%; }
-.profile-address-header { gap: 16px; }
-.profile-address-header > button { flex-shrink: 0; }
-.profile-address-row { gap: 16px; }
-.profile-address-content { min-width: 0; flex: 1; }
-.profile-address-content > div:last-child { min-width: 0; }
-.profile-address-content p { overflow-wrap: anywhere; }
-.profile-address-content .mb-1.d-flex { flex-wrap: wrap; }
-.profile-address-actions { flex-wrap: wrap; justify-content: flex-end; }
+
+.profile-layout.profile-has-plans {
+  grid-template-areas: 'overview info' 'delete addresses' 'plans plans';
+}
+
+.profile-panel {
+  min-width: 0;
+  margin: var(--ui-space-16);
+}
+
+.profile-overview {
+  grid-area: overview;
+}
+
+.profile-info {
+  grid-area: info;
+}
+
+.profile-addresses {
+  grid-area: addresses;
+}
+
+.profile-delete {
+  grid-area: delete;
+}
+
+.profile-plans {
+  grid-area: plans;
+}
+
+.profile-overview h4 {
+  overflow-wrap: anywhere;
+}
+
+.profile-contact-row,
+.profile-phone-row {
+  gap: var(--ui-space-11);
+  min-width: 0;
+}
+
+.profile-contact-row>svg,
+.profile-phone-row svg {
+  flex-shrink: 0;
+}
+
+.profile-contact-row span,
+.profile-phone-row .small {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
+.profile-phone-row>div {
+  min-width: 0;
+}
+
+.profile-phone-row>.badge {
+  flex-shrink: 0;
+}
+
+.profile-info form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.profile-info .form-control,
+.profile-info .form-select {
+  min-height: 42px;
+  width: 100%;
+  min-width: 0;
+}
+
+.profile-info .form-label {
+  display: block;
+}
+
+.profile-info form>button {
+  align-self: flex-start;
+}
+
+.profile-delete>.btn {
+  margin-top: var(--ui-space-176);
+  width: 100%;
+}
+
+.profile-address-header {
+  gap: var(--ui-space-1);
+}
+
+.profile-address-header>button {
+  flex-shrink: 0;
+}
+
+.profile-address-row {
+  gap: var(--ui-space-1);
+}
+
+.profile-address-content {
+  min-width: 0;
+  flex: 1;
+}
+
+.profile-address-content>div:last-child {
+  min-width: 0;
+}
+
+.profile-address-content p {
+  overflow-wrap: anywhere;
+}
+
+.profile-address-content .mb-1.d-flex {
+  flex-wrap: wrap;
+}
+
+.profile-address-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 @media (max-width: 991.98px) {
-    .profile-layout {
-        grid-template-columns: minmax(0, 1fr);
-        grid-template-areas: 'overview' 'info' 'addresses' 'delete';
-        gap: 20px;
-    }
-    .profile-layout.profile-has-plans { grid-template-areas: 'overview' 'info' 'addresses' 'plans' 'delete'; }
+  .profile-layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'overview' 'info' 'addresses' 'delete';
+    gap: var(--ui-space-7);
+  }
+
+  .profile-layout.profile-has-plans {
+    grid-template-areas: 'overview' 'info' 'addresses' 'plans' 'delete';
+  }
 }
+
 @media (max-width: 575.98px) {
-    .profile-page { padding-inline: 16px; }
-    .profile-panel { padding: 20px !important; }
-    .profile-address-header { align-items: flex-start !important; flex-wrap: wrap; gap: 12px; }
-    .profile-address-row { flex-direction: column; gap: 12px; }
-    .profile-address-actions { margin-left: 0 !important; align-self: flex-end; }
-    .profile-phone-row { flex-wrap: wrap; }
-    .profile-info form > button { width: 100%; justify-content: center; }
+  .profile-page {
+    padding-inline: var(--ui-space-1);
+  }
+
+  .profile-panel {
+    padding: var(--ui-space-7) !important;
+  }
+
+  .profile-address-header {
+    align-items: flex-start !important;
+    flex-wrap: wrap;
+    gap: var(--ui-space-11);
+  }
+
+  .profile-address-row {
+    flex-direction: column;
+    gap: var(--ui-space-11);
+  }
+
+  .profile-address-actions {
+    margin-left: var(--ui-space-16) !important;
+    align-self: flex-end;
+  }
+
+  .profile-phone-row {
+    flex-wrap: wrap;
+  }
+
+  .profile-info form>button {
+    width: 100%;
+    justify-content: center;
+  }
 }
-.profile-address-dialog { max-width: 560px; }
-.profile-address-dialog .modal-content { border: none; border-radius: 16px; box-shadow: 0 20px 60px #0003; }
-.profile-address-dialog .modal-header { padding: 20px 24px; border-bottom: 1px solid #edf0f3; }
-.profile-address-dialog .modal-title { font-size: 20px; font-weight: 700; }
-.profile-address-dialog .modal-body { padding: 20px 24px 24px; }
-.profile-address-dialog .form-control { min-height: 42px; }
-.profile-address-dialog .modal-body form > .row { --bs-gutter-y: 14px; }
+
+.profile-address-dialog {
+  max-width: 560px;
+}
+
+.profile-address-dialog .modal-content {
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px #0003;
+}
+
+.profile-address-dialog .modal-header {
+  padding: var(--ui-space-105);
+  border-bottom: 1px solid #edf0f3;
+}
+
+.profile-address-dialog .modal-title {
+  font-size: var(--ui-font-size-21);
+  font-weight: 700;
+}
+
+.profile-address-dialog .modal-body {
+  padding: var(--ui-space-242);
+}
+
+.profile-address-dialog .form-control {
+  min-height: 42px;
+}
+
+.profile-address-dialog .modal-body form>.row {
+  --bs-gutter-y: 14px;
+}
+
 @media (max-width: 575.98px) {
-    .profile-address-dialog { margin: 12px; }
-    .profile-address-dialog .modal-header, .profile-address-dialog .modal-body { padding: 18px; }
+  .profile-address-dialog {
+    margin: var(--ui-space-11);
+  }
+
+  .profile-address-dialog .modal-header,
+  .profile-address-dialog .modal-body {
+    padding: var(--ui-space-6);
+  }
 }
+
 /* Google Places adds its suggestion list to the document body. */
-body:has(.profile-address-dialog) .pac-container { z-index: 1060 !important; }
+body:has(.profile-address-dialog) .pac-container {
+  z-index: 1060 !important;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-36);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 152px;
+  height: 4px;
+  background: var(--ui-color-27);
+  border-radius: 2px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100px;
+  height: 100px;
+  cursor: pointer;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-4:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 3px solid #000000;
+  overflow: hidden;
+  background: var(--ui-color-48);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-5:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-6:not(#ui-style-priority):not(#ui-style-priority-2) {
+  font-size: var(--ui-font-size-36);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-7:not(#ui-style-priority):not(#ui-style-priority-2) {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--ui-profile-7-background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-8:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-9:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: none;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-10:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-27);
+  color: var(--ui-color-21);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-11:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-38);
+  color: var(--ui-color-2);
+  border-radius: 8px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-12:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-38);
+  color: var(--ui-color-2);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-13:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-68);
+  border: 1px solid #e9ecef;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-14:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-68);
+  border: 1px solid #e9ecef;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-15:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-68);
+  border: 1px solid #e9ecef;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-16:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-68);
+  border: 1px solid #e9ecef;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-17:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-68);
+  border: 1px solid #e9ecef;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-18:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-38);
+  color: var(--ui-color-2);
+  border-radius: 8px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-19:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-38);
+  color: var(--ui-color-2);
+  border-radius: 8px;
+  padding: var(--ui-space-120);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-20:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-profile-20-background);
+  border: var(--ui-profile-20-border);
+  transition: all 0.2s;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-21:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--ui-profile-21-background);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--ui-profile-21-color);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-22:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-48);
+  color: var(--ui-color-69);
+  font-size: var(--ui-font-size-49);
+  font-weight: 600;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-23:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-49);
+  color: var(--ui-color-27);
+  font-size: var(--ui-font-size-49);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-24:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-120);
+  color: var(--ui-color-27);
+  border: 1px solid #b7e4c7;
+  border-radius: 6px;
+  padding: var(--ui-space-123);
+  font-size: var(--ui-font-size-4);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-25:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-124);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-26:not(#ui-style-priority):not(#ui-style-priority-2) {
+  padding: var(--ui-space-124);
+  background: var(--ui-color-70);
+  border: 1px solid #f8d7da;
+  border-radius: 6px;
+  color: var(--ui-color-30);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-27:not(#ui-style-priority):not(#ui-style-priority-2) {
+  width: 12px;
+  height: 12px;
+  border-width: 2px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-28:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border-radius: 8px;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-29:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border-radius: 20px;
+  border: 1.5px solid;
+  border-color: var(--ui-profile-29-border-color);
+  background: var(--ui-profile-29-background);
+  color: var(--ui-profile-29-color);
+  font-weight: var(--ui-profile-29-font-weight);
+  font-size: var(--ui-font-size-6);
+  padding: var(--ui-space-12);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-30:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-68);
+  border: 1px solid #e9ecef;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-31:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-68);
+  border: 1px solid #e9ecef;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-32:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-68);
+  border: 1px solid #e9ecef;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-33:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-68);
+  border: 1px solid #e9ecef;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-34:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-68);
+  border: 1px solid #e9ecef;
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-35:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-38);
+  color: var(--ui-color-2);
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+}
+
+/* Former inline declarations: keep precedence over ordinary page rules. */
+.ui-profile-36:not(#ui-style-priority):not(#ui-style-priority-2) {
+  border-radius: 8px;
+  padding: var(--ui-space-125);
+}
+
+.profile-location-input-1.ui-locationpicker-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+  background: var(--ui-color-68);
+  border: 1px solid #e9ecef;
+  margin-bottom: var(--ui-space-16);
+}

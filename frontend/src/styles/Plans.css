@@ -1,0 +1,78 @@
+.plans-page {
+    --plan-ink: #000000;
+    --plan-accent: #000000;
+    background: var(--ui-color-179);
+    color: var(--plan-ink);
+}
+
+.plan-card {
+    background: var(--ui-color-2);
+    border: 1px solid #d8e0e5;
+    border-radius: 8px;
+    box-shadow: 0 4px 14px #20304012;
+    height: 100%;
+}
+
+.plan-card.featured {
+    border: 2px solid var(--plan-ink);
+    box-shadow: 0 7px 20px #20304020;
+}
+
+.plan-price {
+    font-size: var(--ui-font-size-72);
+    line-height: 1.05;
+    font-weight: 800;
+    color: var(--plan-ink);
+}
+
+.plan-choice:not(#ui-embedded-priority) {
+    border: 1px solid #cbd5dc;
+    background: var(--ui-color-2);
+    color: var(--ui-color-27);
+    font-weight: 700;
+}
+
+.plan-choice[aria-pressed="true"]:not(#ui-embedded-priority) {
+    border-color: #000000;
+    background: var(--ui-color-27);
+    color: var(--ui-color-2);
+}
+
+.plan-checkout-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--ui-space-1);
+    background: var(--ui-color-180);
+    overflow-y: auto;
+}
+
+.plan-checkout-dialog {
+    width: min(100%, 520px);
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    background: var(--ui-color-2);
+    border: 1px solid #d8e0e5;
+    border-radius: 8px;
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+}
+
+@media (max-width: 575px) {
+    .plan-checkout-overlay {
+        align-items: flex-start;
+        padding: var(--ui-space-11);
+    }
+
+    .plan-checkout-dialog {
+        max-height: calc(100vh - 24px);
+    }
+}
+
+@media (max-width: 575px) {
+    .plan-price {
+        font-size: var(--ui-font-size-46);
+    }
+}

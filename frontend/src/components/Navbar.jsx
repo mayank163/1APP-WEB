@@ -1,3 +1,5 @@
+import { cssValue } from '../utils/cssValue';
+import '../styles/Navbar.css';
 import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
@@ -24,29 +26,14 @@ const NavigationBar = () => {
     };
 
     return (
-        <nav className="sticky-top bg-white border-bottom" style={{ zIndex: 1030 }}>
-            <style>{`
-                .navbar-dropdown .dropdown-item:active,
-                .navbar-dropdown .dropdown-item:focus {
-                    background-color: #000 !important;
-                    color: #fff !important;
-                }
-                .navbar-dropdown .dropdown-item:active svg,
-                .navbar-dropdown .dropdown-item:focus svg {
-                    color: #fff !important;
-                }
-                .navbar-dropdown .dropdown-item.text-danger:active,
-                .navbar-dropdown .dropdown-item.text-danger:focus {
-                    background-color: transparent !important;
-                    color: var(--bs-danger) !important;
-                }
-            `}</style>
+        <nav className="sticky-top bg-white border-bottom ui-navbar-1" >
+
             <div className="container">
                 <div className="d-flex align-items-center py-3 gap-4">
 
                     {/* Logo */}
                     <Link to="/" className="d-flex align-items-center gap-2 text-decoration-none flex-shrink-0">
-                    <img src={tryHeroImg('1app_logo.png') } alt="Hero" style={{ height: '40px'}}/>
+                    <img className="ui-navbar-2" src={tryHeroImg('1app_logo.png') } alt="Hero" />
                     </Link>
 
                     {/* Right: Search + Cart + User */}
@@ -55,14 +42,14 @@ const NavigationBar = () => {
                         {/* Search fields — shrink to content */}
                         <div className="d-none d-lg-flex align-items-center gap-2">
                             {/* <SearchAutocomplete wrapperStyle={{ minWidth: '185px', maxWidth: '200px' }} /> */}
-                            <ServiceSearchAutocomplete wrapperStyle={{ minWidth: '200px', maxWidth: '200px' }} /></div>
+                            <ServiceSearchAutocomplete wrapperClassName="navbar-service-search" /></div>
                         {isAuthenticated && <NotificationBell />}
 
                         {/* Cart */}
-                        <Link to="/cart" className="position-relative text-dark" style={{ fontSize: '20px' }}>
+                        <Link to="/cart" className="position-relative text-dark ui-navbar-3" >
                             <FaShoppingCart />
                             {getCartItemsCount() > 0 && (
-                                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style={{ fontSize: '9px' }}>
+                                <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger ui-navbar-4" >
                                     {getCartItemsCount()}
                                 </span>
                             )}
@@ -72,12 +59,12 @@ const NavigationBar = () => {
                         {isAuthenticated ? (
                             <div className="dropdown">
                                 <button className="btn p-0 border-0 bg-transparent" type="button" data-bs-toggle="dropdown">
-                                    <div className="rounded-circle overflow-hidden d-flex align-items-center justify-content-center flex-shrink-0"
-                                        style={{ width: 32, height: 32, border: '2px solid #2d6a4f', background: user?.profileImage?.url ? 'transparent' : '#6c757d' }}>
+                                    <div className="rounded-circle overflow-hidden d-flex align-items-center justify-content-center flex-shrink-0 ui-navbar-5"
+                                        style={{ "--ui-navbar-5-background": cssValue(user?.profileImage?.url ? "var(--ui-color-120)" : "var(--ui-color-84)", "background") }}>
                                         {user?.profileImage?.url ? (
-                                            <img src={resolveImageUrl(user.profileImage.url)} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            <img className="ui-navbar-6" src={resolveImageUrl(user.profileImage.url)} alt={user.name}  />
                                         ) : (
-                                            <span style={{ fontSize: '13px', fontWeight: 700, color: '#fff', lineHeight: 1 }}>
+                                            <span className="ui-navbar-7" >
                                                 {user?.name?.charAt(0)?.toUpperCase()}
                                             </span>
                                         )}
@@ -89,14 +76,14 @@ const NavigationBar = () => {
                                     <li><Link className="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" to="/bookings"><FaListAlt className="text-muted" /><span>My Bookings</span></Link></li>
                                     <li><Link className="dropdown-item d-flex align-items-center gap-2 py-2 text-dark" to="/change-password"><FaLock className="text-muted" /><span>Reset Password</span></Link></li>
                                     <li><hr className="dropdown-divider" /></li>
-                                    <li><button className="dropdown-item d-flex align-items-center gap-2 py-2 text-danger" onClick={handleLogout} style={{ border: 'none', background: 'none' }}>
+                                    <li><button className="dropdown-item d-flex align-items-center gap-2 py-2 text-danger ui-navbar-8" onClick={handleLogout} >
                                         <FaSignOutAlt />
                                         <span>Logout</span>
                                     </button></li>
                                 </ul>
                             </div>
                         ) : (
-                            <div className="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style={{ width: 32, height: 32, cursor: 'pointer' }} onClick={() => navigate('/login')}>
+                            <div className="rounded-circle bg-secondary d-flex align-items-center justify-content-center ui-navbar-9"  onClick={() => navigate('/login')}>
                                 <FaUser size={14} color="#fff" />
                             </div>
                         )}
