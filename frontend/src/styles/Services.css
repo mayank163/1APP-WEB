@@ -424,7 +424,7 @@
   border-radius: 20px;
   padding: var(--ui-space-145);
   cursor: pointer;
-  font-size: var(--ui-font-size-9);
+  font-size: 9px;
 }
 
 /* Former inline declarations: keep precedence over ordinary page rules. */

@@ -1,5 +1,6 @@
 const offerService = require('../services/offerService');
 const Booking = require('../models/Booking');
+const Review = require('../models/Review');
 const Admin = require('../models/Admin');
 const PaymentAttempt = require('../models/PaymentAttempt');
 const Service = require('../models/Service');
@@ -474,10 +475,33 @@ exports.getMyBookings = async (req, res, next) => {
             Booking.countDocuments(query)
         ]);
 
+        const reviews = bookings.length
+            ? await Review.find({
+                user: req.user.id,
+                booking: { $in: bookings.map(booking => booking._id) }
+            }).select('service booking rating review createdAt updatedAt').lean()
+            : [];
+        const reviewsByBookingAndService = new Map(
+            reviews.map(review => [`${review.booking}:${review.service}`, review])
+        );
+        const bookingsWithReviews = bookings.map(booking => {
+            const bookingData = booking.toObject();
+            bookingData.services = bookingData.services.map(service => {
+                const serviceId = service.service?._id || service.service;
+                return {
+                    ...service,
+                    existingReview: serviceId
+                        ? reviewsByBookingAndService.get(`${booking._id}:${serviceId}`) || null
+                        : null
+                };
+            });
+            return bookingData;
+        });
+
         res.status(200).json({
             success: true,
             count: total,
-            data: { bookings },
+            data: { bookings: bookingsWithReviews },
             pagination: getPaginationMeta({ page, limit, total })
         });
     } catch (err) {

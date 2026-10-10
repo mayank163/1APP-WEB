@@ -80,7 +80,7 @@ function VariantPickerModal({ service, selectedVariantId, onSelect, onClose, onA
                         const selected = String(selectedVariantId) === String(variant._id);
                         const price = getStartingPrice(variant.offerPrice || variant.actualPrice || variant.price);
                         return (
-                            <button className="ui-services-15" key={variant._id} type="button" aria-pressed={selected} onClick={() => onSelect(String(variant._id))} style={{ "--ui-services-15-background": cssValue(selected ? "var(--ui-color-276)" : "var(--ui-color-2)", "background"), "--ui-services-15-border": cssValue(`1.5px solid ${selected ? '#315b43' : '#dededb'}`, "border") }}>
+                            <button className="ui-services-15" key={variant._id} type="button" aria-pressed={selected} onClick={() => onSelect(String(variant._id))} style={{ "--ui-services-15-background": cssValue(selected ? "var(--ui-color-276)" : "var(--ui-color-2)", "background"), "--ui-services-15-border": cssValue(`1.5px solid ${selected ? '#000000' : '#dededb'}`, "border") }}>
                                 <span>
                                     <strong className="ui-services-16" >{variant.name}</strong>
                                     {(variant.sizeCapacity || variant.unit) && <small className="ui-services-17" >{[variant.sizeCapacity, variant.unit].filter(Boolean).join(' ')}</small>}

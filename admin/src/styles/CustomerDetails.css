@@ -3,7 +3,7 @@
     --cd-text: var(--admin-color--152037);
     --cd-muted: var(--admin-color--7185a5);
     --cd-border: var(--admin-color--e3eaf4);
-    background: var(--admin-color--f5f7fb);
+    background: #f5f7fb00;
     color: var(--cd-text);
     padding: var(--admin-space-22px) 0 var(--admin-space-10px);
     font-size: var(--admin-font-size-13px);
@@ -305,8 +305,13 @@
     min-height: 210px
 }
 
+.customer-details .cd-card,
+.customer-details .cm-stat,
+.customer-details .cm-panel {
+    background-color: #fff;
+}
+
 .cd-card {
-    background: white;
     border: 1px solid var(--cd-border);
     border-radius: 16px;
     box-shadow: 0 2px 2px var(--admin-color--182d4f03);
