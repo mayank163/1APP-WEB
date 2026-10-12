@@ -541,12 +541,14 @@
 
 .cm-stats {
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
     gap: var(--admin-space-14px);
     margin-bottom: var(--admin-space-15px)
 }
 
 .cm-stat {
+    min-width: 0;
+    container-type: inline-size;
     display: flex;
     align-items: center;
     gap: var(--admin-space-13px);
@@ -567,11 +569,23 @@
     font-size: var(--admin-font-size-24px)
 }
 
+.cm-stat > div {
+    flex: 1;
+    min-width: 0;
+}
+
 .cm-stat strong {
     font-size: var(--admin-font-size-23px);
     font-weight: 700;
     line-height: 1.3;
-    white-space: nowrap
+    white-space: normal;
+    overflow-wrap: anywhere
+}
+
+.cm-stat.cm-stat-spent strong {
+    display: block;
+    font-size: clamp(16px, 11cqi, 20px);
+    font-variant-numeric: tabular-nums;
 }
 
 .cm-stat span:not(.cm-stat-icon) {

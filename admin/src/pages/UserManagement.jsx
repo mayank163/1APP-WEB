@@ -298,16 +298,14 @@ export default function UserManagement() {
             'Total Spent',
             'gold',
           ],
-          [FaStar, user?.rating ? Number(user.rating).toFixed(1) : '—', 'Average Rating', 'gold'],
         ].map(([Icon, value, label, color]) => (
-          <div className="cm-stat" key={label}>
+          <div className={`cm-stat${label === 'Total Spent' ? ' cm-stat-spent' : ''}`} key={label}>
             <span className={`cm-stat-icon ${color}`}>
               <Icon />
             </span>
             <div>
               <strong>{value}</strong>
               <span>{label}</span>
-              {label === 'Average Rating' && <small>({user?.ratingCount || 0} reviews)</small>}
             </div>
           </div>
         ))}
