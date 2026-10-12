@@ -650,6 +650,50 @@ exports.googleLogin = async (req, res, next) => {
 };
 
 /**
+ * @desc    Validate Google details for a new user registration
+ * @route   POST /api/auth/google-signup
+ */
+exports.googleSignup = async (req, res, next) => {
+    try {
+        const { accessToken } = req.body;
+
+        if (!accessToken) {
+            return res.status(400).json({ success: false, message: 'Access token is required' });
+        }
+
+        const googleRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        if (!googleRes.ok) {
+            return res.status(401).json({ success: false, message: 'Invalid Google access token' });
+        }
+
+        const googleData = await googleRes.json();
+        const email = googleData.email?.toLowerCase();
+
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'Could not retrieve email from Google' });
+        }
+
+        const existingUser = await User.findOne({ email, accountStatus: { $ne: 'inactive' } });
+        if (existingUser) {
+            return res.status(409).json({ success: false, message: 'Email is already registered' });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                name: googleData.name || '',
+                email,
+            },
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+/**
  * @desc    Request phone verification OTP
  * @route   POST /api/auth/send-otp
  */

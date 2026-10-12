@@ -11,6 +11,7 @@ router.post('/verify-register', validateVerifyRegister, authController.verifyReg
 router.post('/register', validateRegister, authController.startRegister);
 router.post('/login', validateLogin, authController.login);
 router.post('/google', authController.googleLogin);
+router.post('/google-signup', authController.googleSignup);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
 router.post('/refresh-token', authController.refreshToken);

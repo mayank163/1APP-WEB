@@ -7,7 +7,6 @@ import { FaUser, FaPhone, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaSms ,FaPhoneA
 import { toast } from 'react-toastify';
 import { useGoogleLogin } from '@react-oauth/google';
 import AuthPanel from './AuthPanel';
-import axios from 'axios';
 import CountryCodePicker, { DEFAULT_COUNTRY } from '../components/CountryCodePicker';
 
 const getStrength = (pwd) => {
@@ -45,7 +44,7 @@ const GoogleIcon = () => (
 );
 
 const SignupPage = () => {
-    const { startRegister, verifyRegister, isAuthenticated, loading } = useContext(AuthContext);
+    const { startRegister, verifyRegister, googleSignup, isAuthenticated, loading } = useContext(AuthContext);
     const navigate = useNavigate();
     const location = useLocation();
     const fromPath = location.state?.from?.pathname || '/';
@@ -114,15 +113,13 @@ const SignupPage = () => {
     const googleLogin = useGoogleLogin({
         onSuccess: async (tokenResponse) => {
             try {
-                const { data } = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
-                    headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-                });
+                const { data } = await googleSignup(tokenResponse.access_token);
                 setName(data.name || '');
                 setEmail(data.email || '');
                 setRegistrationStep('details');
                 toast.info('Google details added. Enter phone and password to receive OTP.');
-            } catch {
-                toast.error('Google signup failed');
+            } catch (err) {
+                toast.error(err.message || 'Google signup failed');
             }
         },
         onError: () => toast.error('Google signup failed'),

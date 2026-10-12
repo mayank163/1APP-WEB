@@ -130,6 +130,20 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const googleSignup = async (accessToken) => {
+        setLoading(true);
+        setError(null);
+        try {
+            return await authService.googleSignup(accessToken);
+        } catch (err) {
+            const errMsg = err.response?.data?.message || 'Google signup failed.';
+            setError(errMsg);
+            throw new Error(errMsg);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const logout = async () => {
         await authService.logout();
         setUser(null);
@@ -208,7 +222,8 @@ export const AuthProvider = ({ children }) => {
             isAuthenticated: !!user,
             isAdmin: user?.role === 'admin',
             isTechnician: user?.role === 'technician',
-            googleLogin
+            googleLogin,
+            googleSignup
         }}>
             {children}
         </AuthContext.Provider>

@@ -10,8 +10,8 @@ import { AuthContext } from '../context/AuthContext';
 import planService from '../services/planService';
 
 const currencyLabel = (currency) => {
-    try { return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency.toUpperCase(), currencyDisplay: 'narrowSymbol' }); }
-    catch { return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', currencyDisplay: 'narrowSymbol' }); }
+    try { return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency.toUpperCase(), currencyDisplay: 'narrowSymbol', minimumFractionDigits: 0, maximumFractionDigits: 2 }); }
+    catch { return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', currencyDisplay: 'narrowSymbol', minimumFractionDigits: 0, maximumFractionDigits: 2 }); }
 };
 
 const readPendingPurchase = () => {
@@ -207,40 +207,47 @@ const Plans = () => {
     }, [navigate]);
 
     return (
-        <section id="plans" className="plans-page py-5">
+        <section id="plans" className="plans-page">
 
-            <div className="container">
-                <div className="text-center mb-5">
-                    <h2 className="h1 fw-bold mb-2">Choose Your Plan</h2>
-                    <p className="text-secondary mb-0">One secure payment. Your plan and coverage details stay in your profile.</p>
-                </div>
+            <div className="container plans-container">
+                <header className="plans-heading">
+                    <p className="plans-eyebrow">Membership Plans</p>
+                    <h2>Choose Your Plan</h2>
+                    <p className="plans-subtitle">Flexible plans for reliable device support and protection, choose the<br className="plans-desktop-break" /> coverage that fits your needs.</p>
+                </header>
 
-                <div className="d-flex flex-column align-items-center gap-3 mb-5">
-                    <div className="btn-group" role="group" aria-label="Plan category">
-                        {['Residential', 'Business'].map(category => (
-                            <button
-                                key={category}
-                                type="button"
-                                className="btn plan-choice px-4 py-2"
-                                aria-pressed={selectedCategory === category}
-                                onClick={() => setSelectedCategory(category)}
-                            >
-                                {category}
-                            </button>
-                        ))}
+                <div className="plans-filters">
+                    <div className="plans-filter">
+                        <div className="plans-filter-label" id="plan-category-label">Plan Type</div>
+                        <div className="plans-toggle" role="group" aria-labelledby="plan-category-label">
+                            {['Residential', 'Business'].map(category => (
+                                <button
+                                    key={category}
+                                    type="button"
+                                    className="plan-choice"
+                                    aria-pressed={selectedCategory === category}
+                                    onClick={() => setSelectedCategory(category)}
+                                >
+                                    {category}
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                    <div className="btn-group" role="group" aria-label="Plan duration">
-                        {[1, 2, 3].map(years => (
-                            <button
-                                key={years}
-                                type="button"
-                                className="btn plan-choice px-3 px-sm-4 py-2"
-                                aria-pressed={selectedDurationYears === years}
-                                onClick={() => setSelectedDurationYears(years)}
-                            >
-                                {years} {years === 1 ? 'Year' : 'Years'}
-                            </button>
-                        ))}
+                    <div className="plans-filter">
+                        <div className="plans-filter-label" id="plan-duration-label">Coverage Period</div>
+                        <div className="plans-toggle" role="group" aria-labelledby="plan-duration-label">
+                            {[1, 2, 3].map(years => (
+                                <button
+                                    key={years}
+                                    type="button"
+                                    className="plan-choice"
+                                    aria-pressed={selectedDurationYears === years}
+                                    onClick={() => setSelectedDurationYears(years)}
+                                >
+                                    {String(years).padStart(2, '0')} {years === 1 ? 'Year' : 'Years'}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
@@ -258,35 +265,38 @@ const Plans = () => {
                 {loading ? <div className="text-center py-5">Loading available plans...</div> : (
                     <section aria-live="polite">
 
-                        <div className="row g-4 justify-content-center">
+                        <div className="plans-grid">
                             {plans.map(plan => (
-                                <div key={plan._id} className="col-12 col-md-6 col-xl-4">
-                                    <article className={`plan-card p-4 p-lg-5 d-flex flex-column ${plan.isFeatured ? 'featured' : ''}`}>
-                                        {plan.isFeatured && <span className="badge text-bg-dark align-self-start mb-2">Best deal</span>}
-                                        <h3 className="h4 fw-bold mb-2">{plan.name}</h3>
-                                        {plan.tagline && <p className="small mb-2">{plan.tagline}</p>}
-                                        {plan.description && <p className="mb-4 text-secondary">{plan.description}</p>}
-                                        <div className="d-flex align-items-end gap-2 mb-4">
-                                            <div className="plan-price">{currencyLabel(plan.currency || 'usd').format(plan.price)}</div>
-                                            <span className="small text-secondary pb-1">for {plan.durationMonths} months</span>
-                                        </div>
-                                        <div className="small fw-bold mb-2">This includes:</div>
-                                        <ul className="list-unstyled d-flex flex-column gap-2 mb-4">
-                                            {(plan.features || []).map((feature, index) => (
-                                                <li key={`${plan._id}-${index}`} className="d-flex align-items-start gap-2"><FaCheckCircle className="text-success mt-1 flex-shrink-0" size={14} /><span>{feature}</span></li>
-                                            ))}
-                                            {!plan.features?.length && <li className="text-secondary">Plan support for {plan.durationMonths} months.</li>}
-                                        </ul>
-                                        <button
-                                            type="button"
-                                            className="btn btn-dark fw-bold py-3 mt-auto"
-                                            disabled={Boolean(startingId) || loadingActivePlan || String(activePlanPurchase?.plan) === String(plan._id)}
-                                            onClick={() => startCheckout(plan)}
-                                        >
-                                            {String(activePlanPurchase?.plan) === String(plan._id) ? 'Current Plan' : startingId === plan._id ? 'Preparing checkout...' : 'Subscribe Now'}
-                                        </button>
-                                    </article>
-                                </div>
+                                <article key={plan._id} className={`plan-card ${plan.isFeatured ? 'featured' : ''}`}>
+                                    <div className="plan-card-topline">
+                                        <span className="plan-tier">{plan.name.replace(/\s*1APP\s*Plan.*$/i, '').replace(/\s+Plan$/i, '')}</span>
+                                        {plan.isFeatured && <span className="plan-popular">Most Popular</span>}
+                                    </div>
+                                    <h3>{plan.name}</h3>
+                                    <div className="plan-summary">
+                                        {plan.tagline && <p className="plan-tagline">{plan.tagline}</p>}
+                                        {plan.description && <p className="plan-description">{plan.description}</p>}
+                                    </div>
+                                    <div className="plan-price-row">
+                                        <span className="plan-price">{currencyLabel(plan.currency || 'usd').format(plan.price)}</span>
+                                        <span className="plan-period">/ {plan.durationMonths} months</span>
+                                    </div>
+                                    <div className="plan-included">Included</div>
+                                    <ul className="plan-features">
+                                        {(plan.features || []).map((feature, index) => (
+                                            <li key={`${plan._id}-${index}`}><FaCheckCircle aria-hidden="true" /><span>{feature}</span></li>
+                                        ))}
+                                        {!plan.features?.length && <li>Plan support for {plan.durationMonths} months.</li>}
+                                    </ul>
+                                    <button
+                                        type="button"
+                                        className="plan-subscribe"
+                                        disabled={Boolean(startingId) || loadingActivePlan || String(activePlanPurchase?.plan) === String(plan._id)}
+                                        onClick={() => startCheckout(plan)}
+                                    >
+                                        {String(activePlanPurchase?.plan) === String(plan._id) ? 'Current Plan' : startingId === plan._id ? 'Preparing checkout...' : <>Subscribe Now <span aria-hidden="true">→</span></>}
+                                    </button>
+                                </article>
                             ))}
                             {!plans.length && <div className="col-12 text-center text-secondary py-3">No {selectedCategory.toLowerCase()} plans are available for {selectedDurationYears} {selectedDurationYears === 1 ? 'year' : 'years'} yet.</div>}
                         </div>

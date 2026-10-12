@@ -77,6 +77,11 @@ const authService = {
         return response.data;
     },
 
+    googleSignup: async (accessToken) => {
+        const response = await API.post('/auth/google-signup', { accessToken });
+        return response.data;
+    },
+
     logout: async () => {
         const fcmToken = localStorage.getItem('1App_fcm_token');
         const refreshToken = localStorage.getItem('1App_refreshToken');
