@@ -1,6 +1,6 @@
 import './styles/App.css';
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { AdminAuthProvider, useAdminAuth } from './context/AdminAuthContext';
 
@@ -52,7 +52,7 @@ const PermRoute = ({ resource, access = 'read', children }) => {
 function AppRoutes() {
   const { can } = useAdminAuth();
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route
@@ -84,7 +84,7 @@ function AppRoutes() {
         </Route>
       </Routes>
       <ToastContainer position="bottom-right" autoClose={3000} />
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
