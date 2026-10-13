@@ -1,3 +1,4 @@
+import SummaryFilterCard from '../components/SummaryFilterCard';
 import '../styles/OfferManagement.css';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { FiPlus, FiSearch, FiFilter, FiChevronDown, FiChevronLeft, FiChevronRight, FiMoreVertical, FiTool, FiCalendar, FiClock, FiPower, FiCopy, FiEdit2, FiX } from 'react-icons/fi';
@@ -10,6 +11,7 @@ const displayOffer = offer => ({ ...offer, id: offer._id, raw: offer, status: ti
 
 function OfferManagement() {
     const [offers, setOffers] = useState([]);
+    const [statusFilter, setStatusFilter] = useState('');
     const [query, setQuery] = useState('');
     const [sort, setSort] = useState('default');
     const [page, setPage] = useState(1);
@@ -67,7 +69,7 @@ function OfferManagement() {
         document.addEventListener('keydown', escape);
         return () => { document.removeEventListener('click', close); document.removeEventListener('keydown', escape); };
     }, [menu]);
-    const filtered = offers.filter(offer => `${offer.code} ${offer.title} ${offer.description} ${offer.scope} ${offer.status}`.toLowerCase().includes(query.toLowerCase()));
+    const filtered = offers.filter(offer => (statusFilter === 'used' ? offer.used > 0 : !statusFilter || offer.status === statusFilter) && `${offer.code} ${offer.title} ${offer.description} ${offer.scope} ${offer.status}`.toLowerCase().includes(query.toLowerCase()));
     if (sort === 'name') filtered.sort((a, b) => a.title.localeCompare(b.title));
     if (sort === 'uses') filtered.sort((a, b) => b.used - a.used);
     if (sort === 'status') filtered.sort((a, b) => a.status.localeCompare(b.status));
@@ -75,11 +77,11 @@ function OfferManagement() {
     const currentPage = Math.min(page, pages);
     const visible = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
     const stats = [
-        [offers.length, 'Total Coupons', 'All coupon records'],
-        [offers.filter(o => o.status === 'Active').length, 'Active Coupons', 'Currently available to customers'],
-        [offers.filter(o => o.status === 'Scheduled').length, 'Scheduled', 'Waiting for start date/time'],
-        [offers.filter(o => o.status === 'Expired').length, 'Expired', 'Validity period has ended'],
-        [offers.reduce((total, offer) => total + offer.used, 0), 'Total Uses', 'Successful coupon redemptions']
+        [offers.length, 'Total Coupons', 'All coupon records', ''],
+        [offers.filter(o => o.status === 'Active').length, 'Active Coupons', 'Currently available to customers', 'Active'],
+        [offers.filter(o => o.status === 'Scheduled').length, 'Scheduled', 'Waiting for start date/time', 'Scheduled'],
+        [offers.filter(o => o.status === 'Expired').length, 'Expired', 'Validity period has ended', 'Expired'],
+        [offers.reduce((total, offer) => total + offer.used, 0), 'Total Uses', 'Successful coupon redemptions', 'used']
     ];
     return <section className="offers-page">
         <header className="offers-header">
@@ -87,11 +89,11 @@ function OfferManagement() {
                 <h1>Offers &amp; Coupons</h1><p>Create and manage promotional offers, discount coupons, and campaigns across 1APP services.</p></div>
             <button className="offers-primary" onClick={() => { setEditing(null); setForm(true); }}><FiPlus /> Create Coupon</button>
         </header>
-        <div className="offers-stats">{stats.map(([value, label, note]) => <div className="offers-stat" key={label}><strong>{value}</strong><h2>{label}</h2><p>{note}</p></div>)}</div>
+        <div className="offers-stats">{stats.map(([value, label, note, status]) => <SummaryFilterCard className="offers-stat" key={label} active={statusFilter === status} onClick={() => { setStatusFilter(status); setPage(1); }}><strong>{value}</strong><h2>{label}</h2><p>{note}</p></SummaryFilterCard>)}</div>
         <div className="offers-filters">
             <div className="offers-search"><input aria-label="Search coupons" placeholder="Search by booking Id, customer or service" value={query} onChange={event => { setQuery(event.target.value); setPage(1); }} /><button aria-label="Search"><FiSearch /></button></div>
             <label className="offers-sort"><FiFilter /><select aria-label="Sort coupons" value={sort} onChange={event => { setSort(event.target.value); setPage(1); }}><option value="default">Sort</option><option value="name">Name</option><option value="uses">Most used</option><option value="status">Status</option></select><FiChevronDown /></label>
-            <button className="offers-reset" onClick={() => { setQuery(''); setSort('default'); setPage(1); }}><FiX /> Reset</button>
+            <button className="offers-reset" onClick={() => { setQuery(''); setStatusFilter(''); setSort('default'); setPage(1); }}><FiX /> Reset</button>
         </div>
         {loadError && <div role="alert" className="coupon-form-error">{loadError} <button onClick={refresh}>Retry</button></div>}
         {loading && !offers.length && <div role="status" className="offers-empty">Loading coupons…</div>}

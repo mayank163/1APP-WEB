@@ -131,8 +131,8 @@ const MainLayout = () => {
                 
             >
                 {/* Topbar Header */}
-                <header ref={headerRef} className="bg-white border-bottom py-3 px-4 d-flex justify-content-between align-items-center admin-main-layout-13" >
-                    <div className="d-flex align-items-center gap-3">
+                <header ref={headerRef} className="admin-main-layout-13" >
+                    <div className="admin-header-navigation">
                         <button
                             onClick={() => setCollapsed(c => !c)}
                             className="admin-main-layout-14" 
@@ -144,13 +144,17 @@ const MainLayout = () => {
                         <span className="admin-main-layout-16" >/</span>
                         <h5 className="fw-bold text-dark mb-0 admin-main-layout-17" >Admin Dashboard</h5>
                     </div>
-                    <div className="d-flex align-items-center gap-2">
+                    <div className="admin-header-account">
                         <NotificationBell />
-                        <span className="dot bg-success rounded-circle admin-main-layout-18" ></span>
-                        <span className="text-muted small fw-medium">{admin?.name || 'Admin'}</span>
-                        {admin?.isSuperAdmin && (
-                            <span className="admin-main-layout-19" >Super Admin</span>
-                        )}
+                        <div className="admin-header-profile">
+                            <span className="dot bg-success rounded-circle admin-main-layout-18" ></span>
+                            <div className="admin-header-profile-copy">
+                                <span className="admin-header-name">{admin?.name || 'Admin'}</span>
+                                {admin?.isSuperAdmin && (
+                                    <span className="admin-main-layout-19" >Super Admin</span>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </header>
 

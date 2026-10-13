@@ -92,11 +92,19 @@
     margin: var(--admin-space-24px) 0
 }
 
-.support-stats>div {
+.support-center .support-stats>.summary-filter-card {
     border: 1px solid var(--gold);
     border-left: 8px solid var(--gold);
+    background: white;
+    color: var(--admin-color--202124);
     padding: var(--admin-space-22px);
     border-radius: 9px
+}
+
+.support-center .support-stats>.summary-filter-card[aria-pressed="true"] {
+    background: #fdfaf5;
+    outline: 2px solid var(--gold);
+    outline-offset: -2px;
 }
 
 .support-stats strong {

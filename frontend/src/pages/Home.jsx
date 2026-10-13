@@ -23,7 +23,7 @@ import HeroBookingBar from '../components/HeroBookingBar';
 import Plans from './Plans';
 import barkLogo from '../assets/brands/bark.png';
 import thumbtackLogo from '../assets/brands/thumbtack.svg';
-import googleAdsLogo from '../assets/brands/google-ads.svg';
+import nordvpnLogo from '../assets/brands/nordvpn.png';
 import akkoLogo from '../assets/brands/akko.svg';
 import carboniteLogo from '../assets/brands/carbonite.svg';
 import angiLogo from '../assets/brands/angi.png';
@@ -32,7 +32,7 @@ const homeBrands = [
     { name: 'Angi', logo: angiLogo, wordmark: true },
     { name: 'Bark', logo: barkLogo, wordmark: true },
     { name: 'Thumbtack', logo: thumbtackLogo },
-    { name: 'Google Ads', logo: googleAdsLogo },
+    { name: 'NordVPN', logo: nordvpnLogo, wordmark: true },
     { name: 'AKKO', logo: akkoLogo, wordmark: true },
     { name: 'Carbonite', logo: carboniteLogo, wordmark: true },
 ];

@@ -117,7 +117,7 @@ const BlogManagement = () => {
             </div>
 
             <div className="blog-stat-grid">
-                {[['Total Blogs', blogs.length, ''], ['Published Blogs', blogs.filter(b => statusOf(b) === 'Published').length, 'Published'], ['Scheduled', blogs.filter(b => statusOf(b) === 'Scheduled').length, 'Scheduled'], ['Drafted', blogs.filter(b => statusOf(b) === 'Draft').length, 'Draft'], ['Archived', blogs.filter(b => statusOf(b) === 'Archived').length, 'Archived']].map(([label, count, status]) => <button key={label} className={`blog-stat ${statusFilter === status ? 'active' : ''}`} onClick={() => setStatusFilter(status)}><strong>{count}</strong><span>{label}</span></button>)}
+                {[['Total Blogs', blogs.length, ''], ['Published Blogs', blogs.filter(b => statusOf(b) === 'Published').length, 'Published'], ['Scheduled', blogs.filter(b => statusOf(b) === 'Scheduled').length, 'Scheduled'], ['Drafted', blogs.filter(b => statusOf(b) === 'Draft').length, 'Draft'], ['Archived', blogs.filter(b => statusOf(b) === 'Archived').length, 'Archived']].map(([label, count, status]) => <button type="button" aria-pressed={statusFilter === status} key={label} className={`blog-stat ${statusFilter === status ? 'active' : ''}`} onClick={() => setStatusFilter(status)}><strong>{count}</strong><span>{label}</span></button>)}
             </div>
             <div className="blog-filters">
                 <div className="blog-search"><input aria-label="Search blogs" placeholder="Search by blog title, description or subcategory" value={search} onChange={e => setSearch(e.target.value)} /><span><FiSearch /></span></div>

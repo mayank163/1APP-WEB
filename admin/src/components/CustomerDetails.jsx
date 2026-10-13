@@ -27,8 +27,7 @@ function Avatar({ user }) {
     return <span className="cd-avatar">{photo && failedPhoto !== photo ? <img src={photo} alt={user.name} onError={() => setFailedPhoto(photo)} /> : (user.name || 'Customer').split(' ').map(n => n[0]).slice(0, 2).join('')}</span>;
 }
 
-export default function CustomerDetails({ user, tab, setTab, overview, onEdit, onStatus, saving, onBack, onExport, onRefresh }) {
-    const [bookingFilter, setBookingFilter] = useState('All');
+export default function CustomerDetails({ user, tab, setTab, overview, bookingFilter, setBookingFilter, onEdit, onStatus, saving, onBack, onExport, onRefresh }) {
     const [from, setFrom] = useState('');
     const [to, setTo] = useState('');
     const [dialog, setDialog] = useState(null);

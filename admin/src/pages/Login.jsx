@@ -3,46 +3,15 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import adminApi from '../services/adminApi';
 import { useAdminAuth } from '../context/AdminAuthContext';
-import { FaLock, FaEnvelope, FaEye, FaEyeSlash, FaShieldAlt } from 'react-icons/fa';
+import { FaLock, FaUser, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import loginArtwork from '../assets/admin-login-artwork.png';
 
 const AdminPanel = () => (
-    <div
-        className="admin-login-1"
-    >
-        {/* Decorative circles */}
-        <div className="admin-login-2"  />
-        <div className="admin-login-3"  />
-        <div className="admin-login-4"  />
-
-        {/* Icon */}
-        <div className="admin-login-5" >
-            <FaShieldAlt size={38} color="#A5732F" />
-        </div>
-
-        {/* Brand */}
-        <p className="admin-login-6" >
-            1APP
-        </p>
-        <p className="admin-login-7" >
-            Admin Portal
-        </p>
-
-        {/* Divider */}
-        <div className="admin-login-8"  />
-
-        {/* Features list */}
-        {[
-            'Manage users & bookings',
-            'Control categories & services',
-            'Publish and edit blogs',
-            'Track platform analytics',
-        ].map((text, i) => (
-            <div key={i} className="admin-login-9" >
-                <div className="admin-login-10"  />
-                <span className="admin-login-11" >{text}</span>
-            </div>
-        ))}
+    <div className="admin-login-artwork" aria-hidden="true">
+        <svg viewBox="224 0 3516 3936" preserveAspectRatio="xMidYMid slice" focusable="false">
+            <image href={loginArtwork} width="3740" height="3936" />
+        </svg>
     </div>
 );
 
@@ -83,7 +52,7 @@ const Login = () => {
                     {/* Header */}
                     <div className="admin-login-15" >
                         <p className="admin-login-16" >
-                            <span className="admin-login-17" >1APP</span> ADMIN
+                            <span className="admin-login-17" >1APP</span> Admin Portal
                         </p>
                         <h2 className="admin-login-18" >
                             Welcome Back
@@ -97,12 +66,14 @@ const Login = () => {
                     <form onSubmit={handleSubmit}>
                         {/* Email field */}
                         <div className="admin-login-21" >
-                            <label className="admin-login-22" >
+                            <label className="admin-login-22" htmlFor="admin-email">
                                 Admin Email
                             </label>
                             <div className="admin-login-23" >
-                                <FaEnvelope color="#888" size={14} />
+                                <FaUser color="#111" size={14} />
                                 <input
+                                    id="admin-email"
+                                    autoComplete="username"
                                     type="email"
                                     required
                                     placeholder="admin@1app.com"
@@ -115,12 +86,14 @@ const Login = () => {
 
                         {/* Password field */}
                         <div className="admin-login-25" >
-                            <label className="admin-login-26" >
+                            <label className="admin-login-26" htmlFor="admin-password">
                                 Password
                             </label>
                             <div className="admin-login-27" >
-                                <FaLock color="#888" size={14} />
+                                <FaLock color="#111" size={14} />
                                 <input
+                                    id="admin-password"
+                                    autoComplete="current-password"
                                     type={showPass ? 'text' : 'password'}
                                     required
                                     placeholder="••••••••"
@@ -131,6 +104,8 @@ const Login = () => {
                                 <button
                                     type="button"
                                     onClick={() => setShowPass(!showPass)}
+                                    aria-label={showPass ? 'Hide password' : 'Show password'}
+                                    aria-pressed={showPass}
                                     className="admin-login-29"
                                 >
                                     {showPass ? <FaEye size={15} /> : <FaEyeSlash size={15} />}
@@ -143,14 +118,11 @@ const Login = () => {
                             disabled={loading}
                             className={["admin-login-30 ", loading ? "admin-login-state-1" : "admin-login-state-2"].join('')}
                         >
-                            {loading ? 'Signing in...' : 'Enter Dashboard'} <span className="admin-login-31" >→</span>
+                            {loading ? 'Signing in...' : 'Enter Dashboard Panel'} <span className="admin-login-31" >→</span>
                         </button>
                     </form>
 
-                    {/* Footer note */}
-                    <p className="admin-login-32" >
-                        Restricted access — authorised personnel only
-                    </p>
+
                 </div>
             </div>
         </div>

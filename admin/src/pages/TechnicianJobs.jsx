@@ -1,3 +1,4 @@
+import SummaryFilterCard from '../components/SummaryFilterCard';
 import TechnicianRatingForm, { emptyFeedback, RATING_LABELS, RATING_CRITERIA } from '../components/TechnicianRatingForm';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -694,8 +695,9 @@ const TechnicianJobs = () => {
 
   // ── Tab-to-status mapping ─────────────────────────────────────────────────────
   const TAB_STATUS_MAP = {
-    all:        ['draft', 'assigned','open', 'ontheway', 'inprogress', 'checkout', 'cancelled','completed'],
+    all:        ['draft', 'assigned','open', 'ontheway', 'visited', 'inprogress', 'checkout', 'cancelled','completed'],
     alljobs:    null,
+    active:     ['assigned', 'ontheway', 'visited', 'inprogress'],
     drafts:     ['draft'],
     pending:    ['open'],
     assigned:   ['assigned'],
@@ -863,8 +865,11 @@ const TechnicianJobs = () => {
   const assignmentOptions = [{ value: 'all', label: 'All' }, { value: 'assigned', label: 'Assigned' }, { value: 'unassigned', label: 'Unassigned' }];
   const dateOptions = [{ value: 'all', label: 'All Dates' }, { value: 'today', label: 'Today' }, { value: 'yesterday', label: 'Yesterday' }, { value: 'last7', label: 'Last 7 days' }, { value: 'custom', label: 'Custom Date' }];
 
+  const selectJobSection = key => { setActiveTab(key); setFilterStatus('all'); setFilterAssignment('all'); setJobPage(1); };
+
   const TABS = [
-    { key: 'all',        label: 'All' },
+    { key: 'active', label: 'Active Jobs' },
+    { key: 'all',        label: 'All Jobs' },
     { key: 'drafts',     label: 'Drafts' },
     { key: 'pending',    label: 'Unassigned' },
     { key: 'assigned',   label: 'Assigned' },
@@ -882,7 +887,7 @@ const TechnicianJobs = () => {
       {/* ── Page Header ─────────────────────────────────────────────────────── */}
       <div className="tj-page-header">
         <div>
-          <div className="tj-breadcrumb">Field Operations &rsaquo; Jobs</div>
+          <div className="tj-breadcrumb">Field Operations &rsaquo; <span>Jobs</span></div>
           <h2 className="tj-page-title">Jobs Management Dashboard</h2>
           <p className="tj-page-sub">
             {stats.total} jobs on record &bull; {stats.active} active right now
@@ -899,40 +904,40 @@ const TechnicianJobs = () => {
 
       {/* ── Stats Cards ─────────────────────────────────────────────────────── */}
       <div className="tj-stats-row">
-        <div className="tj-stat-card tj-stat-active">
+        <SummaryFilterCard className="tj-stat-card tj-stat-active" active={activeTab === 'active' && filterStatus === 'all' && filterAssignment === 'all'} onClick={() => selectJobSection('active')}>
           <div className="tj-stat-top-bar" />
           <div className="tj-stat-inner">
             <div className="tj-stat-label-top">ACTIVE JOBS</div>
             <div className="tj-stat-big">{stats.active} <span className="tj-stat-delta">+12% today</span></div>
           </div>
-        </div>
-        <div className="tj-stat-card tj-stat-unassigned">
+        </SummaryFilterCard>
+        <SummaryFilterCard className="tj-stat-card tj-stat-unassigned" active={activeTab === 'pending' && filterStatus === 'all' && filterAssignment === 'all'} onClick={() => selectJobSection('pending')}>
           <div className="tj-stat-top-bar" />
           <div className="tj-stat-inner">
             <div className="tj-stat-label-top">UNASSIGNED <span className="tj-stat-dot-live" /></div>
             <div className="tj-stat-big">{stats.unassigned} <span className="tj-stat-needs">Needs action</span></div>
           </div>
-        </div>
-        <div className="tj-stat-card tj-stat-checkout">
+        </SummaryFilterCard>
+        <SummaryFilterCard className="tj-stat-card tj-stat-checkout" active={activeTab === 'checkout' && filterStatus === 'all' && filterAssignment === 'all'} onClick={() => selectJobSection('checkout')}>
           <div className="tj-stat-top-bar" />
           <div className="tj-stat-inner">
             <div className="tj-stat-label-top">CHECKOUT <span className="tj-stat-dot-live" /></div>
             <div className="tj-stat-big">{stats.checkout} <span className="tj-stat-needs">Awaiting payment</span></div>
           </div>
-        </div>
-        <div className="tj-stat-card tj-stat-completion">
+        </SummaryFilterCard>
+        <SummaryFilterCard className="tj-stat-card tj-stat-completion" active={activeTab === 'completed' && filterStatus === 'all' && filterAssignment === 'all'} onClick={() => selectJobSection('completed')}>
           <div className="tj-stat-top-bar" />
           <div className="tj-stat-inner">
             <div className="tj-stat-label-top">COMPLETED JOBS</div>
             <div className="tj-stat-big">{jobs.filter(j => j.status === 'completed').length} <span className="tj-stat-awaiting">Paid and closed</span></div>
           </div>
-        </div>
+        </SummaryFilterCard>
       </div>
 
       {/* ── Tab Bar ─────────────────────────────────────────────────────────── */}
       <div className="tj-tab-bar">
         {TABS.map(tab => (
-          <button key={tab.key} className={`tj-tab-btn${activeTab === tab.key ? ' active' : ''}`} onClick={() => setActiveTab(tab.key)}>
+          <button key={tab.key} className={`tj-tab-btn${activeTab === tab.key ? ' active' : ''}`} onClick={() => selectJobSection(tab.key)}>
             {tab.label}
             {tabCounts[tab.key] > 0 && activeTab !== tab.key && <span className="tj-tab-count">{tabCounts[tab.key]}</span>}
           </button>

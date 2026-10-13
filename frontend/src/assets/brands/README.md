@@ -6,3 +6,4 @@
 - google-ads.svg: https://www.gstatic.com/images/branding/productlogos/ads/v5/192px.svg
 - akko.svg: https://cdn.prod.website-files.com/653ebce5eaad971b32d955f3/653ebce5eaad971b32d95895_Group%20(12).svg
 - carbonite.svg: https://www.carbonite.com/assets/carbonite/icons/logo.svg
+- nordvpn.png: cropped transparent version of NordVPN-Logo.png

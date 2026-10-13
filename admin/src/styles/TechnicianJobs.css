@@ -3669,3 +3669,44 @@
 .admin-technician-jobs-state-32 { --admin-technician-jobs-74-color: var(--admin-color-blue); }
 .admin-technician-jobs-state-33 { --admin-technician-jobs-74-color: var(--admin-color--0891b2); }
 .admin-technician-jobs-state-34 { --admin-technician-jobs-74-color: var(--admin-color-brand); }
+
+/* Jobs overview layout; existing typography sizes are preserved. */
+.tj-page > .tj-page-header { align-items: center; }
+.tj-page-header .tj-breadcrumb { margin-bottom: 4px; }
+.tj-breadcrumb > span { color: #a5732f; }
+.tj-page-header .tj-page-title { color: #242424; }
+.tj-page-header .tj-page-sub { color: #778399; margin-top: 4px; }
+
+.tj-page > .tj-stats-row { gap: 0; }
+.tj-stats-row > .tj-stat-card {
+  position: relative;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  border: none;
+  border-left: 6px solid #b67b21;
+  border-radius: 5px 0 0 5px;
+  box-shadow: none;
+  background: #fff;
+}
+.tj-stats-row > .tj-stat-card:hover { box-shadow: none; }
+.tj-stats-row .tj-stat-top-bar { display: none; }
+.tj-stats-row .tj-stat-inner { display: flex; flex-direction: column; justify-content: space-between; gap: 20px; padding: 16px 12px 22px; }
+.tj-stats-row .tj-stat-label-top { margin: 0; color: #4b4c59; letter-spacing: 0.02em; }
+.tj-stats-row .tj-stat-big { color: #1d1f20; gap: 6px; }
+.tj-stats-row .tj-stat-active .tj-stat-big,
+.tj-stats-row .tj-stat-delta,
+.tj-stats-row .tj-stat-needs { color: #080808; }
+.tj-stats-row .tj-stat-dot-live { width: 5px; height: 5px; background: #080808; }
+.tj-stats-row .tj-stat-checkout .tj-stat-dot-live { background: #a00015; }
+.tj-stats-row .tj-stat-awaiting { color: #b7771b; }
+
+.tj-page > .tj-tab-bar { border-radius: 0; border-bottom: 1px solid #e4d9c6; background: #fff; }
+.tj-tab-bar .tj-tab-btn { padding: 18px 14px 10px; margin-bottom: -1px; border-bottom-width: 2px; color: #242424; }
+.tj-tab-bar .tj-tab-btn:first-child { padding-left: 2px; }
+.tj-tab-bar .tj-tab-btn.active { color: #85551c; border-bottom-color: #b67b21; }
+.tj-tab-bar .tj-tab-count { min-width: 0; padding: 0 4px; border-radius: 3px; background: #eddbbf; color: #a5732f; font-weight: 500; }
+
+@media (max-width: 900px) {
+  .tj-page > .tj-stats-row { gap: 16px 0; }
+}

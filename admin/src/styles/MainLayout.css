@@ -88,20 +88,55 @@
 
 .admin-main-layout-13.admin-main-layout-13.admin-main-layout-13 {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: 64px;
+  margin: 12px 24px 0;
+  padding: 12px;
+  background: #fff;
+  border-radius: 999px;
+}
+
+.admin-header-navigation {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 40px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: #a5732f;
+  min-width: 0;
+}
+
+.admin-header-account { display: flex; align-items: center; gap: 16px; flex-shrink: 0; padding-right: 22px; }
+.admin-header-profile { display: flex; align-items: center; gap: 12px; padding-left: 16px; border-left: 1px solid #e6e9ee; }
+.admin-header-profile-copy { display: flex; flex-direction: column; gap: 2px; }
+.admin-header-name { color: #202938; font-size: 14px; font-weight: 600; }
+.admin-header-account .admin-notification-bell-1.admin-notification-bell-1 {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #e6e9ee !important;
+  border-radius: 50%;
+  background: #f8f9fb !important;
+  color: #536074;
 }
 
 .admin-main-layout-14.admin-main-layout-14.admin-main-layout-14 {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--admin-color-brand);
+  color: #fff;
   padding: 0;
   display: flex;
   align-items: center;
 }
 
 .admin-main-layout-15.admin-main-layout-15.admin-main-layout-15 {
-  color: var(--admin-color-brand);
+  color: #fff;
   font-weight: 800;
   font-size: var(--admin-font-size-0-85rem);
   letter-spacing: 1px;
@@ -110,11 +145,12 @@
 }
 
 .admin-main-layout-16.admin-main-layout-16.admin-main-layout-16 {
-  color: var(--admin-color--ccc);
+  color: #ead9c1;
 }
 
 .admin-main-layout-17.admin-main-layout-17.admin-main-layout-17 {
   font-size: var(--admin-font-size-0-95rem);
+  color: #fff !important;
 }
 
 .admin-main-layout-18.admin-main-layout-18.admin-main-layout-18 {
@@ -123,13 +159,15 @@
 }
 
 .admin-main-layout-19.admin-main-layout-19.admin-main-layout-19 {
-  background: var(--admin-color--fdf6ee);
-  color: var(--admin-color-brand);
-  border: 1px solid var(--admin-color--f0e8dc);
-  border-radius: 20px;
-  padding: var(--admin-space-2px) var(--admin-space-10px);
-  font-size: var(--admin-font-size-0-72rem);
-  font-weight: 700;
+  color: #758092;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+@media (max-width: 767px) {
+  .admin-main-layout-13.admin-main-layout-13.admin-main-layout-13 { margin: 12px 12px 0; border-radius: 24px; flex-wrap: wrap; gap: 12px; }
+  .admin-header-navigation { gap: 10px; }
+  .admin-header-account { margin-left: auto; padding-right: 4px; }
 }
 
 .admin-main-layout-20.admin-main-layout-20.admin-main-layout-20 {

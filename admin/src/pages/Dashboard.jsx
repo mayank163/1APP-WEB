@@ -1,3 +1,4 @@
+import SummaryFilterCard from '../components/SummaryFilterCard';
 import { adminCssValue } from '../utils/adminCssValue.js';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
@@ -29,6 +30,7 @@ const getRangeDates = (range) => {
 
 const Dashboard = () => {
     const { admin } = useAdminAuth();
+    const [jobStage, setJobStage] = useState('');
     const [stats, setStats] = useState(null);
     const [technicianJobs, setTechnicianJobs] = useState([]);
     const [jobsUnavailable, setJobsUnavailable] = useState(false);
@@ -105,7 +107,7 @@ const Dashboard = () => {
     const paidBookings = stats?.paidBookings || 0;
     const bookingStatusCounts = stats?.statusCounts || {};
     const name = admin?.name?.split(' ')[0] || 'Admin';
-    const recentJobs = [...periodJobs]
+    const recentJobs = periodJobs.filter(job => !jobStage || formatJobStatus(job.status) === jobStage)
         .sort((first, second) => new Date(second.createdAt) - new Date(first.createdAt))
         .slice(0, 5);
     const bookingStages = [
@@ -132,13 +134,13 @@ const Dashboard = () => {
             <div className="dash-breadcrumb"><span>Overview</span><span>/</span><span>Dashboard</span></div>
             <div className="dash-hello-row">
                 <div>
-                    <h1 className="dash-hello">Hello, {name}! <span aria-label="wave" role="img">👋</span></h1>
+                    <h1 className="dash-hello">Hello, <span>{name}!</span></h1>
                     <p className="dash-title">Global Dashboard</p>
                 </div>
                 <div className="dash-actions">
                     <div className="dash-filter-group" role="group" aria-label="Date range">
                         {[['today', 'Today'], ['7day', '7D'], ['30day', '30D'], ['custom', 'Custom']].map(([value, label]) =>
-                            <button className={`dash-filter-pill ${dateRange === value ? 'active' : ''}`} type="button" key={value} onClick={() => setDateRange(value)}>{label}</button>
+                            <button className={`dash-filter-pill ${dateRange === value ? 'active' : ''}`} type="button" key={value} aria-pressed={dateRange === value} onClick={() => setDateRange(value)}>{label}</button>
                         )}
                     </div>
                     <button className="dash-refresh-btn" type="button" onClick={() => fetchDashboardData(true)} disabled={refreshing}>
@@ -156,7 +158,7 @@ const Dashboard = () => {
                 <div className="dash-section-title"><span>Technician Jobs</span><span className="dash-period-label">{selectedDates.startDate} to {selectedDates.endDate}</span></div>
                 {jobsUnavailable && <p className="dashboard-data-error">Technician job data is unavailable for this account.</p>}
                 <div className="dashboard-stat-grid job-stage-grid">
-                    {jobStages.map((stage) => <StatCard key={stage.label} {...stage} />)}
+                    {jobStages.map((stage) => <StatCard key={stage.label} {...stage} active={jobStage === stage.label} onClick={() => setJobStage(jobStage === stage.label ? '' : stage.label)} />)}
                 </div>
             </section>
 
@@ -187,7 +189,7 @@ const Dashboard = () => {
                 </div>
 
                 <div className="dashboard-detail-panel">
-                    <div className="dash-section-title"><span>Recent Technician Jobs</span><Link className="dashboard-view-link" to="/technician-jobs">View all</Link></div>
+                    <div className="dash-section-title"><span>{jobStage ? `${jobStage} Technician Jobs` : 'Recent Technician Jobs'}</span><Link className="dashboard-view-link" to="/technician-jobs">View all</Link></div>
                     {jobsUnavailable ? <p className="dashboard-empty-state">Technician job data is unavailable for this account.</p> : recentJobs.length ?
                         <div className="recent-jobs-list">
                             {recentJobs.map((job) => <div className="recent-job-row" key={job._id}>
@@ -207,11 +209,11 @@ const Dashboard = () => {
     );
 };
 
-const StatCard = ({ label, value, icon, tone }) => (
-    <div className="dash-card">
+const StatCard = ({ label, value, icon, tone, active, onClick }) => (
+    <SummaryFilterCard className="dash-card" active={active} onClick={onClick}>
         <span className={`card-decor decor-${tone}`} />
         <div className="card-content"><div className={`card-icon icon-${tone}`}>{icon}</div><div className="card-title">{label}</div><div className="card-value">{Number(value || 0).toLocaleString()}</div></div>
-    </div>
+    </SummaryFilterCard>
 );
 
 const SummaryBox = ({ label, value, icon, tone }) => <div className="summary-box"><div className="sb-label"><span className={`summary-icon icon-${tone}`}>{icon}</span>{label}</div><div className="sb-value">{value}</div></div>;

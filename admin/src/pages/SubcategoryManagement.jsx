@@ -1,3 +1,4 @@
+import SummaryFilterCard from '../components/SummaryFilterCard';
 import React, { useCallback, useEffect, useState } from 'react';
 import adminApi from '../services/adminApi';
 import ServiceEditor from '../components/ServiceEditor';
@@ -81,7 +82,7 @@ const SubcategoryManagement = () => {
             </div>
             <section className="web-services-summary" aria-label="Service summary">
                 {[['Total Services', 'total', 'All services'], ['Active', 'active', 'Currently available'], ['Inactive', 'inactive', 'Not visible to customers'], ['Drafts', 'draft', 'Pending publication']].map(([label, key, detail]) => (
-                    <div key={key}><h2>{label}</h2><strong>{loading ? '—' : summary[key]}</strong><p>{detail}</p></div>
+                    <SummaryFilterCard key={key} active={statusFilter === (key === 'total' ? '' : key)} onClick={() => { setStatusFilter(key === 'total' ? '' : key); setPage(1); }}><h2>{label}</h2><strong>{loading ? '—' : summary[key]}</strong><p>{detail}</p></SummaryFilterCard>
                 ))}
             </section>
 

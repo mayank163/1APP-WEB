@@ -1,0 +1,40 @@
+/* Shared admin table header presentation. Font sizes remain page-specific. */
+/* Round the enclosing surface once, avoiding overlapping cell curves. */
+body :has(> table > thead) {
+  border-radius: 24px;
+  overflow: auto;
+}
+
+body table:has(> thead) {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+body table > thead,
+body table > thead > tr {
+  background: #a5732f !important;
+}
+
+body table > thead > tr > :is(th, td) {
+  --bs-table-bg: #a5732f;
+  --bs-table-color: #fff;
+  --bs-table-accent-bg: transparent;
+  background: #a5732f !important;
+  color: #fff !important;
+  border-top: 0;
+  border-right: 0;
+  border-left: 0;
+  border-bottom: 1px solid #e7dccb;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  font-weight: 700;
+  box-shadow: none;
+}
+
+body table > thead > tr > :is(th, td) {
+  border-radius: 0 !important;
+}
+
+body table > thead > tr > :is(th, td) :is(a, button, span, svg) {
+  color: inherit;
+}

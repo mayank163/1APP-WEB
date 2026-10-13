@@ -1,0 +1,19 @@
+.summary-filter-card {
+    appearance: none;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    border: 1px solid transparent;
+    background: white;
+}
+.summary-filter-card:hover { box-shadow: 0 3px 12px rgba(166, 113, 37, .12); }
+.summary-filter-card[aria-pressed="true"] {
+    outline: 2px solid #b47b26;
+    outline-offset: -2px;
+    background: #fdfaf5;
+    border-radius: 12px;
+}
+.summary-filter-card:focus-visible { outline: 3px solid #b47b26; outline-offset: 3px; }
+.web-services-summary > .summary-filter-card { padding: 22px; border-radius: 12px; }
+.tv-summary-grid > .summary-filter-card { width: 100%; }

@@ -1,3 +1,4 @@
+import SummaryFilterCard from '../components/SummaryFilterCard';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   FiArrowRight,
@@ -128,6 +129,7 @@ export default function UserManagement() {
   const [selectedId, setSelectedId] = useState(null);
   const [checked, setChecked] = useState([]);
   const [tab, setTab] = useState('Overview');
+  const [bookingSummaryFilter, setBookingSummaryFilter] = useState('All');
   const [detailOnly, setDetailOnly] = useState(false);
   const [refresh, setRefresh] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -299,7 +301,7 @@ export default function UserManagement() {
             'gold',
           ],
         ].map(([Icon, value, label, color]) => (
-          <div className={`cm-stat${label === 'Total Spent' ? ' cm-stat-spent' : ''}`} key={label}>
+          <SummaryFilterCard className={`cm-stat${label === 'Total Spent' ? ' cm-stat-spent' : ''}`} key={label} active={label === bookingSummaryFilter} onClick={() => { setBookingSummaryFilter(label === 'Active Booking' ? 'Ongoing' : ['Completed', 'Cancelled'].includes(label) ? label : 'All'); setTab(label === 'Total Spent' ? 'Payments' : 'Bookings'); }}>
             <span className={`cm-stat-icon ${color}`}>
               <Icon />
             </span>
@@ -307,7 +309,7 @@ export default function UserManagement() {
               <strong>{value}</strong>
               <span>{label}</span>
             </div>
-          </div>
+          </SummaryFilterCard>
         ))}
       </div>
 
@@ -699,6 +701,8 @@ export default function UserManagement() {
             tab={tab}
             setTab={setTab}
             overview={overview}
+            bookingFilter={bookingSummaryFilter}
+            setBookingFilter={setBookingSummaryFilter}
             onEdit={edit}
             onStatus={changeStatus}
             saving={saving}
