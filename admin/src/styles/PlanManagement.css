@@ -195,11 +195,22 @@
     white-space: nowrap;
 }
 
-.membership-more {
-    color: var(--admin-color--171717);
+.membership-management .membership-more {
+    --bs-btn-color: var(--admin-color-brand);
+    --bs-btn-hover-color: var(--admin-color--80521e);
+    --bs-btn-active-color: var(--admin-color--80521e);
+    --bs-btn-disabled-color: var(--admin-color-brand);
+    color: var(--admin-color-brand);
     border: 0;
     padding: var(--admin-space-4px);
     line-height: 1;
+}
+
+.membership-management .membership-more:hover,
+.membership-management .membership-more:focus-visible,
+.membership-management .membership-more:active,
+.membership-management .membership-more.show {
+    color: var(--admin-color--80521e);
 }
 
 .membership-more::after {

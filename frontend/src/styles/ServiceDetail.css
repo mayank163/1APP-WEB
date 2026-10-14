@@ -648,27 +648,19 @@
 
 /* Former inline declarations: keep precedence over ordinary page rules. */
 .ui-servicedetail-78:not(#ui-style-priority):not(#ui-style-priority-2) {
-  display: flex;
-  gap: var(--ui-space-11);
-  flex-wrap: wrap;
+  margin: 0;
+  padding-left: 24px;
+  list-style: disc outside;
 }
 
 /* Former inline declarations: keep precedence over ordinary page rules. */
 .ui-servicedetail-79:not(#ui-style-priority):not(#ui-style-priority-2) {
-  flex: 1 1 120px;
-  background: var(--ui-color-75);
-  border-radius: 10px;
-  padding: var(--ui-space-131);
-  text-align: center;
-  min-width: 100px;
-}
-
-/* Former inline declarations: keep precedence over ordinary page rules. */
-.ui-servicedetail-80:not(#ui-style-priority):not(#ui-style-priority-2) {
-  width: 56px;
-  height: 56px;
-  object-fit: contain;
-  margin-bottom: var(--ui-space-9);
+  display: list-item;
+  padding-left: 4px;
+  margin-bottom: 12px;
+  text-align: left;
+  line-height: 1.6;
+  color: var(--ui-color-34);
 }
 
 /* Former inline declarations: keep precedence over ordinary page rules. */

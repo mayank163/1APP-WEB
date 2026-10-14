@@ -6,8 +6,7 @@
   --tv-cream: var(--admin-color--fff2dc);
   --tv-bg: var(--admin-color--fbfbfc);
   --tv-green: var(--admin-color--168b56);
-  --tv-red: var(--admin-color--e52d3c);
-  --tv-purple: var(--admin-color--8139d9)
+  --tv-red: var(--admin-color--e52d3c)
 }
 
 .tv-dashboard .tv-breadcrumb,
@@ -173,35 +172,20 @@
   height: 28px;
   border-radius: 9px;
   background: var(--admin-color--f5f7fb);
-  color: var(--admin-color--1768e8)
+  color: var(--tv-gold)
 }
 
-.tv-summary-pending {
-  border-left-color: var(--admin-color--2764e8)
+.tv-summary-pending,
+.tv-summary-resubmitted,
+.tv-summary-approved,
+.tv-summary-rejected {
+  border-left-color: var(--tv-gold)
 }
 
-.tv-summary-resubmitted {
-  border-left-color: var(--tv-purple)
-}
-
-.tv-summary-resubmitted .tv-summary-icon {
-  color: var(--tv-purple)
-}
-
-.tv-summary-approved {
-  border-left-color: var(--tv-green)
-}
-
-.tv-summary-approved .tv-summary-icon {
-  color: var(--tv-green)
-}
-
-.tv-summary-rejected,
 .tv-summary-expiring {
   border-left-color: var(--tv-red)
 }
 
-.tv-summary-rejected .tv-summary-icon,
 .tv-summary-expiring .tv-summary-icon {
   color: var(--tv-red)
 }
@@ -698,12 +682,12 @@
 }
 
 .tv-document-group button.selected {
-  border-color: var(--admin-color--2477f3);
-  background: var(--admin-color--f5f9ff)
+  border-color: var(--admin-color--d9b37b);
+  background: var(--admin-color-white)
 }
 
 .tv-document-group button>svg {
-  color: var(--admin-color--4e82dd)
+  color: var(--admin-color--d9b37b)
 }
 
 .tv-document-group button>span {
@@ -789,7 +773,8 @@
   max-width: 92%;
   max-height: 265px;
   border: 1px solid var(--admin-color--d2d6dc);
-  box-shadow: 0 2px 6px var(--admin-color--d7d7d7)
+  box-shadow: 0 2px 6px var(--admin-color--d7d7d7);
+  cursor: zoom-in
 }
 
 .tv-document-preview iframe {
@@ -979,6 +964,156 @@
   vertical-align: middle
 }
 
+.tv-confirmation-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: var(--admin-space-16px);
+  background: rgba(32, 36, 45, .48)
+}
+
+.tv-confirmation-dialog {
+  width: min(100%, 500px);
+  padding: var(--admin-space-24px);
+  border: 1px solid var(--admin-color--ad782d);
+  border-radius: 22px;
+  background: var(--admin-color-white);
+  box-shadow: 0 18px 55px rgba(32, 36, 45, .25);
+  text-align: center
+}
+
+.tv-confirmation-icon {
+  display: grid;
+  place-items: center;
+  width: 50px;
+  height: 50px;
+  margin: 0 auto var(--admin-space-16px);
+  border-radius: 50%;
+  background: var(--admin-color--ecfdf5);
+  color: var(--tv-green);
+  font-size: var(--admin-font-size-22px)
+}
+
+.tv-confirmation-rejected .tv-confirmation-icon {
+  background: var(--admin-color--fff0f0);
+  color: var(--tv-red)
+}
+
+.tv-confirmation-pending .tv-confirmation-icon {
+  background: var(--admin-color--fff2dc);
+  color: var(--tv-gold)
+}
+
+.tv-confirmation-dialog h2 {
+  margin: 0 0 var(--admin-space-20px);
+  color: var(--tv-ink);
+  font-size: var(--admin-font-size-18px);
+  font-weight: 700
+}
+
+.tv-confirmation-checks {
+  display: grid;
+  gap: var(--admin-space-12px);
+  margin: 0;
+  padding: var(--admin-space-14px);
+  border: 1px solid var(--admin-color--d9b37b);
+  border-radius: 13px;
+  background: var(--admin-color--fff8ed);
+  list-style: none;
+  text-align: left
+}
+
+.tv-confirmation-checks li,
+.tv-confirmation-checks li span {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-8px)
+}
+
+.tv-confirmation-checks li {
+  justify-content: space-between;
+  color: var(--tv-ink);
+  font-weight: 600
+}
+
+.tv-confirmation-checks .complete {
+  color: var(--tv-green)
+}
+
+.tv-confirmation-checks .incomplete {
+  color: var(--tv-gold)
+}
+
+.tv-confirmation-note {
+  margin: var(--admin-space-16px) 0 0;
+  padding: var(--admin-space-10px);
+  border: 1px solid var(--admin-color--abf3cf);
+  border-radius: 20px;
+  background: var(--admin-color--ecfdf5);
+  color: var(--tv-muted);
+  font-style: italic
+}
+
+.tv-confirmation-note-pending {
+  border-color: var(--admin-color--e0b66d);
+  background: var(--admin-color--fff2dc);
+  color: var(--tv-gold)
+}
+
+.tv-confirmation-error {
+  display: flex;
+  align-items: center;
+  gap: var(--admin-space-8px);
+  margin: var(--admin-space-12px) 0 0;
+  color: var(--tv-red);
+  text-align: left
+}
+
+.tv-confirmation-actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--admin-space-12px);
+  margin-top: var(--admin-space-20px)
+}
+
+.tv-confirmation-actions button {
+  min-height: 40px;
+  padding: 0 var(--admin-space-16px);
+  border-radius: 22px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer
+}
+
+.tv-confirmation-cancel {
+  border: 1px solid var(--admin-color--d9dce3);
+  background: var(--admin-color-white);
+  color: var(--tv-ink)
+}
+
+.tv-confirmation-submit {
+  border: 1px solid var(--tv-green);
+  background: var(--tv-green);
+  color: var(--admin-color-white)
+}
+
+.tv-confirmation-rejected .tv-confirmation-submit {
+  border-color: var(--tv-red);
+  background: var(--tv-red)
+}
+
+.tv-confirmation-pending .tv-confirmation-submit {
+  border-color: var(--tv-gold);
+  background: var(--tv-gold)
+}
+
+.tv-confirmation-actions button:disabled {
+  cursor: wait;
+  opacity: .6
+}
+
 @media(max-width:900px) {
   .tv-summary-grid {
     grid-template-columns: repeat(3, 1fr)
@@ -1084,6 +1219,24 @@
   .tv-overall-panel button {
     width: 100%;
     margin-top: var(--admin-space-8px)
+  }
+
+  .tv-confirmation-dialog {
+    padding: var(--admin-space-16px)
+  }
+
+  .tv-confirmation-dialog h2 {
+    font-size: var(--admin-font-size-16px)
+  }
+
+  .tv-confirmation-checks li {
+    gap: var(--admin-space-6px);
+    font-size: var(--admin-font-size-12px)
+  }
+
+  .tv-confirmation-actions button {
+    padding: 0 var(--admin-space-12px);
+    font-size: var(--admin-font-size-12px)
   }
 }
 

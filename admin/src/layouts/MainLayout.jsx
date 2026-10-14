@@ -5,6 +5,7 @@ import adminApi from '../services/adminApi';
 import { connectAdminSocket } from '../services/socket';
 import NotificationBell from '../components/NotificationBell';
 import { useAdminAuth } from '../context/AdminAuthContext';
+import appLogo from '../assets/1app_logo.png';
 import {
     FaChartBar, FaTasks, FaFolderOpen,
     FaUsers, FaTag, FaSignOutAlt,
@@ -74,12 +75,11 @@ const MainLayout = () => {
             >
                 {/* Logo */}
                 <div className={["p-3 d-flex align-items-center gap-2 admin-main-layout-3 ", collapsed ? "admin-main-layout-state-3" : "admin-main-layout-state-4"].join('')} >
-                    <div className="admin-main-layout-4" >
-                        <FaCheckCircle className="admin-main-layout-5" size={18} />
-                    </div>
-                    {!collapsed && (
-                        <div>
-                            <h5 className="fw-bold mb-0 font-monospace admin-main-layout-6" >1APP</h5>
+                    {collapsed ? (
+                        <img className="admin-main-layout-brand admin-main-layout-brand-collapsed" src={appLogo} alt="1APP" />
+                    ) : (
+                        <div className="admin-main-layout-brand-container">
+                            <img className="admin-main-layout-brand" src={appLogo} alt="1APP" />
                             <small className="tracking-wider text-uppercase font-monospace fs-8 admin-main-layout-7" >Admin Portal</small>
                         </div>
                     )}

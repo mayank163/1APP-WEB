@@ -125,6 +125,10 @@ const updateDocumentStatus = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Technician not found' });
     }
 
+    if (!technician.technicianProfile?.reviewer) {
+      return res.status(403).json({ success: false, message: 'Assign a reviewer before reviewing documents' });
+    }
+
     const docs = technician.technicianProfile?.documents || [];
     const idx  = docs.findIndex(d => d.documentId === documentId);
     if (idx < 0) return res.status(404).json({ success: false, message: 'Document not found' });
@@ -133,6 +137,9 @@ const updateDocumentStatus = async (req, res, next) => {
     docs[idx].rejectionReason = status === 'rejected' ? (rejectionReason || 'Rejected by admin') : null;
 
     technician.technicianProfile.documents = docs;
+    if (status === 'approved') {
+      technician.technicianProfile.verificationNotes = '';
+    }
     await technician.save();
 
     // Emit socket event so technician app updates in real-time

@@ -433,15 +433,13 @@ const ServiceDetail = () => {
             {service.requirements?.length > 0 && (
                 <Section>
                     <h2 className="ui-servicedetail-77" >What we will need from you</h2>
-                    <div className="ui-servicedetail-78" >
+                    <ul className="ui-servicedetail-78">
                         {service.requirements.map(req => (
-                            <div className="ui-servicedetail-79" key={req._id} >
-                                {/* <img className="ui-servicedetail-80" src={resolveImageUrl(req.image)} alt={req.title}
-                                     /> */}
-                                <div className="ui-servicedetail-81" >{req.title}</div>
-                            </div>
+                            <li className="ui-servicedetail-79" key={req._id}>
+                                <span className="ui-servicedetail-81">{req.title}</span>
+                            </li>
                         ))}
-                    </div>
+                    </ul>
                 </Section>
             )}
 
