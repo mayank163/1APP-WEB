@@ -1108,7 +1108,7 @@ const getTechnicianDashboard = async (
           availableBalance:
             Math.max(
               totalEarnings -
-                totalWithdrawn,
+                totalWithdrawn - withdrawals.filter(w => ['pending', 'approved', 'processing', 'sent'].includes(w.status)).reduce((n, w) => n + w.amount, 0),
               0
             ),
 
@@ -1302,109 +1302,8 @@ const getRequestConversation = async (
 
 // ─── WITHDRAWAL ───────────────────────────────────────────────────────────────
 
-const createWithdrawalRequest = async (
-  req,
-  res,
-  next
-) => {
-  try {
-    const {
-      amount,
-      method,
-      details,
-    } = req.body;
-
-    const technician =
-      await User.findById(
-        req.user._id
-      );
-
-    const available =
-      Math.max(
-        (technician.totalEarnings || 0) -
-          (technician.totalWithdrawn || 0),
-        0
-      );
-
-    if (
-      !amount ||
-      amount <= 0
-    ) {
-      return res.status(400).json({
-        success: false,
-        message:
-          'Please provide a valid withdrawal amount',
-      });
-    }
-
-    if (amount > available) {
-      return res.status(400).json({
-        success: false,
-        message:
-          'Withdrawal amount exceeds available balance',
-      });
-    }
-
-    const withdrawal =
-      await TechnicianWithdrawal.create({
-        technician:
-          req.user._id,
-
-        amount,
-
-        method:
-          method ||
-          'bank-transfer',
-
-        details:
-          details || '',
-
-        status:
-          'pending',
-      });
-
-    res.status(201).json({
-      success: true,
-
-      message:
-        'Withdrawal requested',
-
-      data: {
-        withdrawal,
-      },
-    });
-
-  } catch (error) {
-    next(error);
-  }
-};
-
-
-const getWithdrawals = async (
-  req,
-  res,
-  next
-) => {
-  try {
-    const withdrawals =
-      await TechnicianWithdrawal.find({
-        technician:
-          req.user._id,
-      }).sort('-createdAt');
-
-    res.status(200).json({
-      success: true,
-
-      data: {
-        withdrawals,
-      },
-    });
-
-  } catch (error) {
-    next(error);
-  }
-};
-
+const createWithdrawalRequest = require('./manualPayoutController').request;
+const getWithdrawals = require('./manualPayoutController').history;
 
 // ─── MESSAGING ───────────────────────────────────────────────────────────────
 
@@ -2153,11 +2052,7 @@ const getMetrics = async (req, res, next) => {
           totalWithdrawn:
             technician.totalWithdrawn || 0,
 
-          availableBalance: Math.max(
-            (technician.totalEarnings || 0) -
-              (technician.totalWithdrawn || 0),
-            0
-          ),
+          availableBalance: require('../services/manualPayouts').balance(technician, await TechnicianWithdrawal.find({ technician: technician._id }).lean()).availableCents / 100,
 
           acceptedCount,
 

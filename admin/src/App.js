@@ -20,6 +20,7 @@ import BlogManagement from './pages/BlogManagement';
 import TechnicianJobs from './pages/TechnicianJobs';
 import JobTemplates from './pages/JobTemplates';
 import TechnicianVerification from './pages/TechnicianVerification';
+import TechnicianPayouts from './pages/TechnicianPayouts';
 import TechnicianOverview from './pages/TechnicianOverview';
 import SubAdminManagement from './pages/SubAdminManagement';
 import TypeManagement from './pages/TypeManagement';
@@ -74,6 +75,7 @@ function AppRoutes() {
           <Route path="plans" element={<PermRoute resource="offers" access="read"><PlanManagement /></PermRoute>} />
           <Route path="job-templates" element={<PermRoute resource="technician_jobs" access="read"><JobTemplates /></PermRoute>} />
           <Route path="technician-jobs" element={<PermRoute resource="technician_jobs" access="read"><TechnicianJobs /></PermRoute>} />
+          <Route path="technician-payouts" element={<PermRoute resource="technician_jobs" access="read"><TechnicianPayouts /></PermRoute>} />
           <Route path="technician-overview" element={<PermRoute resource="technician_jobs" access="read"><TechnicianOverview /></PermRoute>} />
           <Route path="technician-chat" element={<PermRoute resource="technician_jobs" access="read"><TechnicianChat /></PermRoute>} />
           <Route path="technician-verification" element={<PermRoute resource="technician_verification" access="read"><TechnicianVerification /></PermRoute>} />

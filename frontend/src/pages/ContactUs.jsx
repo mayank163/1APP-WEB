@@ -1,7 +1,8 @@
 import '../styles/ContactUs.css';
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
-import { FaMapMarkerAlt } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import { FiChevronRight } from 'react-icons/fi';
 
 const COUNTRY_CODES = ['+91', '+1', '+44', '+971', '+65', '+61'];
 
@@ -36,22 +37,26 @@ export default function ContactUs() {
             {/* Left: Form */}
             <div>
                 <h1 className="ui-contactus-4" >Contact us</h1>
+                <p className="contact-intro">We are here to assist with any questions or support needs.</p>
 
                 <form className="ui-contactus-5" onSubmit={handleSubmit} >
                     <div>
-                        <label className="ui-contactus-6" >Full Name</label>
-                        <input className="ui-contactus-7" name="name" required value={form.name} onChange={handleChange}
+                        <label className="ui-contactus-6"  htmlFor="contact-name">Full Name</label>
+                        <input className="ui-contactus-7" id="contact-name" name="name" required value={form.name} onChange={handleChange}
                             placeholder="Enter full name"  />
                     </div>
 
                     <div>
-                        <label className="ui-contactus-8" >Email Address</label>
-                        <input className="ui-contactus-9" name="email" type="email" required value={form.email} onChange={handleChange}
+                        <label className="ui-contactus-8"  htmlFor="contact-email">Email Address</label>
+                        <input className="ui-contactus-9" id="contact-email" name="email" type="email" required value={form.email} onChange={handleChange}
                             placeholder="Enter your email address"  />
                     </div>
 
+                    <div>
+                        <label className="ui-contactus-6" htmlFor="contact-phone">Enter Phone Number</label>
                     <div className="ui-contactus-10" >
     <select className="ui-contactus-11"
+        aria-label="Country code"
         name="countryCode"
         value={form.countryCode}
         onChange={handleChange}
@@ -63,6 +68,7 @@ export default function ContactUs() {
     </select>
 
     <input className="ui-contactus-12"
+        id="contact-phone"
         name="phone"
         type="tel"
         value={form.phone}
@@ -83,10 +89,11 @@ export default function ContactUs() {
 
     />
 </div>
+                    </div>
 
                     <div>
-                        <label className="ui-contactus-13" >Enter Message</label>
-                        <textarea className="ui-contactus-14" name="message" required rows={5} value={form.message} onChange={handleChange}
+                        <label className="ui-contactus-13"  htmlFor="contact-message">Enter Message</label>
+                        <textarea className="ui-contactus-14" id="contact-message" name="message" required rows={5} value={form.message} onChange={handleChange}
                             placeholder="Enter message"  />
                     </div>
 
@@ -98,18 +105,18 @@ export default function ContactUs() {
             </div>
 
             {/* Right: Info Cards */}
-            <div>
+            <div className="contact-info">
                 <InfoCard title="Need help?">
                     <p className="ui-contactus-16" >
                         For any immediate help regarding your bookings, please log-in and visit our Help Center. You will be able to get instant resolution through our chat support.
                     </p>
-                    {/* <a href="#" style={{ color: '#000000', fontWeight: 700, fontSize: '14px', textDecoration: 'none' }}>Open Help Center &rsaquo;</a> */}
+                    <Link className="contact-card-action" to="/support">Open Help Center <FiChevronRight aria-hidden="true" /></Link>
                 </InfoCard>
 
                 <InfoCard title="Still facing issues?">
                     <p className="ui-contactus-17" >
                         If you've already tried chatting with us and are not satisfied with the resolution - please send us an email on{' '}
-                        <strong>contact@1app.com</strong>. We will get back to you within 24-48 hours.
+                        <a className="contact-email" href="mailto:contact@1app.com">contact@1app.com</a>. We will get back to you within 24-48 hours.
                     </p>
                 </InfoCard>
 
@@ -127,12 +134,11 @@ export default function ContactUs() {
                 </InfoCard>
 
                 <InfoCard title="Our office addresses">
-                    <div className="ui-contactus-21" >
-                        <FaMapMarkerAlt className="ui-contactus-22" size={16}  />
-                        <p className="ui-contactus-23" >
-                            6565 N MacArthur Blvd, Irving, TX 75039
-                        </p>
-                    </div>
+                    <p className="ui-contactus-16">You can view a list of all our office addresses by clicking below</p>
+                    <details className="contact-addresses">
+                        <summary className="contact-card-action">View addresses <FiChevronRight aria-hidden="true" /></summary>
+                        <p className="ui-contactus-23">6565 N MacArthur Blvd, Irving, TX 75039</p>
+                    </details>
                 </InfoCard>
             </div>
         </div>

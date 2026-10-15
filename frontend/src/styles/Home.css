@@ -825,7 +825,7 @@
                     gap: var(--ui-space-10);
                     flex-wrap: wrap;
                     overflow: hidden;
-                    
+
                 }
 
                 .hero-side-card {
@@ -859,7 +859,7 @@
                     .hero-three-col {
                         justify-content: center;
                         padding: var(--ui-space-37);
-                        
+
                     }
 
                     .hero-side-card {
@@ -890,4 +890,99 @@
                         padding: var(--ui-space-16);
                     }
                 }
-            
+
+/* Match the extracted inline-rule specificity so mobile rules can take effect. */
+@media (max-width: 1150px) {
+  .home-page .ui-home-4:not(#ui-style-priority):not(#ui-style-priority-2) {
+    height: auto;
+  }
+  .home-page .hero-center-panel { margin-bottom: 0; }
+}
+
+@media (max-width: 768px) {
+  .home-page > section.py-5 { padding-top: 28px !important; padding-bottom: 28px !important; }
+  .home-page > section > .container { padding-left: 20px; padding-right: 20px; }
+  .home-page h2 { font-size: 24px; line-height: 1.25; }
+  .home-page .container > .d-flex.justify-content-between { gap: 16px; }
+  .home-page .container > .d-flex.justify-content-between > h2 { min-width: 0; }
+  .home-page .container > .d-flex.justify-content-between > button {
+    flex-shrink: 0; white-space: nowrap; min-height: 44px; font-size: 14px;
+  }
+  .home-page .ui-home-3:not(#ui-style-priority):not(#ui-style-priority-2) { padding: 12px; }
+  .home-page .ui-home-4:not(#ui-style-priority):not(#ui-style-priority-2) { border-radius: 24px; }
+  .home-page .hero-three-col { padding: 24px 16px 16px; gap: 16px; overflow: visible; }
+  .home-page .ui-home-5:not(#ui-style-priority):not(#ui-style-priority-2) {
+    height: 340px; object-position: center top;
+  }
+  .home-page .ui-home-6:not(#ui-style-priority):not(#ui-style-priority-2) {
+    background: linear-gradient(180deg, rgba(255,255,255,.25), #f3f4f3 340px);
+  }
+  .home-page .ui-home-20:not(#ui-style-priority):not(#ui-style-priority-2) {
+    padding: 16px 0 24px; flex: 0 0 100%; width: 100%; margin: 0;
+  }
+  .home-page .ui-home-21:not(#ui-style-priority):not(#ui-style-priority-2) {
+    font-size: clamp(30px, 8vw, 46px); margin-bottom: 24px;
+  }
+  .home-page :is(.ui-home-7, .ui-home-23):not(#ui-style-priority):not(#ui-style-priority-2) {
+    width: 100%; flex: 0 0 100%; padding: 20px; border-radius: 20px;
+    background: rgba(255,255,255,.96); box-shadow: 0 4px 20px rgba(0,0,0,.07);
+  }
+  .home-page :is(.ui-home-8, .ui-home-24):not(#ui-style-priority):not(#ui-style-priority-2) {
+    flex-direction: row; gap: 12px; margin-bottom: 12px;
+  }
+  .home-page :is(.ui-home-9, .ui-home-25):not(#ui-style-priority):not(#ui-style-priority-2) { margin-bottom: 0; }
+  .home-page :is(.ui-home-13, .ui-home-29):not(#ui-style-priority):not(#ui-style-priority-2) { min-height: 44px; }
+  .home-page :is(.ui-home-18, .ui-home-34):not(#ui-style-priority):not(#ui-style-priority-2) { min-height: 44px; }
+  .home-page .ui-herobookingbar-20:not(#ui-style-priority):not(#ui-style-priority-2) {
+    flex-direction: row; height: 44px; border-radius: 999px; padding: 0; gap: 0;
+    max-width: 400px; border: 1px solid #ddd;
+    box-shadow: 0 8px 24px rgba(0,0,0,.28);
+  }
+  .home-page .ui-herobookingbar-21:not(#ui-style-priority):not(#ui-style-priority-2) {
+    flex: 1.05; width: auto; min-width: 0; height: 100%; padding: 0 8px;
+  }
+  .home-page .ui-herobookingbar-22:not(#ui-style-priority):not(#ui-style-priority-2) {
+    flex: 1; width: auto; min-width: 0; height: 100%; padding: 0 8px;
+  }
+  .home-page .ui-herobookingbar-2:not(#ui-style-priority):not(#ui-style-priority-2) {
+    width: 1px; height: auto; margin: 4px 0;
+  }
+  .home-page .ui-herobookingbar-4:not(#ui-style-priority):not(#ui-style-priority-2) { gap: 6px; }
+  .home-page .ui-herobookingbar-6:not(#ui-style-priority):not(#ui-style-priority-2) {
+    font-size: 12px; text-overflow: ellipsis;
+  }
+  .home-page .ui-herobookingbar-15:not(#ui-style-priority):not(#ui-style-priority-2) { gap: 6px; min-height: 40px; }
+  .home-page .ui-herobookingbar-16:not(#ui-style-priority):not(#ui-style-priority-2) {
+    font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+  }
+  .home-page .ui-herobookingbar-17:not(#ui-style-priority):not(#ui-style-priority-2) { flex-shrink: 0; }
+  .home-page .ui-herobookingbar-23:not(#ui-style-priority):not(#ui-style-priority-2) {
+    width: auto; height: 100%; min-height: 0; border-radius: 0 999px 999px 0;
+    padding: 0 16px; font-size: 14px; background: #191919;
+  }
+  .home-page .ui-home-38:not(#ui-style-priority):not(#ui-style-priority-2) { scroll-snap-type: x mandatory; }
+  .home-page .ui-home-39:not(#ui-style-priority):not(#ui-style-priority-2) {
+    width: 82%; min-width: 0; scroll-snap-align: start;
+  }
+  .home-page .ui-home-47:not(#ui-style-priority):not(#ui-style-priority-2) { left: -10px; }
+  .home-page .ui-home-49:not(#ui-style-priority):not(#ui-style-priority-2) { right: -10px; }
+  .home-page :is(.ui-home-58, .ui-home-85):not(#ui-style-priority):not(#ui-style-priority-2) { flex-direction: column; }
+  .home-page :is(.ui-home-59, .ui-home-86):not(#ui-style-priority):not(#ui-style-priority-2) {
+    flex: auto; width: 100%; padding: 24px !important;
+  }
+  .home-page :is(.ui-home-60, .ui-home-87, .ui-home-95):not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 28px; }
+  .home-page :is(.ui-home-61, .ui-home-96):not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 15px; line-height: 1.7; margin-bottom: 24px !important; }
+  .home-page .ui-home-63:not(#ui-style-priority):not(#ui-style-priority-2) { flex: auto; height: 240px; }
+  .home-page .ui-home-91:not(#ui-style-priority):not(#ui-style-priority-2) { flex: auto; min-height: 240px; order: -1; }
+  .home-page :is(.ui-home-66, .ui-home-71):not(#ui-style-priority):not(#ui-style-priority-2) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .home-page :is(.ui-home-68, .ui-home-73):not(#ui-style-priority):not(#ui-style-priority-2) { height: 160px; }
+  .home-page .ui-home-76:not(#ui-style-priority):not(#ui-style-priority-2) { min-height: 300px; }
+  .home-page .ui-home-94:not(#ui-style-priority):not(#ui-style-priority-2) { height: 280px; padding: 0; border-radius: 16px; }
+  .home-page .col-lg-7.p-5 { padding: 24px !important; }
+  .home-page .ui-home-99:not(#ui-style-priority):not(#ui-style-priority-2) { min-height: 0; flex-direction: column; gap: 32px; }
+  .home-page .ui-home-100:not(#ui-style-priority):not(#ui-style-priority-2) { position: relative !important; top: auto; left: auto; order: 2; }
+  .home-page .ui-home-103:not(#ui-style-priority):not(#ui-style-priority-2) { padding: 28px 20px; box-shadow: 0 8px 24px rgba(0,0,0,.16); }
+  .home-page .ui-home-105:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: clamp(26px, 7vw, 38px); }
+  .home-page .home-brand-title { font-size: clamp(42px, 13vw, 88px); letter-spacing: -3px; }
+  .home-page .home-brand-logo img { max-width: 72px; }
+}

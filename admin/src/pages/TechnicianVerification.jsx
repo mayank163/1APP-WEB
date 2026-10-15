@@ -1,3 +1,4 @@
+import AdminBreadcrumb from '../components/AdminBreadcrumb';
 import SummaryFilterCard from '../components/SummaryFilterCard';
 import { adminCssValue } from '../utils/adminCssValue.js';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -212,9 +213,7 @@ function Dashboard({
 
   return (
     <div className="tv-dashboard">
-      <div className="tv-breadcrumb">
-        Field Operations <span>/</span> <b>Verification</b>
-      </div>
+      <AdminBreadcrumb className="tv-breadcrumb" section="Field Operations" items={[{ label: 'Verification' }]} />
 
       <div className="tv-dashboard-heading">
         <div>
@@ -643,10 +642,7 @@ function DocumentReview({ request, requests, onReload }) {
 
   return (
     <div className="tv-review-page">
-      <div className="tv-breadcrumb">
-        Field Operations <span>/</span> Verification <span>/</span>{' '}
-        <b>Review Technician</b>
-      </div>
+      <AdminBreadcrumb className="tv-breadcrumb" section="Field Operations" items={[{ label: 'Verification', to: '/technician-verification' }, { label: 'Review Technician' }]} />
 
       <div className="tv-review-heading">
         <h1>Document Review</h1>

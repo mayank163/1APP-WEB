@@ -25,7 +25,7 @@ const labelIcon = (label = '') => {
 
 const LABEL_OPTIONS = ['Home', 'Office', 'Work', 'Other'];
 
-const emptyForm = { label: 'Home', name: '', addressLine: '', city: '', state: '', zipcode: '' };
+const emptyForm = { label: 'Home', name: '', buildingFloor: '', street: '', addressLine: '', city: '', state: '', zipcode: '' };
 
 const Profile = () => {
     const { user, updateProfile, uploadProfileImage, sendOTP, verifyOTP, deleteAccount, loading } = useContext(AuthContext);
@@ -84,6 +84,8 @@ const Profile = () => {
         setAddrForm({
             label: addr.label || 'Home',
             name: addr.name || '',
+            buildingFloor: addr.buildingFloor || '',
+            street: addr.street || '',
             addressLine: addr.addressLine || '',
             city: addr.city || '',
             state: addr.state || '',
@@ -108,14 +110,14 @@ const Profile = () => {
     const safeStr = (v) => (v && typeof v === 'string' ? v.trim() : '');
 
     // Called by LocationPicker — fills all structured fields at once
-    const handleLocationChange = ({ address, lat, lng, addressLine, city, state, zipcode }) => {
+    const handleLocationChange = ({ address, lat, lng, addressLine, city, state, zipcode, replaceAddressFields = false }) => {
         setLocationValue({ address: safeStr(address) || address, lat, lng });
         setAddrForm(f => ({
             ...f,
             addressLine: safeStr(addressLine) || safeStr(address) || f.addressLine,
-            city:        safeStr(city)        || f.city,
-            state:       safeStr(state)       || f.state,
-            zipcode:     safeStr(zipcode)     || f.zipcode,
+            city:        safeStr(city)        || (replaceAddressFields ? '' : f.city),
+            state:       safeStr(state)       || (replaceAddressFields ? '' : f.state),
+            zipcode:     safeStr(zipcode)     || (replaceAddressFields ? '' : f.zipcode),
         }));
     };
 
@@ -199,7 +201,7 @@ const Profile = () => {
             const payload = {
                 ...addrForm,
                 addressLine: addrLine,
-                ...(locationValue?.lat ? { coordinates: { lat: locationValue.lat, lng: locationValue.lng } } : {})
+                ...(Number.isFinite(locationValue?.lat) && Number.isFinite(locationValue?.lng) ? { coordinates: { lat: locationValue.lat, lng: locationValue.lng } } : {})
             };
             if (addrMode === 'add') {
                 await updateProfile({ addAddress: payload });
@@ -414,7 +416,7 @@ const Profile = () => {
                                                     <div className="fw-bold small text-dark mb-1">{addr.name}</div>
                                                 )}
                                                 <p className="mb-0 small text-muted lh-sm">
-                                                    {addr.addressLine}
+                                                    {[addr.buildingFloor, addr.street, addr.addressLine].filter(Boolean).join(', ')}
                                                     {addr.city && `, ${addr.city}`}
                                                     {addr.state && `, ${addr.state}`}
                                                     {addr.zipcode && ` – ${addr.zipcode}`}
@@ -523,6 +525,16 @@ const Profile = () => {
                                                 onChange={handleLocationChange}
                                                 inputClassName="profile-location-input-1"
                                             />
+                                        </div>
+
+                                        <div className="col-md-6">
+                                            <label htmlFor="profile-address-buildingFloor" className="form-label fw-semibold small text-dark mb-1">Building / Floor</label>
+                                            <input type="text" className="form-control ui-profile-31" id="profile-address-buildingFloor" placeholder="e.g. Sunrise Apartments, 3rd floor" value={addrForm.buildingFloor} onChange={patchField('buildingFloor')} maxLength={200} />
+                                        </div>
+
+                                        <div className="col-md-6">
+                                            <label htmlFor="profile-address-street" className="form-label fw-semibold small text-dark mb-1">Street</label>
+                                            <input type="text" className="form-control ui-profile-31" id="profile-address-street" placeholder="e.g. Main Street" value={addrForm.street} onChange={patchField('street')} maxLength={200} />
                                         </div>
 
                                         {/* Address line */}

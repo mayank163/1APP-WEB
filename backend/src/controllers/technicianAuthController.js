@@ -44,9 +44,17 @@ const signRefreshToken = (id, role, tokenVersion = 0) => {
     );
 };
 
-const sendTokenResponse = (user, statusCode, res) => {
+const sendTokenResponse = async (user, statusCode, res) => {
   if (user.accountStatus === 'inactive') return res.status(403).json({ success: false, message: 'This account is inactive. Please create a new account.' });
     if (['invited', 'suspended', 'blocked'].includes(user.accountStatus)) return res.status(403).json({ success: false, message: 'Account is pending activation or suspended. Please contact support.' });
+    // Atomically revoke previous sessions before issuing this login's tokens.
+    const session = await User.findByIdAndUpdate(
+        user._id,
+        { $inc: { tokenVersion: 1 } },
+        { new: true }
+    );
+    if (!session) return res.status(401).json({ success: false, message: 'User no longer exists.' });
+    user.tokenVersion = session.tokenVersion;
     const accessToken = signAccessToken(user._id, user.role, user.tokenVersion);
     const refreshToken = signRefreshToken(user._id, user.role, user.tokenVersion);
 
@@ -191,7 +199,7 @@ exports.completeSignup = async (req, res, next) => {
     pendingRegistrations.delete(pendingKey);
     await technician.save();
     await saveFcmToken(technician, req.body.fcmToken);
-    sendTokenResponse(technician, 201, res);
+    await sendTokenResponse(technician, 201, res);
   } catch (error) { next(error); }
 };
 
@@ -256,7 +264,7 @@ exports.login = async (req, res, next) => {
     }
 
     await saveFcmToken(technician, fcmToken);
-    sendTokenResponse(technician, 200, res);
+    await sendTokenResponse(technician, 200, res);
   } catch (error) {
     next(error);
   }
@@ -485,7 +493,7 @@ exports.reuploadDocument = async (req, res, next) => {
 
 exports.updateBankDetails = async (req, res, next) => {
   try {
-    const { accountHolder, bankName, accountNumber, ifscCode, upiId } = req.body;
+    const { accountHolder, bankName, accountNumber, routingNumber, accountType, ifscCode, upiId } = req.body;
     const technician = await User.findById(req.user._id);
     if (!technician || technician.role !== 'technician') {
       return res.status(403).json({ success: false, message: 'Only technician accounts can update bank details' });
@@ -502,6 +510,9 @@ exports.updateBankDetails = async (req, res, next) => {
       accountHolder: accountHolder || technician.bankDetails?.accountHolder || '',
       bankName:      bankName      || technician.bankDetails?.bankName      || '',
       accountNumber: accountNumber || technician.bankDetails?.accountNumber || '',
+      routingNumber: routingNumber ?? technician.bankDetails?.routingNumber ?? '',
+      accountType: accountType ?? technician.bankDetails?.accountType ?? '',
+      version: (technician.bankDetails?.version || 0) + 1,
       ifscCode:      ifscCode      || technician.bankDetails?.ifscCode      || '',
       upiId:         upiId         || technician.bankDetails?.upiId         || '',
       blankCheque,

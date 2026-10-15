@@ -1,3 +1,4 @@
+import AdminBreadcrumb from '../components/AdminBreadcrumb';
 import SummaryFilterCard from '../components/SummaryFilterCard';
 import React, { useCallback, useEffect, useState } from 'react';
 import adminApi from '../services/adminApi';
@@ -75,7 +76,7 @@ const SubcategoryManagement = () => {
 
     return (
         <div className="web-services">
-            <div className="web-services-breadcrumb">Customer Management <span>›</span> <strong>Services</strong></div>
+            <AdminBreadcrumb className="web-services-breadcrumb" section="Customer Management" items={[{ label: 'Services' }]} />
             <div className="web-services-heading">
                 <div><h1>Web Services Management</h1><p>Manage the services available across your customer experience.</p></div>
                 <button onClick={handleOpenCreate} className="web-services-create"><FaPlus /> Create New Service</button>

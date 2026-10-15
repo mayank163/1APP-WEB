@@ -48,7 +48,11 @@ router.patch('/jobs/:jobId/tasks/:taskIndex/complete', protect, restrictTo('tech
 router.get('/details/:jobId', protect, restrictTo('technician'), technicianController.getDetailsByJobId);
 
 // ── Wallet ────────────────────────────────────────────────────────────────────
-router.post('/withdraw',    protect, restrictTo('technician'), technicianController.createWithdrawalRequest);
-router.get('/withdrawals',  protect, restrictTo('technician'), technicianController.getWithdrawals);
+router.post('/withdraw',    protect, restrictTo('technician'), require('../controllers/manualPayoutController').request);
+router.get('/withdrawals',  protect, restrictTo('technician'), require('../controllers/manualPayoutController').history);
 
+const payouts = require('../controllers/manualPayoutController');
+router.get('/bank-details', protect, restrictTo('technician'), payouts.getBank);
+router.put('/bank-details', protect, restrictTo('technician'), payouts.saveBank);
+router.get('/wallet', protect, restrictTo('technician'), payouts.wallet);
 module.exports = router;

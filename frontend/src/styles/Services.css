@@ -1292,3 +1292,79 @@
   padding-right: var(--ui-space-7);
   margin-top: var(--ui-space-9);
 }
+
+/* Stack the desktop columns and keep service content readable on phones. */
+@media (max-width: 768px) {
+  .services-page .ui-services-73:not(#ui-style-priority):not(#ui-style-priority-2) { grid-template-columns: minmax(0, 1fr); padding: 16px; gap: 16px; }
+  .services-page .ui-services-74:not(#ui-style-priority):not(#ui-style-priority-2) { padding: 20px 18px; border: 1px solid #e5e7eb; }
+  .services-page .ui-services-75:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 21px; line-height: 1.3; margin-bottom: 6px; color: #182236; }
+  .services-page .ui-services-76:not(#ui-style-priority):not(#ui-style-priority-2) { margin-bottom: 16px; }
+  .services-page .ui-services-80:not(#ui-style-priority):not(#ui-style-priority-2) { margin: 0; padding: 12px; background: #f7f9fc; border-color: #e7edf5; }
+  .services-page .ui-services-82:not(#ui-style-priority):not(#ui-style-priority-2) { box-sizing: content-box; padding: 9px; border-radius: 8px; background: #111b2d; color: white; font-size: 16px; flex-shrink: 0; }
+  .services-page .ui-services-83:not(#ui-style-priority):not(#ui-style-priority-2) { text-transform: uppercase; font-size: 12px; color: #182236; }
+  .services-page .ui-services-84:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 12px; color: #71829a; }
+  .services-page .ui-services-85:not(#ui-style-priority):not(#ui-style-priority-2) { display: none; }
+  .services-page .ui-services-87:not(#ui-style-priority):not(#ui-style-priority-2) { margin-top: 20px; }
+  .services-page .ui-services-88:not(#ui-style-priority):not(#ui-style-priority-2) { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .services-page .ui-services-89:not(#ui-style-priority):not(#ui-style-priority-2) { min-width: 0; padding: 12px 6px; min-height: 96px; }
+  .services-page .ui-services-92:not(#ui-style-priority):not(#ui-style-priority-2) { -webkit-line-clamp: 2; font-size: 12px; }
+  .services-page .ui-services-93:not(#ui-style-priority):not(#ui-style-priority-2) { height: auto; min-height: 180px; padding: 22px 20px 44px; margin-bottom: 16px; }
+  .services-page .ui-services-95:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 10px; padding: 5px 10px; }
+  .services-page .ui-services-96:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 21px; line-height: 1.3; color: #fff; }
+  .services-page .ui-services-97:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 13px; line-height: 1.6; }
+  .services-page .ui-services-98:not(#ui-style-priority):not(#ui-style-priority-2) { left: 20px; transform: none; bottom: 20px; }
+  .services-page .ui-services-100:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 14px; color: #475569; margin-bottom: 12px; }
+  .services-page .ui-services-113:not(#ui-style-priority):not(#ui-style-priority-2) { gap: 14px; }
+  .services-page .ui-services-114:not(#ui-style-priority):not(#ui-style-priority-2) { display: grid; grid-template-columns: 80px minmax(0, 1fr); grid-template-rows: auto auto auto auto; column-gap: 12px; row-gap: 0; padding: 18px; border: 1px solid #e2e8f0; color: #182236; }
+  .services-page .ui-services-115:not(#ui-style-priority):not(#ui-style-priority-2) { grid-column: 1; grid-row: 1 / 3; width: 80px; height: 80px; border-radius: 10px; }
+  .services-page .ui-services-118:not(#ui-style-priority):not(#ui-style-priority-2) { display: contents; }
+  .services-page .ui-services-119:not(#ui-style-priority):not(#ui-style-priority-2) { display: contents; }
+  .services-page .ui-services-120:not(#ui-style-priority):not(#ui-style-priority-2) { grid-column: 2; grid-row: 1; font-size: 16px; line-height: 1.35; font-weight: 750; overflow-wrap: anywhere; }
+  .services-page .ui-services-121:not(#ui-style-priority):not(#ui-style-priority-2) { grid-column: 2; grid-row: 2; margin: 6px 0 0 54px; text-align: left; align-self: start; }
+  .services-page .ui-services-122:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 12px; line-height: 22px; white-space: normal; }
+  .services-page .ui-services-123:not(#ui-style-priority):not(#ui-style-priority-2) { grid-column: 2; grid-row: 2; align-self: start; justify-self: start; gap: 4px; margin: 6px 0 0; padding: 1px 5px; border: 1px solid #ffedb0; border-radius: 4px; background: #fffbeb; }
+  .services-page .ui-services-125:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 12px; }
+  .services-page .ui-services-126:not(#ui-style-priority):not(#ui-style-priority-2) { display: none; }
+  .services-page .ui-services-127:not(#ui-style-priority):not(#ui-style-priority-2) { grid-column: 1 / -1; border-top: 1px solid #edf0f4; padding-top: 16px; margin: 16px 0 24px; font-size: 13px; line-height: 1.65; font-weight: 500; color: #59677c; white-space: pre-line; overflow-wrap: anywhere; }
+  .services-page .ui-services-128:not(#ui-style-priority):not(#ui-style-priority-2) { grid-column: 1 / -1; gap: 12px; }
+  .services-page .ui-services-129:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 13px; text-decoration: underline; min-height: 44px; display: flex; align-items: center; }
+  .services-page .ui-services-130:not(#ui-style-priority):not(#ui-style-priority-2) { min-width: 80px; min-height: 38px; padding: 8px 18px; font-size: 12px; text-transform: uppercase; border: 2px solid #182236; color: #182236; }
+  .services-page .ui-services-131:not(#ui-style-priority):not(#ui-style-priority-2) { min-height: 40px; padding: 0 8px; gap: 12px; }
+  .services-page .ui-services-132:not(#ui-style-priority):not(#ui-style-priority-2) { min-width: 28px; min-height: 36px; }
+  .services-page .ui-services-134:not(#ui-style-priority):not(#ui-style-priority-2) { min-width: 28px; min-height: 36px; }
+  .services-page .ui-services-135:not(#ui-style-priority):not(#ui-style-priority-2) { gap: 16px; }
+  .services-page .ui-services-136:not(#ui-style-priority):not(#ui-style-priority-2) { order: 2; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 20px 18px; border: 1px solid #e2e8f0; }
+  .services-page .ui-services-137:not(#ui-style-priority):not(#ui-style-priority-2) { grid-column: 1 / -1; margin-bottom: 6px; }
+  .services-page .ui-services-139:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 14px; text-transform: uppercase; letter-spacing: .3px; color: #182236; }
+  .services-page .ui-services-140:not(#ui-style-priority):not(#ui-style-priority-2) { background: #f7f9fb; padding: 9px 8px; border-radius: 12px; margin: 0; gap: 7px; align-items: flex-start; }
+  .services-page .ui-services-141:not(#ui-style-priority):not(#ui-style-priority-2) { color: #00a477; flex-shrink: 0; margin-top: 2px; font-size: 12px; }
+  .services-page .ui-services-142:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 11px; line-height: 1.4; font-weight: 600; color: #475569; }
+  .services-page .ui-services-143:not(#ui-style-priority):not(#ui-style-priority-2) { order: 1; padding: 20px; border: 1px solid #e2e8f0; }
+  .services-page .ui-services-144:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 20px; color: #182236; padding-bottom: 10px; border-bottom: 1px solid #edf0f4; }
+  .services-page .ui-services-150:not(#ui-style-priority):not(#ui-style-priority-2) { gap: 12px; align-items: flex-start; }
+  .services-page .ui-services-151:not(#ui-style-priority):not(#ui-style-priority-2) { min-width: 0; font-size: 16px; overflow-wrap: anywhere; }
+  .services-page .ui-services-153:not(#ui-style-priority):not(#ui-style-priority-2) { flex-shrink: 0; background: #f4efff; border: 1px solid #182236; padding: 0 6px; gap: 8px; }
+  .services-page .ui-services-154:not(#ui-style-priority):not(#ui-style-priority-2) { min-width: 24px; min-height: 32px; }
+  .services-page .ui-services-156:not(#ui-style-priority):not(#ui-style-priority-2) { min-width: 24px; min-height: 32px; }
+  .services-page .ui-services-157:not(#ui-style-priority):not(#ui-style-priority-2) { border-top: 1px solid #edf0f4; border-radius: 0; padding: 12px 0 0; background: transparent; color: #182236; gap: 12px; }
+  .services-page .ui-services-30:not(#ui-style-priority):not(#ui-style-priority-2) { grid-template-columns: minmax(0, 1fr); }
+  .services-page .ui-services-38:not(#ui-style-priority):not(#ui-style-priority-2) { grid-template-columns: minmax(0, 1fr); }
+  .services-page .ui-services-57:not(#ui-style-priority):not(#ui-style-priority-2) { grid-template-columns: minmax(0, 1fr); }
+  .services-page.ui-services-23:not(#ui-style-priority):not(#ui-style-priority-2) { padding: 16px; }
+  .services-page .ui-services-25:not(#ui-style-priority):not(#ui-style-priority-2) { padding: 24px 20px; }
+  .services-page .ui-services-28:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 23px; }
+  .services-page .ui-services-36:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 22px; }
+  .services-page .ui-services-44:not(#ui-style-priority):not(#ui-style-priority-2) { white-space: normal; }
+  .services-page .ui-services-62:not(#ui-style-priority):not(#ui-style-priority-2) { min-width: 0; }
+  .services-page .ui-services-102:not(#ui-style-priority):not(#ui-style-priority-2) { padding: 18px; gap: 12px; }
+  .services-page .ui-services-103:not(#ui-style-priority):not(#ui-style-priority-2) { width: 80px; height: 80px; }
+  .services-page .ui-services-73 > * { min-width: 0; }
+  .services-page .ui-services-157 > span:first-child { font-size: 23px; font-weight: 800; }
+  .services-page .ui-services-157 > span:last-child { background: #000; color: #fff; padding: 14px 16px; border-radius: 10px; white-space: nowrap; }
+  .services-page .ui-services-1 { gap: 10px; }
+}
+@media (min-width: 769px) and (max-width: 1100px) {
+  .services-page .ui-services-73:not(#ui-style-priority):not(#ui-style-priority-2) { grid-template-columns: 240px minmax(0, 1fr); padding: 24px; }
+  .services-page .ui-services-73 > * { min-width: 0; }
+  .services-page .ui-services-135:not(#ui-style-priority):not(#ui-style-priority-2) { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

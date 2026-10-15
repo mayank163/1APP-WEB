@@ -35,8 +35,44 @@ export const AuthProvider = ({ children }) => {
     };
 
     useEffect(() => {
+        const expireSession = () => setUser(null);
+        window.addEventListener('1App:session-expired', expireSession);
         checkAuth();
+        return () => window.removeEventListener('1App:session-expired', expireSession);
     }, []);
+
+    useEffect(() => {
+        if (!user) return undefined;
+        let pending = false;
+        const verifySession = async () => {
+            if (pending || document.visibilityState === 'hidden') return;
+            pending = true;
+            try {
+                // The API interceptor clears the session on 401. Network errors
+                // leave the session intact so an offline device stays signed in.
+                await authService.getMe();
+            } catch (_) {
+            } finally {
+                pending = false;
+            }
+        };
+        const syncStorage = (event) => {
+            if (event.key === '1App_token') {
+                if (!event.newValue) setUser(null);
+                else verifySession();
+            }
+        };
+        const timer = window.setInterval(verifySession, 10000);
+        window.addEventListener('focus', verifySession);
+        document.addEventListener('visibilitychange', verifySession);
+        window.addEventListener('storage', syncStorage);
+        return () => {
+            window.clearInterval(timer);
+            window.removeEventListener('focus', verifySession);
+            document.removeEventListener('visibilitychange', verifySession);
+            window.removeEventListener('storage', syncStorage);
+        };
+    }, [user]);
 
     useEffect(() => {
         if (user && typeof Notification !== 'undefined' && Notification.permission === 'granted') {

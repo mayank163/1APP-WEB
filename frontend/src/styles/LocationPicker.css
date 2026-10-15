@@ -52,3 +52,24 @@
   color: var(--ui-color-6);
   margin-top: var(--ui-space-17);
 }
+
+.location-picker-current {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #f7f8fa;
+  color: #172033;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.location-picker-current:disabled { opacity: .6; cursor: wait; }
+.location-picker-current:focus-visible { outline: 2px solid #172033; outline-offset: 2px; }
+.location-picker-error { color: #b42318; font-size: 13px; line-height: 1.5; margin: 0 0 12px; }

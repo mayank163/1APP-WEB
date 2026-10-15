@@ -1,6 +1,7 @@
+import AdminBreadcrumb from '../components/AdminBreadcrumb';
 import React, { useEffect, useState } from 'react';
 import adminApi from '../services/adminApi';
-import { FiChevronRight, FiEdit2, FiFilter, FiMoreVertical, FiPlus, FiSearch, FiX } from 'react-icons/fi';
+import { FiEdit2, FiFilter, FiMoreVertical, FiPlus, FiSearch, FiX } from 'react-icons/fi';
 import { Dropdown } from 'react-bootstrap';
 import CatalogModal from '../components/CatalogModal';
 import Pagination from '../components/Pagination';
@@ -125,7 +126,7 @@ const PlanManagement = () => {
 
     return (
         <section className="catalog-management membership-management">
-            <div className="catalog-breadcrumb">Customer Management <FiChevronRight /><span>Membership</span></div>
+            <AdminBreadcrumb className="catalog-breadcrumb" section="Customer Management" items={[{ label: 'Membership' }]} />
             <h1>Membership</h1>
             <p className="catalog-description">Manage membership plans, customer subscriptions, benefits, renewals and cancellations.</p>
             <div className="catalog-filters membership-filters">

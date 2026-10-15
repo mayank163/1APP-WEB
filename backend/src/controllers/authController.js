@@ -44,9 +44,17 @@ const signRefreshToken = (id, role, tokenVersion = 0) => {
     );
 };
 
-const sendTokenResponse = (user, statusCode, res) => {
+const sendTokenResponse = async (user, statusCode, res) => {
     if (user.accountStatus === 'inactive') return res.status(403).json({ success: false, message: 'This account is inactive. Please create a new account.' });
     if (user.role === 'technician' && ['invited', 'suspended', 'blocked'].includes(user.accountStatus)) return res.status(403).json({ success: false, message: 'Account is pending activation or suspended.' });
+    // Atomically revoke previous sessions before issuing this login's tokens.
+    const session = await User.findByIdAndUpdate(
+        user._id,
+        { $inc: { tokenVersion: 1 } },
+        { new: true }
+    );
+    if (!session) return res.status(401).json({ success: false, message: 'User no longer exists.' });
+    user.tokenVersion = session.tokenVersion;
     const accessToken = signAccessToken(user._id, user.role, user.tokenVersion);
     const refreshToken = signRefreshToken(user._id, user.role, user.tokenVersion);
 
@@ -179,7 +187,7 @@ exports.verifyRegister = async (req, res, next) => {
             console.error('Welcome email failed:', err.message)
         );
 
-        sendTokenResponse(user, 201, res);
+        await sendTokenResponse(user, 201, res);
     } catch (err) {
         next(err);
     }
@@ -234,7 +242,7 @@ exports.register = async (req, res, next) => {
             console.error('Welcome email failed:', err.message)
         );
 
-        sendTokenResponse(user, 201, res);
+        await sendTokenResponse(user, 201, res);
     } catch (err) {
         next(err);
     }
@@ -289,7 +297,7 @@ exports.login = async (req, res, next) => {
             });
         }
 
-        sendTokenResponse(user, 200, res);
+        await sendTokenResponse(user, 200, res);
     } catch (err) {
         next(err);
     }
@@ -378,7 +386,7 @@ exports.updateMe = async (req, res, next) => {
 
         // ADD a new address
         if (addAddress) {
-            const { label = 'Home', addressLine, city = '', state = '', zipcode = '', isDefault = false, coordinates } = addAddress;
+            const { label = 'Home', buildingFloor = '', street = '', addressLine, city = '', state = '', zipcode = '', isDefault = false, coordinates } = addAddress;
             if (!addressLine || !addressLine.trim()) {
                 return res.status(400).json({ success: false, message: 'addressLine is required when adding an address' });
             }
@@ -387,7 +395,7 @@ exports.updateMe = async (req, res, next) => {
                 user.addresses.forEach(a => { a.isDefault = false; });
             }
             user.addresses.push({
-                label, addressLine: addressLine.trim(), city, state, zipcode,
+                label, buildingFloor, street, addressLine: addressLine.trim(), city, state, zipcode,
                 isDefault: isDefault || user.addresses.length === 0,
                 coordinates: coordinates?.lat ? { lat: coordinates.lat, lng: coordinates.lng } : { lat: null, lng: null }
             });
@@ -480,13 +488,15 @@ exports.uploadProfileImage = async (req, res, next) => {
  */
 exports.forgotPassword = async (req, res, next) => {
     try {
-        const { identifier } = req.body; // phone or email
+        const identifier = typeof req.body?.identifier === 'string' ? req.body.identifier.trim() : '';
         if (!identifier) {
             return res.status(400).json({ success: false, message: 'Please provide email or phone number' });
         }
 
         const user = await User.findOne({
-            $or: [{ email: identifier.toLowerCase() }, { phone: identifier }],
+            $or: identifier.includes('@')
+                ? [{ email: identifier.toLowerCase() }]
+                : [phoneQuery(normalizePhone(identifier))],
             accountStatus: { $ne: 'inactive' }
         });
 
@@ -513,12 +523,17 @@ exports.forgotPassword = async (req, res, next) => {
             success: true,
             message: `OTP sent to registered phone ${user.phone}`,
             phone: user.phone,
+            expiresIn: 300,
+            resendAfter: 60,
             ...(otpService.simulationEnabled() && devOtp && { devOtp }),
         });
     } catch (err) {
         next(err);
     }
 };
+
+// Resending uses the same delivery, account validation and 60-second cooldown.
+exports.resendOTP = exports.forgotPassword;
 
 /**
  * @desc    Reset password - verify OTP and set new password
@@ -643,7 +658,7 @@ exports.googleLogin = async (req, res, next) => {
             await User.findByIdAndUpdate(user._id, { $addToSet: { fcmTokens: String(fcmToken).trim() } });
         }
 
-        sendTokenResponse(user, 200, res);
+        await sendTokenResponse(user, 200, res);
     } catch (err) {
         next(err);
     }

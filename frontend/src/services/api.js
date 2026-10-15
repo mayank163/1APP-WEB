@@ -40,10 +40,12 @@ API.interceptors.request.use(
 API.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response && error.response.status === 401) {
+        const requestToken = error.config?.headers?.Authorization;
+        const currentToken = localStorage.getItem('1App_token');
+        if (error.response?.status === 401 && currentToken && requestToken === `Bearer ${currentToken}`) {
             localStorage.removeItem('1App_token');
             localStorage.removeItem('1App_refreshToken');
-            // optionally redirect or handle logout
+            window.dispatchEvent(new Event('1App:session-expired'));
         }
         return Promise.reject(error);
     }

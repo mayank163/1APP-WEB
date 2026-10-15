@@ -43,6 +43,8 @@ const bookingSchema = new mongoose.Schema({
         // Structured address captured at booking time
         label: { type: String, default: 'Home' },
         name: { type: String, default: '', trim: true },  // custom nickname: "My Home", "Friend's Home"
+        buildingFloor: { type: String, default: '', trim: true, maxlength: 200 },
+        street: { type: String, default: '', trim: true, maxlength: 200 },
         addressLine: { type: String, required: [true, 'Please provide address line'], trim: true },
         city: { type: String, default: '', trim: true },
         state: { type: String, default: '', trim: true },

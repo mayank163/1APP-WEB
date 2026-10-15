@@ -1,5 +1,6 @@
 import { cssValue } from '../utils/cssValue';
 import '../styles/OtpVerify.css';
+import axios from 'axios';
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -9,7 +10,33 @@ import { ResetAuthPanel } from './AuthPanel';
 const OtpVerify = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { phone, identifier, devOtp } = location.state || {};
+    const { phone, identifier, devOtp: initialDevOtp } = location.state || {};
+    const [devOtp, setDevOtp] = useState(initialDevOtp);
+    const [resending, setResending] = useState(false);
+    const [resendAfter, setResendAfter] = useState(60);
+
+    useEffect(() => {
+        if (resendAfter <= 0) return;
+        const timer = setTimeout(() => setResendAfter(value => value - 1), 1000);
+        return () => clearTimeout(timer);
+    }, [resendAfter]);
+
+    const handleResend = async () => {
+        setResending(true);
+        try {
+            const { data } = await axios.post(process.env.REACT_APP_API_URL + '/auth/resend-otp', { identifier: identifier || phone });
+            setResendAfter(data.resendAfter || 60);
+            setDevOtp(data.devOtp || null);
+            setOtp(['', '', '', '', '', '']);
+            inputs.current[0]?.focus();
+            toast.success(data.message);
+        } catch (error) {
+            if (error.response?.status === 429) setResendAfter(60);
+            toast.error(error.response?.data?.message || 'Failed to resend OTP');
+        } finally {
+            setResending(false);
+        }
+    };
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const inputs = useRef([]);
 
@@ -80,7 +107,7 @@ const OtpVerify = () => {
                             ))}
                         </div>
 
-                        {/* Dev-mode OTP hint — only shown when Twilio SMS is off */}
+                        {/* OTP hints are supplied only during explicit development simulation. */}
                         {devOtp && (
                             <div className="ui-otpverify-13" >
                                 <div className="ui-otpverify-14" >
@@ -109,6 +136,9 @@ const OtpVerify = () => {
                         <button className="ui-otpverify-18" type="submit"
                             >
                             Verify OTP <span className="ui-otpverify-19" >→</span>
+                        </button>
+                        <button className="otp-resend-button" type="button" onClick={handleResend} disabled={resending || resendAfter > 0}>
+                            {resending ? 'Sending...' : resendAfter > 0 ? `Resend OTP in ${resendAfter}s` : 'Resend OTP'}
                         </button>
                     </form>
 

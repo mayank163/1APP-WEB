@@ -1,5 +1,6 @@
 import '../styles/LocationPicker.css';
 import React, { useEffect, useRef, useState } from 'react';
+import { FaCrosshairs } from 'react-icons/fa';
 
 const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
 
@@ -61,6 +62,50 @@ const LocationPicker = ({ value, onChange, inputClassName = '' }) => {
 
     const [ready, setReady]   = useState(!!window.google?.maps?.places);
     const [error, setError]   = useState('');
+    const [locating, setLocating] = useState(false);
+    const [locationError, setLocationError] = useState('');
+    const locationRequestRef = useRef(0);
+
+    useEffect(() => () => { locationRequestRef.current += 1; }, []);
+
+    const useCurrentLocation = () => {
+        setLocationError('');
+        if (!navigator.geolocation) {
+            setLocationError('Your browser does not support location access. Please enter your address manually.');
+            return;
+        }
+        const request = ++locationRequestRef.current;
+        setLocating(true);
+        navigator.geolocation.getCurrentPosition(
+            ({ coords }) => {
+                if (request !== locationRequestRef.current) return;
+                const lat = coords.latitude;
+                const lng = coords.longitude;
+                new window.google.maps.Geocoder().geocode({ location: { lat, lng } }, (results, status) => {
+                    if (request !== locationRequestRef.current) return;
+                    setLocating(false);
+                    if (status !== 'OK' || !results?.[0]) {
+                        setLocationError('We could not find an address for your location. Please search or enter it manually.');
+                        return;
+                    }
+                    const result = results[0];
+                    const address = result.formatted_address;
+                    if (inputRef.current) inputRef.current.value = address;
+                    onChangeRef.current({ address, lat, lng, ...parseComponents(result.address_components), replaceAddressFields: true });
+                });
+            },
+            (error) => {
+                if (request !== locationRequestRef.current) return;
+                setLocating(false);
+                setLocationError(error.code === 1
+                    ? 'Location access was denied. Allow location access in your browser settings or enter your address manually.'
+                    : error.code === 3
+                        ? 'Location request timed out. Please try again or enter your address manually.'
+                        : 'Your location is unavailable. Please try again or enter your address manually.');
+            },
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        );
+    };
 
     // Load SDK once
     useEffect(() => {
@@ -155,7 +200,7 @@ const LocationPicker = ({ value, onChange, inputClassName = '' }) => {
 
     // Sync map when value changes externally (e.g. editing a saved address)
     useEffect(() => {
-        if (!value?.lat || !mapObjRef.current || !markerRef.current) return;
+        if (!Number.isFinite(value?.lat) || !Number.isFinite(value?.lng) || !mapObjRef.current || !markerRef.current) return;
         const pos = { lat: value.lat, lng: value.lng };
         mapObjRef.current.setCenter(pos);
         mapObjRef.current.setZoom(16);
@@ -179,6 +224,12 @@ const LocationPicker = ({ value, onChange, inputClassName = '' }) => {
 
     return (
         <div>
+            <button type="button" className="location-picker-current" onClick={useCurrentLocation}
+                disabled={!ready || locating} aria-busy={locating}>
+                <FaCrosshairs aria-hidden="true" />
+                {locating ? 'Finding your location…' : 'Use current location'}
+            </button>
+            {locationError && <p className="location-picker-error" role="alert">{locationError}</p>}
             {/* Autocomplete search input — high z-index so the dropdown renders on top */}
             <div className="ui-locationpicker-2" >
                 <input className={`ui-locationpicker-3 ${inputClassName}`}
@@ -204,7 +255,7 @@ const LocationPicker = ({ value, onChange, inputClassName = '' }) => {
             </div>
 
             {/* Lat/lng hint */}
-            {value?.lat && (
+            {Number.isFinite(value?.lat) && (
                 <div className="ui-locationpicker-6" >
                     📍 {value.address} &nbsp;·&nbsp; {Number(value.lat).toFixed(5)}, {Number(value.lng).toFixed(5)}
                 </div>

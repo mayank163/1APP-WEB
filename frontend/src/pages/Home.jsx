@@ -468,11 +468,11 @@ const Home = () => {
 
             >
                 {[
-                    { badge: 'UP TO $500 OFF', title: 'Home Cleaning', desc: 'Deep Cleaning. Sofa Cleaning. Spotless Spaces.', img: 'cleaning_image.png', categoryName: 'Cleaning', subcategoryName: 'Home Cleaning' },
-                    { badge: 'SAME DAY SERVICE', title: 'Plumbing', desc: 'Leak Repairs. Pipe Installation. Water Solutions.', img: 'plumbing_image.png', categoryName: 'Plumbing', subcategoryName: null },
-                    { badge: 'CERTIFIED EXPERTS', title: 'Electrical', desc: 'Switches. Wiring. Safe Installations.', img: 'electrician.png', categoryName: 'Electrical', subcategoryName: null },
-                    { badge: 'UP TO $300 OFF', title: 'Handyman', desc: 'Repairs. Installations. Fix Anything.', img: 'handy_man.png', categoryName: 'Handyman', subcategoryName: null },
-                    { badge: 'SAME DAY SERVICE', title: 'AC & Appliance', desc: 'AC Service. Appliance Repair. Quick Fix.', img: 'ac_repair.png', categoryName: 'AC', subcategoryName: null },
+                    { badge: 'UP TO $500 OFF', title: 'Home Cleaning', desc: 'Deep Cleaning. Sofa Cleaning. Spotless Spaces.', img: 'cleaning_image.png', categoryName: 'Home Services', subcategoryName: 'Cleaning' },
+                    { badge: 'SAME DAY SERVICE', title: 'Plumbing', desc: 'Leak Repairs. Pipe Installation. Water Solutions.', img: 'plumbing_image.png', categoryName: 'Home Services', subcategoryName: 'Plumbing' },
+                    { badge: 'CERTIFIED EXPERTS', title: 'Electrical', desc: 'Switches. Wiring. Safe Installations.', img: 'electrician.png', categoryName: 'Home Services', subcategoryName: 'Electrical' },
+                    { badge: 'UP TO $300 OFF', title: 'Handyman', desc: 'Repairs. Installations. Fix Anything.', img: 'handy_man.png', categoryName: 'Home Services', subcategoryName: 'Handyman' },
+                    { badge: 'SAME DAY SERVICE', title: 'AC & Appliance', desc: 'AC Service. Appliance Repair. Quick Fix.', img: 'ac_repair.png', categoryName: 'Home Services', subcategoryName: 'AC & Appliance' },
                 ].map((item, idx) => {
                     const offerCat = getCategoryByName(item.categoryName);
                     const offerSub = offerCat && item.subcategoryName

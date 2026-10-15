@@ -13,6 +13,7 @@ router.post('/login', validateLogin, authController.login);
 router.post('/google', authController.googleLogin);
 router.post('/google-signup', authController.googleSignup);
 router.post('/forgot-password', authController.forgotPassword);
+router.post('/resend-otp', authController.resendOTP);
 router.post('/reset-password', authController.resetPassword);
 router.post('/refresh-token', authController.refreshToken);
 

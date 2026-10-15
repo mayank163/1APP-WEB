@@ -1,3 +1,4 @@
+import AdminBreadcrumb from '../components/AdminBreadcrumb';
 import SummaryFilterCard from '../components/SummaryFilterCard';
 import { adminCssValue } from '../utils/adminCssValue.js';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -131,7 +132,7 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard-page">
-            <div className="dash-breadcrumb"><span>Overview</span><span>/</span><span>Dashboard</span></div>
+            <AdminBreadcrumb className="dash-breadcrumb" section="Overview" items={[{ label: 'Dashboard' }]} />
             <div className="dash-hello-row">
                 <div>
                     <h1 className="dash-hello">Hello, <span>{name}!</span></h1>

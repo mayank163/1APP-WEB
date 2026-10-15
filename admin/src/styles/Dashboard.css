@@ -25,6 +25,22 @@
     color: var(--admin-color--1f2937);
 }
 
+.dash-breadcrumb a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.dash-breadcrumb a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.dash-breadcrumb a:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+    border-radius: 2px;
+}
+
 /* ── Hello / Heading row ───────────────────────────────────────────────── */
 .dash-hello-row {
     display: flex;

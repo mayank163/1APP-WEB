@@ -16,7 +16,7 @@ export default function Blogs() {
     const row1Ref = useRef(null);
     const row2Ref = useRef(null);
     const otherRef = useRef(null);
-    const catRef = useRef(null);
+    const [newsletterEmail, setNewsletterEmail] = useState('');
 
     useEffect(() => {
         Promise.all([
@@ -53,7 +53,7 @@ export default function Blogs() {
     );
 
     const BlogCard = ({ blog, onClick }) => (
-        <div className="ui-blogs-2" onClick={onClick} >
+        <div className="ui-blogs-2" role="link" tabIndex={0} aria-label={blog.title} onClick={onClick} onKeyDown={event => { if (event.key === 'Enter') onClick(); }} >
             <div className="ui-blogs-3" >
                 <img className="ui-blogs-4"
                     src={resolveImg(blog.featuredImage)}
@@ -113,10 +113,11 @@ export default function Blogs() {
     if (loading) return <BlogsShimmer />;
 
     return (
-        <div className="ui-blogs-17" >
+        <div className="ui-blogs-17 blogs-page" >
 
             {/* ── Header ── */}
             <h2 className="ui-blogs-18" >Checkout Our Latest Blogs</h2>
+            <p className="blogs-intro">Insights, guides, and smart tips from verified service pros.</p>
 
             {/* ── Hero Section (only when blogs exist) ── */}
             {filteredBlogs.length > 0 && (
@@ -159,13 +160,14 @@ export default function Blogs() {
             )}
 
             {/* ── Tabs ── */}
-            <div className="ui-blogs-31" >
+            <div className="ui-blogs-31" id="blogs-tabs" >
                 <div className="ui-blogs-32" >
-                    {[{ _id: null, name: 'All' }, ...categories].map(cat => {
+                    {[{ _id: null, name: 'Home' }, ...categories].map(cat => {
                         const isActive = activeTab === cat._id;
                         return (
                             <button className="ui-blogs-33"
                                 key={cat._id ?? 'all'}
+                                aria-pressed={isActive}
                                 onClick={() => setActiveTab(cat._id)}
                                 style={{ "--ui-blogs-33-background": cssValue(isActive ? "var(--ui-color-27)" : "var(--ui-color-35)", "background"), "--ui-blogs-33-color": cssValue(isActive ? "var(--ui-color-2)" : "var(--ui-color-41)", "color"), "--ui-blogs-33-font-weight": cssValue(isActive ? 700 : 500, "fontWeight") }}
                             >
@@ -181,11 +183,13 @@ export default function Blogs() {
             {filteredBlogs.length === 0 && <EmptyState />}
 
             {/* ── Grid Rows (horizontal scroll) ── */}
+            <div className="blogs-main-grid">
             {gridRow1.length > 0 && <ScrollRow items={gridRow1} refEl={row1Ref} />}
             {gridRow2.length > 0 && <ScrollRow items={gridRow2} refEl={row2Ref} />}
+            </div>
 
             {/* ── Featured Two Cards ── */}
-            {featuredTwo.length >= 2 && (
+            {featuredTwo.length > 0 && (
                 <div className="ui-blogs-35" >
                     {featuredTwo.map(b => (
                         <div className="ui-blogs-36" key={b._id} onClick={() => navigate(`/blogs/${b.slug || b._id}`)} >
@@ -206,6 +210,16 @@ export default function Blogs() {
                     ))}
                 </div>
             )}
+
+            {otherBlogs.length > 0 && (
+                <section className="blogs-more" aria-label="More stories">
+                    <button className="blogs-section-action" onClick={() => scroll(otherRef, 1)}>Swipe →</button>
+                    <div className="blogs-more-track" ref={otherRef}>
+                        {otherBlogs.map(b => <BlogCard key={b._id} blog={b} onClick={() => navigate(`/blogs/${b.slug || b._id}`)} />)}
+                    </div>
+                </section>
+            )}
+            
 
         </div>
     );

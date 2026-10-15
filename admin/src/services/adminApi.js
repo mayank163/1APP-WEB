@@ -25,6 +25,10 @@ API.interceptors.response.use(
 const multipart = { headers: { 'Content-Type': 'multipart/form-data' } };
 
 const adminApi = {
+    linkPayoutRecipient: async (id, payload) => (await API.post(`/admin/technicians/${id}/payout-recipient`, payload)).data,
+    getWithdrawals: async params => (await API.get('/admin/withdrawals', { params })).data,
+    getWithdrawalBank: async id => (await API.get(`/admin/withdrawals/${id}/bank-destination`)).data,
+    updateWithdrawal: async (id, action, payload) => (await API.patch(`/admin/withdrawals/${id}/${action}`, payload)).data,
     getOffers: async () => (await API.get('/offers/admin')).data,
     getOfferOptions: async (params = {}) => (await API.get('/offers/admin/options', { params })).data,
     createOffer: async payload => (await API.post('/offers/admin', payload)).data,

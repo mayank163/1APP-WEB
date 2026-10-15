@@ -1,3 +1,4 @@
+import AdminBreadcrumb from './AdminBreadcrumb';
 import React, { useEffect, useMemo, useState } from "react";
 import { Dropdown } from "react-bootstrap";
 import { Link } from "react-router-dom";
@@ -1313,13 +1314,7 @@ export default function TechnicianProfile({
     <div className="tp-workspace">
       <header className="tp-header">
         <div>
-          <nav className="tp-breadcrumb">
-            <span>Field Operations</span>
-            <FiChevronRight />
-            <button onClick={onClose}>Technicians</button>
-            <FiChevronRight />
-            <strong>Technician Profile / {technician.name}</strong>
-          </nav>
+          <AdminBreadcrumb className="tp-breadcrumb" section="Field Operations" items={[{ label: 'Technicians', onClick: onClose }, { label: `Technician Profile / ${technician.name}` }]} />
           <h1>Technician’s Profile</h1>
           <p>Manage and monitor technician’s activities.</p>
         </div>

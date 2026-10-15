@@ -1,10 +1,11 @@
 import '../styles/ForgotPassword.css';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaEnvelope, FaPhone,FaPhoneAlt, FaArrowLeft } from 'react-icons/fa';
+import { FaEnvelope, FaArrowLeft } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { ResetAuthPanel } from './AuthPanel';
+import CountryCodePicker, { DEFAULT_COUNTRY } from '../components/CountryCodePicker';
 
 
 const ForgotPassword = () => {
@@ -12,16 +13,18 @@ const ForgotPassword = () => {
     const [useEmail, setUseEmail] = useState(true);
     const [identifier, setIdentifier] = useState('');
     const [loading, setLoading] = useState(false);
+    const [selectedCountry, setSelectedCountry] = useState(DEFAULT_COUNTRY);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const resetIdentifier = useEmail ? identifier.trim() : `${selectedCountry.code}${identifier}`;
         setLoading(true);
         try {
-            const res = await axios.post(process.env.REACT_APP_API_URL + '/auth/forgot-password', { identifier });
+            const res = await axios.post(process.env.REACT_APP_API_URL + '/auth/forgot-password', { identifier: resetIdentifier });
             if (res.data.success) {
                 toast.success(res.data.message);
                 navigate('/verify-otp', {
-                    state: { phone: res.data.phone, identifier, devOtp: res.data.devOtp || null },
+                    state: { phone: res.data.phone, identifier: resetIdentifier, devOtp: res.data.devOtp || null },
                 });
             }
         } catch (err) {
@@ -47,7 +50,7 @@ const ForgotPassword = () => {
                             Forgot <span className="ui-forgotpassword-7" >Password?</span>
                         </h2>
                         <p className="ui-forgotpassword-8" >
-                            No worries! Enter your {useEmail ? 'email address' : 'phone number'} and we'll send you a link to reset your password.
+                            No worries! Enter your {useEmail ? 'email address' : 'phone number'} and we'll send an OTP to your registered phone to reset your password.
                         </p>
                         <div className="ui-forgotpassword-9"  />
                     </div>
@@ -58,18 +61,31 @@ const ForgotPassword = () => {
                                 {useEmail ? 'Email Address' : 'Phone Number'}
                             </label>
                             <div className="ui-forgotpassword-12" >
-                                {useEmail ? <FaEnvelope color="#888" size={14} /> : <FaPhoneAlt color="#888" size={14} />}
-                                <input className="ui-forgotpassword-13"
-                                    type={useEmail ? 'email' : 'tel'}
-                                    required
-                                    placeholder={useEmail ? 'name@example.com' : '+91 98765 43210'}
-                                    value={identifier}
-                                    onChange={e => setIdentifier(e.target.value)}
-
-                                />
+                                {useEmail ? (
+                                    <>
+                                        <FaEnvelope color="#888" size={14} />
+                                        <input className="ui-forgotpassword-13"
+                                            type="email"
+                                            required
+                                            disabled={loading}
+                                            placeholder="name@example.com"
+                                            value={identifier}
+                                            onChange={e => setIdentifier(e.target.value)}
+                                        />
+                                    </>
+                                ) : (
+                                    <CountryCodePicker
+                                        selectedCountry={selectedCountry}
+                                        onCountryChange={setSelectedCountry}
+                                        phoneValue={identifier}
+                                        onPhoneChange={setIdentifier}
+                                        required
+                                        disabled={loading}
+                                    />
+                                )}
                             </div>
                             <div className="ui-forgotpassword-14" >
-                                <button className="ui-forgotpassword-15" type="button" onClick={() => { setUseEmail(!useEmail); setIdentifier(''); }}
+                                <button className="ui-forgotpassword-15" type="button" disabled={loading} onClick={() => { setUseEmail(!useEmail); setIdentifier(''); }}
                                     >
                                     {useEmail ? 'Use Phone Number' : 'Use Email'}
                                 </button>
@@ -78,7 +94,7 @@ const ForgotPassword = () => {
 
                         <button className="ui-forgotpassword-16" type="submit" disabled={loading}
                             >
-                            {loading ? 'Sending...' : 'Send Reset Link'} <span className="ui-forgotpassword-17" >→</span>
+                            {loading ? 'Sending...' : 'Send Reset OTP'} <span className="ui-forgotpassword-17" >→</span>
                         </button>
                     </form>
 

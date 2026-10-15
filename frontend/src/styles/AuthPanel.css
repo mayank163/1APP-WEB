@@ -18,3 +18,66 @@
   background-position: center;
   height: 100%;
 }
+
+/* Shared responsive layout for login and signup. */
+.auth-page:is(.ui-loginpage-1, .ui-signuppage-4):not(#ui-style-priority):not(#ui-style-priority-2) {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  height: auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: visible;
+}
+.auth-page > * { min-width: 0; }
+.auth-page :is(.ui-loginpage-2, .ui-signuppage-5):not(#ui-style-priority):not(#ui-style-priority-2) {
+  height: auto;
+  padding: 40px clamp(24px, 5vw, 72px);
+  overflow: visible;
+}
+.auth-page :is(.ui-authpanel-1, .ui-authpanel-2):not(#ui-style-priority):not(#ui-style-priority-2) { height: auto; }
+.auth-page :is(.ui-loginpage-13, .ui-loginpage-19, .ui-signuppage-13, .ui-signuppage-14, .ui-signuppage-18, .ui-signuppage-28):not(#ui-style-priority):not(#ui-style-priority-2) {
+  min-width: 0;
+  width: 100%;
+}
+.auth-page .ui-countrycodepicker-1:not(#ui-style-priority):not(#ui-style-priority-2) { min-width: 0; }
+.auth-page :is(.ui-loginpage-12, .ui-loginpage-18, .ui-signuppage-3, .ui-signuppage-17):focus-within {
+  outline: 2px solid #555;
+  outline-offset: 2px;
+}
+@media (max-width: 768px) {
+  .auth-page:is(.ui-loginpage-1, .ui-signuppage-4):not(#ui-style-priority):not(#ui-style-priority-2) { grid-template-columns: minmax(0, 1fr); }
+  .auth-page .ui-authpanel-1:not(#ui-style-priority):not(#ui-style-priority-2) { display: none; }
+  .auth-page :is(.ui-loginpage-2, .ui-signuppage-5):not(#ui-style-priority):not(#ui-style-priority-2) {
+    padding: 36px 24px calc(36px + env(safe-area-inset-bottom));
+    justify-content: flex-start;
+  }
+  .auth-page :is(.ui-loginpage-3, .ui-signuppage-6):not(#ui-style-priority):not(#ui-style-priority-2) {
+    max-width: 440px; width: 100%; margin: auto;
+  }
+  .auth-page :is(.ui-loginpage-4, .ui-signuppage-7):not(#ui-style-priority):not(#ui-style-priority-2) { margin-bottom: 28px; }
+  .auth-page :is(.ui-loginpage-5, .ui-signuppage-8):not(#ui-style-priority):not(#ui-style-priority-2) {
+    font-size: 20px; line-height: 1.4; margin-bottom: 12px;
+  }
+  .auth-page :is(.ui-loginpage-7, .ui-signuppage-10):not(#ui-style-priority):not(#ui-style-priority-2) {
+    font-size: clamp(28px, 8vw, 36px); line-height: 1.2; margin: 0 0 12px;
+  }
+  .auth-page :is(.ui-loginpage-8, .ui-signuppage-11):not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 15px; line-height: 1.6; }
+  .auth-page :is(.ui-loginpage-9, .ui-signuppage-12):not(#ui-style-priority):not(#ui-style-priority-2) { margin: 20px auto 0; }
+  .auth-page :is(.ui-loginpage-12, .ui-loginpage-18, .ui-signuppage-3, .ui-signuppage-17):not(#ui-style-priority):not(#ui-style-priority-2) {
+    min-width: 0; min-height: 50px; padding: 8px 12px; gap: 10px; border-radius: 10px;
+  }
+  .auth-page :is(.ui-loginpage-13, .ui-loginpage-19, .ui-signuppage-13, .ui-signuppage-14, .ui-signuppage-18, .ui-signuppage-28):not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 16px; }
+  .auth-page :is(.ui-loginpage-11, .ui-loginpage-17, .ui-signuppage-2, .ui-signuppage-16):not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 14px; margin-bottom: 8px; }
+  .auth-page :is(.ui-loginpage-10, .ui-signuppage-1):not(#ui-style-priority):not(#ui-style-priority-2) { margin-bottom: 20px; }
+  .auth-page :is(.ui-loginpage-15, .ui-loginpage-22):not(#ui-style-priority):not(#ui-style-priority-2) { display: inline-flex; align-items: center; min-height: 36px; font-size: 13px; }
+  .auth-page :is(.ui-loginpage-20, .ui-signuppage-19):not(#ui-style-priority):not(#ui-style-priority-2) { min-width: 32px; min-height: 32px; align-items: center; justify-content: center; flex-shrink: 0; }
+  .auth-page :is(.ui-loginpage-23, .ui-signuppage-34, .ui-loginpage-29, .ui-signuppage-40):not(#ui-style-priority):not(#ui-style-priority-2) {
+    min-height: 50px; padding: 12px 16px; font-size: 16px; border-radius: 10px;
+  }
+  .auth-page :is(.ui-loginpage-25, .ui-signuppage-36):not(#ui-style-priority):not(#ui-style-priority-2) { margin: 24px 0; }
+  .auth-page :is(.ui-loginpage-30, .ui-signuppage-41):not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 14px; line-height: 1.6; margin-top: 24px; }
+  .auth-page .ui-countrycodepicker-2:not(#ui-style-priority):not(#ui-style-priority-2) { min-width: 72px; min-height: 34px; padding: 6px; font-size: 14px; }
+  .auth-page .ui-countrycodepicker-5:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 16px; padding: 6px 8px; }
+  .auth-page .ui-countrycodepicker-7:not(#ui-style-priority):not(#ui-style-priority-2) { width: min(300px, calc(100vw - 80px)); max-height: 260px; }
+  .auth-page .ui-signuppage-29:not(#ui-style-priority):not(#ui-style-priority-2) { flex-wrap: wrap; gap: 12px; padding: 14px; }
+  .auth-page .ui-signuppage-32:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 22px; letter-spacing: 4px; }
+}

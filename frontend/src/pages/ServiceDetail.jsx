@@ -16,6 +16,17 @@ const ServiceDetail = () => {
     const [service, setService] = useState(null);
     const [loading, setLoading] = useState(true);
     const [galleryIndex, setGalleryIndex] = useState(0);
+    const [imagesPerSlide, setImagesPerSlide] = useState(() => window.matchMedia('(max-width: 768px)').matches ? 1 : 2);
+
+    useEffect(() => {
+        const query = window.matchMedia('(max-width: 768px)');
+        const updateGallery = () => {
+            setImagesPerSlide(query.matches ? 1 : 2);
+            setGalleryIndex(0);
+        };
+        query.addEventListener('change', updateGallery);
+        return () => query.removeEventListener('change', updateGallery);
+    }, []);
     const [selectedVariant, setSelectedVariant] = useState(null);
     const [selectedAddons, setSelectedAddons] = useState([]);
     const [openFaq, setOpenFaq] = useState(null);
@@ -121,7 +132,7 @@ const ServiceDetail = () => {
         ? service.gallery.map(g => resolveImageUrl(g.url))
         : [resolveImageUrl(service?.featuredImage)].filter(Boolean);
 
-    const totalSlides = Math.ceil(galleryImages.length / 2);
+    const totalSlides = Math.ceil(galleryImages.length / imagesPerSlide);
 
     const handlePrev = () => setGalleryIndex(i => Math.max(0, i - 1));
     const handleNext = () => setGalleryIndex(i => Math.min(totalSlides - 1, i + 1));
@@ -164,11 +175,11 @@ const ServiceDetail = () => {
         );
     }
 
-    const visibleImages = galleryImages.slice(galleryIndex * 2, galleryIndex * 2 + 2);
+    const visibleImages = galleryImages.slice(galleryIndex * imagesPerSlide, (galleryIndex + 1) * imagesPerSlide);
     const discountPct = service.discountPercentage || 0;
 
     return (
-        <div className="ui-servicedetail-1" >
+        <div className="service-detail-page ui-servicedetail-1" >
 
             {/* Gallery Carousel */}
             <div className="ui-servicedetail-2" >

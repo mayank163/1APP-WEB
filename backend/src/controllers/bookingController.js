@@ -128,6 +128,8 @@ exports.createBookingOrder = async (req, res, next) => {
             address: {
                 label:       bookingAddress.label       || 'Home',
                 name:        bookingAddress.name        || '',
+                buildingFloor: bookingAddress.buildingFloor || '',
+                street: bookingAddress.street || '',
                 addressLine,
                 city:        bookingAddress.city        || '',
                 state:       bookingAddress.state       || '',

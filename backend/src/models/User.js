@@ -35,6 +35,8 @@ const userSchema = new mongoose.Schema({
         {
             label: { type: String, default: 'Home', trim: true },    // type category: Home / Office / Work / Other
             name: { type: String, default: '', trim: true },         // custom nickname: "My Home", "Friend's Home", etc.
+            buildingFloor: { type: String, default: '', trim: true, maxlength: 200 },
+            street: { type: String, default: '', trim: true, maxlength: 200 },
             addressLine: { type: String, default: '', trim: true },  // street / flat / building
             city: { type: String, default: '', trim: true },
             state: { type: String, default: '', trim: true },
@@ -54,6 +56,7 @@ const userSchema = new mongoose.Schema({
     technicianId: { type: String, unique: true, sparse: true },
     createdByAdmin: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
     accountStatus: { type: String, enum: ['active', 'inactive', 'invited', 'suspended', 'blocked'], default: 'active' },
+    payoutVersion: { type: Number, default: 0 },
     tokenVersion: { type: Number, default: 0 },
     technicianAdminNote: { type: String, default: '', maxlength: 1000, select: false },
     dateOfBirth: Date,
@@ -88,6 +91,9 @@ const userSchema = new mongoose.Schema({
         accountHolder: { type: String, default: '' },
         bankName: { type: String, default: '' },
         accountNumber: { type: String, default: '' },
+        routingNumber: { type: String, default: '' },
+        accountType: { type: String, enum: ['', 'checking', 'savings'], default: '' },
+        version: { type: Number, default: 1 },
         ifscCode: { type: String, default: '' },
         upiId: { type: String, default: '' },
         blankCheque: { type: String, default: '' }

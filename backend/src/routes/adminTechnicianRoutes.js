@@ -59,4 +59,11 @@ router.post('/technician-requests/:requestId/invoice',       checkPermission('te
 // Get the invoice for a request
 router.get('/technician-requests/:requestId/invoice',        checkPermission('technician_jobs', 'read'),  chargesController.getInvoice);
 
+const payouts = require('../controllers/manualPayoutController');
+router.get('/withdrawals', adminOnly, checkPermission('technician_jobs', 'read'), payouts.list);
+router.get('/withdrawals/:id/bank-destination', adminOnly, checkPermission('technician_jobs', 'write'), payouts.bankDestination);
+router.post('/technicians/:technicianId/payout-recipient', adminOnly, checkPermission('technician_jobs', 'write'), require('../controllers/bankPayoutController').linkRecipient);
+router.patch('/withdrawals/:id/confirm-returned', adminOnly, checkPermission('technician_jobs', 'write'), require('../controllers/bankPayoutController').confirmReturned);
+router.patch('/withdrawals/:id/reconcile', adminOnly, checkPermission('technician_jobs', 'write'), require('../controllers/bankPayoutController').reconcile);
+router.patch('/withdrawals/:id/:action', adminOnly, checkPermission('technician_jobs', 'write'), payouts.transition);
 module.exports = router;

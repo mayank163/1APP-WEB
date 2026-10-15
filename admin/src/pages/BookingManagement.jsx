@@ -1,3 +1,4 @@
+import AdminBreadcrumb from '../components/AdminBreadcrumb';
 import React, { useEffect, useState } from 'react';
 import {
   FiArrowLeft,
@@ -295,9 +296,7 @@ export default function BookingManagement() {
 
   return (
     <div className="booking-management">
-      <div className="bm-breadcrumb">
-        Customer Management <span>›</span> <strong>Booking</strong>
-      </div>
+      <AdminBreadcrumb className="bm-breadcrumb" section="Customer Management" items={selected ? [{ label: 'Bookings', onClick: () => setSelected(null) }, { label: 'Booking Details' }] : [{ label: 'Bookings' }]} />
 
       {!selected ? (
         <>

@@ -2,7 +2,7 @@ import '../styles/LoginPage.css';
 import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { FaPhone, FaEnvelope, FaLock, FaEye, FaEyeSlash ,FaPhoneAlt} from 'react-icons/fa';
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash} from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useGoogleLogin } from '@react-oauth/google';
 import AuthPanel from './AuthPanel';
@@ -61,7 +61,7 @@ const LoginPage = () => {
     });
 
     return (
-        <div className="ui-loginpage-1" >
+        <div className="auth-page ui-loginpage-1" >
             {/* left: Auth Panel */}
             <AuthPanel />
             {/* right: Form */}
@@ -99,7 +99,6 @@ const LoginPage = () => {
                                     </>
                                 ) : (
                                     <>
-                                        <FaPhoneAlt color="#888" size={14} />
                                         <CountryCodePicker
                                             selectedCountry={phoneCountry}
                                             onCountryChange={setPhoneCountry}

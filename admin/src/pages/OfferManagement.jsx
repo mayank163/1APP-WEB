@@ -1,3 +1,4 @@
+import AdminBreadcrumb from '../components/AdminBreadcrumb';
 import SummaryFilterCard from '../components/SummaryFilterCard';
 import '../styles/OfferManagement.css';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -85,7 +86,7 @@ function OfferManagement() {
     ];
     return <section className="offers-page">
         <header className="offers-header">
-            <div><div className="offers-breadcrumb">Customer Management <FiChevronRight /> <span>Services</span></div>
+            <div><AdminBreadcrumb className="offers-breadcrumb" section="Customer Management" items={[{ label: 'Offers & Coupons' }]} />
                 <h1>Offers &amp; Coupons</h1><p>Create and manage promotional offers, discount coupons, and campaigns across 1APP services.</p></div>
             <button className="offers-primary" onClick={() => { setEditing(null); setForm(true); }}><FiPlus /> Create Coupon</button>
         </header>

@@ -1,3 +1,4 @@
+import AdminBreadcrumb from '../components/AdminBreadcrumb';
 import SummaryFilterCard from '../components/SummaryFilterCard';
 import TechnicianRatingForm, { emptyFeedback, RATING_LABELS, RATING_CRITERIA } from '../components/TechnicianRatingForm';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -887,7 +888,7 @@ const TechnicianJobs = () => {
       {/* ── Page Header ─────────────────────────────────────────────────────── */}
       <div className="tj-page-header">
         <div>
-          <div className="tj-breadcrumb">Field Operations &rsaquo; <span>Jobs</span></div>
+          <AdminBreadcrumb className="tj-breadcrumb" section="Field Operations" items={[{ label: 'Jobs' }]} />
           <h2 className="tj-page-title">Jobs Management Dashboard</h2>
           <p className="tj-page-sub">
             {stats.total} jobs on record &bull; {stats.active} active right now
@@ -1140,7 +1141,7 @@ const TechnicianJobs = () => {
             {/* Sticky header */}
             <div className="tj-fullscreen-header">
               <div>
-                <div className="tj-view-breadcrumb">Field Operations &rsaquo; Jobs &rsaquo; Job Overview</div>
+                <AdminBreadcrumb className="tj-view-breadcrumb" section="Field Operations" items={[{ label: 'Jobs', onClick: () => setShowViewPanel(false) }, { label: 'Job Overview' }]} />
                 <h4 className="tj-fullscreen-title">Job Overview</h4>
               </div>
               <div className="d-flex align-items-center gap-2">

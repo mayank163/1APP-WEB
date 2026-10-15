@@ -297,7 +297,7 @@ export default function Services() {
     // ── Browse-all mode render ─────────────────────────────────────────────────
     if (isBrowseAll) {
         return (
-            <div className="ui-services-23" >
+            <div className="services-page ui-services-23" >
                 <VariantPickerModal service={variantService} selectedVariantId={selectedVariantId} onSelect={setSelectedVariantId} onClose={() => setVariantService(null)} onAdd={handleAddSelectedVariant} saving={addingVariant} />
                 <div className="ui-services-24" >
 
@@ -462,13 +462,13 @@ export default function Services() {
 
     // ── Normal mode (category / subcategory / search) ──────────────────────────
     return (
-        <div className="ui-services-72" >
+        <div className="services-page ui-services-72" >
             <VariantPickerModal service={variantService} selectedVariantId={selectedVariantId} onSelect={setSelectedVariantId} onClose={() => setVariantService(null)} onAdd={handleAddSelectedVariant} saving={addingVariant} />
             <div className="ui-services-73" >
 
                 {/* ── LEFT: Category + Subcategories ── */}
                 <div className="ui-services-74" >
-                    <h2 className="ui-services-75" >{categoryName}</h2>
+                    <h2 className="ui-services-75" >{searchQuery ? `Results for "${searchQuery}"` : categoryName}</h2>
                     <div className="ui-services-76" >
                         <FaStar className="ui-services-77"  />
                         <span className="ui-services-78" >4.8</span>
@@ -603,7 +603,7 @@ export default function Services() {
                                                 {svc.ratingsCount && <span className="ui-services-126" >({(svc.ratingsCount / 1000000).toFixed(1)}M reviews)</span>}
                                             </div>
                                             <p className="ui-services-127" >
-                                                {svc.shortDescription ? svc.shortDescription.slice(0, 100) + (svc.description.length > 100 ? '...' : '') : ''}
+                                                {svc.shortDescription || svc.description || ''}
                                             </p>
                                             <div className="ui-services-128" >
                                                 <span className="ui-services-129"

@@ -24,12 +24,12 @@ const labelIcon = (label = '') => {
     return <FaMapMarkerAlt size={12} />;
 };
 
-const emptyAddr = { label: 'Home', name: '', addressLine: '', city: '', state: '', zipcode: '' };
+const emptyAddr = { label: 'Home', name: '', buildingFloor: '', street: '', addressLine: '', city: '', state: '', zipcode: '' };
 const safeStr = (v) => (v && typeof v === 'string' ? v.trim() : '');
 const LABEL_OPTIONS = ['Home', 'Office', 'Work', 'Other'];
 
 const fmtAddress = (a) =>
-    [a.addressLine, a.city, a.state, a.zipcode].filter(Boolean).join(', ');
+    [a.buildingFloor, a.street, a.addressLine, a.city, a.state, a.zipcode].filter(Boolean).join(', ');
 
 /* ─── styles ─── */
 
@@ -226,6 +226,8 @@ const Checkout = () => {
                 address: {
                     label:       safeStr(addr.label)       || 'Home',
                     name:        safeStr(addr.name)        || '',
+                    buildingFloor: safeStr(addr.buildingFloor),
+                    street: safeStr(addr.street),
                     addressLine: addrLine,
                     city:        safeStr(addr.city)        || '',
                     state:       safeStr(addr.state)       || '',
@@ -405,6 +407,17 @@ const Checkout = () => {
                                                         onChange={handleLocationChange}
                                                         inputClassName="checkout-location-input-1"
                                                     />
+                                                </div>
+
+                                                <div className="ui-checkout-55">
+                                                    <div>
+                                                        <label className="ui-checkout-56" htmlFor="checkout-address-buildingFloor">Building / Floor</label>
+                                                        <input className="ui-checkout-57" id="checkout-address-buildingFloor" type="text" placeholder="e.g. Sunrise Apartments, 3rd floor" value={manualAddr.buildingFloor} onChange={patchManual('buildingFloor')} maxLength={200} />
+                                                    </div>
+                                                    <div>
+                                                        <label className="ui-checkout-56" htmlFor="checkout-address-street">Street</label>
+                                                        <input className="ui-checkout-57" id="checkout-address-street" type="text" placeholder="e.g. Main Street" value={manualAddr.street} onChange={patchManual('street')} maxLength={200} />
+                                                    </div>
                                                 </div>
 
                                                 {/* Address line */}

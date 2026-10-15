@@ -1,6 +1,5 @@
-import { cssValue } from '../utils/cssValue';
-import '../styles/PrivacyPolicy.css';
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
+import LegalDocument from '../components/LegalDocument';
 import '../styles/PrivacyPolicy.css';
 
 const POLICY_TEXT = `1App ("1App," "1App," "we," "us," or "our") respects your privacy and is committed to protecting the personal information of users of the **1App (1App)** application.
@@ -801,53 +800,5 @@ const renderParagraphs = (content, className) => content.split(/\n\s*\n/).filter
 ));
 
 export default function PrivacyPolicy() {
-    const [active, setActive] = useState(SECTIONS[0]?.id || '');
-    const sectionRefs = useRef({});
-
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            entries => entries.forEach(e => { if (e.isIntersecting) setActive(e.target.id); }),
-            { rootMargin: '-20% 0px -70% 0px' }
-        );
-        Object.values(sectionRefs.current).forEach(el => el && observer.observe(el));
-        return () => observer.disconnect();
-    }, []);
-
-    const scrollTo = (id) => sectionRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-    return (
-        <div className="privacy-policy-layout ui-privacypolicy-3" >
-            {/* Center: Content */}
-            <div className="privacy-policy-content">
-                <h1 className="ui-privacypolicy-4" >Privacy Policy</h1>
-                <p className="ui-privacypolicy-5" >Last updated: October 2, 2026</p>
-                {renderParagraphs(INTRO, 'legal-intro-paragraph')}
-
-                {SECTIONS.map(sec => (
-                    <div className="ui-privacypolicy-6" key={sec.id} id={sec.id} ref={el => sectionRefs.current[sec.id] = el} >
-                        <h2 className="ui-privacypolicy-7" >{sec.title}</h2>
-                        {renderParagraphs(sec.content, 'legal-section-paragraph')}
-                    </div>
-                ))}
-            </div>
-
-            {/* Right: Sticky TOC */}
-            <div className="privacy-policy-toc">
-                <div className="ui-privacypolicy-8" >
-                    <div className="ui-privacypolicy-9" >PRIVACY POLICY</div>
-                    {SECTIONS.map(sec => (
-                        <div className="ui-privacypolicy-10" key={sec.id} onClick={() => scrollTo(sec.id)}
-                            style={{ "--ui-privacypolicy-10-color": cssValue(active === sec.id ? "var(--ui-color-27)" : "var(--ui-color-34)", "color"), "--ui-privacypolicy-10-font-weight": cssValue(active === sec.id ? 700 : 400, "fontWeight"), "--ui-privacypolicy-10-border-left": cssValue(active === sec.id ? '2px solid #000000' : '2px solid transparent', "borderLeft") }}>
-                            {sec.title}
-                        </div>
-                    ))}
-                </div>
-                <div className="ui-privacypolicy-11" >
-                    <p className="ui-privacypolicy-12" >Need help?</p>
-                    <p className="ui-privacypolicy-13" >If you have any questions about this Privacy Policy, please contact us.</p>
-                    <a className="ui-privacypolicy-14" href="/contact" >Contact Support</a>
-                </div>
-            </div>
-        </div>
-    );
+    return <LegalDocument title="Privacy Policy" sections={SECTIONS} intro={INTRO} renderParagraphs={renderParagraphs} />;
 }

@@ -236,70 +236,128 @@
                     }
 
 
-                    @media (max-width: 768px) {
+/* Mobile footer matches the compact app promotion layout. */
+@media (max-width: 768px) {
+  .footer-links-wrapper.ui-footer-3:not(#ui-style-priority):not(#ui-style-priority-2) {
+    padding: 28px 20px 20px;
+  }
+  .footer-links-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px 20px;
+  }
+  .footer-links-grid > a {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    text-align: center;
+    padding: 4px 0;
+  }
+  .footer-links-grid .ui-footer-1:not(#ui-style-priority):not(#ui-style-priority-2) {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+  }
+  .footer-app-section.ui-footer-5:not(#ui-style-priority):not(#ui-style-priority-2) {
+    min-height: 0 !important;
+    padding: 16px 20px 22px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: 32px 0;
+  }
+  .footer-app-content.ui-footer-6:not(#ui-style-priority):not(#ui-style-priority-2) {
+    display: contents;
+  }
+  .footer-app-content .ui-footer-7:not(#ui-style-priority):not(#ui-style-priority-2) {
+    grid-column: 1;
+    font-size: clamp(26px, 7.7vw, 36px);
+    line-height: 1.12;
+    letter-spacing: -.8px;
+    margin: 0;
+    z-index: 2;
+  }
+  .footer-app-content h2 br { display: none; }
+  .footer-app-content .ui-footer-8:not(#ui-style-priority):not(#ui-style-priority-2) {
+    grid-column: 1;
+    font-size: 16px;
+    line-height: 1.45;
+    font-weight: 400;
+    margin: 0;
+    color: #ddd;
+    z-index: 2;
+  }
+  .footer-app-content .ui-footer-9:not(#ui-style-priority):not(#ui-style-priority-2) {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 14px;
+    margin-top: 8px;
+    z-index: 2;
+  }
+  .footer-app-content :is(.ui-footer-10, .ui-footer-12):not(#ui-style-priority):not(#ui-style-priority-2) {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    border: 1px solid #999;
+    border-radius: 7px;
+    overflow: hidden;
+    height: 48px;
+    background: #000;
+  }
+  .footer-app-content .ui-footer-10:not(#ui-style-priority):not(#ui-style-priority-2) { flex: 0 1 144px; }
+  .footer-app-content .ui-footer-12:not(#ui-style-priority):not(#ui-style-priority-2) { flex: 0 1 162px; }
+  .footer-app-content :is(.ui-footer-11, .ui-footer-13):not(#ui-style-priority):not(#ui-style-priority-2) {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .footer-phone.ui-footer-14:not(#ui-style-priority):not(#ui-style-priority-2) {
+    position: absolute;
+    right: 20px !important;
+    top: 0;
+    bottom: auto;
+    width: 140px !important;
+    margin: 0;
+    transform: rotate(10deg);
+    z-index: 1;
+  }
+  .footer-phone .ui-footer-15:not(#ui-style-priority):not(#ui-style-priority-2) {
+    width: 100%;
+    margin: 0;
+  }
+  .footer-bottom.ui-footer-17:not(#ui-style-priority):not(#ui-style-priority-2) {
+    padding: 36px 28px 44px;
+    flex-direction: column;
+    gap: 26px;
+    text-align: center;
+  }
+  .footer-bottom .ui-footer-19:not(#ui-style-priority):not(#ui-style-priority-2) { height: 42px; }
+  .footer-bottom .ui-footer-20:not(#ui-style-priority):not(#ui-style-priority-2) {
+    max-width: 340px;
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 0;
+    color: #999;
+  }
+  .footer-bottom .ui-footer-21:not(#ui-style-priority):not(#ui-style-priority-2) { gap: 16px; }
+  .footer-bottom .ui-footer-23:not(#ui-style-priority):not(#ui-style-priority-2) { width: 24px; height: 24px; }
+}
+@media (min-width: 481px) and (max-width: 768px) {
+  .footer-phone.ui-footer-14:not(#ui-style-priority):not(#ui-style-priority-2) {
+    width: 155px !important;
+    right: 10% !important;
+  }
+}
+@media (max-width: 359px) {
+  .footer-phone.ui-footer-14:not(#ui-style-priority):not(#ui-style-priority-2) {
+    width: 118px !important;
+    right: 14px !important;
+  }
+  .footer-app-content .ui-footer-8:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 14px; }
+  .footer-links-grid { column-gap: 12px; }
+  .footer-links-grid .ui-footer-1:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 12px; }
+}
 
-                        .footer-links-wrapper {
-                            padding: var(--ui-space-216) !important;
-                        }
-
-                        .footer-links-grid {
-                            grid-template-columns: repeat(2, minmax(0, 1fr));
-                            row-gap: var(--ui-space-6) !important;
-                        }
-
-                        .footer-app-section {
-                            min-height: auto !important;
-                            padding: var(--ui-space-217) !important;
-                            display: block !important;
-                        }
-
-                        .footer-app-content {
-                            width: 100% !important;
-                            padding-top: var(--ui-space-16) !important;
-                            padding-bottom: var(--ui-space-218) !important;
-                        }
-
-                        .footer-app-content h2 {
-                            font-size: var(--ui-font-size-66) !important;
-                        }
-
-                        .footer-app-content p {
-                            font-size: var(--ui-font-size-8) !important;
-                        }
-
-                        .footer-phone {
-                            position: relative !important;
-                            right: auto !important;
-                            bottom: auto !important;
-                            width: 330px !important;
-                            margin: var(--ui-space-219) !important;
-                        }
-
-                        .footer-bottom {
-                            padding: var(--ui-space-220) !important;
-                            flex-direction: column !important;
-                            text-align: center !important;
-                        }
-
-                    }
-
-
-                    @media (max-width: 480px) {
-
-                        .footer-links-grid {
-                            grid-template-columns: minmax(0, 1fr);
-                        }
-
-                        .footer-app-content h2 {
-                            font-size: var(--ui-font-size-20) !important;
-                        }
-
-                        .footer-phone {
-                            width: 280px !important;
-                        }
-
-                    }
-                
 .ui-footer-1:not(#ui-style-priority):not(#ui-style-priority-2):hover {
   color: var(--ui-color-21);
 }

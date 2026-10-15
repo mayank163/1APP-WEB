@@ -1,3 +1,4 @@
+import AdminBreadcrumb from '../components/AdminBreadcrumb';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Dropdown, Modal } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
@@ -243,7 +244,7 @@ export default function TechnicianOverview() {
     return <div className="to-page"><TechnicianProfile key={technician._id} technician={technician} jobs={jobs} canWrite={canWrite} onClose={() => setProfile(null)} onEdit={() => setModal({ type: 'edit', technician })} onAction={type => setModal({ type, technician })} onAdd={() => setModal({ type: 'add' })} onInvite={() => setModal({ type: 'invite', technician })} onNoteSaved={note => setRaw(previous => previous.map(item => item._id === technician._id ? { ...item, adminNote: note } : item))} />{dialogs}</div>;
   }
   return <div className="to-page">
-    <div className="to-page-header"><div><div className="to-breadcrumb">Field Operations <FiChevronRight /> <span>Technicians</span></div><h1>Technician’s Overview</h1><p>{loading ? 'Loading technicians…' : `${raw.length.toLocaleString()} technicians registered on this platform,`} Manage and monitor all technicians on the platform.</p></div><div className="to-header-actions"><button className="to-btn-primary" disabled={!canWrite} onClick={() => setModal({
+    <div className="to-page-header"><div><AdminBreadcrumb className="to-breadcrumb" section="Field Operations" items={[{ label: 'Technicians' }]} /><h1>Technician’s Overview</h1><p>{loading ? 'Loading technicians…' : `${raw.length.toLocaleString()} technicians registered on this platform,`} Manage and monitor all technicians on the platform.</p></div><div className="to-header-actions"><button className="to-btn-primary" disabled={!canWrite} onClick={() => setModal({
           type: 'add'
         })}><FiPlus /> Add Technician</button><button className="to-btn-soft" disabled={!canWrite} onClick={() => setModal({
           type: 'invite'

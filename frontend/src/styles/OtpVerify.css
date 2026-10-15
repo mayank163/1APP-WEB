@@ -177,3 +177,40 @@
   font-weight: 700;
   text-decoration: none;
 }
+
+.otp-resend-button:not(#ui-style-priority):not(#ui-style-priority-2) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 16px;
+  padding: 10px 16px;
+  border: 1px solid #dedede;
+  border-radius: 8px;
+  background: #fff;
+  color: #111;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.otp-resend-button:not(#ui-style-priority):not(#ui-style-priority-2):hover:not(:disabled) {
+  background: #f5f5f5;
+  border-color: #111;
+}
+
+.otp-resend-button:not(#ui-style-priority):not(#ui-style-priority-2):focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 3px;
+}
+
+.otp-resend-button:not(#ui-style-priority):not(#ui-style-priority-2):disabled {
+  background: #f7f7f7;
+  color: #767676;
+  border-color: #ebebeb;
+  cursor: not-allowed;
+}

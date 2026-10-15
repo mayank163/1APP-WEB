@@ -3,6 +3,7 @@ import '../styles/TechnicianDashboard.css';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import API from '../services/api';
+import WithdrawModal from '../components/TechnicianWithdrawModal';
 import { toast } from 'react-toastify';
 import { useSocket } from '../context/SocketContext';
 
@@ -349,82 +350,6 @@ const JobDetailModal = ({ jobId, onClose }) => {
             )}
           </>
         )}
-      </div>
-    </div>
-  );
-};
-
-// ─── WithdrawModal ─────────────────────────────────────────────────────────────
-const WithdrawModal = ({ availableBalance, onClose, onSuccess }) => {
-  const [amount, setAmount] = useState(String(availableBalance || ''));
-  const [method, setMethod] = useState('bank-transfer');
-  const [details, setDetails] = useState('');
-  const [saving, setSaving] = useState(false);
-
-  const submit = async () => {
-    const amt = Number(amount);
-    if (!amt || amt <= 0) { alert('Enter a valid amount'); return; }
-    if (amt > availableBalance) { alert('Amount exceeds available balance'); return; }
-    setSaving(true);
-    try {
-      const { data } = await API.post('/technician/withdraw', { amount: amt, method, details });
-      if (data.success) { onSuccess(data.message || 'Withdrawal requested'); onClose(); }
-      else alert(data.message || 'Failed');
-    } catch (err) {
-      alert(err.response?.data?.message || 'Withdrawal failed');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <div className="ui-techniciandashboard-64"
-
-      onClick={onClose}
-    >
-      <div className="ui-techniciandashboard-65"
-
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="ui-techniciandashboard-66" >
-          <h5 className="ui-techniciandashboard-67" >Withdraw Funds</h5>
-          <button className="ui-techniciandashboard-68" onClick={onClose} >✕</button>
-        </div>
-
-        <div className="ui-techniciandashboard-69" >
-          Available balance: <strong className="ui-techniciandashboard-70" >₹{availableBalance.toLocaleString()}</strong>
-        </div>
-
-        <label className="ui-techniciandashboard-71" >Amount</label>
-        <div className="ui-techniciandashboard-72" >
-          <span className="ui-techniciandashboard-73" >₹</span>
-          <input className="ui-techniciandashboard-74" type="number" min="1" max={availableBalance} value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-             />
-        </div>
-
-        <label className="ui-techniciandashboard-75" >Method</label>
-        <select className="ui-techniciandashboard-76" value={method} onChange={(e) => setMethod(e.target.value)}
-          >
-          <option value="bank-transfer">Bank Transfer</option>
-          <option value="upi">UPI</option>
-          <option value="cash">Cash</option>
-          <option value="wallet">Wallet</option>
-        </select>
-
-        <label className="ui-techniciandashboard-77" >
-          Details / Notes (optional)
-        </label>
-        <textarea className="ui-techniciandashboard-78" rows={2} value={details} onChange={(e) => setDetails(e.target.value)}
-          placeholder="E.g. Account number, UPI ID, etc."
-           />
-
-        <div className="ui-techniciandashboard-79" >
-          <button className="ui-techniciandashboard-80" onClick={onClose} >Cancel</button>
-          <button className="ui-techniciandashboard-81" onClick={submit} disabled={saving} style={{ "--ui-techniciandashboard-81-background": cssValue(saving ? "var(--ui-color-29)" : "var(--ui-color-83)", "background"), "--ui-techniciandashboard-81-cursor": cssValue(saving ? 'not-allowed' : 'pointer', "cursor"), "--ui-techniciandashboard-81-opacity": cssValue(saving ? 0.7 : 1, "opacity") }}>
-            {saving ? 'Requesting…' : 'Request Withdrawal'}
-          </button>
-        </div>
       </div>
     </div>
   );
@@ -1057,6 +982,7 @@ const TechnicianDashboard = () => {
           totalEarnings: tech.totalEarnings || 0,
           totalWithdrawn: tech.totalWithdrawn || 0,
           availableBalance: tech.availableBalance || 0,
+          reservedBalance: (dashRes.data.data.withdrawals || []).filter(w => ['pending', 'approved', 'processing', 'sent'].includes(w.status)).reduce((n,w) => n + Number(w.amount),0),
         });
       }
 
@@ -1502,7 +1428,7 @@ const TechnicianDashboard = () => {
 
 
 
-  const withdrawalStatusColor = { pending: '#b45309', approved: '#16a34a', rejected: '#dc3545', completed: '#2563eb' };
+  const withdrawalStatusColor = { pending: '#b45309', approved: '#16a34a', rejected: '#dc3545', completed: '#2563eb', sent: '#2563eb', paid: '#16a34a', failed: '#dc3545', cancelled: '#6c757d' };
   const withdrawalStatusBg = { pending: 'rgba(234,179,8,0.12)', approved: 'rgba(22,163,74,0.1)', rejected: 'rgba(220,53,69,0.1)', completed: 'rgba(37,99,235,0.1)' };
 
   return (
@@ -1589,9 +1515,10 @@ const TechnicianDashboard = () => {
         {[
           { label: 'Average Rating', value: summary.rating == null ? 'Not yet rated' : `${Number(summary.rating).toFixed(2)}/5 (${summary.ratingCount} ratings)`, color: '#A5732F' },
           { label: 'Total Jobs', value: summary.totalJobsDone, color: '#1a1208' },
-          { label: 'Total Earned', value: `₹${summary.totalEarnings.toLocaleString()}`, color: '#A5732F' },
-          { label: 'Withdrawn', value: `₹${summary.totalWithdrawn.toLocaleString()}`, color: '#dc3545' },
-          { label: 'Available', value: `₹${summary.availableBalance.toLocaleString()}`, color: '#16a34a' },
+          { label: 'Total Earned', value: `$${summary.totalEarnings.toLocaleString()}`, color: '#A5732F' },
+          { label: 'Reserved', value: `$${Number(summary.reservedBalance || 0).toLocaleString()}`, color: '#b45309' },
+          { label: 'Withdrawn', value: `$${summary.totalWithdrawn.toLocaleString()}`, color: '#dc3545' },
+          { label: 'Available', value: `$${summary.availableBalance.toLocaleString()}`, color: '#16a34a' },
         ].map((s) => (
           <div className="ui-techniciandashboard-221" key={s.label} >
             <div className="ui-techniciandashboard-222" style={{ "--ui-techniciandashboard-222-color": cssValue(s.color, "color") }}>{s.value}</div>
@@ -2136,6 +2063,10 @@ const TechnicianDashboard = () => {
                     </div>
                     <div className="ui-techniciandashboard-344" >
                       {w.method} · {fmtDT(w.createdAt)}
+                      {w.bankSnapshot?.last4 && <div>{w.bankSnapshot.bankName} · Account ending {w.bankSnapshot.last4}</div>}
+                      {['hyperwallet-mock','hyperwallet-sandbox'].includes(w.payout?.provider) && <div>Test payout — no real money sent</div>}
+                      {w.transferReference && <div>Reference: {w.transferReference}</div>}
+                      {(w.rejectionReason || w.failureReason) && <div>{w.rejectionReason || w.failureReason}</div>}
                     </div>
                     {w.details && (
                       <div className="ui-techniciandashboard-345" >
@@ -2144,10 +2075,7 @@ const TechnicianDashboard = () => {
                     )}
                   </div>
                   <span className="ui-techniciandashboard-346" style={{ "--ui-techniciandashboard-346-background": cssValue(withdrawalStatusBg[w.status] || 'rgba(108,117,125,0.1)', "background"), "--ui-techniciandashboard-346-color": cssValue(withdrawalStatusColor[w.status] || '#6c757d', "color") }}>
-                    {w.status === 'completed' ? '✓ Completed'
-                     : w.status === 'approved' ? '✓ Approved'
-                     : w.status === 'rejected' ? '✗ Rejected'
-                     : '⏳ Pending'}
+                    {{ pending: 'Awaiting review', approved: 'Approved — awaiting transfer', processing: 'Processing bank payout', sent: 'Payment sent', paid: 'Paid', rejected: 'Rejected', cancelled: 'Cancelled', failed: 'Failed / returned', completed: 'Completed' }[w.status] || w.status}
                   </span>
                 </div>
                 {w.adminNote && (

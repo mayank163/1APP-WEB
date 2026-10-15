@@ -1,3 +1,4 @@
+import AdminBreadcrumb from '../components/AdminBreadcrumb';
 import '../styles/MainLayout.css';
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -15,6 +16,11 @@ import {
 
 const MainLayout = () => {
     const navigate = useNavigate();
+    const pageBreadcrumbs = {
+        '/users': { section: 'Customer Management', label: 'Users' },
+        '/support': { section: 'People & Support', label: 'Support Ticket' },
+        '/technician-payouts': { section: 'Field Operations', label: 'Technician Payouts' },
+    };
     const location = useLocation();
     const [collapsed, setCollapsed] = useState(false);
     const headerRef = useRef(null);
@@ -50,6 +56,7 @@ const MainLayout = () => {
         { to: "/services", icon: <FaLayerGroup size={14} />, label: "Services", resource: 'services' },
         { to: "/users", icon: <FaUsers size={14} />, label: "Users", resource: 'users' },
         { to: "/plans", icon: <FaGem size={14} />, label: "Plans", resource: 'offers' },
+        { to: "/technician-payouts", icon: <FaUsers size={14} />, label: "Technician Payouts", resource: 'technician_jobs' },
         { to: "/technician-overview", icon: <FaUsers size={14} />, label: "Technicians", resource: 'technician_jobs' },
         { to: "/technician-verification", icon: <FaCheckCircle size={14} />, label: "Technicians Verification", resource: 'technician_verification' },
         { to: "/support", icon: <FaComments size={14} />, label: "Support Ticket", resource: 'support' },
@@ -163,6 +170,10 @@ const MainLayout = () => {
     className="p-4 flex-grow-1 admin-main-layout-20"
     
 >
+                    {pageBreadcrumbs[location.pathname] && <AdminBreadcrumb
+                        section={pageBreadcrumbs[location.pathname].section}
+                        items={[{ label: pageBreadcrumbs[location.pathname].label }]}
+                    />}
                     <Outlet />
                 </main>
             </div>

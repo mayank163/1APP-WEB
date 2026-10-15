@@ -1097,3 +1097,88 @@
   padding-bottom: var(--ui-space-10);
   margin-bottom: var(--ui-space-10);
 }
+
+/* Mobile detail layout: gallery, scrollable options, and stacked sections. */
+@media (max-width: 768px) {
+  .service-detail-page.ui-servicedetail-1:not(#ui-style-priority):not(#ui-style-priority-2) { width: 100%; max-width: 600px; margin: 0 auto; padding: 20px 16px 100px; background: #fff; color: #222; }
+  .service-detail-page .ui-servicedetail-2:not(#ui-style-priority):not(#ui-style-priority-2) { margin-bottom: 18px; }
+  .service-detail-page .ui-servicedetail-3:not(#ui-style-priority):not(#ui-style-priority-2) { height: auto; aspect-ratio: 1.38; border-radius: 14px; }
+  .service-detail-page .ui-servicedetail-4:not(#ui-style-priority):not(#ui-style-priority-2) { min-width: 0; }
+  .service-detail-page .ui-servicedetail-8:not(#ui-style-priority):not(#ui-style-priority-2) { margin-top: 8px; gap: 5px; }
+  .service-detail-page .ui-servicedetail-9:not(#ui-style-priority):not(#ui-style-priority-2) { height: 3px; }
+  .service-detail-page .ui-servicedetail-10:not(#ui-style-priority):not(#ui-style-priority-2) { padding-bottom: 20px; margin-bottom: 24px; }
+  .service-detail-page .ui-servicedetail-11:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 25px; line-height: 1.2; margin: 0 0 12px; font-weight: 750; }
+  .service-detail-page .ui-servicedetail-12:not(#ui-style-priority):not(#ui-style-priority-2) { flex-wrap: wrap; gap: 6px; }
+  .service-detail-page .ui-servicedetail-15:not(#ui-style-priority):not(#ui-style-priority-2) { flex-wrap: wrap; gap: 10px; }
+  .service-detail-page .ui-servicedetail-16:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 18px; }
+  .service-detail-page .ui-servicedetail-20:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 19px; }
+  .service-detail-page .ui-servicedetail-23:not(#ui-style-priority):not(#ui-style-priority-2) { overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; }
+  .service-detail-page .ui-servicedetail-24:not(#ui-style-priority):not(#ui-style-priority-2) { min-width: 160px; scroll-snap-align: start; }
+  .service-detail-page .ui-servicedetail-31:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 18px; }
+  .service-detail-page .ui-servicedetail-32:not(#ui-style-priority):not(#ui-style-priority-2) { gap: 12px; scroll-snap-type: x mandatory; padding-bottom: 8px; }
+  .service-detail-page .ui-servicedetail-33:not(#ui-style-priority):not(#ui-style-priority-2) { flex: 0 0 78%; min-width: 0; padding: 14px; display: flex; flex-direction: column; scroll-snap-align: start; }
+  .service-detail-page .ui-servicedetail-34:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 14px; line-height: 1.4; }
+  .service-detail-page .ui-servicedetail-35:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 13px; }
+  .service-detail-page .ui-servicedetail-36:not(#ui-style-priority):not(#ui-style-priority-2) { min-height: 40px; margin-top: auto; }
+  .service-detail-page .ui-servicedetail-37:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 24px; color: #222; margin-bottom: 24px; }
+  .service-detail-page .ui-servicedetail-39:not(#ui-style-priority):not(#ui-style-priority-2) { left: 15px; top: 22px; bottom: 24px; }
+  .service-detail-page .ui-servicedetail-40:not(#ui-style-priority):not(#ui-style-priority-2) { gap: 18px; margin-bottom: 28px; }
+  .service-detail-page .ui-servicedetail-43:not(#ui-style-priority):not(#ui-style-priority-2) { min-width: 0; padding-top: 2px; }
+  .service-detail-page .ui-servicedetail-44:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 16px; color: #222; line-height: 1.4; }
+  .service-detail-page .ui-servicedetail-45:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 14px; line-height: 1.65; color: #666; }
+  .service-detail-page .ui-servicedetail-46:not(#ui-style-priority):not(#ui-style-priority-2) { height: auto; max-height: 260px; }
+  .service-detail-page .ui-servicedetail-58:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 20px; margin-bottom: 14px; }
+  .service-detail-page .ui-servicedetail-59:not(#ui-style-priority):not(#ui-style-priority-2) { flex-direction: column; min-height: 0; border-radius: 16px; }
+  .service-detail-page .ui-servicedetail-60:not(#ui-style-priority):not(#ui-style-priority-2) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 12px; padding: 16px; }
+  .service-detail-page .ui-servicedetail-61:not(#ui-style-priority):not(#ui-style-priority-2) { gap: 8px; margin-bottom: 0; }
+  .service-detail-page .ui-servicedetail-62:not(#ui-style-priority):not(#ui-style-priority-2) { width: 34px; height: 34px; border-radius: 7px; }
+  .service-detail-page .ui-servicedetail-63:not(#ui-style-priority):not(#ui-style-priority-2) { min-width: 0; padding-top: 0; }
+  .service-detail-page .ui-servicedetail-64:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 13px; line-height: 1.2; }
+  .service-detail-page .ui-servicedetail-65:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 12px; line-height: 1.3; }
+  .service-detail-page .ui-servicedetail-66:not(#ui-style-priority):not(#ui-style-priority-2) { width: 100%; flex-shrink: 1; }
+  .service-detail-page .ui-servicedetail-67:not(#ui-style-priority):not(#ui-style-priority-2) { position: static; width: 100%; height: auto; display: block; }
+  .service-detail-page .ui-servicedetail-68:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 20px; }
+  .service-detail-page .ui-servicedetail-69:not(#ui-style-priority):not(#ui-style-priority-2) { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .service-detail-page .ui-servicedetail-71:not(#ui-style-priority):not(#ui-style-priority-2) { max-width: 100%; }
+  .service-detail-page .ui-servicedetail-73:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 20px; }
+  .service-detail-page .ui-servicedetail-74:not(#ui-style-priority):not(#ui-style-priority-2) { padding: 12px 0; gap: 12px; }
+  .service-detail-page .ui-servicedetail-76:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 14px; line-height: 1.5; }
+  .service-detail-page .ui-servicedetail-77:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 20px; }
+  .service-detail-page .ui-servicedetail-78:not(#ui-style-priority):not(#ui-style-priority-2) { background: #f6f7f9; list-style: decimal outside; padding: 12px 12px 12px 30px; border-radius: 6px; }
+  .service-detail-page .ui-servicedetail-79:not(#ui-style-priority):not(#ui-style-priority-2) { margin-bottom: 4px; padding-left: 0; line-height: 1.5; }
+  .service-detail-page .ui-servicedetail-81:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 14px; }
+  .service-detail-page .ui-servicedetail-82:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 20px; }
+  .service-detail-page .ui-servicedetail-83:not(#ui-style-priority):not(#ui-style-priority-2) { padding: 12px 0; gap: 12px; }
+  .service-detail-page .ui-servicedetail-85:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 14px; line-height: 1.5; }
+  .service-detail-page .ui-servicedetail-86:not(#ui-style-priority):not(#ui-style-priority-2) { gap: 16px; }
+  .service-detail-page .ui-servicedetail-87:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 19px; }
+  .service-detail-page .ui-servicedetail-88:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 14px; line-height: 1.5; }
+  .service-detail-page .ui-servicedetail-89:not(#ui-style-priority):not(#ui-style-priority-2) { flex-shrink: 0; }
+  .service-detail-page .ui-servicedetail-91:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 20px; }
+  .service-detail-page .ui-servicedetail-93:not(#ui-style-priority):not(#ui-style-priority-2) { padding: 12px 0; min-height: 52px; gap: 10px; }
+  .service-detail-page .ui-servicedetail-94:not(#ui-style-priority):not(#ui-style-priority-2) { min-width: 0; gap: 10px; }
+  .service-detail-page .ui-servicedetail-95:not(#ui-style-priority):not(#ui-style-priority-2) { width: 32px; height: 32px; flex-shrink: 0; }
+  .service-detail-page .ui-servicedetail-96:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 14px; line-height: 1.45; }
+  .service-detail-page .ui-servicedetail-97:not(#ui-style-priority):not(#ui-style-priority-2) { flex-shrink: 0; }
+  .service-detail-page .ui-servicedetail-99:not(#ui-style-priority):not(#ui-style-priority-2) { padding: 0 0 16px 42px; }
+  .service-detail-page .ui-servicedetail-100:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 14px; line-height: 1.6; }
+  .service-detail-page .ui-servicedetail-101:not(#ui-style-priority):not(#ui-style-priority-2) { flex-wrap: wrap; }
+  .service-detail-page .ui-servicedetail-102:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 26px; }
+  .service-detail-page .ui-servicedetail-104:not(#ui-style-priority):not(#ui-style-priority-2) { gap: 12px; }
+  .service-detail-page .ui-servicedetail-106:not(#ui-style-priority):not(#ui-style-priority-2) { min-width: 0; flex: 1; }
+  .service-detail-page .ui-servicedetail-108:not(#ui-style-priority):not(#ui-style-priority-2) { min-width: 20px; }
+  .service-detail-page .ui-servicedetail-109:not(#ui-style-priority):not(#ui-style-priority-2) { margin-top: 24px; }
+  .service-detail-page .ui-servicedetail-110:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 19px; }
+  .service-detail-page .ui-servicedetail-114:not(#ui-style-priority):not(#ui-style-priority-2) { gap: 12px; }
+  .service-detail-page .ui-servicedetail-115:not(#ui-style-priority):not(#ui-style-priority-2) { min-width: 0; }
+  .service-detail-page .ui-servicedetail-118:not(#ui-style-priority):not(#ui-style-priority-2) { overflow-wrap: anywhere; }
+  .service-detail-page .ui-servicedetail-121:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 14px; line-height: 1.6; }
+  .service-detail-page .ui-servicedetail-122:not(#ui-style-priority):not(#ui-style-priority-2) { gap: 12px; flex-wrap: wrap; }
+  .service-detail-page .ui-servicedetail-126:not(#ui-style-priority):not(#ui-style-priority-2) { padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); gap: 12px; box-shadow: 0 -4px 16px rgba(0,0,0,.06); }
+  .service-detail-page .ui-servicedetail-127:not(#ui-style-priority):not(#ui-style-priority-2) { gap: 6px; flex-wrap: wrap; }
+  .service-detail-page .ui-servicedetail-128:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 20px; }
+  .service-detail-page .ui-servicedetail-129:not(#ui-style-priority):not(#ui-style-priority-2) { font-size: 11px; }
+  .service-detail-page .ui-servicedetail-131:not(#ui-style-priority):not(#ui-style-priority-2) { min-height: 44px; padding: 12px 24px; font-size: 15px; flex-shrink: 0; }
+  .service-detail-page .ui-servicedetail-132:not(#ui-style-priority):not(#ui-style-priority-2) { padding-bottom: 24px; margin-bottom: 24px; }
+  .service-detail-page #reviews { scroll-margin-top: 90px; }
+}

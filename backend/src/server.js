@@ -55,6 +55,10 @@ mongoose.connect(process.env.MONGODB_URI)
         await require('./models/OfferUsage').init();
         await require('./models/OfferRedemption').init();
         require('./services/offerReservationCleanup').startOfferReservationCleanup();
+        await require('./models/TechnicianWithdrawal').init();
+        await require('./models/TechnicianPayoutRecipient').init();
+        try { require('./services/bankPayoutWorker').start(); }
+        catch { console.error('Automatic bank payouts are unavailable. Check PAYOUT_PROVIDER and sandbox configuration.'); }
 
         // Drop stale unique service name index
         try {
@@ -189,6 +193,7 @@ app.use(xssProtection);
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/places', require('./routes/placesRoutes'));
 app.use('/api/services', serviceRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/admin', adminRoutes);

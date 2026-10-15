@@ -1,0 +1,7 @@
+.admin-breadcrumb { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; font-size: 13px; color: #a5732f; }
+.admin-breadcrumb a, .admin-breadcrumb button { color: inherit; font: inherit; text-decoration: none; }
+.admin-breadcrumb button { border: 0; background: none; padding: 0; cursor: pointer; }
+.admin-breadcrumb a:hover, .admin-breadcrumb button:hover { text-decoration: underline; text-underline-offset: 3px; }
+.admin-breadcrumb a:focus-visible, .admin-breadcrumb button:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; border-radius: 2px; }
+.admin-breadcrumb .admin-breadcrumb-separator { color: #b9b1a8; }
+.admin-breadcrumb [aria-current="page"] { color: #242321; }

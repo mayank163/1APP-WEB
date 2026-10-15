@@ -3,7 +3,7 @@ import '../styles/SignupPage.css';
 import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { FaUser, FaPhone, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaSms ,FaPhoneAlt} from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaSms} from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useGoogleLogin } from '@react-oauth/google';
 import AuthPanel from './AuthPanel';
@@ -127,7 +127,7 @@ const SignupPage = () => {
     });
 
     return (
-        <div className="ui-signuppage-4" >
+        <div className="auth-page ui-signuppage-4" >
             <AuthPanel />
 
             <div className="ui-signuppage-5" >
@@ -151,7 +151,7 @@ const SignupPage = () => {
                                         onChange={e => setName(e.target.value)}  />
                                 </Field>
 
-                                <Field label="Phone Number" icon={<FaPhoneAlt color="#888" size={14} />}>
+                                <Field label="Phone Number">
                                     <CountryCodePicker
                                         selectedCountry={phoneCountry}
                                         onCountryChange={setPhoneCountry}

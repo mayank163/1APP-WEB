@@ -1,3 +1,4 @@
+import AdminBreadcrumb from '../components/AdminBreadcrumb';
 import React, { useEffect, useState } from 'react';
 import adminApi from '../services/adminApi';
 import { ShimmerBlogTable } from '../components/Shimmer';
@@ -102,7 +103,7 @@ const BlogManagement = () => {
         <div className="blog-management">
             <div className="blog-page-heading">
                 <div>
-                    <div className="blog-breadcrumb">Content Management <span>›</span> <strong>Blogs</strong></div>
+                    <AdminBreadcrumb className="blog-breadcrumb" section="Content Management" items={[{ label: 'Blogs' }]} />
                     <h1 className="fw-bold text-dark mb-1">Blogs Management</h1>
                     <p className="text-muted mb-0">Create and manage blog posts with rich content blocks</p>
                 </div>

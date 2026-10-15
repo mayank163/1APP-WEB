@@ -1,7 +1,8 @@
+import AdminBreadcrumb from './AdminBreadcrumb';
 import '../styles/CatalogManagementLayout.css';
 import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { FiChevronRight, FiEdit, FiFilter, FiGrid, FiPlus, FiSearch, FiTrash2, FiX } from 'react-icons/fi';
+import { FiEdit, FiFilter, FiGrid, FiPlus, FiSearch, FiTrash2, FiX } from 'react-icons/fi';
 import AdminImage from './AdminImage';
 import Pagination from './Pagination';
 import { getImageUrl } from '../utils/helpers';
@@ -51,7 +52,7 @@ const CatalogManagementLayout = ({ kind, items, categories, loading, onCreate, o
     };
     return (
         <section className={`catalog-management${isCategory ? ' catalog-categories' : ''}`}>
-            <div className="catalog-breadcrumb">Customer Management <FiChevronRight /> <span>Services</span></div>
+            <AdminBreadcrumb className="catalog-breadcrumb" section="Customer Management" items={[{ label: isCategory ? 'Categories' : 'Subcategories' }]} />
             <h1>Service Management</h1>
             <p className="catalog-description">Customer-facing catalog: pricing, quote type, and availability</p>
             <div className="catalog-filters">

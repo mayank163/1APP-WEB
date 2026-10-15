@@ -767,6 +767,15 @@ export default function UserSupportCenter({ socket }) {
             ) : (
               <form onSubmit={create}>
                 <header>
+                  <button
+                    type="button"
+                    className="ust-dialog-close"
+                    aria-label="Close ticket form"
+                    disabled={busy}
+                    onClick={() => go({})}
+                  >
+                    <FiX />
+                  </button>
                   <h3 id="ust-dialog-title">Raise a Ticket</h3>
                   <p>
                     Tell us what went wrong and we'll help you get it sorted.

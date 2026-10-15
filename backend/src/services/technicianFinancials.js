@@ -54,10 +54,10 @@ function buildFinancials(technician, jobs, withdrawals, options, now = new Date(
   const filtered = transactions.filter(t => (options.status === 'all' || t.status === options.status) && (!options.from || t.dateKey >= options.from) && (!options.to || t.dateKey <= options.to));
   const items = filtered.slice((options.page - 1) * options.limit, options.page * options.limit);
   const totalEarned = sum(paid), totalWithdrawn = money(technician.totalWithdrawn);
-  const pendingWithdrawals = sum(withdrawals.filter(w => w.status === 'pending'));
+  const pendingWithdrawals = sum(withdrawals.filter(w => ['pending', 'approved', 'processing', 'sent'].includes(w.status)));
   return {
     technicianId: String(technician._id), currency: 'USD', timezone: 'UTC', generatedAt: now.toISOString(),
-    summary: { todayEarnings: sum(paid.filter(t => t.dateKey === today)), thisMonth, previousMonth: lastMonth, monthChangePercent: change(thisMonth, lastMonth), totalEarned, pendingEarnings: sum(pending), pendingJobs: pending.length, totalWithdrawn, walletEarnings: money(technician.totalEarnings), availableBalance: money(Math.max(Number(technician.totalEarnings || 0) - totalWithdrawn, 0)), pendingWithdrawals },
+    summary: { todayEarnings: sum(paid.filter(t => t.dateKey === today)), thisMonth, previousMonth: lastMonth, monthChangePercent: change(thisMonth, lastMonth), totalEarned, pendingEarnings: sum(pending), pendingJobs: pending.length, totalWithdrawn, walletEarnings: money(technician.totalEarnings), availableBalance: money(Math.max(Number(technician.totalEarnings || 0) - totalWithdrawn - pendingWithdrawals, 0)), pendingWithdrawals },
     activity: { period: options.period, from: day(start), to: day(new Date(end.getTime() - 86400000)), total: currentTotal, previousTotal, changePercent: change(currentTotal, previousTotal), points },
     recentTransactions: transactions.slice(0, 5),
     transactions: { items, groups: [...new Set(items.map(t => t.dateKey))].map(date => ({ date, items: items.filter(t => t.dateKey === date) })), pagination: { page: options.page, limit: options.limit, total: filtered.length, totalPages: Math.ceil(filtered.length / options.limit), hasNextPage: options.page * options.limit < filtered.length } },
