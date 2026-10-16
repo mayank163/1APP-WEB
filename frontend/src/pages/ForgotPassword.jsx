@@ -24,7 +24,7 @@ const ForgotPassword = () => {
             if (res.data.success) {
                 toast.success(res.data.message);
                 navigate('/verify-otp', {
-                    state: { phone: res.data.phone, identifier: resetIdentifier, devOtp: res.data.devOtp || null },
+                    state: { phone: res.data.phone, identifier: res.data.identifier || resetIdentifier, channel: res.data.channel || (useEmail ? 'email' : 'phone'), devOtp: res.data.devOtp || null },
                 });
             }
         } catch (err) {
@@ -50,7 +50,7 @@ const ForgotPassword = () => {
                             Forgot <span className="ui-forgotpassword-7" >Password?</span>
                         </h2>
                         <p className="ui-forgotpassword-8" >
-                            No worries! Enter your {useEmail ? 'email address' : 'phone number'} and we'll send an OTP to your registered phone to reset your password.
+                            No worries! Enter your {useEmail ? 'email address' : 'phone number'} and we'll send an OTP to your registered {useEmail ? 'email address' : 'phone number'} to reset your password.
                         </p>
                         <div className="ui-forgotpassword-9"  />
                     </div>

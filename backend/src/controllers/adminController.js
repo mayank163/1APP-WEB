@@ -1,4 +1,5 @@
 const Booking = require('../models/Booking');
+const { bookingIdSearch } = require('../utils/bookingIdSearch');
 const User = require('../models/User');
 const Admin = require('../models/Admin');
 const PlanPurchase = require('../models/PlanPurchase');
@@ -168,7 +169,12 @@ exports.getAllBookings = async (req, res, next) => {
                 { phone: searchRegex },
                 { user: { $in: matchingUsers.map(user => user._id) } }
             ];
-            if (/^[a-f\d]{24}$/i.test(search.trim())) searchConditions.push({ _id: search.trim() });
+            const idCondition = bookingIdSearch(search);
+            if (idCondition) {
+                searchConditions.push(idCondition);
+                const linkedJobs = await TechnicianJob.find({ ...idCondition, sourceBooking: { $ne: null } }).select('sourceBooking');
+                searchConditions.push({ _id: { $in: linkedJobs.map(job => job.sourceBooking) } });
+            }
             query.$or = searchConditions;
         }
 

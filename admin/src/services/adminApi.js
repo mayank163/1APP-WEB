@@ -64,6 +64,7 @@ const adminApi = {
     downloadBookingInvoice: async (id) => (await API.get(`/bookings/${id}/invoice`, { responseType: 'blob' })).data,
     updateBooking: async (id, data) => (await API.put(`/admin/bookings/${id}`, data)).data,
 
+    getTechnicianWorkSummary: async (id) => (await API.get(`/admin/technicians/${id}/work-summary`)).data,
     getTechnicians: async () => (await API.get('/admin/technicians')).data,
     getChatInbox: async (participantType) => (await API.get(`/chat/conversations/inbox/${participantType}`)).data,
     getChatMessages: async (technicianId, params = {}) => (await API.get(`/chat/conversations/${technicianId}/messages`, { params })).data,
@@ -83,6 +84,7 @@ const adminApi = {
     deleteTechnicianJobTemplate: async (id) => (await API.delete(`/admin/technician-job-templates/${id}`)).data,
     getTechnicianJobTemplates: async () => (await API.get('/admin/technician-job-templates')).data,
     createTechnicianJobTemplate: async (payload) => (await API.post('/admin/technician-job-templates', payload)).data,
+    getJobRoutingCandidates: async (jobId) => (await API.get(`/admin/technician-jobs/${jobId}/routing-candidates`)).data,
     sendJobInvitation: async (jobId, payload) => (await API.post(`/admin/technician-jobs/${jobId}/invitations`, payload)).data,
     saveTechnicianNote: async (id, note) => (await API.patch(`/admin/technicians/${id}/note`, { note })).data,
     getTechnicianFinancials: async (id, params = {}) => (await API.get(`/admin/technicians/${id}/financials`, { params })).data,

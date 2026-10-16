@@ -1,0 +1,14 @@
+.work-summary { background: #fff; border: 1px solid #dce0e7; border-radius: 10px; padding: 20px; grid-column: 1 / -1; width: 100%; text-align: left; color: #253650; }
+.work-summary h3 { font-size: 24px; margin: 0 0 20px; }
+.work-summary small { font-size: 14px; font-weight: 400; color: #758099; margin-left: 12px; }
+.work-summary summary { display: flex; align-items: center; gap: 12px; padding: 18px; background: #f6f7fa; border-top: 1px solid #d3d8e1; cursor: pointer; }
+.work-summary summary::after { content: '⌄'; color: #758099; }
+.work-summary details[open] summary::after { content: '⌃'; }
+.work-summary summary:focus-visible { outline: 2px solid #4c55c7; }
+.work-summary-count { margin-left: auto; white-space: nowrap; color: #4c55c7; }
+.work-summary-breakdown { padding: 12px 20px; }
+.work-summary h4 { font-size: 14px; color: #758099; margin: 8px 0; }
+.work-summary-detail { display: flex; gap: 12px; justify-content: space-between; padding: 12px 0; }
+.work-summary-detail > div { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.work-summary p { padding: 12px; margin: 0; }
+@media (max-width: 600px) { .work-summary { padding: 12px; } .work-summary summary { padding: 14px 8px; } .work-summary small { display: inline-block; margin-left: 0; } .work-summary h3 small { display: block; margin-top: 8px; } }

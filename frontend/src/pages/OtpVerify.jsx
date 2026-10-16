@@ -10,7 +10,7 @@ import { ResetAuthPanel } from './AuthPanel';
 const OtpVerify = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { phone, identifier, devOtp: initialDevOtp } = location.state || {};
+    const { phone, identifier, channel, devOtp: initialDevOtp } = location.state || {};
     const [devOtp, setDevOtp] = useState(initialDevOtp);
     const [resending, setResending] = useState(false);
     const [resendAfter, setResendAfter] = useState(60);
@@ -41,8 +41,8 @@ const OtpVerify = () => {
     const inputs = useRef([]);
 
     useEffect(() => {
-        if (!phone) navigate('/forgot-password');
-    }, [phone, navigate]);
+        if (!identifier && !phone) navigate('/forgot-password');
+    }, [identifier, phone, navigate]);
 
     const handleChange = (val, idx) => {
         if (!/^\d?$/.test(val)) return;
@@ -65,10 +65,12 @@ const OtpVerify = () => {
             toast.error('Please enter the 6-digit OTP');
             return;
         }
-        navigate('/reset-password', { state: { phone, otp: code, identifier } });
+        navigate('/reset-password', { state: { phone, otp: code, identifier: identifier || phone } });
     };
 
-    const maskedPhone = phone ? `******${phone.slice(-4)}` : '';
+    const isEmail = channel === 'email' || identifier?.includes('@');
+    const destination = identifier || phone || '';
+    const maskedDestination = isEmail ? destination.replace(/^(.).*(@.*)$/, '$1***$2') : `******${destination.slice(-4)}`;
 
     return (
         <div className="ui-otpverify-1" >
@@ -84,8 +86,8 @@ const OtpVerify = () => {
                             Verify <span className="ui-otpverify-7" >OTP</span>
                         </h2>
                         <p className="ui-otpverify-8" >
-                            We've sent a 6-digit OTP to your registered phone{' '}
-                            <strong className="ui-otpverify-9" >{maskedPhone}</strong>
+                            We've sent a 6-digit OTP to your registered {isEmail ? 'email' : 'phone'}{' '}
+                            <strong className="ui-otpverify-9" >{maskedDestination}</strong>
                         </p>
                         <div className="ui-otpverify-10"  />
                     </div>

@@ -1,3 +1,4 @@
+import WorkSummary from './WorkSummary';
 import AdminBreadcrumb from './AdminBreadcrumb';
 import React, { useEffect, useMemo, useState } from "react";
 import { Dropdown } from "react-bootstrap";
@@ -1519,6 +1520,7 @@ export default function TechnicianProfile({
       >
         {tab === "overview" && (
           <div className="tp-overview-layout">
+            <WorkSummary technicianId={technician._id} />
             <Panel title="Professional Bio" className="tp-bio-panel">
               <p className="tp-professional-bio">
                 {technician.professionalBio?.trim()

@@ -17,6 +17,8 @@ const Categories = () => {
     const [description, setDescription] = useState('');
     const [status, setStatus] = useState('active');
     const [inUse, setInUse] = useState(null);
+    const [deleteTarget, setDeleteTarget] = useState(null);
+    const [deleting, setDeleting] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
     const fetchData = async () => {
@@ -64,16 +66,27 @@ const Categories = () => {
         }
     };
 
-    const handleDelete = async (id) => {
+    const handleDelete = (id) => {
         const category = categories.find(item => item._id === id);
-        if (category?.serviceCount > 0) { setInUse(category); return; }
-        if (!window.confirm('Delete this category?')) return;
+        if (category) setDeleteTarget(category);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteTarget || deleting) return;
+        setDeleting(true);
         try {
-            const res = await adminApi.deleteCategory(id);
-            if (res.success) { toast.success('Category deleted!'); fetchData(); }
+            const res = await adminApi.deleteCategory(deleteTarget._id);
+            if (!res.success) throw new Error(res.message || 'Deletion failed');
+            setCategories(previous => previous.filter(item => item._id !== deleteTarget._id));
+            setDeleteTarget(null);
+            toast.success('Category deleted!');
         } catch (err) {
-            if (err.response?.status === 409) setInUse({ ...category, serviceCount: err.response.data.serviceCount });
-            else toast.error('Deletion failed');
+            if (err.response?.status === 409) {
+                setInUse({ ...deleteTarget, ...err.response.data });
+                setDeleteTarget(null);
+            } else toast.error(err.response?.data?.message || err.message || 'Deletion failed');
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -133,8 +146,12 @@ const Categories = () => {
                     <div className="catalog-modal-footer"><button type="button" disabled={submitting} className="catalog-modal-cancel" onClick={() => setShowForm(false)}>Cancel</button><button disabled={submitting} className="catalog-modal-save">{submitting ? 'Saving…' : editingId ? 'Save Changes' : 'Create category'}</button></div>
                 </form>
             </CatalogModal>}
+            {deleteTarget && <CatalogModal title="Delete category?" busy={deleting} onClose={() => !deleting && setDeleteTarget(null)}>
+                <p>Permanently delete "{deleteTarget.name}"? This cannot be undone.</p>
+                <div className="catalog-modal-footer"><button type="button" className="catalog-modal-cancel" disabled={deleting} onClick={() => setDeleteTarget(null)}>Cancel</button><button type="button" className="catalog-modal-save" disabled={deleting} onClick={confirmDelete}>{deleting ? 'Deleting…' : 'Delete category'}</button></div>
+            </CatalogModal>}
             {inUse && <CatalogModal alert title={<><FiAlertTriangle />Category in use</>} onClose={() => setInUse(null)}>
-                <p>Can't delete "{inUse.name}" — {inUse.serviceCount} {inUse.serviceCount === 1 ? 'service still belongs' : 'services still belong'} to it.<br />Move or delete those services first.</p>
+                <p>Can't delete "{inUse.name}" because it contains {inUse.serviceCount || 0} services and {inUse.subcategoryCount || 0} subcategories.<br />Move or delete them first.</p>
                 <div className="catalog-modal-footer"><button className="catalog-modal-save" onClick={() => setInUse(null)}>Close</button></div>
             </CatalogModal>}
         </CatalogManagementLayout>

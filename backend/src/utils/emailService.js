@@ -185,7 +185,7 @@ const forgotPasswordTemplate = (user, otp) => ({
     html: layout(`
     ${hero('ACCOUNT SECURITY', 'Reset your password', 'Use the one-time code below to continue resetting your 1APP password.', '&#128274;', 'action')}
     <p class="greeting">Hi ${escapeHtml(user.name)},</p>
-    <p class="text">This verification code expires in <strong>10 minutes</strong>. Do not share it with anyone.</p>
+    <p class="text">This verification code expires in <strong>5 minutes</strong>. Do not share it with anyone.</p>
     <div class="otp">${escapeHtml(otp)}</div>
     <p class="text">If you did not request a password reset, you can ignore this email. Your password will remain unchanged.</p>`,
         `Your 1APP password reset OTP: ${otp}`),

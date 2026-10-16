@@ -1,3 +1,4 @@
+import WorkSummary from '../components/WorkSummary';
 import { cssValue } from '../utils/cssValue';
 import React, { useContext, useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -369,6 +370,7 @@ const Profile = () => {
                         </form>
                     </div>
 
+                    {user?.role === 'technician' && <WorkSummary technicianId={user._id} />}
                     {/* Saved addresses */}
                     <div className="profile-panel profile-addresses card border-0 shadow-sm rounded-4 bg-white p-4">
                         <div className="profile-address-header d-flex align-items-center justify-content-between mb-4">

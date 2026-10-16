@@ -11,7 +11,7 @@ import { ResetAuthPanel } from './AuthPanel';
 const ResetPassword = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { phone, otp } = location.state || {};
+    const { phone, identifier, otp } = location.state || {};
 
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -21,8 +21,8 @@ const ResetPassword = () => {
 
 
     useEffect(() => {
-        if (!phone || !otp) navigate('/forgot-password');
-    }, [phone, otp, navigate]);
+        if (!(identifier || phone) || !otp) navigate('/forgot-password');
+    }, [identifier, phone, otp, navigate]);
 
     const passwordsMatch = confirmPassword && newPassword === confirmPassword;
     const passwordsMismatch = confirmPassword && newPassword !== confirmPassword;
@@ -40,6 +40,7 @@ const ResetPassword = () => {
         setLoading(true);
         try {
             const res = await axios.post(process.env.REACT_APP_API_URL + '/auth/reset-password', {
+                identifier: identifier || phone,
                 phone,
                 otp,
                 newPassword,

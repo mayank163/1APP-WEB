@@ -1,4 +1,4 @@
-.blog-editor { --be-gold:#a5732f; color:#293440; max-width:1440px; margin:auto; }
+.blog-editor { --be-gold:#a5732f; color:#293440; width:100%; margin:auto; }
 .blog-editor form { margin:0; }
 .be-grid { display:grid; grid-template-columns:minmax(0,1.9fr) minmax(290px,1fr); gap:20px; border:0; padding:0; margin:0; min-width:0; }
 .be-main,.be-sidebar { display:flex; flex-direction:column; gap:20px; min-width:0; }

@@ -131,15 +131,17 @@ exports.deleteCategory = async (req, res, next) => {
         const category = await Category.findById(req.params.id);
         if (!category) return res.status(404).json({ success: false, message: 'Category not found' });
         const serviceCount = await require('../models/Service').countDocuments({ category: category._id });
-        if (serviceCount > 0) return res.status(409).json({ success: false, message: 'Category in use', serviceCount });
+        const subcategoryCount = await SubCategory.countDocuments({ category: category._id });
+        if (serviceCount > 0 || subcategoryCount > 0) return res.status(409).json({
+            success: false, message: 'Move or delete the services and subcategories in this category first.', serviceCount, subcategoryCount
+        });
+        await category.deleteOne();
+        // A storage cleanup failure must not turn a completed deletion into an API error.
         if (category.image) {
-            await cleanupCategoryImage(category.image);
+            cleanupCategoryImage(category.image).catch(err => console.warn('Deleted category image cleanup failed:', err.message));
         }
-        category.isActive = false;
-        category.status = 'inactive';
-        await category.save();
         emitCategoryEvent('category:deleted', { categoryId: req.params.id });
-        res.status(200).json({ success: true, message: 'Category deactivated successfully' });
+        res.status(200).json({ success: true, message: 'Category deleted successfully' });
     } catch (err) { next(err); }
 };
 

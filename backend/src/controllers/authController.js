@@ -6,7 +6,6 @@ const { uploadFile, deleteFile } = require('../utils/s3Upload');
 const {
     sendWelcomeEmail,
     sendLoginNotification,
-    sendForgotPasswordEmail,
     sendPasswordResetSuccess,
 } = require('../utils/emailService');
 
@@ -504,25 +503,20 @@ exports.forgotPassword = async (req, res, next) => {
             return res.status(404).json({ success: false, message: 'No account found with this email or phone' });
         }
 
-        await otpService.sendOTP(user.phone);
-
-        // Also send OTP via email if user has an email (non-blocking)
-        if (user.email) {
-            const otp = otpService.getLastOTP ? otpService.getLastOTP(user.phone) : null;
-            if (otp) {
-                sendForgotPasswordEmail(user, otp).catch(err =>
-                    console.error('Forgot password email failed:', err.message)
-                );
-            }
-        }
-
-        // Only expose simulated codes in explicitly enabled local development.
-        const devOtp = otpService.getLastOTP ? otpService.getLastOTP(user.phone) : null;
+        const useEmail = identifier.includes('@');
+        const destination = useEmail ? user.email : user.phone;
+        if (useEmail) await otpService.sendEmailOTP(destination, 'password-reset');
+        else await otpService.sendOTP(destination);
+        const devOtp = useEmail
+            ? otpService.getLastEmailOTP(destination, 'password-reset')
+            : otpService.getLastOTP(destination);
 
         res.status(200).json({
             success: true,
-            message: `OTP sent to registered phone ${user.phone}`,
-            phone: user.phone,
+            message: `OTP sent to your registered ${useEmail ? 'email' : 'phone'}.`,
+            identifier: destination,
+            channel: useEmail ? 'email' : 'phone',
+            ...(useEmail ? { email: destination } : { phone: destination }),
             expiresIn: 300,
             resendAfter: 60,
             ...(otpService.simulationEnabled() && devOtp && { devOtp }),
@@ -542,21 +536,25 @@ exports.resendOTP = exports.forgotPassword;
 exports.resetPassword = async (req, res, next) => {
     try {
         const { phone, otp, newPassword } = req.body;
+        const identifier = typeof req.body.identifier === 'string' ? req.body.identifier.trim() : phone;
+        const useEmail = typeof identifier === 'string' && identifier.includes('@');
 
-        if (!phone || !otp || !newPassword) {
-            return res.status(400).json({ success: false, message: 'Please provide phone, otp and newPassword' });
+        if (!identifier || !otp || typeof newPassword !== 'string' || !newPassword) {
+            return res.status(400).json({ success: false, message: 'Please provide email or phone, otp and newPassword' });
         }
 
         if (newPassword.length < 6) {
             return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
         }
 
-        const isValid = otpService.verifyOTP(phone, otp);
+        const isValid = useEmail
+            ? otpService.verifyEmailOTP(identifier, otp, 'password-reset')
+            : otpService.verifyOTP(identifier, otp);
         if (!isValid) {
             return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
         }
 
-        const user = await User.findOne({ phone });
+        const user = await User.findOne(useEmail ? { email: identifier.toLowerCase() } : phoneQuery(normalizePhone(identifier)));
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }

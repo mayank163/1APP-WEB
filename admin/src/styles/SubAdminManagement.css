@@ -3,7 +3,7 @@
     --sam-muted: var(--admin-color--718099);
     --sam-gold: var(--admin-color--ad782d);
     --sam-line: var(--admin-color--e4e6eb);
-    max-width: 1200px;
+    width: 100%;
     margin: 0 auto;
     color: var(--sam-ink);
     font-family: var(--admin-font-family-3)
@@ -377,6 +377,8 @@
 
 .sam-permissions-heading select {
     width: auto;
+    max-width: 75%;
+    min-width: 0;
     padding: var(--admin-space-5px) var(--admin-space-8px);
     border-color: var(--sam-gold);
     color: var(--sam-gold);

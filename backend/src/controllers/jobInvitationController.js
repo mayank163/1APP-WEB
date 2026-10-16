@@ -6,7 +6,7 @@ const { getIO } = require('../utils/socketInstance');
 const sendNotification = require('../services/notificationService');
 const { syncBookingFromTechnicianJob } = require('../services/bookingTechnicianJobSync');
 const error = (message, statusCode = 409) => Object.assign(new Error(message), { statusCode });
-const activeTechnician = user => user?.role === 'technician' && !['invited', 'suspended', 'blocked'].includes(user.accountStatus);
+const activeTechnician = user => user?.role === 'technician' && isRoutableAccount(user);
 const openJob = job => job && job.status === 'open' && !job.assignedTechnician?._id && !job.assignedRequest;
 const baseAmount = (pay = {}) => {
   if (typeof pay === 'number') return pay;
@@ -31,45 +31,78 @@ const notify = async (requestId, technicianId, job) => {
   } catch (err) { console.warn('Invitation notification failed:', err.message); }
 };
 
+const { rankTechnicians, ROUTABLE_ACCOUNT_STATUSES, isRoutableAccount } = require('../services/technicianRouting');
+const { COMPLETED_STATUSES } = require('../services/technicianWorkSummary');
+
+const routingCandidates = async (job, session = null) => {
+  const queries = [
+    Job.find({ status: { $in: [...COMPLETED_STATUSES, 'cancelled'] }, 'assignedTechnician._id': { $ne: null } }).select('status workType additionalWorkType category assignedTechnician._id').session(session).lean(),
+    User.find({ role: 'technician', accountStatus: { $in: ROUTABLE_ACCOUNT_STATUSES } }).select('name phone email primaryService accountStatus technicianId profileImage technicianProfile.photoUrl serviceArea isOnline rating ratingCount addresses').session(session).lean(),
+    Request.find({ job: job._id, initiatedBy: 'admin' }).select('technician status').session(session).lean(),
+  ];
+  // MongoDB transactions require sequential operations on their session.
+  const results = [];
+  if (session) { for (const query of queries) results.push(await query); }
+  else results.push(...await Promise.all(queries));
+  const [history, technicians, requests] = results;
+  return rankTechnicians(job, history, technicians).map(t => ({ ...t,
+    isOnline: t.accountStatus === 'online' || (t.accountStatus !== 'offline' && Boolean(t.isOnline)),
+    photoUrl: t.technicianProfile?.photoUrl || t.profileImage?.url || '',
+    isCurrentTechnician: String(job.assignedTechnician?._id || '') === String(t._id),
+    alreadyInvited: requests.some(r => String(r.technician) === String(t._id)),
+  }));
+};
+
+exports.getRoutingCandidates = async (req, res, next) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.jobId)) throw error('Invalid job ID.', 400);
+    const job = await Job.findById(req.params.jobId).lean();
+    if (!job) throw error('Job not found.', 404);
+    const technicians = await routingCandidates(job);
+    res.json({ success: true, data: { technicians } });
+  } catch (err) { next(err); }
+};
+
 exports.sendInvitation = async (req, res, next) => {
   try {
     const { jobId } = req.params;
-    const { technicianId, message = '' } = req.body;
-    if (!mongoose.isValidObjectId(jobId) || !mongoose.isValidObjectId(technicianId) || typeof message !== 'string' || message.length > 2000) {
-      throw error('Select a valid job and technician. Messages may contain up to 2000 characters.', 400);
+    const { message = '' } = req.body;
+    const inputIds = req.body.technicianIds || (req.body.technicianId ? [req.body.technicianId] : []);
+    if (!mongoose.isValidObjectId(jobId) || !Array.isArray(inputIds) || !inputIds.length || inputIds.some(id => typeof id !== 'string' || !mongoose.isValidObjectId(id)) || typeof message !== 'string' || message.length > 2000) {
+      throw error('Select a valid job and at least one technician. Messages may contain up to 2000 characters.', 400);
     }
-    let invitation;
+    const technicianIds = [...new Set(inputIds)];
+    let invitations;
     await mongoose.connection.transaction(async session => {
       const job = await Job.findById(jobId).session(session);
-      const technician = await User.findById(technicianId).session(session);
       if (!job) throw error('Job not found.', 404);
       const isReplacementInvitation = job.status === 'assigned' && job.assignedTechnician?._id && job.assignedRequest;
       if (!openJob(job) && !isReplacementInvitation) throw error('Only open jobs or jobs with an active assignment can receive invitations.');
-      if (isReplacementInvitation && String(job.assignedTechnician._id) === String(technicianId)) throw error('The current technician cannot be invited as their own replacement.', 400);
-      if (!activeTechnician(technician)) throw error('Select an active technician.', 400);
-      if (await Request.findOne({ job: jobId, technician: technicianId, initiatedBy: 'admin' }).session(session)) throw error('This technician has already been invited to this job.');
+      const candidates = await routingCandidates(job, session);
+      const eligible = new Set(candidates.filter(t => !t.isCurrentTechnician && !t.alreadyInvited).map(t => String(t._id)));
+      if (technicianIds.some(id => !eligible.has(id))) throw error('Some selected technicians are unavailable, already invited, or have no matching completed work. Reload the list and try again.');
       const availability = openJob(job)
         ? { _id: jobId, status: 'open', 'assignedTechnician._id': null, assignedRequest: null }
         : { _id: jobId, status: 'assigned', 'assignedTechnician._id': job.assignedTechnician._id, assignedRequest: job.assignedRequest };
       const lockedJob = await Job.updateOne(availability, { $inc: { __v: 1 } }, { session });
       if (!lockedJob.matchedCount) throw error('This job assignment has changed. Refresh and try again.');
-      [invitation] = await Request.create([{
+      invitations = await Request.create(technicianIds.map(technicianId => ({
         job: jobId, technician: technicianId, initiatedBy: 'admin', invitedBy: req.user._id,
-        status: 'pending',
-        offeredPay: job.pay || { type: 'fixed', fixedAmount: 0 },
-        adminMessage: message.trim(),
+        status: 'pending', offeredPay: job.pay || { type: 'fixed', fixedAmount: 0 }, adminMessage: message.trim(),
         conversation: [{ sender: 'admin', message: message.trim() || 'You are invited to this job. Please accept or reject the invitation.' }],
-      }], { session });
+      })), { session, ordered: true });
     });
-    await notify(invitation._id, technicianId);
-    await sendNotification.sendToTechnician(technicianId, {
-      type: 'job_invitation',
-      title: 'New Job Invitation',
-      message: 'You have received a new job invitation from admin.',
-      data: { jobId: String(jobId), requestId: String(invitation._id) },
-    }, req.user);
-    res.status(201).json({ success: true, message: 'Request sent. Assignment is pending technician acceptance.', data: { request: invitation } });
-  } catch (err) { next(err.code === 11000 ? error('This technician has already been invited to this job.') : err); }
+    await Promise.all(invitations.map(async invitation => {
+      await notify(invitation._id, invitation.technician);
+      try {
+        await sendNotification.sendToTechnician(invitation.technician, {
+          type: 'job_invitation', title: 'New Job Invitation', message: 'You have received a new job invitation from admin.',
+          data: { jobId: String(jobId), requestId: String(invitation._id) },
+        }, req.user);
+      } catch (err) { console.warn('Invitation push notification failed:', err.message); }
+    }));
+    res.status(201).json({ success: true, message: 'Requests sent. Assignment is pending technician acceptance.', data: { request: invitations[0], requests: invitations } });
+  } catch (err) { next(err.code === 11000 ? error('A selected technician has already been invited to this job.') : err); }
 };
 
 exports.respondToInvitation = async (req, res, next) => {

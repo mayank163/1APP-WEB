@@ -28,6 +28,7 @@ import TechnicianChat from './pages/TechnicianChat';
 import SupportCenter from './pages/SupportCenter';
 import socket from './services/socket';
 import PlanManagement from './pages/PlanManagement';
+import { getAdminNavItems } from './navigation/adminNavigation';
 
 const AdminPrivateRoute = ({ children }) => {
   const token = localStorage.getItem('1app_admin_token');
@@ -50,6 +51,17 @@ const PermRoute = ({ resource, access = 'read', children }) => {
   return children;
 };
 
+const AdminLanding = () => {
+  const { admin, can } = useAdminAuth();
+  if (!admin) return null;
+  const firstItem = getAdminNavItems(can)[0];
+  if (!firstItem) {
+    return <div className="admin-app-1"><h5>No sections available</h5><p>Contact your administrator to request access.</p></div>;
+  }
+  if (firstItem.to !== '/') return <Navigate to={firstItem.to} replace />;
+  return <Dashboard />;
+};
+
 function AppRoutes() {
   const { can } = useAdminAuth();
   return (
@@ -64,7 +76,7 @@ function AppRoutes() {
             </AdminPrivateRoute>
           }
         >
-          <Route index element={<PermRoute resource="dashboard" access="read"><Dashboard /></PermRoute>} />
+          <Route index element={<AdminLanding />} />
           <Route path="support" element={<PermRoute resource="support"><SupportCenter adminMode socket={socket} canWrite={can('support', 'write')} /></PermRoute>} />
           <Route path="bookings" element={<PermRoute resource="bookings" access="read"><BookingManagement /></PermRoute>} />
           <Route path="services" element={<PermRoute resource="services" access="read"><SubcategoryManagement /></PermRoute>} />

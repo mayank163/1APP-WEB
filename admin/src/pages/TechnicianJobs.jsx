@@ -1173,6 +1173,7 @@ const TechnicianJobs = () => {
                   {selectedJob.jobDate?.from && <span><FaClock className="admin-technician-jobs-44"  />{new Date(selectedJob.jobDate.from).toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short' })}, {fmtTime(selectedJob.jobDate.from)}{selectedJob.jobDate.to ? ` - ${fmtTime(selectedJob.jobDate.to)}` : ''}</span>}
                   {selectedJob.location && <span><FaMapMarkerAlt className="admin-technician-jobs-45"  />{selectedJob.city || selectedJob.location}</span>}
                   {selectedJob._id && <span><FaBriefcase className="admin-technician-jobs-46"  />Job ID: {selectedJob._id.toString().slice(-8).toUpperCase()}</span>}
+                  {selectedJob.sourceBooking && <span><FaBriefcase className="admin-technician-jobs-46" />Booking ID: {String(selectedJob.sourceBooking._id || selectedJob.sourceBooking)}</span>}
                   {selectedJob.pay && <span className="admin-technician-jobs-47" >$ Est. Earning: {formatPay(selectedJob.pay)}</span>}
                 </div>
                 <div className="d-flex gap-2 flex-wrap mt-2">
@@ -1207,7 +1208,7 @@ const TechnicianJobs = () => {
                 <div className="tj-overview-card">
                   <div className="tj-overview-card-title"><FaTools className="admin-technician-jobs-51"  />Technician</div>
                   <div className="tj-ov-value admin-technician-jobs-52" >No technician assigned yet</div>
-                  {selectedJob.status === 'open' && <button className="tj-btn-reassign mt-2" disabled={!can('technician_jobs', 'write')} onClick={() => { setShowViewPanel(false); setInvitationJob(selectedJob); }}><FaUserCheck className="me-2" />Assign Technician</button>}
+                  {selectedJob.status === 'open' && <button className="tj-btn-reassign mt-2" disabled={!can('technician_jobs', 'write')} onClick={() => { setShowViewPanel(false); setInvitationJob(selectedJob); }}><FaUserCheck className="me-2" />Route Technician</button>}
                 </div>
               )}
 
@@ -1391,7 +1392,7 @@ const TechnicianJobs = () => {
                   <div className="tj-overview-card-title admin-technician-jobs-83" >⚡ Admin actions</div>
                   <div className="admin-technician-jobs-84" >
                     <button className="tj-admin-action-link" disabled={selectedJob.status !== 'open' || !can('technician_jobs', 'write')} onClick={() => { setShowViewPanel(false); setInvitationJob(selectedJob); }}>
-                      <FaUserCheck className="admin-technician-jobs-85"  />Assign technician
+                      <FaUserCheck className="admin-technician-jobs-85"  />Route Technician
                     </button>
                     {selectedJob.assignedTechnician?.name && ['assigned', 'ontheway', 'visited', 'inprogress', 'in-progress'].includes(selectedJob.status) && (
                       <button className="tj-admin-action-link danger" disabled={!can('technician_jobs', 'write')} onClick={() => setUnassignJob(selectedJob)}>

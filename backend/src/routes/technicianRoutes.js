@@ -5,6 +5,8 @@ const { uploadTaskCompletion } = require('../middleware/upload');
 const technicianController = require('../controllers/technicianController');
 const chargesController    = require('../controllers/chargesController');
 
+router.get('/work-summary', protect, restrictTo('technician'), require('../controllers/technicianWorkSummaryController').getWorkSummary);
+
 // ── Jobs ──────────────────────────────────────────────────────────────────────
 router.get('/jobs',                   protect, restrictTo('technician', 'admin'), technicianController.getJobsForTechnicians);
 router.post('/jobs/:jobId/request',   protect, restrictTo('technician'),          technicianController.requestJob);

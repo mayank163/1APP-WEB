@@ -1,12 +1,27 @@
 import AdminBreadcrumb from '../components/AdminBreadcrumb';
 import SummaryFilterCard from '../components/SummaryFilterCard';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { FaCheckCircle, FaEdit, FaKey, FaPlus, FaTimes, FaTrash, FaUserShield } from 'react-icons/fa';
+import { FaCheckCircle, FaEdit, FaPlus, FaTimes, FaTrash, FaUserShield } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import adminApi from '../services/adminApi';
 import '../styles/SubAdminManagement.css';
 
-const RESOURCE_LABELS = { support: 'Support Tickets & FAQs', dashboard: 'Dashboard', bookings: 'Bookings', categories: 'Categories', subcategories: 'Sub-Categories', services: 'Services', users: 'Users', offers: 'Offers & Coupons', technician_jobs: 'Technician Jobs', technician_verification: 'Technician Verification', blogs: 'Blogs', sub_admins: 'Sub-Admin Management', work_types: 'Work Types', service_types: 'Service Types' };
+const RESOURCE_LABELS = {
+    dashboard: 'Dashboard',
+    bookings: 'Bookings',
+    technician_jobs: 'Technician Jobs, Job Templates, Technicians, Payouts & Legacy Chat',
+    technician_verification: 'Technician Verification',
+    work_types: 'Work Types',
+    service_types: 'Service Types',
+    categories: 'Service Management / Categories',
+    subcategories: 'Service Management / Sub-Categories',
+    services: 'Services',
+    users: 'Users',
+    offers: 'Plans, Offers & Coupons',
+    support: 'Support Tickets & FAQs',
+    blogs: 'Blogs',
+    sub_admins: 'Sub-Admin Management'
+};
 const ALL_RESOURCES = Object.keys(RESOURCE_LABELS);
 const ROLE_DEFINITIONS = {
     admin: { label: 'Admin', description: 'Broad access to manage platform operations, users, services, and reports.', permissions: ALL_RESOURCES.map(resource => `${resource}:both`) },
@@ -27,12 +42,12 @@ function PermissionRow({ resource, perm, onChange, onRemove }) {
 
 function AdminModal({ modal, form, setForm, resources, saving, onClose, onSubmit }) {
     const permissionMap = Object.fromEntries(form.permissions.map(permission => [permission.resource, permission.access]));
-    const unusedResources = resources.filter(resource => !permissionMap[resource]);
+    const availableResources = [...new Set([...ALL_RESOURCES, ...resources])];
     const changeRole = role => setForm(previous => ({ ...previous, role, permissions: rolePermissions(role) }));
-    const addResource = resource => setForm(previous => ({ ...previous, permissions: [...previous.permissions, { resource, access: 'read' }] }));
+    const addResource = resource => setForm(previous => previous.permissions.some(permission => permission.resource === resource) ? previous : ({ ...previous, permissions: [...previous.permissions, { resource, access: 'read' }] }));
     const changeAccess = (resource, access) => setForm(previous => ({ ...previous, permissions: previous.permissions.map(permission => permission.resource === resource ? { ...permission, access } : permission) }));
     const removeResource = resource => setForm(previous => ({ ...previous, permissions: previous.permissions.filter(permission => permission.resource !== resource) }));
-    return <div className="sam-modal-backdrop"><div className="sam-modal" role="dialog" aria-modal="true"><div className="sam-modal-header"><div><span className="sam-eyebrow">{modal === 'create' ? 'New access profile' : 'Access profile'}</span><h2>{modal === 'create' ? 'Add admin' : 'Edit admin'}</h2></div><button className="sam-close" onClick={onClose} aria-label="Close"><FaTimes /></button></div><form onSubmit={onSubmit}><div className="sam-modal-body"><label className="sam-field"><span>Name</span><input required value={form.name} onChange={event => setForm(previous => ({ ...previous, name: event.target.value }))} placeholder="Full name" /></label><label className="sam-field"><span>Email</span><input required type="email" disabled={modal === 'edit'} value={form.email} onChange={event => setForm(previous => ({ ...previous, email: event.target.value }))} placeholder="admin@example.com" /></label><label className="sam-field"><span>Password {modal === 'edit' && <small>(leave blank to keep current)</small>}</span><input required={modal === 'create'} type="password" value={form.password} onChange={event => setForm(previous => ({ ...previous, password: event.target.value }))} placeholder="Enter a secure password" /></label><div className="sam-role-picker"><span className="sam-section-label">Assigned role</span><div className="sam-role-options">{Object.entries(ROLE_DEFINITIONS).map(([key, role]) => <button type="button" key={key} className={form.role === key ? 'selected' : ''} onClick={() => changeRole(key)}><strong>{role.label}</strong><small>{role.description}</small></button>)}</div></div><div className="sam-permissions"><div className="sam-permissions-heading"><span className="sam-section-label">Permissions</span>{unusedResources.length > 0 && <select aria-label="Add resource" value="" onChange={event => event.target.value && addResource(event.target.value)}><option value="">+ Add resource</option>{unusedResources.map(resource => <option key={resource} value={resource}>{RESOURCE_LABELS[resource] || resource}</option>)}</select>}</div>{form.permissions.length === 0 ? <p className="sam-muted">No permissions assigned.</p> : form.permissions.map(permission => <PermissionRow key={permission.resource} resource={permission.resource} perm={permission.access} onChange={changeAccess} onRemove={removeResource} />)}</div></div><div className="sam-modal-footer"><button type="button" className="sam-secondary" onClick={onClose}>Cancel</button><button className="sam-primary" disabled={saving}>{saving ? 'Saving...' : modal === 'create' ? 'Create admin' : 'Save changes'}</button></div></form></div></div>;
+    return <div className="sam-modal-backdrop"><div className="sam-modal" role="dialog" aria-modal="true"><div className="sam-modal-header"><div><span className="sam-eyebrow">{modal === 'create' ? 'New access profile' : 'Access profile'}</span><h2>{modal === 'create' ? 'Add admin' : 'Edit admin'}</h2></div><button className="sam-close" onClick={onClose} aria-label="Close"><FaTimes /></button></div><form onSubmit={onSubmit}><div className="sam-modal-body"><label className="sam-field"><span>Name</span><input required value={form.name} onChange={event => setForm(previous => ({ ...previous, name: event.target.value }))} placeholder="Full name" /></label><label className="sam-field"><span>Email</span><input required type="email" disabled={modal === 'edit'} value={form.email} onChange={event => setForm(previous => ({ ...previous, email: event.target.value }))} placeholder="admin@example.com" /></label><label className="sam-field"><span>Password {modal === 'edit' && <small>(leave blank to keep current)</small>}</span><input required={modal === 'create'} type="password" value={form.password} onChange={event => setForm(previous => ({ ...previous, password: event.target.value }))} placeholder="Enter a secure password" /></label><div className="sam-role-picker"><span className="sam-section-label">Assigned role</span><div className="sam-role-options">{Object.entries(ROLE_DEFINITIONS).map(([key, role]) => <button type="button" key={key} className={form.role === key ? 'selected' : ''} onClick={() => changeRole(key)}><strong>{role.label}</strong><small>{role.description}</small></button>)}</div></div><div className="sam-permissions"><div className="sam-permissions-heading"><span className="sam-section-label">Permissions</span><select aria-label="Add resource" value="" onChange={event => event.target.value && addResource(event.target.value)}><option value="">+ Add resource</option>{availableResources.map(resource => <option key={resource} value={resource} disabled={Boolean(permissionMap[resource])}>{RESOURCE_LABELS[resource] || resource}{permissionMap[resource] ? ' (Already added)' : ''}</option>)}</select></div><p className="sam-muted">All access resources are listed above. Already added resources can be changed below. Sections grouped under one resource share the same access.</p>{form.permissions.length === 0 ? <p className="sam-muted">No permissions assigned.</p> : form.permissions.map(permission => <PermissionRow key={permission.resource} resource={permission.resource} perm={permission.access} onChange={changeAccess} onRemove={removeResource} />)}</div></div><div className="sam-modal-footer"><button type="button" className="sam-secondary" onClick={onClose}>Cancel</button><button className="sam-primary" disabled={saving}>{saving ? 'Saving...' : modal === 'create' ? 'Create admin' : 'Save changes'}</button></div></form></div></div>;
 }
 
 export default function SubAdminManagement() {

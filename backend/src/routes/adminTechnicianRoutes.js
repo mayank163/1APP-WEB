@@ -19,6 +19,7 @@ router.get('/technicians', adminOnly, checkPermission('technician_jobs', 'read')
 router.post('/technicians', adminOnly, checkPermission('technician_jobs', 'write'), uploadAdminTechnicianDocuments, adminTechnicianController.createTechnician);
 router.post('/technicians/invite', adminOnly, checkPermission('technician_jobs', 'write'), adminTechnicianController.inviteTechnician);
 router.get('/technicians/:technicianId/financials', adminOnly, checkPermission('technician_jobs', 'read'), require('../controllers/technicianFinancialController').getFinancials);
+router.get('/technicians/:technicianId/work-summary', adminOnly, checkPermission('technician_jobs', 'read'), require('../controllers/technicianWorkSummaryController').getWorkSummary);
 router.patch('/technicians/:technicianId/note', adminOnly, checkPermission('technician_jobs', 'write'), require('../services/adminTechnicians').saveTechnicianNote);
 router.patch('/technicians/:technicianId', adminOnly, checkPermission('technician_jobs', 'write'), adminTechnicianController.updateTechnician);
 router.patch('/technicians/:technicianId/account', adminOnly, checkPermission('technician_jobs', 'write'), adminTechnicianController.updateTechnicianAccount);
@@ -30,6 +31,7 @@ router.delete('/technician-job-templates/:templateId', adminOnly, checkPermissio
 router.get('/technician-job-templates', adminOnly, checkPermission('technician_jobs', 'read'), templateController.getTemplates);
 router.post('/technician-job-templates', adminOnly, checkPermission('technician_jobs', 'write'), templateController.createTemplate);
 
+router.get('/technician-jobs/:jobId/routing-candidates', adminOnly, checkPermission('technician_jobs', 'read'), require('../controllers/jobInvitationController').getRoutingCandidates);
 router.post('/technician-jobs/:jobId/invitations', adminOnly, checkPermission('technician_jobs', 'write'), require('../controllers/jobInvitationController').sendInvitation);
 
 router.get('/technician-jobs', checkPermission('technician_jobs', 'read'), adminTechnicianController.getTechnicianJobs);

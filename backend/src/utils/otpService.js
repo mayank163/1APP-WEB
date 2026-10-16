@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 const twilio = require('twilio');
 const { normalizePhone } = require('./phone');
-const { sendVerificationOTPEmail } = require('./emailService');
+const { sendVerificationOTPEmail, sendForgotPasswordEmail } = require('./emailService');
 
 const otpStore = new Map();
 const simulationEnabled = () => process.env.NODE_ENV !== 'production' && process.env.OTP_SIMULATION_ENABLED === 'true';
@@ -31,7 +31,16 @@ const sendEmailOTP = async (value, purpose = 'email') => {
     const key = `${purpose}:email:${email}`;
     return createOTP(key, async (otp) => {
         if (simulationEnabled()) console.log(`[Development Email OTP] ${email}: ${otp}`);
-        else await sendVerificationOTPEmail(email, otp);
+        else {
+            const result = purpose === 'password-reset'
+                ? await sendForgotPasswordEmail({ email, name: 'there' }, otp)
+                : await sendVerificationOTPEmail(email, otp);
+            if (!result?.success || result.dev) {
+                const error = new Error('Email delivery is not configured. Please contact the administrator.');
+                error.statusCode = 503;
+                throw error;
+            }
+        }
     });
 };
 
