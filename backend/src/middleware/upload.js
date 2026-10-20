@@ -119,11 +119,5 @@ module.exports.uploadAdminTechnicianDocuments = multer({
     },
 }).fields(['profilePhoto', 'drivingLicenseFront', 'residentialProof', 'cvResume'].map(name => ({ name, maxCount: 1 })));
 
-// Public onboarding accepts only the two licence images.
-module.exports.uploadOnboardingLicence = multer({
-    storage, limits: { fileSize: 5 * 1024 * 1024, files: 2 },
-    fileFilter: (req, file, cb) => {
-        if (['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) return cb(null, true);
-        cb(Object.assign(new Error('Driving licence uploads must be JPG, PNG or WebP images.'), { statusCode: 400 }));
-    },
-}).fields(['drivingLicenseFront', 'drivingLicenseBack'].map(name => ({ name, maxCount: 1 })));
+// Public onboarding collects text fields only.
+module.exports.uploadOnboardingFields = multer().none();

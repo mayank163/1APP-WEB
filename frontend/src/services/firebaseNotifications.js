@@ -68,11 +68,18 @@ export const enableBrowserNotifications = async ({ requestPermission = true } = 
   if (!('serviceWorker' in navigator)) throw new Error('This browser does not support service workers.');
 
   const authToken = localStorage.getItem('1App_token');
-  if (!authToken) return false;
+  if (!authToken) {
+    console.info('[Notification] Setup skipped: no signed-in session.');
+    return false;
+  }
+  console.info('[Notification] Setup started', { permission: Notification.permission, requestPermission });
   if (Notification.permission === 'denied') {
     throw new Error('Notifications are blocked for this site. Allow them in the browser site settings, then try again.');
   }
-  if (Notification.permission !== 'granted' && !requestPermission) return false;
+  if (Notification.permission !== 'granted' && !requestPermission) {
+    console.info('[Notification] Setup waiting: click the notification bell to allow notifications.');
+    return false;
+  }
 
   const missingConfig = Object.entries({ ...config, vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY })
     .filter(([, value]) => !value || value.startsWith('PASTE_'))
@@ -93,9 +100,11 @@ export const enableBrowserNotifications = async ({ requestPermission = true } = 
     const app = getApps().length ? getApps()[0] : initializeApp(config);
     const messaging = getMessaging(app);
     const registration = await getServiceWorker();
+    console.info('[Notification] Service worker ready.');
     if (!isCurrentSession()) return false;
     if (!foregroundUnsubscribe) {
       foregroundUnsubscribe = onMessage(messaging, payload => {
+        console.info('[Notification] Foreground push received', { messageId: payload.messageId, type: payload.data?.type });
         if (!isCurrentSession() || document.visibilityState !== 'visible') return;
         const title = payload.notification?.title || payload.data?.title || 'New notification';
         const body = payload.notification?.body || payload.data?.body || '';
@@ -106,7 +115,7 @@ export const enableBrowserNotifications = async ({ requestPermission = true } = 
             data: payload.data || {},
             icon: '/logo192.png',
             ...(payload.messageId && { tag: payload.messageId }),
-          }).catch(() => {
+          }).then(() => console.info('[Notification] Browser accepted notification display request.')).catch(() => {
             console.warn('[Firebase] Browser notification display failed. Check browser and system notification settings.');
           });
         }
@@ -121,12 +130,16 @@ export const enableBrowserNotifications = async ({ requestPermission = true } = 
     if (!token) throw new Error('Firebase did not return a browser token. Check the Firebase web app and VAPID key configuration.');
     await API.post('/notifications/token', { token });
     if (!isCurrentSession()) return false;
+    console.info('[Notification] Device token registered with backend; push setup complete.');
     localStorage.setItem('1App_fcm_token', token);
     return true;
   })();
   pendingSetup = { session: currentSession, promise };
   try {
     return await promise;
+  } catch (error) {
+    console.error('[Notification] Setup failed', { code: error.code || 'unknown', message: error.response?.data?.message || error.message });
+    throw error;
   } finally {
     if (pendingSetup?.promise === promise) pendingSetup = null;
   }

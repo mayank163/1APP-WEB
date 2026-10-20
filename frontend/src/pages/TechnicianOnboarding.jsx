@@ -3,18 +3,12 @@ import API from '../services/api';
 import { COUNTRIES } from '../components/CountryCodePicker';
 import '../styles/TechnicianOnboarding.css';
 
-const initialForm = { name: '', phone: '', email: '', address: '', serviceRadius: '15', yearsOfExperience: '', drivingLicenseIssuedDate: '', drivingLicenseExpiryDate: '' };
+const initialForm = { name: '', phone: '', email: '', address: '', serviceRadius: '15', yearsOfExperience: '' };
 
 export default function TechnicianOnboarding() {
   const [form, setForm] = useState(initialForm);
   const [country, setCountry] = useState(COUNTRIES.find(item => item.name === 'United States'));
   const fullPhone = `${country.code}${form.phone.replace(/\D/g, '')}`;
-  const [files, setFiles] = useState({});
-  const updateFile = event => {
-    const file = event.target.files[0];
-    setFiles(previous => ({ ...previous, [event.target.name]: file }));
-    setError(file && file.size > 5 * 1024 * 1024 ? 'Each file must be 5 MB or smaller.' : '');
-  };
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
@@ -27,8 +21,8 @@ export default function TechnicianOnboarding() {
   const submit = async event => {
     event.preventDefault();
     if (busy) return;
-    if (![form.name, form.email, form.phone, form.address, form.serviceRadius, form.yearsOfExperience, form.drivingLicenseIssuedDate, form.drivingLicenseExpiryDate].every(value => String(value).trim()) || !files.drivingLicenseFront || !files.drivingLicenseBack) {
-      setError('Please complete all fields and upload both sides of your driving licence.');
+    if (![form.name, form.email, form.phone, form.address, form.serviceRadius, form.yearsOfExperience].every(value => String(value).trim())) {
+      setError('Please complete all fields.');
       return;
     }
     setBusy(true);
@@ -37,15 +31,8 @@ export default function TechnicianOnboarding() {
       if (form.phone.length !== country.maxDigits || fullPhone.length > 16) {
         setError(`Enter exactly ${country.maxDigits} digits for ${country.code}.`); return;
       }
-      if (form.drivingLicenseExpiryDate <= form.drivingLicenseIssuedDate) {
-        setError('Driving licence expiry date must be after the issue date.'); return;
-      }
       const data = new FormData();
       Object.entries(form).forEach(([key, value]) => data.append(key, key === 'phone' ? fullPhone : value));
-      for (const [key, file] of Object.entries(files)) {
-        if (file?.size > 5 * 1024 * 1024) { setError('Each file must be 5 MB or smaller.'); return; }
-        if (file) data.append(key, file);
-      }
       const response = await API.post('/technician-auth/preregister', data, { headers: { 'Content-Type': 'multipart/form-data' } });
       setConfirmation(response.data.message);
       setDone(true);
@@ -65,7 +52,7 @@ export default function TechnicianOnboarding() {
       <h1>Your skills.<br />A new opportunity.</h1>
       <p>Register your interest in joining our technician network before the app launches.</p>
       <ol><li>Tell us about yourself and your work.</li><li>When the app launches, enter your registered phone number or email.</li><li>Verify your OTP and sign in. Your details will already be there.</li></ol>
-      <p>No password or OTP is needed today. Profile and document approval will be required before you can receive eligible jobs.</p>
+      {/* <p>No password or OTP is needed today. Profile and document approval will be required before you can receive eligible jobs.</p> */}
     </div>
     <div className="tech-onboarding-card">
         <h2>Join as a technician</h2><p>All fields are required. Verify your account when you’re ready to use the app.</p>
@@ -88,12 +75,6 @@ export default function TechnicianOnboarding() {
               <label>Address<input name="address" autoComplete="street-address" required maxLength={500} placeholder="Street, city, state and postal code" value={form.address} onChange={update} /></label>
               <label>Service radius (miles)<input name="serviceRadius" type="number" required min="1" max="500" step="1" value={form.serviceRadius} onChange={update} /></label>
               <label>Years of experience<input name="yearsOfExperience" type="number" required min="0" max="80" step="0.5" value={form.yearsOfExperience} onChange={update} /></label>
-            </div>
-            <div className="tech-onboarding-fields">
-              <label>Driving licence front image<input name="drivingLicenseFront" type="file" required accept="image/jpeg,image/png,image/webp" onChange={updateFile} /><small>JPG, PNG or WebP. Maximum 5 MB.</small></label>
-              <label>Driving licence back image<input name="drivingLicenseBack" type="file" required accept="image/jpeg,image/png,image/webp" onChange={updateFile} /><small>JPG, PNG or WebP. Maximum 5 MB.</small></label>
-              <label>Licence issue date<input name="drivingLicenseIssuedDate" type="date" required max={new Date().toLocaleDateString('en-CA')} value={form.drivingLicenseIssuedDate} onChange={update} /></label>
-              <label>Licence expiry date<input name="drivingLicenseExpiryDate" type="date" required min={form.drivingLicenseIssuedDate || undefined} value={form.drivingLicenseExpiryDate} onChange={update} /></label>
             </div>
             <button type="submit">{busy ? 'Saving your details…' : 'Register your interest'}</button>
           </fieldset>

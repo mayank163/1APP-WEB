@@ -225,6 +225,7 @@ exports.updateBookingStatus = async (req, res, next) => {
         );
         const assigningTechnician = Boolean(technicianName || technicianPhone);
         const statusChanged = Boolean(status && status !== booking.status);
+        console.info('[BookingNotification] Booking update requested', { bookingId: String(booking._id), previousStatus: booking.status, requestedStatus: status || booking.status, statusChanged });
         const updates = {};
 
         if (status) updates.status = status;
@@ -276,6 +277,7 @@ exports.updateBookingStatus = async (req, res, next) => {
             }
 
             if (notification) {
+                console.info('[BookingNotification] Sending customer notification', { bookingId: String(updatedBooking._id), userId: String(updatedBooking.user._id), status: updatedBooking.status, type: notification.type });
                 notificationService.sendToUser(updatedBooking.user._id, {
                     ...notification,
                     data: {
@@ -285,9 +287,13 @@ exports.updateBookingStatus = async (req, res, next) => {
                         technicianPhone: updatedBooking.assignedTechnician?.phone || '',
                     },
                 }, req.user).catch(err =>
-                    console.error('Customer booking notification failed:', err.message)
+                    console.error('[BookingNotification] Customer notification failed', { bookingId: String(updatedBooking._id), message: err.message })
                 );
+            } else {
+                console.info('[BookingNotification] Skipped: status unchanged and no new technician assignment', { bookingId: String(updatedBooking._id) });
             }
+        } else {
+            console.warn('[BookingNotification] Skipped: booking has no customer', { bookingId: String(updatedBooking._id) });
         }
 
         // Send status update email to user (non-blocking)

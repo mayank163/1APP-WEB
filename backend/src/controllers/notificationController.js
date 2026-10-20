@@ -10,6 +10,7 @@ exports.registerToken = async (req, res, next) => {
     if (!token || token.length > 4096) return res.status(400).json({ success: false, message: 'A valid FCM token is required.' });
     const Model = modelNameFor(req.user) === 'Admin' ? require('../models/Admin') : require('../models/User');
     await Model.findByIdAndUpdate(req.user._id, { $addToSet: { fcmTokens: token } });
+    console.info('[Notification] Device token registered', { recipientId: String(req.user._id), model: modelNameFor(req.user) });
     res.json({ success: true, message: 'Notification token registered.' });
   } catch (error) { next(error); }
 };

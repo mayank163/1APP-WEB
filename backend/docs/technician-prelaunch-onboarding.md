@@ -2,11 +2,10 @@
 
 The website form is available at `/join-as-technician` and linked in the footer.
 It posts multipart form data to `POST /api/technician-auth/preregister` with name,
-phone, email, address, serviceRadius (1–500 km), yearsOfExperience (0–80),
-required drivingLicenseFront and drivingLicenseBack images, and required drivingLicenseIssuedDate and drivingLicenseExpiryDate values (YYYY-MM-DD). Issue date cannot be in the future, and expiry must be after issue. The website country code picker defaults to US +1 and submits the full international phone number.
-Each upload is limited to 5 MB. The licence images accept JPG, PNG or WebP;
-No profile photo is collected. Files use existing S3 storage.
-It creates an invited technician User with documents pending admin review.
+phone, email, address, serviceRadius (1–500 km), and yearsOfExperience (0–80).
+The website country code picker defaults to US +1 and submits the full international phone number.
+No licence images, licence dates, or profile photo are collected.
+It creates an invited technician User with an empty document list and pending verification.
 No password or OTP is requested in the form. A cryptographically random password is generated after validation, hashed by the User model, and emailed once after the account is saved. It is never returned in the API response. Phone and email remain unverified; OTP activation is still required before password login. The response includes emailSent; delivery failure preserves the registration and OTP login remains available.
 Existing accounts are never overwritten. Details appear in the admin technician list.
 

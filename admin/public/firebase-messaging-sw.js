@@ -37,6 +37,7 @@ firebase.initializeApp({
 });
 
 firebase.messaging().onBackgroundMessage(({ notification, data }) => {
+  console.info('[Notification] Background push received', { type: data?.type, hasNotification: Boolean(notification) });
   // Firebase already displays messages with a notification payload in the background.
   if (notification || !data?.title) return;
   return self.registration.showNotification(data.title, { body: data.body || '', data });

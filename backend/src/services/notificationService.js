@@ -31,12 +31,12 @@ const sendNotification = async ({
     try {
 
         if (!recipients || recipients.length === 0) {
-            console.log(`[Firebase] trigger skipped type="${type}" reason="no recipients"`);
+            console.log(`[Firebase] trigger skipped type="${type}" bookingId="${data.bookingId || 'n/a'}" reason="no recipients"`);
             return;
         }
 
         const recipientIds = recipients.map(user => String(user._id)).join(',');
-        console.log(`[Firebase] trigger type="${type}" title="${title}" recipients="${recipientIds}"`);
+        console.log(`[Firebase] trigger type="${type}" bookingId="${data.bookingId || 'n/a'}" title="${title}" recipients="${recipientIds}"`);
 
         /*
          * 1. Save notification in MongoDB
@@ -54,7 +54,7 @@ const sendNotification = async ({
             message,
             data,
         })));
-        console.log(`[Firebase] notification persisted type="${type}" count=${saved.length}`);
+        console.log(`[Firebase] notification persisted type="${type}" bookingId="${data.bookingId || 'n/a'}" count=${saved.length}`);
 
         try {
             const io = getIO();
@@ -76,7 +76,7 @@ const sendNotification = async ({
                     data,
                 });
             });
-            console.log(`[Firebase] socket delivered type="${type}" rooms=${emittedRooms.size}`);
+            console.log(`[Firebase] socket emitted type="${type}" bookingId="${data.bookingId || 'n/a'}" rooms=${emittedRooms.size}`);
         } catch (socketError) {
             console.warn('[Notification] Socket delivery failed:', socketError.message);
         }
@@ -99,8 +99,8 @@ const sendNotification = async ({
 
 
         if (tokens.length === 0 || !admin.getApps().length) {
-            if (tokens.length === 0) console.log(`[Firebase] FCM skipped type="${type}" reason="no device tokens"`);
-            if (!admin.getApps().length) console.warn(`[Firebase] FCM skipped type="${type}" reason="SDK not configured"`);
+            if (tokens.length === 0) console.log(`[Firebase] FCM skipped type="${type}" bookingId="${data.bookingId || 'n/a'}" reason="no device tokens"`);
+            if (!admin.getApps().length) console.warn(`[Firebase] FCM skipped type="${type}" bookingId="${data.bookingId || 'n/a'}" reason="SDK not configured"`);
             return;
         }
 
@@ -166,7 +166,7 @@ const sendNotification = async ({
                 });
             } catch (error) {
                 failureCount += batch.length;
-                console.error(`[Firebase] FCM batch failed type="${type}" batch=${offset / MAX_MULTICAST_TOKENS + 1}`, firebaseErrorDetails(error, tokens));
+                console.error(`[Firebase] FCM batch failed type="${type}" bookingId="${data.bookingId || 'n/a'}" batch=${offset / MAX_MULTICAST_TOKENS + 1}`, firebaseErrorDetails(error, tokens));
                 continue;
             }
 
@@ -174,7 +174,7 @@ const sendNotification = async ({
             failureCount += response.failureCount;
             response.responses.forEach((result, index) => {
                 if (result.success) return;
-                console.warn(`[Firebase] FCM delivery failed type="${type}" deviceIndex=${offset + index}`, firebaseErrorDetails(result.error, tokens));
+                console.warn(`[Firebase] FCM delivery failed type="${type}" bookingId="${data.bookingId || 'n/a'}" deviceIndex=${offset + index}`, firebaseErrorDetails(result.error, tokens));
                 // Payload/configuration/transient errors do not prove a token is invalid.
                 if (INVALID_TOKEN_CODES.has(result.error?.code)) invalidTokens.push(batch[index]);
             });
@@ -192,12 +192,12 @@ const sendNotification = async ({
             }
         }
 
-        console.log(`[Firebase] FCM complete type="${type}" success=${successCount} failed=${failureCount}`);
+        console.log(`[Firebase] FCM complete type="${type}" bookingId="${data.bookingId || 'n/a'}" success=${successCount} failed=${failureCount} (success means Firebase accepted the message; device display is not confirmed)`);
 
 
     } catch (error) {
 
-        console.error('Notification Service Error:', firebaseErrorDetails(error, tokens));
+        console.error('[Firebase] Notification service failed', { type, bookingId: data.bookingId || null, ...firebaseErrorDetails(error, tokens) });
 
     }
 };
@@ -210,11 +210,15 @@ module.exports.sendToAdmins = async (payload, sender) => {
 };
 
 module.exports.sendToTechnician = async (technicianId, payload, sender) => {
-    const technician = await User.findOne({ _id: technicianId, role: 'technician' }).select('_id fcmTokens');
+    const technician = await User.findOne({ _id: technicianId, role: 'technician' }).select('_id role fcmTokens');
     return technician ? sendNotification({ ...payload, recipients: [technician], sender }) : null;
 };
 
 module.exports.sendToUser = async (userId, payload, sender) => {
     const user = await User.findOne({ _id: userId, role: 'user' }).select('_id role fcmTokens');
-    return user ? sendNotification({ ...payload, recipients: [user], sender }) : null;
+    if (!user) {
+        console.warn('[Firebase] User notification skipped: recipient not found', { userId: String(userId), bookingId: payload.data?.bookingId || null, type: payload.type });
+        return null;
+    }
+    return sendNotification({ ...payload, recipients: [user], sender });
 };

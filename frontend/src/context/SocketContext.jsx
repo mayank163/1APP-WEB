@@ -43,8 +43,16 @@ export const SocketProvider = ({ children }) => {
             if (socket.connected) socket.emit('technician:join', user._id);
         }
 
+        if (user?.role === 'user' && user._id) {
+            socket.on('connect', () => socket.emit('user:join', user._id));
+            if (socket.connected) socket.emit('user:join', user._id);
+        }
+
         return () => {
             clearInterval(heartbeatTimer);
+            if (user?.role === 'user' && user._id) {
+                socket.emit('user:leave', user._id);
+            }
             if (user?.role === 'technician' && user._id) {
                 socket.emit('technician:leave', user._id);
             }

@@ -32,6 +32,7 @@ const NotificationBell = () => {
     adminApi.getNotifications().then(response => setItems(response.data?.notifications || [])).catch(() => {});
     const onNotification = ({ notification }) => {
       if (!notification) return;
+      console.info('[Notification] Live socket notification received', { id: notification._id, type: notification.type });
       setItems(previous => [notification, ...previous.filter(item => item._id !== notification._id)].slice(0, 50));
       toast.info(notification.message ? `${notification.title}: ${notification.message}` : notification.title || 'New notification');
     };
@@ -42,7 +43,10 @@ const NotificationBell = () => {
   const toggle = () => {
     setOpen(value => !value);
     setNotificationError('');
-    enableBrowserNotifications().catch(error => setNotificationError(error.message || 'Could not enable browser notifications.'));
+    enableBrowserNotifications().catch(error => {
+      console.error('[Notification] Could not enable notifications', { message: error.message });
+      setNotificationError(error.message || 'Could not enable browser notifications.');
+    });
   };
 
   const openNotification = async (item) => {

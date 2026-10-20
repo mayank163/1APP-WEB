@@ -104,7 +104,7 @@ const publishJobToTechnicians = async (job, sender) => {
     const technicians = await User.find({
       role: 'technician',
       $or: [{ accountStatus: 'active' }, { accountStatus: { $exists: false } }],
-    }).select('_id fcmTokens');
+    }).select('_id role fcmTokens');
     if (technicians.length) {
       await sendNotification({
         recipients: technicians,
@@ -215,7 +215,7 @@ const createTechnicianJob = async (req, res, next) => {
           { accountStatus: 'active' },
           { accountStatus: { $exists: false } },
         ],
-      }).select('_id fcmTokens');
+      }).select('_id role fcmTokens');
 
       if (technicians.length > 0) {
 
