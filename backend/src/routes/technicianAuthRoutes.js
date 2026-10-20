@@ -9,7 +9,7 @@ const rateLimit = require('express-rate-limit');
 const otpLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, standardHeaders: 'draft-8', legacyHeaders: false, message: { success: false, message: 'Too many attempts. Please try again later.' } });
 router.use(['/send-otp', '/verify-otp', '/complete-signup', '/activation/send-otp', '/activation/complete'], otpLimiter);
 const onboardingLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10, standardHeaders: 'draft-8', legacyHeaders: false, message: { success: false, message: 'Too many attempts. Please try again later.' } });
-router.post('/preregister', onboardingLimiter, require('../middleware/upload').uploadAdminTechnicianDocuments, onboarding.preregister);
+router.post('/preregister', onboardingLimiter, require('../middleware/upload').uploadOnboardingLicence, onboarding.preregister);
 router.post('/otp-login/send', otpLimiter, onboarding.sendLoginOTP);
 router.post('/otp-login/verify', otpLimiter, onboarding.verifyLoginOTP);
 

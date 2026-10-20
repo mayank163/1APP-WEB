@@ -20,15 +20,25 @@ exports.preregister = async (req, res, next) => {
     const yearsOfExperience = Number(req.body.yearsOfExperience);
     if (!name || !address) throw fail('Name and address are required.');
     if (!Number.isFinite(serviceRadius) || serviceRadius < 1 || serviceRadius > 500) throw fail('Service radius must be between 1 and 500 km.');
-    if (!req.files?.drivingLicenseFront?.[0]) throw fail('Driving licence is required.');
-    if (Object.keys(req.files).some(key => key !== 'drivingLicenseFront')) throw fail('Only driving licence uploads are supported.');
+    if (!req.files?.drivingLicenseFront?.[0] || !req.files?.drivingLicenseBack?.[0]) throw fail('Driving licence front and back images are required.');
+    if (Object.keys(req.files).some(key => !['drivingLicenseFront', 'drivingLicenseBack'].includes(key))) throw fail('Only driving licence uploads are supported.');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw fail('Enter a valid email address.');
     if (req.body.yearsOfExperience === '' || req.body.yearsOfExperience == null || !Number.isFinite(yearsOfExperience) || yearsOfExperience < 0 || yearsOfExperience > 80) throw fail('Experience must be between 0 and 80 years.');
     if (req.body.consent !== true && req.body.consent !== 'true') throw fail('Please agree to the terms and privacy policy.');
+    const parseDate = value => {
+      if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+      const date = new Date(`${value}T00:00:00.000Z`);
+      return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value ? date : null;
+    };
+    const issuedDate = parseDate(req.body.drivingLicenseIssuedDate);
+    const expiryDate = parseDate(req.body.drivingLicenseExpiryDate);
+    if (!issuedDate || !expiryDate) throw fail('Valid driving licence issue and expiry dates are required.');
+    if (issuedDate > new Date()) throw fail('Driving licence issue date cannot be in the future.');
+    if (expiryDate <= issuedDate) throw fail('Driving licence expiry date must be after the issue date.');
     const skills = [...new Set(text(req.body.skills, 1000).split(',').map(s => s.trim()).filter(Boolean))].slice(0, 30);
     const alternatives = [phoneQuery(phone), ...(email ? [{ email }] : [])];
     if (await User.findOne({ $or: alternatives })) throw fail('This phone number or email is already registered. Use your existing account when the app launches.', 409);
-    for (const field of ['drivingLicenseFront']) {
+    for (const field of ['drivingLicenseFront', 'drivingLicenseBack']) {
       const { key } = await uploadFile(req.files[field][0], `technician-docs/${field}`);
       uploaded.push(key);
     }
@@ -37,9 +47,10 @@ exports.preregister = async (req, res, next) => {
       password: crypto.randomBytes(32).toString('hex'),
       role: 'technician', accountStatus: 'invited', profileCompleted: false,
       technicianProfile: { skills, yearsOfExperience, professionalBio: text(req.body.professionalBio, 2000), verificationStatus: 'pending', submittedAt: new Date(),
-        drivingLicense: { front: uploaded[0] },
+        drivingLicense: { front: uploaded[0], back: uploaded[1], issuedDate, expiryDate },
         documents: [
-          { documentId: 'drivingLicenseFront', label: 'Driving Licence', s3Key: uploaded[0], status: 'pending' },
+          { documentId: 'drivingLicenseFront', label: 'Driving Licence Front', s3Key: uploaded[0], status: 'pending' },
+          { documentId: 'drivingLicenseBack', label: 'Driving Licence Back', s3Key: uploaded[1], status: 'pending' },
         ] },
     });
     saved = true;

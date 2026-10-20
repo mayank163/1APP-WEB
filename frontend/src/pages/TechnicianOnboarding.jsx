@@ -4,7 +4,7 @@ import API from '../services/api';
 import { COUNTRIES } from '../components/CountryCodePicker';
 import '../styles/TechnicianOnboarding.css';
 
-const initialForm = { name: '', phone: '', email: '', address: '', serviceRadius: '15', yearsOfExperience: '', consent: false };
+const initialForm = { name: '', phone: '', email: '', address: '', serviceRadius: '15', yearsOfExperience: '', drivingLicenseIssuedDate: '', drivingLicenseExpiryDate: '', consent: false };
 
 export default function TechnicianOnboarding() {
   const [form, setForm] = useState(initialForm);
@@ -27,7 +27,7 @@ export default function TechnicianOnboarding() {
   const submit = async event => {
     event.preventDefault();
     if (busy) return;
-    if (![form.name, form.email, form.phone, form.address, form.serviceRadius, form.yearsOfExperience].every(value => String(value).trim()) || !files.drivingLicenseFront || !form.consent) {
+    if (![form.name, form.email, form.phone, form.address, form.serviceRadius, form.yearsOfExperience, form.drivingLicenseIssuedDate, form.drivingLicenseExpiryDate].every(value => String(value).trim()) || !files.drivingLicenseFront || !files.drivingLicenseBack || !form.consent) {
       setError('Please complete all fields, upload your driving licence, and accept the terms.');
       return;
     }
@@ -36,6 +36,9 @@ export default function TechnicianOnboarding() {
     try {
       if (form.phone.length !== country.maxDigits || fullPhone.length > 16) {
         setError(`Enter exactly ${country.maxDigits} digits for ${country.code}.`); return;
+      }
+      if (form.drivingLicenseExpiryDate <= form.drivingLicenseIssuedDate) {
+        setError('Driving licence expiry date must be after the issue date.'); return;
       }
       const data = new FormData();
       Object.entries(form).forEach(([key, value]) => data.append(key, key === 'phone' ? fullPhone : value));
@@ -85,8 +88,12 @@ export default function TechnicianOnboarding() {
               <label>Service radius (miles)<input name="serviceRadius" type="number" required min="1" max="500" step="1" value={form.serviceRadius} onChange={update} /></label>
               <label>Years of experience<input name="yearsOfExperience" type="number" required min="0" max="80" step="0.5" value={form.yearsOfExperience} onChange={update} /></label>
             </div>
-            <label>Driving licence<input name="drivingLicenseFront" type="file" required accept="image/jpeg,image/png,image/webp,application/pdf" onChange={updateFile} /><small>JPG, PNG, WebP or PDF. Maximum 5 MB.</small></label>
-            {/* <label className="tech-onboarding-consent"><input name="consent" type="checkbox" required checked={form.consent} onChange={update} /><span>I agree to the <Link to="/terms">Terms & Conditions</Link> and <Link to="/privacy-policy">Privacy Policy</Link>, and to saving my details for technician onboarding.</span></label> */}
+            <div className="tech-onboarding-fields">
+              <label>Driving licence front image<input name="drivingLicenseFront" type="file" required accept="image/jpeg,image/png,image/webp" onChange={updateFile} /><small>JPG, PNG or WebP. Maximum 5 MB.</small></label>
+              <label>Driving licence back image<input name="drivingLicenseBack" type="file" required accept="image/jpeg,image/png,image/webp" onChange={updateFile} /><small>JPG, PNG or WebP. Maximum 5 MB.</small></label>
+              <label>Licence issue date<input name="drivingLicenseIssuedDate" type="date" required max={new Date().toLocaleDateString('en-CA')} value={form.drivingLicenseIssuedDate} onChange={update} /></label>
+              <label>Licence expiry date<input name="drivingLicenseExpiryDate" type="date" required min={form.drivingLicenseIssuedDate || undefined} value={form.drivingLicenseExpiryDate} onChange={update} /></label>
+            </div>
             <button type="submit">{busy ? 'Saving your details…' : 'Register your interest'}</button>
           </fieldset>
         </form>
