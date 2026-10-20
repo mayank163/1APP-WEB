@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const User = require('../models/User');
 const { uploadFile, deleteFile } = require('../utils/s3Upload');
+const { sendTechnicianOnboardingEmail } = require('../utils/emailService');
 const otpService = require('../utils/otpService');
 const { normalizePhone, phoneQuery } = require('../utils/phone');
 const { sendTechnicianTokenResponse } = require('./technicianAuthController');
@@ -24,7 +25,6 @@ exports.preregister = async (req, res, next) => {
     if (Object.keys(req.files).some(key => !['drivingLicenseFront', 'drivingLicenseBack'].includes(key))) throw fail('Only driving licence uploads are supported.');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw fail('Enter a valid email address.');
     if (req.body.yearsOfExperience === '' || req.body.yearsOfExperience == null || !Number.isFinite(yearsOfExperience) || yearsOfExperience < 0 || yearsOfExperience > 80) throw fail('Experience must be between 0 and 80 years.');
-    if (req.body.consent !== true && req.body.consent !== 'true') throw fail('Please agree to the terms and privacy policy.');
     const parseDate = value => {
       if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
       const date = new Date(`${value}T00:00:00.000Z`);
@@ -54,6 +54,12 @@ exports.preregister = async (req, res, next) => {
         ] },
     });
     saved = true;
+    try {
+      const delivery = await sendTechnicianOnboardingEmail(email);
+      if (!delivery?.success || delivery.dev) console.error('Technician onboarding confirmation email was not delivered.');
+    } catch {
+      console.error('Technician onboarding confirmation email delivery failed.');
+    }
     res.status(201).json({ success: true, message: 'Your details are saved. When the technician app launches, verify your registered phone number or email with an OTP to sign in.' });
   } catch (error) {
     if (!saved) await Promise.allSettled(uploaded.map(deleteFile));

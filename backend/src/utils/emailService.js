@@ -293,7 +293,7 @@ const bookingCancelledTemplate = (booking) => ({
  * @param {{ to: string, subject: string, html: string, text?: string }} options
  */
 const sendEmail = async (options) => {
-    const { to, subject, html, text } = options;
+    const { to, subject, html, text, from } = options;
 
     if (!process.env.SMTP_PASS) {
         console.log('\n─── 📧 EMAIL (dev mode — SMTP not configured) ───');
@@ -304,7 +304,7 @@ const sendEmail = async (options) => {
     }
 
     const info = await getTransporter().sendMail({
-        from: FROM(),
+        from: from || FROM(),
         to,
         subject,
         html: html || '',
@@ -317,6 +317,13 @@ const sendEmail = async (options) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Named email senders — called from controllers
 // ─────────────────────────────────────────────────────────────────────────────
+
+const sendTechnicianOnboardingEmail = async (email) => sendEmail({
+    to: email,
+    from: { name: 'Technician Onboarding', address: process.env.FROM_EMAIL || 'noreply@1app.com' },
+    subject: 'Thank you for registering',
+    text: 'Thank you! You have been successfully onboarded.',
+});
 
 const sendWelcomeEmail = async (user) => {
     const { subject, html } = welcomeTemplate(user);
@@ -355,6 +362,7 @@ const sendBookingCancelled = async (booking) => {
 
 module.exports = {
     sendEmail,
+    sendTechnicianOnboardingEmail,
     renderEmailLayout: layout,
     sendWelcomeEmail,
     sendLoginNotification,

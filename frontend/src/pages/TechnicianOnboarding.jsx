@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import API from '../services/api';
 import { COUNTRIES } from '../components/CountryCodePicker';
 import '../styles/TechnicianOnboarding.css';
 
-const initialForm = { name: '', phone: '', email: '', address: '', serviceRadius: '15', yearsOfExperience: '', drivingLicenseIssuedDate: '', drivingLicenseExpiryDate: '', consent: false };
+const initialForm = { name: '', phone: '', email: '', address: '', serviceRadius: '15', yearsOfExperience: '', drivingLicenseIssuedDate: '', drivingLicenseExpiryDate: '' };
 
 export default function TechnicianOnboarding() {
   const [form, setForm] = useState(initialForm);
@@ -27,8 +26,8 @@ export default function TechnicianOnboarding() {
   const submit = async event => {
     event.preventDefault();
     if (busy) return;
-    if (![form.name, form.email, form.phone, form.address, form.serviceRadius, form.yearsOfExperience, form.drivingLicenseIssuedDate, form.drivingLicenseExpiryDate].every(value => String(value).trim()) || !files.drivingLicenseFront || !files.drivingLicenseBack || !form.consent) {
-      setError('Please complete all fields, upload your driving licence, and accept the terms.');
+    if (![form.name, form.email, form.phone, form.address, form.serviceRadius, form.yearsOfExperience, form.drivingLicenseIssuedDate, form.drivingLicenseExpiryDate].every(value => String(value).trim()) || !files.drivingLicenseFront || !files.drivingLicenseBack) {
+      setError('Please complete all fields and upload both sides of your driving licence.');
       return;
     }
     setBusy(true);

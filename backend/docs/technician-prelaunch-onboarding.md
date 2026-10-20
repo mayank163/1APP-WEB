@@ -3,7 +3,7 @@
 The website form is available at `/join-as-technician` and linked in the footer.
 It posts multipart form data to `POST /api/technician-auth/preregister` with name,
 phone, email, address, serviceRadius (1–500 km), yearsOfExperience (0–80),
-consent: "true", required drivingLicenseFront and drivingLicenseBack images, and required drivingLicenseIssuedDate and drivingLicenseExpiryDate values (YYYY-MM-DD). Issue date cannot be in the future, and expiry must be after issue. The website country code picker defaults to US +1 and submits the full international phone number.
+required drivingLicenseFront and drivingLicenseBack images, and required drivingLicenseIssuedDate and drivingLicenseExpiryDate values (YYYY-MM-DD). Issue date cannot be in the future, and expiry must be after issue. The website country code picker defaults to US +1 and submits the full international phone number.
 Each upload is limited to 5 MB. The licence images accept JPG, PNG or WebP;
 No profile photo is collected. Files use existing S3 storage.
 It creates an invited technician User with documents pending admin review.

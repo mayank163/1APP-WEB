@@ -2,11 +2,12 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const Module = require('node:module');
 const originalLoad = Module._load;
-let found, created, tokenUser, validOTP;
+let found, created, tokenUser, validOTP, confirmationEmail;
 const User = { findOne: async () => found, create: async data => { created = data; } };
 Module._load = function (name, parent, ...rest) {
   if (parent?.filename.endsWith('/technicianOnboardingController.js')) {
     if (name === '../utils/s3Upload') return { uploadFile: async file => ({ key: `test/${file.originalname}` }), deleteFile: async () => {} };
+    if (name === '../utils/emailService') return { sendTechnicianOnboardingEmail: async email => { confirmationEmail = email; return { success: true }; } };
     if (name === '../models/User') return User;
     if (name === './technicianAuthController') return { sendTechnicianTokenResponse: async user => { tokenUser = user; } };
     if (name === '../utils/otpService') return { sendOTP: async () => {}, sendEmailOTP: async () => {}, verifyOTP: () => validOTP, verifyEmailOTP: () => validOTP };
@@ -15,7 +16,7 @@ Module._load = function (name, parent, ...rest) {
 };
 const controller = require('../src/controllers/technicianOnboardingController');
 Module._load = originalLoad;
-const body = { name: 'Test Technician', phone: '9876543210', email: 'Tech@Example.com', address: 'Delhi', serviceRadius: 15, yearsOfExperience: 3, drivingLicenseIssuedDate: '2020-01-01', drivingLicenseExpiryDate: '2030-01-01', consent: true };
+const body = { name: 'Test Technician', phone: '9876543210', email: 'Tech@Example.com', address: 'Delhi', serviceRadius: 15, yearsOfExperience: 3, drivingLicenseIssuedDate: '2020-01-01', drivingLicenseExpiryDate: '2030-01-01' };
 const invoke = async (handler, data) => {
   let error, payload, status;
   await handler({ body: data, files: { drivingLicenseFront: [{ originalname: 'licence.jpg' }], drivingLicenseBack: [{ originalname: 'back.jpg' }] } }, { status(code) { status = code; return this; }, json(value) { payload = value; } }, err => { error = err; });
@@ -25,6 +26,7 @@ test('preregistration saves an invited unapproved account without exposing crede
   found = undefined;
   const result = await invoke(controller.preregister, body);
   assert.equal(result.status, 201);
+  assert.equal(confirmationEmail, 'tech@example.com');
   assert.equal(created.phone, '+919876543210');
   assert.equal(created.email, 'tech@example.com');
   assert.equal(created.accountStatus, 'invited');
@@ -39,11 +41,10 @@ test('preregistration saves an invited unapproved account without exposing crede
   assert.equal(created.password.length, 64);
   assert.equal(result.payload.password, undefined);
 });
-test('duplicates and missing consent cannot create accounts', async () => {
+test('duplicate accounts are rejected', async () => {
   found = { role: 'technician' };
   assert.equal((await invoke(controller.preregister, body)).error.statusCode, 409);
   found = undefined;
-  assert.equal((await invoke(controller.preregister, { ...body, consent: false })).error.statusCode, 400);
 });
 test('malformed inputs are rejected', async () => {
   for (const changes of [{ phone: 'bad' }, { email: 'invalid' }, { yearsOfExperience: -1 }, { yearsOfExperience: '' }, { address: '' }, { serviceRadius: 0 }, { serviceRadius: 501 }, { email: '' }, { drivingLicenseIssuedDate: '' }, { drivingLicenseIssuedDate: '2020-02-30' }, { drivingLicenseExpiryDate: '2019-01-01' }, { drivingLicenseIssuedDate: '2099-01-01' }]) {
