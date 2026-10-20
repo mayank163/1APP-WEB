@@ -51,7 +51,7 @@ const sendTokenResponse = async (user, statusCode, res) => {
     const session = await User.findByIdAndUpdate(
         user._id,
         { $inc: { tokenVersion: 1 } },
-        { new: true }
+        { returnDocument: 'after' }
     );
     if (!session) return res.status(401).json({ success: false, message: 'User no longer exists.' });
     user.tokenVersion = session.tokenVersion;
@@ -273,7 +273,18 @@ exports.login = async (req, res, next) => {
 // ── Profile & document handlers ───────────────────────────────────────────────
 exports.completeTechnicianProfile = async (req, res, next) => {
   try {
-    const { skills, experienceLevel, yearsOfExperience, previousCompanyName,professionalBio  } = req.body;
+    const {
+      skills,
+      experienceLevel,
+      yearsOfExperience,
+      previousCompanyName,
+      professionalBio,
+      serviceRadius,
+      serviceArea,
+      coordinates,
+      serviceAddress,
+      address,
+    } = req.body;
     const technician = await User.findById(req.user._id);
     if (!technician || technician.role !== 'technician') {
       return res.status(403).json({ success: false, message: 'Only technician accounts can complete this profile' });
@@ -313,6 +324,54 @@ exports.completeTechnicianProfile = async (req, res, next) => {
       drivingLicense: { ...prev.drivingLicense, front: prev.drivingLicense?.front || '', back: prev.drivingLicense?.back || '' },
       taxInformation: { w9Form: prev.taxInformation?.w9Form || '', form1099: prev.taxInformation?.form1099 || '' },
     };
+    if (serviceRadius !== undefined && serviceRadius !== '') {
+      technician.serviceRadius = Number(serviceRadius);
+    }
+    if (serviceArea !== undefined) {
+      technician.serviceArea = serviceArea;
+    }
+    if (coordinates !== undefined) {
+      let parsedCoordinates = coordinates;
+      if (typeof parsedCoordinates === 'string') {
+        try {
+          parsedCoordinates = JSON.parse(parsedCoordinates);
+        } catch {
+          return res.status(400).json({
+            success: false,
+            message: 'Coordinates must be a valid object with lat and lng values',
+          });
+        }
+      }
+
+      const latitude = parsedCoordinates?.lat;
+      const longitude = parsedCoordinates?.lng;
+      const lat = Number(latitude);
+      const lng = Number(longitude);
+      if (
+        latitude === undefined ||
+        latitude === null ||
+        latitude === '' ||
+        longitude === undefined ||
+        longitude === null ||
+        longitude === '' ||
+        !Number.isFinite(lat) ||
+        !Number.isFinite(lng) ||
+        lat < -90 ||
+        lat > 90 ||
+        lng < -180 ||
+        lng > 180
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: 'Coordinates must include valid latitude and longitude values',
+        });
+      }
+
+      technician.serviceAreaCoordinates = { lat, lng };
+    }
+    if (serviceAddress !== undefined || address !== undefined) {
+      technician.address = serviceAddress ?? address;
+    }
     technician.profileCompleted = true;
     await technician.save();
     res.status(200).json({ success: true, message: 'Technician profile details saved', data: { user: technician } });
@@ -655,3 +714,6 @@ exports.refreshToken = async (req, res, next) => {
         next(error);
     }
 };
+
+// Shared token response for passwordless technician activation.
+exports.sendTechnicianTokenResponse = sendTokenResponse;

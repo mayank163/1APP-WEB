@@ -1,4 +1,5 @@
 import AdminBreadcrumb from '../components/AdminBreadcrumb';
+import JobOverviewWorkspace from '../components/JobOverviewWorkspace';
 import SummaryFilterCard from '../components/SummaryFilterCard';
 import TechnicianRatingForm, { emptyFeedback, RATING_LABELS, RATING_CRITERIA } from '../components/TechnicianRatingForm';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -574,6 +575,8 @@ const TechnicianJobs = () => {
 
   const [form, setForm]         = useState(emptyForm);
   const [editingJobId, setEditingJobId] = useState(null);
+  const [overviewTab, setOverviewTab] = useState('details');
+  useEffect(() => { setOverviewTab('details'); }, [searchParams]);
   const [selectedJob, setSelectedJob]   = useState(null);
 
   // ── Data loading ─────────────────────────────────────────────────────────────
@@ -1155,8 +1158,9 @@ const TechnicianJobs = () => {
               </div>
             </div>
 
+            <JobOverviewWorkspace key={selectedJob._id} job={selectedJob} requests={requests} tab={overviewTab} onTab={setOverviewTab} statusLabel={getStatusLbl(selectedJob.status)} payLabel={formatPay(selectedJob.pay)} canWrite={can('technician_jobs', 'write')} onRoute={() => setInvitationJob(selectedJob)} onReview={req => { setJobRequestsModal({ show: true, job: selectedJob }); openConversation(req); }} />
             {/* Two-column body */}
-            <div className="tj-fullscreen-body">
+            <div className="tj-fullscreen-body" style={overviewTab !== 'details' ? { display: 'none' } : undefined}>
 
               {/* ── LEFT COLUMN (main content) */}
               <div className="tj-fullscreen-left">
@@ -1497,9 +1501,10 @@ const TechnicianJobs = () => {
                 const req = requests.find(r => r._id === activeConvReq._id) || activeConvReq;
                 const techName = req.technician?.name || 'Technician';
                 const techPhone = req.technician?.phone || '';
-                const isDecided = req.status === 'accepted' || req.status === 'rejected';
+                const awaitingAdminAssignment = req.initiatedBy === 'admin' && req.status === 'accepted' && !req.adminApproved && req.job?.status === 'open';
+                const isDecided = (req.status === 'accepted' && !awaitingAdminAssignment) || req.status === 'rejected';
                 const hasPendingCharges = liveChargesStatus === 'pending' || liveChargesStatus === 'reviewing';
-                const waitingForAssignment = req.status === 'accepted' && req.adminApproved && hasPendingCharges && !req.job?.assignedTechnician;
+                const waitingForAssignment = req.status === 'accepted' && req.adminApproved && hasPendingCharges && !req.job?.assignedTechnician?._id;
                 return (
                   <div className="tj-chat-shell">
                     <div className="tj-chat-info-bar">
@@ -1539,11 +1544,11 @@ const TechnicianJobs = () => {
                                 <button className="tj-send-btn" disabled={!adminReply.trim() || sending} onClick={() => handleSendMessage(req._id)}>{sending ? <span className="spinner-border spinner-border-sm" /> : <FaPaperPlane />}</button>
                               </div>
                               <div className="tj-chat-action-row">
-                                {req.initiatedBy === 'admin' && <span className="text-muted">Waiting for the invited technician to accept or reject.</span>}
-                                <button className="tj-chat-btn accept" disabled={decidingId === req._id || req.initiatedBy === 'admin'} onClick={() => handleDecision(req._id, 'accepted')}>{decidingId === req._id ? <span className="spinner-border spinner-border-sm me-1" /> : '✓ '}Accept Request</button>
+                                {req.initiatedBy === 'admin' && <span className="text-muted">{awaitingAdminAssignment ? 'Technician accepted. Ready for admin assignment.' : 'Waiting for the invited technician to accept or reject.'}</span>}
+                                <button className="tj-chat-btn accept" disabled={decidingId === req._id || (req.initiatedBy === 'admin' && !awaitingAdminAssignment)} onClick={() => handleDecision(req._id, 'accepted')}>{decidingId === req._id ? <span className="spinner-border spinner-border-sm me-1" /> : '✓ '}{awaitingAdminAssignment ? 'Assign Technician' : 'Accept Request'}</button>
                                 <input type="number" min="1" placeholder="Counter amount" value={adminCounterAmount} onChange={e => setAdminCounterAmount(e.target.value)} className="admin-technician-jobs-111"  disabled={req.initiatedBy === 'admin'} />
                                 <button className="tj-chat-btn" disabled={decidingId === req._id || req.initiatedBy === 'admin'} onClick={() => handleCounter(req._id)}>↔ Counter</button>
-                                <button className="tj-chat-btn reject" disabled={decidingId === req._id || req.initiatedBy === 'admin'} onClick={() => handleDecision(req._id, 'rejected')}>{decidingId === req._id ? <span className="spinner-border spinner-border-sm me-1" /> : '✕ '}Reject Request</button>
+                                <button className="tj-chat-btn reject" disabled={decidingId === req._id || (req.initiatedBy === 'admin' && !awaitingAdminAssignment)} onClick={() => handleDecision(req._id, 'rejected')}>{decidingId === req._id ? <span className="spinner-border spinner-border-sm me-1" /> : '✕ '}Reject Request</button>
                               </div>
                             </>
                           ) : <div className="tj-chat-decided-note">This request has already been <strong>{req.status}</strong>. No further action needed.</div>}

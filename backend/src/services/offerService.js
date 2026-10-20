@@ -43,7 +43,7 @@ async function reserve(code, userId, lines, attempt, currency) {
     const quote = await evaluate(code, userId, lines, currency);
     // Both global and per-customer limits are claimed in a single transaction.
     await mongoose.connection.transaction(async session => {
-        const offer = await Offer.findOneAndUpdate({ _id: quote.offer._id, __v: quote.offer.__v, publicationStatus: { $in: ['active', 'scheduled'] }, startsAt: { $lte: new Date() }, endsAt: { $gt: new Date() }, $expr: { $or: [{ $eq: ['$totalLimit', null] }, { $lt: [{ $add: ['$used', '$reserved'] }, '$totalLimit'] }] } }, { $inc: { reserved: 1, __v: 1 } }, { new: true, session });
+        const offer = await Offer.findOneAndUpdate({ _id: quote.offer._id, __v: quote.offer.__v, publicationStatus: { $in: ['active', 'scheduled'] }, startsAt: { $lte: new Date() }, endsAt: { $gt: new Date() }, $expr: { $or: [{ $eq: ['$totalLimit', null] }, { $lt: [{ $add: ['$used', '$reserved'] }, '$totalLimit'] }] } }, { $inc: { reserved: 1, __v: 1 } }, { returnDocument: 'after', session });
         if (!offer) fail('Coupon availability changed. Please try again.', 409);
         await Usage.updateOne({ offer: offer._id, user: userId }, { $setOnInsert: { used: 0, reserved: 0 } }, { upsert: true, session });
         const usage = await Usage.findOneAndUpdate({ offer: offer._id, user: userId, $expr: { $lt: [{ $add: ['$used', '$reserved'] }, offer.perCustomerLimit] } }, { $inc: { reserved: 1 } }, { session });

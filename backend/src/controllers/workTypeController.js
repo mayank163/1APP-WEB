@@ -52,7 +52,7 @@ exports.updateWorkType = async (req, res, next) => {
         if (description !== undefined) update.description = description.trim();
         if (isActive !== undefined) update.isActive = isActive;
 
-        const workType = await WorkType.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true });
+        const workType = await WorkType.findByIdAndUpdate(req.params.id, update, { returnDocument: 'after', runValidators: true });
         if (!workType) return res.status(404).json({ success: false, message: 'Work type not found' });
         res.status(200).json({ success: true, data: { workType } });
     } catch (err) {

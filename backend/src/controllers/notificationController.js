@@ -52,7 +52,7 @@ exports.markRead = async (req, res, next) => {
     const notification = await Notification.findOneAndUpdate(
       { _id: notificationId, recipient: req.user._id, recipientModel },
       { $set: { isRead: true } },
-      { new: true }
+      { returnDocument: 'after' }
     );
     if (!notification) return res.status(404).json({ success: false, message: 'Notification not found.' });
 

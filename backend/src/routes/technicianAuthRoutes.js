@@ -1,12 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const technicianAuthController = require('../controllers/technicianAuthController');
+const onboarding = require('../controllers/technicianOnboardingController');
 const { protect } = require('../middleware/auth');
 const { uploadTechnicianDocuments, uploadProfileImage, uploadCompleteProfile, uploadBankDetails, uploadSingleDocument } = require('../middleware/upload');
 
 const rateLimit = require('express-rate-limit');
 const otpLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 30, standardHeaders: 'draft-8', legacyHeaders: false, message: { success: false, message: 'Too many attempts. Please try again later.' } });
 router.use(['/send-otp', '/verify-otp', '/complete-signup', '/activation/send-otp', '/activation/complete'], otpLimiter);
+const onboardingLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10, standardHeaders: 'draft-8', legacyHeaders: false, message: { success: false, message: 'Too many attempts. Please try again later.' } });
+router.post('/preregister', onboardingLimiter, require('../middleware/upload').uploadAdminTechnicianDocuments, onboarding.preregister);
+router.post('/otp-login/send', otpLimiter, onboarding.sendLoginOTP);
+router.post('/otp-login/verify', otpLimiter, onboarding.verifyLoginOTP);
+
 router.post('/activation/send-otp', technicianAuthController.sendActivationOTP);
 router.post('/activation/complete', technicianAuthController.activateTechnician);
 

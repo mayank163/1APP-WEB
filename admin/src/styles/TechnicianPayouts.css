@@ -1,0 +1,678 @@
+.technician-payouts {
+    --payout-gold: #a7732c;
+    --payout-brown: #795021;
+    padding: 36px 30px;
+    background: #fff;
+    border-radius: 22px;
+    color: #292929;
+    font-size: var(--admin-font-size-14px);
+    min-height: calc(100vh - 110px)
+}
+
+.payout-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 42px
+}
+
+.payout-heading h2 {
+    font-size: var(--admin-font-size-24px);
+    font-weight: 700;
+    letter-spacing: -.8px;
+    margin: 0 0 3px;
+    color: #080808
+}
+
+.payout-heading p {
+    color: #697e9c;
+    margin: 0;
+    font-size: var(--admin-font-size-14px)
+}
+
+.payout-primary {
+    background: #a7732c;
+    color: white;
+    border: 0;
+    border-radius: 8px;
+    padding: 7px 16px;
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--admin-font-size-13px)
+}
+
+.payout-primary:disabled {
+    opacity: .5
+}
+
+.payout-mode {
+    font-size: var(--admin-font-size-12px);
+    color: #84622f;
+    margin: -26px 0 16px
+}
+
+.payout-tabs {
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid #ead2b1;
+    padding-bottom: 4px;
+    margin-bottom: 20px;
+    flex-wrap: wrap
+}
+
+.payout-tabs button {
+    border: 0;
+    background: transparent;
+    padding: 6px 14px;
+    font-weight: 650;
+    font-size: var(--admin-font-size-14px);
+    border-radius: 30px;
+    color: #292929
+}
+
+.payout-tabs button.active {
+    background: #a7732c;
+    color: white
+}
+
+.payout-tabs button.rejected:not(.active) {
+    color: #ff3b43
+}
+
+.payout-tabs span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    background: #ecd6b5;
+    color: #a7732c;
+    padding: 2px 7px;
+    margin-left: 8px;
+    min-width: 30px
+}
+
+.payout-tabs .active span {
+    background: #80561e;
+    color: #fff
+}
+
+.payout-filters {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid #dfe5ee;
+    border-radius: 44px;
+    padding: 14px;
+    margin-bottom: 20px;
+    flex-wrap: wrap
+}
+
+.payout-filters select,
+.payout-filter-static,
+.payout-search,
+.payout-reset {
+    border: 1px solid #b77a2f;
+    background: #fff6e9;
+    color: #43516b;
+    border-radius: 28px;
+    min-height: 46px;
+    padding: 10px 12px;
+    font-size: var(--admin-font-size-13px)
+}
+
+.payout-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    max-width: 370px;
+    min-width: 220px
+}
+
+.payout-search input {
+    background: transparent;
+    border: 0;
+    outline: 0;
+    width: 100%;
+    color: #43516b
+}
+
+.payout-search input::placeholder {
+    color: #95a7bf
+}
+
+.payout-search svg {
+    color: #95a7bf;
+    flex-shrink: 0
+}
+
+.payout-reset {
+    margin-left: auto;
+    background: white;
+    color: #80521f;
+    display: flex;
+    align-items: center;
+    gap: 5px
+}
+
+.payout-ledger {
+    border: 1px solid #cb944d;
+    border-radius: 17px;
+    padding: 12px 11px
+}
+
+.payout-ledger-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 18px
+}
+
+.payout-ledger-heading h3 {
+    font-size: var(--admin-font-size-20px);
+    font-weight: 700;
+    margin: 0 0 3px
+}
+
+.payout-ledger-heading p {
+    color: #718078;
+    margin: 0
+}
+
+.payout-ledger-heading button {
+    background: none;
+    border: 0;
+    color: #795021;
+    font-weight: 700;
+    white-space: nowrap
+}
+
+.payout-table-wrap {
+    border: 1px solid #875e2d;
+    border-radius: 24px;
+    overflow: auto
+}
+
+.payout-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1040px;
+    font-size: var(--admin-font-size-14px)
+}
+
+.payout-table th {
+    background: #795021;
+    color: white;
+    text-transform: uppercase;
+    font-size: var(--admin-font-size-12px);
+    padding: 15px 18px;
+    white-space: nowrap
+}
+
+.payout-table td {
+    padding: 16px 18px;
+    border-bottom: 1px solid #dce2de;
+    vertical-align: middle;
+    line-height: 1.3
+}
+
+.payout-table tr:last-child td {
+    border-bottom: 0
+}
+
+.payout-table td:nth-child(6) {
+    max-width: 170px
+}
+
+.payout-bold {
+    font-weight: 650
+}
+
+.payout-job {
+    color: #80531e
+}
+
+.payout-status {
+    display: inline-block;
+    border-radius: 20px;
+    padding: 3px 8px;
+    font-size: var(--admin-font-size-12px);
+    font-weight: 650;
+    text-transform: capitalize;
+    background: #f2ede6;
+    color: #866029;
+    white-space: nowrap
+}
+
+.payout-status.paid {
+    background: #ead5b4;
+    color: #795021
+}
+
+.payout-status.pending {
+    background: #fff1e6;
+    color: #ed8531
+}
+
+.payout-status.rejected,
+.payout-status.failed {
+    background: #fce6e4;
+    color: #d9493f
+}
+
+.payout-status.cancelled {
+    background: #ffeed4;
+    color: #a7732c
+}
+
+.payout-view {
+    border: 1px solid #292929;
+    border-radius: 22px;
+    background: white;
+    font-weight: 650;
+    padding: 2px 9px;
+    white-space: nowrap;
+    color: #363636;
+    font-size: var(--admin-font-size-12px)
+}
+
+.payout-empty {
+    text-align: center;
+    height: 140px;
+    color: #748096
+}
+
+.payout-pagination {
+    margin-top: 20px;
+    border: 1px solid #b7823e;
+    border-radius: 36px;
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: #768093
+}
+
+.payout-pagination>div {
+    display: flex;
+    gap: 5px
+}
+
+.payout-pagination button {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #e1e5ed;
+    border-radius: 50%;
+    background: white;
+    color: #768093;
+    display: grid;
+    place-items: center
+}
+
+.payout-pagination button.active {
+    background: #a7732c;
+    border-color: #a7732c;
+    color: #fff
+}
+
+.payout-pagination button:disabled {
+    opacity: .4
+}
+
+.payout-detail-modal {
+    max-width: 490px
+}
+
+.payout-detail-content {
+    border: 0;
+    border-radius: 22px;
+    overflow: hidden;
+    color: #25231f
+}
+
+.payout-detail-content .modal-header {
+    padding: 15px 21px;
+    border-bottom: 1px solid #f1f1f1
+}
+
+.payout-detail-content .modal-title {
+    font-size: var(--admin-font-size-20px);
+    font-weight: 650
+}
+
+.payout-detail-content .modal-body {
+    padding: 20px 21px 0;
+    max-height: calc(100dvh - 170px);
+    overflow: auto
+}
+
+.payout-person {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 22px
+}
+
+.payout-avatar {
+    height: 56px;
+    width: 56px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #f0e5d4;
+    display: grid;
+    place-items: center;
+    font-size: var(--admin-font-size-16px);
+    font-weight: 650;
+    color: #805a25;
+    border: 2px solid #f2f2f2
+}
+
+.payout-person-name {
+    font-size: var(--admin-font-size-16px);
+    font-weight: 550
+}
+
+.payout-person-name small {
+    font-size: var(--admin-font-size-12px);
+    font-weight: 400;
+    color: #666;
+    margin-left: 8px
+}
+
+.payout-person p {
+    font-size: var(--admin-font-size-12px);
+    color: #526079;
+    margin: 0;
+    overflow-wrap: anywhere
+}
+
+.payout-person p span {
+    margin: 0 5px;
+    color: #d1d1d1
+}
+
+.payout-detail-tabs {
+    display: flex;
+    gap: 24px;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 20px
+}
+
+.payout-detail-tabs button {
+    padding: 0 0 8px;
+    background: none;
+    border: 0;
+    color: #666;
+    font-size: var(--admin-font-size-12px)
+}
+
+.payout-detail-tabs button.active {
+    border-bottom: 2px solid #a7732c;
+    color: #25231f;
+    font-weight: 600
+}
+
+.payout-overview-card {
+    border: 1px solid #e1e1e1;
+    border-radius: 13px;
+    padding: 16px
+}
+
+.payout-amount {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px
+}
+
+.payout-amount strong {
+    display: block;
+    font-size: var(--admin-font-size-22px);
+    font-weight: 750
+}
+
+.payout-amount small {
+    display: block;
+    font-size: var(--admin-font-size-12px);
+    color: #536079
+}
+
+.payout-amount>div:last-child {
+    text-align: right
+}
+
+.payout-amount>div:last-child small {
+    font-size: var(--admin-font-size-10px);
+    color: #666;
+    margin-top: 6px
+}
+
+.payout-amount .payout-status {
+    background: #fff9f0;
+    border: 1px solid #b7833f;
+    font-size: var(--admin-font-size-12px);
+    padding: 2px 8px
+}
+
+.payout-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px 10px;
+    font-size: var(--admin-font-size-12px);
+    line-height: 1.6;
+    margin-bottom: 0
+}
+
+.payout-fields dt {
+    font-weight: 400;
+    color: #536079
+}
+
+.payout-fields dd {
+    margin: 0;
+    overflow-wrap: anywhere
+}
+
+.payout-overview-card .payout-fields {
+    gap: 0
+}
+
+.payout-overview-card .payout-fields dt,
+.payout-overview-card .payout-fields dd {
+    padding: 7px 0;
+    border-bottom: 1px solid #f1f1f1
+}
+
+.payout-overview-card .payout-fields dd {
+    text-align: right
+}
+
+.payout-reference {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    justify-content: flex-end;
+    font-family: monospace;
+    font-size: var(--admin-font-size-11px);
+    word-break: break-all
+}
+
+.payout-reference button {
+    background: none;
+    border: 0;
+    color: #777;
+    padding: 0;
+    flex-shrink: 0
+}
+
+.payout-success {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    border: 1px solid #b7823e;
+    background: #fff9f0;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 20px;
+    color: #ad752b;
+    font-size: var(--admin-font-size-12px)
+}
+
+.payout-success>svg {
+    background: #a7732c;
+    border-radius: 50%;
+    color: white;
+    padding: 3px;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0
+}
+
+.payout-success strong {
+    font-weight: 600
+}
+
+.payout-success small {
+    display: block;
+    font-size: var(--admin-font-size-11px);
+    margin-top: 2px
+}
+
+.payout-section-title {
+    text-transform: uppercase;
+    font-size: var(--admin-font-size-12px);
+    font-weight: 650;
+    letter-spacing: .4px;
+    border-bottom: 1px solid #f1f1f1;
+    padding-bottom: 9px;
+    margin: 24px 0 10px
+}
+
+.payout-detail-content .modal-footer {
+    justify-content: space-between;
+    padding: 16px;
+    gap: 10px;
+    margin-top: 4px
+}
+
+.payout-close {
+    background: #fff;
+    border: 1px solid #d2d2d2;
+    border-radius: 8px;
+    padding: 7px 16px;
+    color: #444;
+    font-size: var(--admin-font-size-12px)
+}
+
+.payout-detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+    flex: 1
+}
+
+.payout-detail-actions .payout-primary {
+    font-size: var(--admin-font-size-12px)
+}
+
+.payout-timeline {
+    padding-left: 24px;
+    margin-top: 24px
+}
+
+.payout-timeline li {
+    padding: 0 0 24px 8px;
+    color: #80531e
+}
+
+.payout-timeline strong {
+    text-transform: capitalize;
+    font-size: var(--admin-font-size-12px)
+}
+
+.payout-timeline small {
+    display: block;
+    color: #748096;
+    font-size: var(--admin-font-size-12px)
+}
+
+.payout-timeline p {
+    font-size: var(--admin-font-size-12px);
+    margin: 6px 0
+}
+
+.technician-payouts button:focus-visible,
+.payout-detail-content button:focus-visible {
+    outline: 3px solid #c7a66f;
+    outline-offset: 3px
+}
+
+@media(max-width:768px) {
+    .technician-payouts {
+        padding: 22px 14px
+    }
+
+    .payout-heading {
+        align-items: flex-start;
+        margin-bottom: 26px
+    }
+
+    .payout-heading h2 {
+        font-size: var(--admin-font-size-22px)
+    }
+
+    .payout-heading p {
+        font-size: var(--admin-font-size-12px)
+    }
+
+    .payout-tabs button {
+        font-size: var(--admin-font-size-12px);
+        padding: 6px 10px
+    }
+
+    .payout-filters {
+        border-radius: 20px;
+        gap: 8px
+    }
+
+    .payout-search {
+        order: -1;
+        max-width: none;
+        flex-basis: 100%
+    }
+
+    .payout-filters select,
+    .payout-filter-static {
+        font-size: var(--admin-font-size-12px);
+        flex: 1;
+        min-width: 130px
+    }
+
+    .payout-ledger-heading h3 {
+        font-size: var(--admin-font-size-16px)
+    }
+
+    .payout-ledger-heading button {
+        font-size: var(--admin-font-size-12px)
+    }
+
+    .payout-ledger-heading p,
+    .payout-pagination {
+        font-size: var(--admin-font-size-12px)
+    }
+
+    .payout-person-name {
+        font-size: var(--admin-font-size-14px)
+    }
+
+    .payout-person-name small {
+        display: block;
+        margin-left: 0
+    }
+}

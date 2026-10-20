@@ -228,7 +228,7 @@ exports.createBookingOrder = async (req, res, next) => {
         }
 
         providerCreated = true;
-        const paymentAttempt = await PaymentAttempt.findByIdAndUpdate(paymentAttemptId, { $set: { paymentDetails: { provider: paymentOrder.provider, orderId: paymentOrder.id, currency: paymentOrder.currency.toUpperCase() } } }, { new: true });
+        const paymentAttempt = await PaymentAttempt.findByIdAndUpdate(paymentAttemptId, { $set: { paymentDetails: { provider: paymentOrder.provider, orderId: paymentOrder.id, currency: paymentOrder.currency.toUpperCase() } } }, { returnDocument: 'after' });
 
         res.status(201).json({
             success: true,
@@ -300,7 +300,7 @@ exports.verifyPayment = async (req, res, next) => {
                 ]
             },
             { $set: { status: 'Processing' } },
-            { new: true }
+            { returnDocument: 'after' }
         );
         if (!claimedAttempt) {
             const latestAttempt = await PaymentAttempt.findById(paymentAttempt._id);
@@ -596,7 +596,7 @@ exports.cancelBooking = async (req, res, next) => {
                         statusNote: statusNote || 'Booking cancelled'
                     }
                 },
-                { new: true }
+                { returnDocument: 'after' }
             );
         }
 
@@ -665,7 +665,7 @@ exports.downloadInvoice = async (req, res, next) => {
 exports.cancelPaymentAttempt = async (req, res, next) => {
     let attempt;
     try {
-        attempt = await PaymentAttempt.findOneAndUpdate({ _id: req.params.id, user: req.user._id, $or: [{ status: 'Pending' }, { status: 'Cancelling', updatedAt: { $lt: new Date(Date.now() - 60000) } }] }, { $set: { status: 'Cancelling' } }, { new: true });
+        attempt = await PaymentAttempt.findOneAndUpdate({ _id: req.params.id, user: req.user._id, $or: [{ status: 'Pending' }, { status: 'Cancelling', updatedAt: { $lt: new Date(Date.now() - 60000) } }] }, { $set: { status: 'Cancelling' } }, { returnDocument: 'after' });
         if (!attempt) {
             const existing = await PaymentAttempt.findOne({ _id: req.params.id, user: req.user._id });
             if (existing?.status === 'Cancelled') { if (existing.coupon?.offer) await offerService.settle(existing._id); return res.json({ success: true }); }

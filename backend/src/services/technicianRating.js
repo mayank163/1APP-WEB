@@ -33,7 +33,7 @@ const saveTechnicianRating = async (jobId, input, adminId) => {
   }, { $set: {
     technicianRating: { score: feedback.score, ratedBy: adminId, ratedAt: new Date() },
     privateTechnicianFeedback: { note: feedback.note, criteria: feedback.criteria },
-  } }, { new: true, runValidators: true });
+  } }, { returnDocument: 'after', runValidators: true });
   if (!job) throw fail('Only paid work orders with an assigned technician and no existing rating can be rated.', 409);
   try {
     await syncRatingToProfile(job);

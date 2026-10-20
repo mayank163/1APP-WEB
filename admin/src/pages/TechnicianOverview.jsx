@@ -6,6 +6,8 @@ import { toast } from 'react-toastify';
 import { FiPlus, FiUserPlus, FiSearch, FiFilter, FiCalendar, FiX, FiChevronLeft, FiChevronRight, FiMoreVertical, FiEdit2, FiClipboard, FiShield, FiMessageSquare, FiUserX, FiCheckCircle, FiClock, FiUsers } from 'react-icons/fi';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import adminApi from '../services/adminApi';
+import socket from '../services/socket';
+import { presenceOnline, lastActiveText } from '../utils/technicianPresence';
 import { getImageUrl } from '../utils/helpers';
 import TechnicianFormModal, { DEFAULT_TRADES, errorMessage } from '../components/TechnicianFormModal';
 import '../styles/TechnicianOverview.css';
@@ -25,7 +27,7 @@ const initialFilters = {
 };
 const initials = name => name.split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
 const verification = t => t.verificationStatus === 'approved' ? 'approved' : t.verificationStatus === 'rejected' ? 'rejected' : t.verificationStatus === 'pending' ? 'under_review' : 'pending';
-const availability = t => t.accountStatus === 'inactive' ? 'inactive' : ['suspended', 'blocked'].includes(t.accountStatus) ? 'blocked' : t.accountStatus === 'invited' ? 'invited' : t.isOnline ? 'online' : 'offline';
+const availability = t => t.accountStatus === 'inactive' ? 'inactive' : ['suspended', 'blocked'].includes(t.accountStatus) ? 'blocked' : t.accountStatus === 'invited' ? 'invited' : presenceOnline(t) ? 'online' : 'offline';
 const labels = {
   approved: 'Verified',
   rejected: 'Action Required',
@@ -157,7 +159,7 @@ function ActionModal({
     <p className="to-muted">{technician.name} · {technician.technicianId}</p>
     {error && <div role="alert" className="to-alert to-error">{error}</div>}
     {suspend || inactive ? <p>{restoring ? 'Restore access for this technician?' : 'This technician will lose account access until an administrator restores it.'}</p> : loading ? <p>Loading job conversations…</p> : <><label className="to-field"><span>{action === 'assign' ? 'Select an open job request' : 'Job conversation'}</span><select required value={requestId} onChange={e => setRequestId(e.target.value)}><option value="">Select job</option>{requests.map(r => <option key={r._id} value={r._id}>{r.job?.title || 'Job'} · {r.status}</option>)}</select></label>{requests.length === 0 && <p className="to-muted">{action === 'assign' ? 'This technician has no pending requests for open jobs.' : 'No job conversations are available for this technician.'} <Link to="/technician-jobs">View technician jobs</Link></p>}{action === 'message' && <label className="to-field"><span>Message</span><textarea required maxLength={2000} rows={4} value={message} onChange={e => setMessage(e.target.value)} placeholder="Write a message…" /></label>}</>}
-  </Modal.Body><Modal.Footer><button type="button" className="to-btn-neutral" disabled={busy} onClick={onClose}>Cancel</button><button type="submit" className={`to-btn-primary${(suspend || inactive) && !restoring ? ' to-btn-danger' : ''}`} disabled={busy || (!suspend && !inactive) && (!requestId || loading)}>{busy ? 'Saving…' : title}</button></Modal.Footer></form></Modal>;
+  </Modal.Body><Modal.Footer><button type="button" className="to-btn-neutral" disabled={busy} onClick={onClose}>Cancel</button><button type="submit" className={`to-btn-primary${(suspend || inactive) && !restoring ? ' to-btn-danger' : ''}`} disabled={busy || ((!suspend && !inactive) && (!requestId || loading))}>{busy ? 'Saving…' : title}</button></Modal.Footer></form></Modal>;
 }
 export default function TechnicianOverview() {
   const {
@@ -202,6 +204,26 @@ export default function TechnicianOverview() {
       active = false;
     };
   }, []);
+  useEffect(() => {
+    const onPresence = ({ technicianId, isOnline, lastActiveAt }) => {
+      const patch = technician => String(technician._id) === String(technicianId)
+        ? { ...technician, isOnline, lastActiveAt } : technician;
+      setRaw(previous => previous.map(patch));
+      setProfile(previous => previous ? patch(previous) : previous);
+    };
+    socket.on('technician:presence', onPresence);
+    socket.on('connect', load);
+    // Re-render relative times and expire status even while admin is disconnected.
+    const timer = setInterval(() => {
+      setRaw(previous => [...previous]);
+      setProfile(previous => previous ? { ...previous, isOnline: presenceOnline(previous) } : previous);
+    }, 15000);
+    return () => {
+      socket.off('technician:presence', onPresence);
+      socket.off('connect', load);
+      clearInterval(timer);
+    };
+  }, [load]);
   const updateFilter = (key, value) => {
     setFilters(prev => ({
       ...prev,
@@ -217,7 +239,7 @@ export default function TechnicianOverview() {
     const q = filters.search.trim().toLowerCase();
     const result = raw.filter(t => {
       const joinDate = t.createdAt ? new Date(t.createdAt).toLocaleDateString('en-CA') : '';
-      return matchesTab(t, tab) && (!q || [t.name, t.email, t.phone, t.technicianId, t.primaryService, ...(t.skills || [])].join(' ').toLowerCase().includes(q)) && (filters.verification === 'all' || verification(t) === filters.verification) && (filters.availability === 'all' || availability(t) === filters.availability) && (filters.service === 'all' || t.primaryService === filters.service) && (filters.location === 'all' || t.serviceArea === filters.location) && (filters.rating === 'all' || t.rating != null && Number(t.rating) >= Number(filters.rating)) && (filters.performance === 'all' || t.performance != null && Number(t.performance) >= Number(filters.performance)) && (filters.account === 'all' || t.accountStatus === filters.account) && (!filters.from || joinDate && joinDate >= filters.from) && (!filters.to || joinDate && joinDate <= filters.to);
+      return matchesTab(t, tab) && (!q || [t.name, t.email, t.phone, t.technicianId, t.primaryService, ...(t.skills || [])].join(' ').toLowerCase().includes(q)) && (filters.verification === 'all' || verification(t) === filters.verification) && (filters.availability === 'all' || availability(t) === filters.availability) && (filters.service === 'all' || t.primaryService === filters.service) && (filters.location === 'all' || t.serviceArea === filters.location) && (filters.rating === 'all' || (t.rating != null && Number(t.rating) >= Number(filters.rating))) && (filters.performance === 'all' || (t.performance != null && Number(t.performance) >= Number(filters.performance))) && (filters.account === 'all' || t.accountStatus === filters.account) && (!filters.from || (joinDate && joinDate >= filters.from)) && (!filters.to || (joinDate && joinDate <= filters.to));
     });
     return result.sort((a, b) => filters.sort === 'name' ? a.name.localeCompare(b.name) : filters.sort === 'jobs' ? b.totalJobsDone - a.totalJobsDone : filters.sort === 'rating' ? (b.rating ?? -1) - (a.rating ?? -1) : filters.sort === 'oldest' ? new Date(a.createdAt) - new Date(b.createdAt) : new Date(b.createdAt) - new Date(a.createdAt));
   }, [raw, filters, tab]);
@@ -262,7 +284,7 @@ export default function TechnicianOverview() {
         setPage(1);
       }}>{label} <span>{counts[key].toLocaleString()}</span></button>)}</div>
     <div className="to-table-card" aria-busy={loading}>{loading ? <div className="to-empty" role="status"><div className="spinner-border spinner-border-sm" />Loading technicians…</div> : loadError ? <div className="to-empty" role="alert"><p>{loadError}</p><button className="to-btn-outline" onClick={load}>Try again</button></div> : <div className="to-table-scroll"><table className="to-table"><thead><tr>{['Technician Name', 'Service / Trade', 'Verification', 'Availability', 'Ratings', 'Jobs', 'Performance', 'Account Status', ''].map((label, i) => <th scope="col" key={i}>{label || <span className="visually-hidden">Actions</span>}</th>)}</tr></thead><tbody>{rows.length === 0 ? <tr><td colSpan={9}><div className="to-empty"><FiUsers /><strong>No technicians found</strong><span>Try adjusting your filters or add a technician.</span></div></td></tr> : rows.map(t => <tr key={t._id}>
-      <td><button className="to-tech-cell" onClick={() => setProfile(t)}><Avatar technician={t} /><span><strong>{t.name}</strong><small title={t.technicianId}>{t.technicianId}</small></span></button></td><td className="to-trade">{t.primaryService || '—'}</td><td><Badge status={verification(t)} /></td><td><Badge status={availability(t)} /></td><td><Rating technician={t} /></td><td className="to-number">{t.totalJobsDone}</td><td className="to-number"><strong>{t.performance == null ? 'NA' : `${t.performance}%`}</strong></td><td><Badge status={t.accountStatus} /></td><td><Dropdown align="end"><Dropdown.Toggle className="to-menu-toggle" variant="link" aria-label={`Actions for ${t.name}`}><FiMoreVertical /></Dropdown.Toggle><Dropdown.Menu className="to-action-menu" popperConfig={{
+      <td><button className="to-tech-cell" onClick={() => setProfile(t)}><Avatar technician={t} /><span><strong>{t.name}</strong><small title={t.technicianId}>{t.technicianId}</small></span></button></td><td className="to-trade">{t.primaryService || '—'}</td><td><Badge status={verification(t)} /></td><td><Badge status={availability(t)} /><small className="to-last-active" title={t.lastActiveAt ? new Date(t.lastActiveAt).toLocaleString() : undefined}>{lastActiveText(t)}</small></td><td><Rating technician={t} /></td><td className="to-number">{t.totalJobsDone}</td><td className="to-number"><strong>{t.performance == null ? 'NA' : `${t.performance}%`}</strong></td><td><Badge status={t.accountStatus} /></td><td><Dropdown align="end"><Dropdown.Toggle className="to-menu-toggle" variant="link" aria-label={`Actions for ${t.name}`}><FiMoreVertical /></Dropdown.Toggle><Dropdown.Menu className="to-action-menu" popperConfig={{
                     strategy: 'fixed'
                   }}>
         <Dropdown.Item disabled={!canWrite} onClick={() => setModal({

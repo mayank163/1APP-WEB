@@ -16,7 +16,7 @@ exports.linkRecipient = async (req,res,next) => {
     const { userToken,bankToken } = req.body || {};
     await provider.verifyRecipient(user._id,userToken,bankToken,bank);
     await mongoose.connection.transaction(async session => {
-      const current = await User.findOneAndUpdate({ _id:user._id },{ $inc:{ payoutVersion:1 } },{ new:true,session });
+      const current = await User.findOneAndUpdate({ _id:user._id },{ $inc:{ payoutVersion:1 } },{ returnDocument: 'after',session });
       if (provider.fingerprint(onboardingBank(current)) !== bankFingerprint) throw fail('Bank details changed during linking. Try again.',409);
       await Recipient.findOneAndUpdate({ technician:user._id,provider:provider.mode(),programToken:process.env.HYPERWALLET_PROGRAM_TOKEN },{ $set:{ userToken,bankToken,bankFingerprint,linkedBy:req.user._id,linkedAt:new Date() } },{ upsert:true,session });
     });
@@ -29,7 +29,7 @@ exports.reconcile = async (req,res,next) => {
     const w = await Withdrawal.findOneAndUpdate({ _id:req.params.id,status:{ $in:['processing','paid'] },'payout.provider':{ $in:['hyperwallet-mock','hyperwallet-sandbox'] } },{
       $set:{ 'payout.nextAttemptAt':new Date(),'payout.state':'unknown' },
       $push:{ auditHistory:{ action:'reconciliation_requested',actor:req.user._id,at:new Date() } }
-    },{ new:true });
+    },{ returnDocument: 'after' });
     if (!w) throw fail('Automatic payout not found.',404);
     res.json({ success:true,message:'Reconciliation queued. This does not create another payment.' });
   } catch(e) { next(e); }

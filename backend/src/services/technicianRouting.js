@@ -55,11 +55,10 @@ function rankTechnicians(job, history, technicians) {
     .map(t => {
       const id = String(t._id);
       const completedJobCount = totals.get(id) || 0;
-      const address = t.addresses?.find(address => address.isDefault) || t.addresses?.[0];
       const { addresses, ...profile } = t;
       return { ...profile, matchingJobCount: counts.get(id), completedJobCount,
         providerSuccessScore: finished.get(id) ? completedJobCount / finished.get(id) * 100 : null,
-        distanceKm: straightLineDistanceKm(job.coordinates, address?.coordinates) };
+        distanceKm: straightLineDistanceKm(job.coordinates, t.serviceAreaCoordinates) };
     })
     .sort((a, b) => b.matchingJobCount - a.matchingJobCount || a.name.localeCompare(b.name) || String(a._id).localeCompare(String(b._id)));
 }

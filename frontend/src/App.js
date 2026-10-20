@@ -34,6 +34,7 @@ import Blogs from './pages/Blogs';
 import BlogDetail from './pages/BlogDetail';
 import TechnicianDashboard from './pages/TechnicianDashboard';
 import TechnicianActivation from './pages/TechnicianActivation';
+import TechnicianOnboarding from './pages/TechnicianOnboarding';
 import TechnicianChat from './pages/TechnicianChat';
 import UserChat from './pages/UserChat';
 import SupportCenter from './pages/SupportCenter';
@@ -47,17 +48,19 @@ const AppShell = () => {
   const { pathname } = useLocation();
   const { socket } = useSocket();
   const isAuth = AUTH_PATHS.includes(pathname);
+  const isOnboarding = pathname.replace(/\/+$/, '') === '/join-as-technician';
 
   return (
     <div className="d-flex flex-column min-vh-100 bg-light">
       <ScrollManager />
-      {!isAuth && <NavigationBar />}
+      {!isAuth && !isOnboarding && <NavigationBar />}
       <main className="flex-grow-1">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/services" element={<Services />} />
           <Route path="/service/:id" element={<ServiceDetail />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/join-as-technician" element={<TechnicianOnboarding />} />
           <Route path="/technician-activate" element={<TechnicianActivation />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
@@ -84,7 +87,7 @@ const AppShell = () => {
           <Route path="/blogs/:id" element={<BlogDetail />} />
         </Routes>
       </main>
-      <Footer widgetOnly={isAuth || ['/support', '/support-chat', '/technician-chat'].includes(pathname)} />
+      {!isOnboarding && <Footer widgetOnly={isAuth || ['/support', '/support-chat', '/technician-chat'].includes(pathname)} />}
       <ToastContainer position="bottom-right" autoClose={3000} />
     </div>
   );

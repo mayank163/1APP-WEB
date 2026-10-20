@@ -221,7 +221,7 @@ exports.updatePlan = async (req, res, next) => {
         const data = normalizedPlanData(req.body);
         const validationError = validatePlan(data);
         if (validationError) return res.status(400).json({ success: false, message: validationError });
-        const plan = await Plan.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true });
+        const plan = await Plan.findByIdAndUpdate(req.params.id, data, { returnDocument: 'after', runValidators: true });
         if (!plan) return res.status(404).json({ success: false, message: 'Plan not found.' });
         res.json({ success: true, data: { plan } });
     } catch (err) { next(err); }
@@ -230,7 +230,7 @@ exports.updatePlan = async (req, res, next) => {
 exports.updatePlanStatus = async (req, res, next) => {
     try {
         if (typeof req.body.isActive !== 'boolean') return res.status(400).json({ success: false, message: 'isActive must be a boolean.' });
-        const plan = await Plan.findByIdAndUpdate(req.params.id, { isActive: req.body.isActive }, { new: true });
+        const plan = await Plan.findByIdAndUpdate(req.params.id, { isActive: req.body.isActive }, { returnDocument: 'after' });
         if (!plan) return res.status(404).json({ success: false, message: 'Plan not found.' });
         res.json({ success: true, data: { plan } });
     } catch (err) { next(err); }

@@ -33,12 +33,18 @@ export const SocketProvider = ({ children }) => {
         });
         socket.on('disconnect', () => setConnected(false));
 
+        const heartbeat = () => {
+            if (socket.connected && user?.role === 'technician') socket.emit('technician:heartbeat', {});
+        };
+        socket.on('connect', heartbeat);
+        const heartbeatTimer = setInterval(heartbeat, 30000);
         if (user?.role === 'technician' && user._id) {
             socket.on('connect', () => socket.emit('technician:join', user._id));
             if (socket.connected) socket.emit('technician:join', user._id);
         }
 
         return () => {
+            clearInterval(heartbeatTimer);
             if (user?.role === 'technician' && user._id) {
                 socket.emit('technician:leave', user._id);
             }

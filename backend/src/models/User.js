@@ -72,8 +72,13 @@ const userSchema = new mongoose.Schema({
     },
     primaryService: { type: String, default: '' },
     serviceArea: { type: String, default: '' },
+    serviceAreaCoordinates: {
+        lat: { type: Number, default: null },
+        lng: { type: Number, default: null },
+    },
     serviceRadius: { type: Number, min: 1, max: 500, default: 15 },
     isOnline: { type: Boolean, default: false },
+    lastActiveAt: { type: Date, default: null },
     isEmailVerified: { type: Boolean, default: false },
     skills: [{
         type: String,

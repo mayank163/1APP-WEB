@@ -395,7 +395,7 @@ exports.updateService = async (req, res, next) => {
         const service = await Service.findByIdAndUpdate(
             req.params.id, 
             data, 
-            { new: true, runValidators: true }
+            { returnDocument: 'after', runValidators: true }
         ).populate(POPULATE);
         
         res.json({ success: true, data: { service } });

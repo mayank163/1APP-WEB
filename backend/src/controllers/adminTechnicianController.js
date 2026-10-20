@@ -311,10 +311,14 @@ const updateTechnicianRequest = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Request not found' });
     }
 
+    if (request.initiatedBy === 'admin' && (request.status !== 'accepted' || request.adminApproved || !['accepted', 'rejected'].includes(status))) {
+      return res.status(409).json({ success: false, message: 'The technician must accept the invitation before admin can assign or decline it.' });
+    }
+
     if (status === 'accepted') {
       if (!request.job || !request.technician) return res.status(404).json({ success: false, message: 'Job or technician no longer exists.' });
       if (['invited', 'suspended', 'blocked'].includes(request.technician.accountStatus)) return res.status(400).json({ success: false, message: 'Only active technicians can be assigned.' });
-      if (!['pending', 'counter-offer'].includes(request.status) || request.job.status !== 'open') return res.status(409).json({ success: false, message: 'This request is no longer available for assignment.' });
+      if (!(request.initiatedBy === 'admin' ? request.status === 'accepted' && !request.adminApproved : ['pending', 'counter-offer'].includes(request.status)) || request.job.status !== 'open') return res.status(409).json({ success: false, message: 'This request is no longer available for assignment.' });
 
       const scheduleConflict = await findTechnicianScheduleConflict(
         request.technician._id,
@@ -346,8 +350,6 @@ const updateTechnicianRequest = async (req, res, next) => {
         return res.status(200).json({ success: true, message: 'Request approved; resolve all charges before assignment.', data: { request, waitingForCharges: true } });
       }
     }
-
-    if (request.initiatedBy === 'admin') return res.status(403).json({ success: false, message: 'Only the invited technician can respond to this invitation.' });
 
     const now          = new Date();
     const offerAmount  = Number(counterOffer || 0);
@@ -417,9 +419,13 @@ const updateTechnicianRequest = async (req, res, next) => {
             },
             $push: { conversation: { sender: 'admin', message: `${technician.name} has been assigned to this job.`, createdAt: now } },
           },
-          { new: true, runValidators: true },
+          { returnDocument: 'after', runValidators: true },
         );
         if (!claimed) return res.status(409).json({ success: false, message: 'This job has already been assigned.' });
+        await TechnicianJobRequest.updateMany({
+          job: job._id, _id: { $ne: request._id }, initiatedBy: 'admin',
+          status: { $in: ['pending', 'accepted'] }, adminApproved: { $ne: true },
+        }, { $set: { status: 'rejected', adminMessage: 'Admin assigned this job to another technician.' } });
         Object.assign(job, { status: claimed.status, assignedTechnician: claimed.assignedTechnician, assignedRequest: claimed.assignedRequest });
         await syncBookingFromTechnicianJob(claimed);
         await sendToTechnician(technician._id, {
@@ -874,11 +880,11 @@ const payTechnician = async (req, res, next) => {
     const admin = await require('../models/Admin').findByIdAndUpdate(req.user._id, {
       $inc: { walletBalance: amount },
       $push: { walletTransactions: { type: 'technician_payment', job: job._id, amount, note: payNote } },
-    }, { new: true });
+    }, { returnDocument: 'after' });
 
     const technician = await User.findByIdAndUpdate(job.assignedTechnician._id, {
       $inc: { totalEarnings: amount, totalJobsDone: 1 },
-    }, { new: true });
+    }, { returnDocument: 'after' });
 
     await sendToTechnician(job.assignedTechnician._id, {
       type: 'wallet_payment',

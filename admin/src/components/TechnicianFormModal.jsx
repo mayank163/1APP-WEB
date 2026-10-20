@@ -1,3 +1,4 @@
+import { kilometersToMiles, milesToKilometers } from '../utils/distance';
 import React, { useState } from 'react';
 import { Modal } from 'react-bootstrap';
 import { FiArrowLeft, FiArrowRight, FiCheck, FiUpload, FiAlertTriangle, FiX, FiPhone, FiMail } from 'react-icons/fi';
@@ -12,7 +13,7 @@ const initial = {
   primaryService: '',
   yearsOfExperience: '',
   serviceArea: '',
-  serviceRadius: 15,
+  serviceRadius: kilometersToMiles(15),
   skills: '',
   sendSms: false,
   sendEmail: false
@@ -39,6 +40,7 @@ export default function TechnicianFormModal({
   const [form, setForm] = useState(() => technician ? {
     ...initial,
     ...technician,
+    serviceRadius: kilometersToMiles(technician.serviceRadius || 15),
     skills: technician.skills.join(', '),
     dateOfBirth: technician.dateOfBirth?.slice(0, 10) || ''
   } : initial);
@@ -63,13 +65,14 @@ export default function TechnicianFormModal({
     setBusy(true);
     setError('');
     try {
+      const apiForm = { ...form, serviceRadius: milesToKilometers(form.serviceRadius) };
       if (editing) {
-        await adminApi.updateTechnician(technician._id, form);
+        await adminApi.updateTechnician(technician._id, apiForm);
         onSaved();
         onClose();
       } else {
         const payload = new FormData();
-        Object.entries(form).forEach(([key, value]) => payload.append(key, value));
+        Object.entries(apiForm).forEach(([key, value]) => payload.append(key, value));
         Object.entries(files).forEach(([key, value]) => {
           if (value) payload.append(key, value);
         });
@@ -102,7 +105,7 @@ export default function TechnicianFormModal({
   };
   const field = (key, label, type = 'text', props = {}) => <label className="to-field" key={key}><span>{label}{props.required && <b> *</b>}</span><input type={type} value={form[key]} onChange={e => update(key, e.target.value)} {...props} /></label>;
   const basic = [['Full Name', form.name], ['Mobile Number', form.phone], ['Email Address', form.email], ['Date of Birth', displayDate(form.dateOfBirth)]];
-  const professional = [['Service / Trade', form.primaryService], ['Experience', `${form.yearsOfExperience || 0} years`], ['Service Area', form.serviceArea ? `${form.serviceArea} (${form.serviceRadius} km radius)` : 'Not provided'], ['Skills / Services', form.skills]];
+  const professional = [['Service / Trade', form.primaryService], ['Experience', `${form.yearsOfExperience || 0} years`], ['Service Area', form.serviceArea ? `${form.serviceArea} (${Number(form.serviceRadius).toFixed(1)} miles radius)` : 'Not provided'], ['Skills / Services', form.skills]];
   return <Modal show onHide={close} centered backdrop={busy ? 'static' : true} keyboard={!busy} dialogClassName={`to-modal ${result ? 'to-success-modal' : ''}`} aria-labelledby="to-form-title">
     {result ? <div className="to-success-content">
       <div className="to-confetti" aria-hidden="true"><i /><i /><i /><i /><i /></div>
@@ -151,9 +154,10 @@ export default function TechnicianFormModal({
                 step: '0.5',
                 placeholder: 'e.g. 5'
               })}
-            {field('serviceRadius', 'Service Radius (km)', 'number', {
-                min: 1,
-                max: 500,
+            {field('serviceRadius', 'Service Radius (miles)', 'number', {
+                min: kilometersToMiles(1),
+                max: kilometersToMiles(500),
+                step: 'any',
                 required: true
               })}
             <div className="to-span-2">{field('serviceArea', 'Service Area', 'text', {

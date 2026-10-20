@@ -38,7 +38,7 @@ exports.updateServiceType = async (req, res, next) => {
         if (description !== undefined) update.description = description.trim();
         if (isActive !== undefined) update.isActive = isActive;
 
-        const serviceType = await ServiceType.findByIdAndUpdate(req.params.id, update, { new: true, runValidators: true });
+        const serviceType = await ServiceType.findByIdAndUpdate(req.params.id, update, { returnDocument: 'after', runValidators: true });
         if (!serviceType) return res.status(404).json({ success: false, message: 'Service type not found' });
         res.status(200).json({ success: true, data: { serviceType } });
     } catch (err) {
@@ -67,7 +67,7 @@ exports.toggleServiceTypeStatus = async (req, res, next) => {
         const serviceType = await ServiceType.findByIdAndUpdate(
             req.params.id,
             { isActive },
-            { new: true, runValidators: true }
+            { returnDocument: 'after', runValidators: true }
         );
         if (!serviceType) return res.status(404).json({ success: false, message: 'Service type not found' });
         res.status(200).json({ success: true, data: { serviceType } });

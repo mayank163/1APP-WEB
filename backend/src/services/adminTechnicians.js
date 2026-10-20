@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const User = require('../models/User');
+const { isPresenceOnline } = require('../socket/technicianPresence');
 const {
   normalizePhone,
   phoneQuery
@@ -41,7 +42,8 @@ const serializeTechnician = user => ({
   verificationStatus: user.technicianProfile?.verificationStatus || 'not-started',
   documents: user.technicianProfile?.documents || [],
   photoUrl: user.technicianProfile?.photoUrl || user.profileImage?.url || '',
-  isOnline: user.isOnline || false,
+  isOnline: isPresenceOnline(user),
+  lastActiveAt: user.lastActiveAt || null,
   totalJobsDone: user.totalJobsDone || 0,
   rating: user.rating ?? null,
   ratingCount: user.ratingCount || 0,
@@ -64,7 +66,7 @@ const parseDetails = body => {
   const yearsOfExperience = Number(body.yearsOfExperience || 0);
   const serviceRadius = Number(body.serviceRadius || 15);
   if (!Number.isFinite(yearsOfExperience) || yearsOfExperience < 0 || yearsOfExperience > 80) throw fail('Experience must be between 0 and 80 years.');
-  if (!Number.isFinite(serviceRadius) || serviceRadius < 1 || serviceRadius > 500) throw fail('Service radius must be between 1 and 500 km.');
+  if (!Number.isFinite(serviceRadius) || serviceRadius < 1 || serviceRadius > 500) throw fail('Service radius must be between 0.6214 and 310.6856 miles.');
   const skills = Array.isArray(body.skills) ? body.skills : String(body.skills || '').split(',');
   return {
     name,
@@ -158,7 +160,7 @@ exports.getTechnicians = async (req, res, next) => {
   try {
     const technicians = await User.find({
       role: 'technician'
-    }).select('+technicianAdminNote gender address customerBookingRatings name email phone dateOfBirth primaryService skills serviceArea serviceRadius technicianProfile.yearsOfExperience technicianProfile.previousCompanyName technicianProfile.certificateImages technicianProfile.professionalBio technicianProfile.verificationStatus technicianProfile.documents technicianProfile.photoUrl profileImage.url isOnline totalJobsDone rating ratingCount workOrderRatings accountStatus isPhoneVerified createdAt technicianId').populate('customerBookingRatings.customer', 'name').sort('-createdAt');
+    }).select('+technicianAdminNote gender address customerBookingRatings name email phone dateOfBirth primaryService skills serviceArea serviceRadius technicianProfile.yearsOfExperience technicianProfile.previousCompanyName technicianProfile.certificateImages technicianProfile.professionalBio technicianProfile.verificationStatus technicianProfile.documents technicianProfile.photoUrl profileImage.url isOnline lastActiveAt totalJobsDone rating ratingCount workOrderRatings accountStatus isPhoneVerified createdAt technicianId').populate('customerBookingRatings.customer', 'name').sort('-createdAt');
     res.json({
       success: true,
       data: {
@@ -322,7 +324,7 @@ exports.saveTechnicianNote = async (req, res, next) => {
   try {
     if (typeof req.body?.note !== 'string' || req.body.note.length > 1000) throw fail('Note must be text with a maximum of 1000 characters.');
     if (!require('mongoose').isValidObjectId(req.params.technicianId)) throw fail('Invalid technician ID.');
-    const user = await User.findOneAndUpdate({ _id: req.params.technicianId, role: 'technician' }, { $set: { technicianAdminNote: req.body.note.trim() } }, { new: true, runValidators: true }).select('+technicianAdminNote');
+    const user = await User.findOneAndUpdate({ _id: req.params.technicianId, role: 'technician' }, { $set: { technicianAdminNote: req.body.note.trim() } }, { returnDocument: 'after', runValidators: true }).select('+technicianAdminNote');
     if (!user) throw fail('Technician not found.', 404);
     res.json({ success: true, data: { note: user.technicianAdminNote || '' } });
   } catch (error) { next(error); }

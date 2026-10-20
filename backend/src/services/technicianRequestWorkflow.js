@@ -30,10 +30,14 @@ const tryAssignApprovedRequest = async (requestId) => {
   const claimedJob = await TechnicianJob.findOneAndUpdate(
     { _id: request.job._id, status: 'open', assignedRequest: null },
     { $set: { status: 'assigned', assignedRequest: request._id, assignedTechnician: { _id: request.technician._id, name: request.technician.name, email: request.technician.email, phone: request.technician.phone } }, $push: { conversation: { sender: 'system', message: `${request.technician.name} has been assigned to this job.`, createdAt: now } } },
-    { new: true, runValidators: true }
+    { returnDocument: 'after', runValidators: true }
   );
   if (!claimedJob) return { assigned: false, request, alreadyAssigned: true };
 
+  await TechnicianJobRequest.updateMany({
+    job: claimedJob._id, _id: { $ne: request._id }, initiatedBy: 'admin',
+    status: { $in: ['pending', 'accepted'] }, adminApproved: { $ne: true },
+  }, { $set: { status: 'rejected', adminMessage: 'Admin assigned this job to another technician.' } });
   const acceptedCharges = charges.filter(charge => charge.status === 'accepted');
   const fixedCharge = baseAmount(request, request.job);
   const additionalTotal = acceptedCharges.reduce((total, charge) => total + Number(charge.agreedAmount || 0), 0);

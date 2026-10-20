@@ -242,6 +242,24 @@ const getJobsForTechnicians = async (req, res, next) => {
     }
 
     // --------------------------------
+    // INVITED
+    // --------------------------------
+    else if (filter === 'invited') {
+      const invitedJobIds = await TechnicianJobRequest.distinct('job', {
+        technician: techId,
+        initiatedBy: 'admin',
+        status: { $in: ['pending', 'accepted'] },
+      });
+
+      jobs = await TechnicianJob.find({
+        _id: { $in: invitedJobIds },
+        status: 'open',
+        'assignedTechnician._id': null,
+        assignedRequest: null,
+      }).sort('-createdAt');
+    }
+
+    // --------------------------------
     // REQUESTED
     // --------------------------------
     else if (filter === 'requested') {
@@ -494,7 +512,7 @@ const getJobsForTechnicians = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         message:
-          'Invalid filter. Use: new, recommended, requested, active, completed, today, tomorrow, custom',
+          'Invalid filter. Use: new, recommended, invited, requested, active, completed, checkout, today, tomorrow, custom',
       });
     }
 
@@ -2685,7 +2703,7 @@ const completeTask = async (
         [`${taskPath}.isDone`]: { $ne: true },
       },
       { $set: taskUpdates },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
     if (!updatedJob) {
       return res.status(409).json({

@@ -12,7 +12,7 @@ const bankProvider = require('../services/bankPayoutProvider');
 const validId = id => { if (!mongoose.isValidObjectId(id)) throw fail('Invalid withdrawal ID.'); };
 const masked = bank => bank ? { accountHolder: bank.accountHolder, bankName: bank.bankName, accountType: bank.accountType, last4: bank.last4, version: bank.version, updatedAt: bank.updatedAt } : null;
 async function lockUser(id, session) {
-  const user = await User.findOneAndUpdate({ _id: id, role: 'technician' }, { $inc: { payoutVersion: 1 } }, { new: true, session });
+  const user = await User.findOneAndUpdate({ _id: id, role: 'technician' }, { $inc: { payoutVersion: 1 } }, { returnDocument: 'after', session });
   if (!user) throw fail('Technician not found.', 404);
   return user;
 }
@@ -31,7 +31,7 @@ exports.saveBank = wrap(async (req,res) => {
     bank = await Bank.findOneAndUpdate({ technician: req.user._id }, {
       $set: { encryptedDetails, accountHolder: details.accountHolder, bankName: details.bankName, accountType: details.accountType, last4: details.accountNumber.slice(-4) },
       $inc: { version: 1 }
-    }, { upsert: true, new: true, session, setDefaultsOnInsert: false });
+    }, { upsert: true, returnDocument: 'after', session, setDefaultsOnInsert: false });
   });
   res.json({ success: true, data: { bank: masked(bank) } });
 });

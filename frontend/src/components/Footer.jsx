@@ -12,6 +12,7 @@ const tryHeroImg = (filename) => {
 };
 
 const LINKS = [
+    { label: 'Join as a Technician', to: '/join-as-technician' },
     { label: 'About Us', to: '/about' },
     { label: 'Terms & Conditions', to: '/terms' },
     { label: 'Privacy Policy', to: '/privacy-policy' },

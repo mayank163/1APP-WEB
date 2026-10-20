@@ -1,0 +1,269 @@
+.tech-onboarding {
+    display: grid;
+    grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
+    gap: 64px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 72px 24px;
+    color: #263329
+}
+
+.tech-onboarding-intro {
+    padding-top: 32px
+}
+
+.tech-onboarding-eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #876731
+}
+
+.tech-onboarding h1 {
+    font-size: clamp(36px, 4vw, 56px);
+    line-height: 1.1;
+    margin: 24px 0
+}
+
+.tech-onboarding p,
+.tech-onboarding li {
+    color: #606b63;
+    line-height: 1.7
+}
+
+.tech-onboarding ol {
+    padding-left: 22px;
+    margin: 32px 0
+}
+
+.tech-onboarding li {
+    padding: 8px 0
+}
+
+.tech-onboarding-card {
+    background: #fff;
+    border: 1px solid #e2e6df;
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 12px 40px #26332908
+}
+
+.tech-onboarding h2 {
+    font-size: 27px;
+    margin: 0 0 12px
+}
+
+.tech-onboarding fieldset {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    min-width: 0
+}
+
+.tech-onboarding-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 18px
+}
+
+.tech-onboarding label {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 20px
+}
+
+.tech-onboarding input,
+.tech-onboarding textarea {
+    width: 100%;
+    min-width: 0;
+    border: 1px solid #d3dbd4;
+    border-radius: 10px;
+    padding: 12px;
+    font: inherit;
+    font-weight: 400;
+    background: #fff;
+    color: #263329
+}
+
+.tech-onboarding textarea {
+    resize: vertical
+}
+
+.tech-onboarding input:focus-visible,
+.tech-onboarding textarea:focus-visible,
+.tech-onboarding button:focus-visible {
+    outline: 2px solid #876731;
+    outline-offset: 3px
+}
+
+.tech-onboarding small {
+    font-weight: 400;
+    color: #667169;
+    font-size: 12px
+}
+
+.tech-onboarding .tech-onboarding-consent {
+    flex-direction: row;
+    align-items: flex-start;
+    font-weight: 400;
+    line-height: 1.6;
+    gap: 10px
+}
+
+.tech-onboarding-consent input {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-top: 3px
+}
+
+.tech-onboarding a {
+    color: #765723;
+    text-decoration: underline
+}
+
+.tech-onboarding button {
+    width: 100%;
+    border: 0;
+    border-radius: 12px;
+    padding: 15px;
+    margin-top: 24px;
+    background: #876731;
+    color: white;
+    font-weight: 600
+}
+
+.tech-onboarding fieldset:disabled {
+    opacity: .6
+}
+
+.tech-onboarding-error {
+    background: #fff0ee;
+    color: #a52e20;
+    padding: 12px;
+    border-radius: 10px;
+    line-height: 1.5
+}
+
+@media(max-width:800px) {
+    .tech-onboarding {
+        grid-template-columns: 1fr;
+        gap: 28px;
+        padding: 32px 18px
+    }
+
+    .tech-onboarding-intro {
+        padding: 0
+    }
+
+    .tech-onboarding-card {
+        padding: 24px
+    }
+}
+
+@media(max-width:480px) {
+    .tech-onboarding-fields {
+        grid-template-columns: 1fr
+    }
+
+    .tech-onboarding-card {
+        padding: 20px
+    }
+}
+
+
+.tech-onboarding-thankyou {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 32px 24px;
+    color: #263329
+}
+
+.tech-onboarding-thankyou h1 {
+    font-size: clamp(32px, 5vw, 48px);
+    margin: 0 0 16px
+}
+
+.tech-onboarding-thankyou p {
+    color: #606b63;
+    line-height: 1.7;
+    margin: 0
+}
+
+
+.tech-onboarding-phone-row {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-top: 7px;
+    padding: 4px;
+    border: 1px solid #cfd3cf;
+    border-radius: 12px;
+    background: #fff
+}
+
+.tech-onboarding-phone-row:focus-within {
+    outline: 2px solid #876731;
+    outline-offset: 2px
+}
+
+.tech-onboarding-phone-row select {
+    width: 102px;
+    min-width: 0;
+    flex-shrink: 0;
+    align-self: stretch;
+    border: 0;
+    border-right: 2px solid #ddd;
+    border-radius: 8px 0 0 8px;
+    padding: 10px 6px;
+    background: #f4f4f4;
+    color: #202420;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer
+}
+
+.tech-onboarding-phone-row input {
+    flex: 1;
+    min-width: 0;
+    width: 0;
+    border: 0;
+    border-radius: 0;
+    padding: 12px 10px;
+    background: transparent
+}
+
+.tech-onboarding-phone-row input:focus-visible,
+.tech-onboarding-phone-row select:focus-visible {
+    outline: none
+}
+
+.tech-onboarding input:not([type="checkbox"]),
+.tech-onboarding-phone-row {
+    height: 50px;
+    box-sizing: border-box
+}
+
+.tech-onboarding-phone-row input {
+    height: 100%;
+    padding: 0 10px
+}
+
+.tech-onboarding-phone-row select {
+    height: 100%;
+    padding: 0 6px;
+    box-sizing: border-box
+}
+
+.tech-onboarding input[type="file"] {
+    padding: 10px 12px;
+    line-height: 28px
+}

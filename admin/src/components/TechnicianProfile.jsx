@@ -1,3 +1,4 @@
+import { lastActiveText, presenceOnline } from '../utils/technicianPresence';
 import WorkSummary from './WorkSummary';
 import AdminBreadcrumb from './AdminBreadcrumb';
 import React, { useEffect, useMemo, useState } from "react";
@@ -1372,10 +1373,10 @@ export default function TechnicianProfile({
           </p>
           <div className="tp-online-row">
             <Status
-              value={technician.isOnline ? "online" : "offline"}
-              label={`● ${technician.isOnline ? "Online" : "Offline"}`}
+              value={presenceOnline(technician) ? "online" : "offline"}
+              label={`● ${presenceOnline(technician) ? "Online" : "Offline"}`}
             />
-            <span>Last active: {technician.isOnline ? "Now" : "—"}</span>
+            <span title={technician.lastActiveAt ? new Date(technician.lastActiveAt).toLocaleString() : undefined}>{lastActiveText(technician)}</span>
           </div>
         </div>
         <div className="tp-banner-actions">
@@ -1607,11 +1608,11 @@ export default function TechnicianProfile({
                           : "—"}
                       </div>,
                     ],
-                    // [FiMapPin, "Service Areas", technician.serviceArea],
+                    [FiMapPin, "Service Area", technician.serviceArea],
                     [
                       FiMapPin,
                       "Service Radius",
-                      `${technician.serviceRadius || 15} km`,
+                      `${technician.serviceRadius ?? 15} miles`,
                     ],
                     // [FiFileText, "Languages", technician.languages?.join(", ")],
                     // [FiTool, "Tools / Equipment", technician.tools?.join(", ")],
@@ -1689,16 +1690,16 @@ export default function TechnicianProfile({
                       FiActivity,
                       "Status",
                       <Status
-                        value={technician.isOnline ? "online" : "offline"}
+                        value={presenceOnline(technician) ? "online" : "offline"}
                       />,
                     ],
                     [FiClock, "Working Hours", technician.workingHours],
                     [
                       FiMapPin,
                       "Service Radius",
-                      `${technician.serviceRadius || 15} km`,
+                      `${technician.serviceRadius ?? 15} miles`,
                     ],
-                    // [FiClock, "Last Active", technician.isOnline ? "Now" : "—"],
+                    // [FiClock, "Last Active", presenceOnline(technician) ? "Now" : "—"],
                     // [
                     //   FiClock,
                     //   "Break Mode",

@@ -1,11 +1,9 @@
+import { formatMiles } from '../utils/distance';
 import '../styles/TechnicianTrackingMap.css';
 import React, { useEffect, useRef, useState } from 'react';
 import socket from '../services/socket';
 
 const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
-
-// ── Statuses where the tech is actively moving toward or at the job site ──────
-const ACTIVE_STATUSES = ['assigned', 'ontheway', 'visited', 'inprogress'];
 
 // ── Google Maps SDK loader (singleton promise) ────────────────────────────────
 let sdkPromise = null;
@@ -181,7 +179,7 @@ const TechnicianTrackingMap = ({ job }) => {
           directionsRenderer.current?.setDirections(result);
           const leg = result.routes[0].legs[0];
           setRouteInfo({
-            distance: leg.distance.text, // e.g. "3.2 km"
+            distance: formatMiles(leg.distance.value / 1000),
             duration: leg.duration.text, // e.g. "12 mins"
           });
         } else {

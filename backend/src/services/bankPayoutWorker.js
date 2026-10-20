@@ -24,7 +24,7 @@ async function settle(w, payment, owner) {
   await mongoose.connection.transaction(async session => {
     const current = await Withdrawal.findOne({ _id:w._id,'payout.leaseOwner':owner }).session(session);
     if (!current) return;
-    const user = await User.findOneAndUpdate({ _id:current.technician },{ $inc:{ payoutVersion:1 } },{ session,new:true });
+    const user = await User.findOneAndUpdate({ _id:current.technician },{ $inc:{ payoutVersion:1 } },{ session,returnDocument: 'after' });
     if (!user) throw new Error('Technician is unavailable.');
     const now = new Date();
     current.payout.paymentToken = payment.token;
@@ -62,7 +62,7 @@ async function processOne() {
     'payout.state':{ $in:['queued','working','unknown','submitted','completed'] },
     'payout.nextAttemptAt':{ $lte:now },
     $or:[{ 'payout.leaseUntil':null },{ 'payout.leaseUntil':{ $lte:now } }]
-  },{ $set:{ 'payout.leaseOwner':owner,'payout.leaseUntil':new Date(Date.now()+120000),'payout.state':'working' } },{ new:true,sort:{ 'payout.nextAttemptAt':1 } }).select('+encryptedBankSnapshot');
+  },{ $set:{ 'payout.leaseOwner':owner,'payout.leaseUntil':new Date(Date.now()+120000),'payout.state':'working' } },{ returnDocument: 'after',sort:{ 'payout.nextAttemptAt':1 } }).select('+encryptedBankSnapshot');
   if (!w) return false;
   try {
     let payment = await provider.lookup(w);

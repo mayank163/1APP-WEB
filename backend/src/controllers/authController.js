@@ -50,7 +50,7 @@ const sendTokenResponse = async (user, statusCode, res) => {
     const session = await User.findByIdAndUpdate(
         user._id,
         { $inc: { tokenVersion: 1 } },
-        { new: true }
+        { returnDocument: 'after' }
     );
     if (!session) return res.status(401).json({ success: false, message: 'User no longer exists.' });
     user.tokenVersion = session.tokenVersion;
@@ -329,7 +329,7 @@ exports.deleteMe = async (req, res, next) => {
         const user = await User.findByIdAndUpdate(
             req.user.id,
             { $set: { accountStatus: 'inactive', isOnline: false }, $inc: { tokenVersion: 1 } },
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         if (!user) {
@@ -343,7 +343,7 @@ exports.deleteMe = async (req, res, next) => {
 };
 
 /**
- * @desc    Update user profile (name, phone, addresses array)
+ * @desc    Update editable user details; email, password and phone are protected
  * @route   PUT /api/auth/me
  *
  * addresses operations (all optional, applied in order):
@@ -354,30 +354,59 @@ exports.deleteMe = async (req, res, next) => {
  */
 exports.updateMe = async (req, res, next) => {
     try {
-        const { name, phone, dateOfBirth, dob, gender, alternateContact, addAddress, updateAddress, removeAddress, setDefaultAddress } = req.body;
+        if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide a JSON object with the profile details to update'
+            });
+        }
+
+        const { dateOfBirth, dob, addAddress, updateAddress, removeAddress, setDefaultAddress } = req.body;
 
         const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
 
-        if (name) user.name = name;
-
-        if (dateOfBirth !== undefined || dob !== undefined) user.dateOfBirth = (dateOfBirth ?? dob) || null;
-        if (gender !== undefined) user.gender = String(gender).trim();
-        if (alternateContact !== undefined) user.alternateContact = String(alternateContact).trim();
-
-        if (phone && phone !== user.phone) {
-            const phoneExists = await User.findOne({ phone, _id: { $ne: user._id } });
-            if (phoneExists) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Phone number already in use by another account'
-                });
+        // Explicit profile fields keep credentials and server-managed state protected.
+        const editableFields = [
+            'name', 'address', 'addresses', 'gender', 'alternateContact',
+            'primaryService', 'serviceArea', 'serviceRadius', 'skills',
+            'experienceLevel', 'certifications', 'profileCompleted'
+        ];
+        for (const field of editableFields) {
+            if (Object.prototype.hasOwnProperty.call(req.body, field)) {
+                user.set(field, req.body[field]);
             }
-            user.phone = phone;
-            user.isPhoneVerified = false;
-            try {
-                await otpService.sendOTP(phone);
-            } catch (smsError) {
-                console.error(smsError.message);
+        }
+        if (dateOfBirth !== undefined || dob !== undefined) {
+            user.dateOfBirth = (dateOfBirth ?? dob) || null;
+        }
+
+        // Set nested fields individually to preserve omitted values and review state.
+        const editableNestedFields = {
+            serviceAreaCoordinates: ['lat', 'lng'],
+            profileImage: ['url', 's3Key'],
+            bankDetails: [
+                'accountHolder', 'bankName', 'accountNumber', 'routingNumber',
+                'accountType', 'ifscCode', 'upiId', 'blankCheque'
+            ],
+            technicianProfile: [
+                'skills', 'experienceLevel', 'yearsOfExperience', 'certifications',
+                'photoUrl', 'portfolioPhotos', 'previousCompanyName',
+                'certificateImages', 'professionalBio', 'residentialProof',
+                'cvResume', 'backgroundVerification'
+            ],
+            'technicianProfile.drivingLicense': ['issuedDate', 'expiryDate', 'front', 'back'],
+            'technicianProfile.taxInformation': ['w9Form', 'form1099']
+        };
+        for (const [path, fields] of Object.entries(editableNestedFields)) {
+            const value = path.split('.').reduce((object, key) => object?.[key], req.body);
+            if (!value || typeof value !== 'object' || Array.isArray(value)) continue;
+            for (const field of fields) {
+                if (Object.prototype.hasOwnProperty.call(value, field)) {
+                    user.set(`${path}.${field}`, value[field]);
+                }
             }
         }
 

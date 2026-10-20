@@ -43,7 +43,7 @@ exports.save = async (req, res, next) => { try {
 } catch (e) { if (e.code === 11000) { e.statusCode = 409; e.message = 'This coupon code already exists.'; } if (e.name === 'VersionError') { e.statusCode = 409; e.message = 'Coupon changed. Refresh and try again.'; } next(e); } };
 exports.status = async (req, res, next) => { try {
     if (req.body.publicationStatus !== 'inactive') fail('Use the editor to publish or activate a coupon.');
-    const offer = await Offer.findByIdAndUpdate(id(req.params.id), { $set: { publicationStatus: 'inactive' }, $inc: { __v: 1 } }, { new: true });
+    const offer = await Offer.findByIdAndUpdate(id(req.params.id), { $set: { publicationStatus: 'inactive' }, $inc: { __v: 1 } }, { returnDocument: 'after' });
     if (!offer) fail('Coupon not found.', 404);
     res.json({ success: true, data: { offer: safe(offer) } });
 } catch (e) { next(e); } };
@@ -59,7 +59,7 @@ exports.upload = async (req, res, next) => { try {
 } catch (e) { if (!e.statusCode) { e.statusCode = 500; e.message = 'Unable to upload promotional image. Please try again.'; } next(e); } };
 exports.image = async (req, res, next) => { try {
     if (typeof req.body.image !== 'string' || (req.body.image && !/^(?:\/uploads\/)?offers\/[a-f0-9-]+\.webp$/.test(req.body.image))) fail('Invalid promotional image.');
-    const offer = await Offer.findByIdAndUpdate(id(req.params.id), { $set: { image: req.body.image }, $inc: { __v: 1 } }, { new: true });
+    const offer = await Offer.findByIdAndUpdate(id(req.params.id), { $set: { image: req.body.image }, $inc: { __v: 1 } }, { returnDocument: 'after' });
     if (!offer) fail('Coupon not found.', 404);
     res.json({ success: true, data: { offer: safe(offer) } });
 } catch (e) { next(e); } };

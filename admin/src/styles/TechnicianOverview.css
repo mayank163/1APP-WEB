@@ -1629,3 +1629,5 @@
 .to-earnings-chart span { font-size: 11px; }
 .to-earnings-bar { width: 24px; background: #a6742c; border-radius: 6px; }
 .to-financial-job-id { display: block; color: #777; font-size: 11px; }
+
+.to-last-active { display: block; margin-top: 4px; color: #64748b; font-size: 11px; white-space: nowrap; }

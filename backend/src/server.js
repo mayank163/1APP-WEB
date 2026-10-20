@@ -158,6 +158,9 @@ io.use(async (socket, next) => {
 // Make io accessible across the app without circular imports
 const { setIO } = require('./utils/socketInstance');
 setIO(io);
+const { createTechnicianPresence } = require('./socket/technicianPresence');
+const technicianPresence = createTechnicianPresence({ io, User });
+technicianPresence.start();
 
 
 // ========== SERVE STATIC FILES ==========
@@ -257,6 +260,7 @@ io.on("connection", (socket) => {
     });
 
     registerChatHandlers(io, socket);
+    technicianPresence.register(socket);
     if (socket.userRole === 'admin') {
         if (socket.user.isActive && (socket.user.isSuperAdmin || socket.user.permissions.some(p => p.resource === 'support' && ['read', 'both'].includes(p.access)))) socket.join('support:admins');
     } else if (['user', 'technician'].includes(socket.userRole)) {
@@ -347,6 +351,7 @@ io.on("connection", (socket) => {
 
     // Admin joins a global room to receive job-level broadcasts
     socket.on('admin:join', () => {
+        if (socket.userRole !== 'admin' || !socket.user.isActive) return;
         socket.join('admin');
         console.log(`[Socket] ${socket.id} joined admin room`);
     });

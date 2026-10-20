@@ -234,7 +234,7 @@ exports.updateBookingStatus = async (req, res, next) => {
             phone: technicianPhone || booking.assignedTechnician?.phone || ''
         };
 
-        await Booking.findByIdAndUpdate(req.params.id, { $set: updates }, { new: true });
+        await Booking.findByIdAndUpdate(req.params.id, { $set: updates }, { returnDocument: 'after' });
 
         const updatedBooking = await Booking.findById(req.params.id)
             .populate('user')
@@ -401,7 +401,7 @@ exports.updateCustomer = async (req, res, next) => {
             updates.email = updates.email.trim().toLowerCase();
             if (await User.exists({ email: updates.email, _id: { $ne: req.params.id } })) return res.status(409).json({ success: false, message: 'Email already in use.' });
         }
-        const user = await User.findOneAndUpdate({ _id: req.params.id, role: 'user' }, { $set: updates }, { new: true, runValidators: true });
+        const user = await User.findOneAndUpdate({ _id: req.params.id, role: 'user' }, { $set: updates }, { returnDocument: 'after', runValidators: true });
         if (!user) return res.status(404).json({ success: false, message: 'Customer not found.' });
         res.json({ success: true, data: { user } });
     } catch (err) { next(err); }
@@ -417,7 +417,7 @@ exports.updateUserAccountStatus = async (req, res, next) => {
         const user = await User.findOneAndUpdate(
             { _id: req.params.id, role: 'user' },
             { $set: { accountStatus: status, ...(status === 'inactive' ? { isOnline: false } : {}) }, $inc: { tokenVersion: 1 } },
-            { new: true }
+            { returnDocument: 'after' }
         );
         if (!user) return res.status(404).json({ success: false, message: 'Customer not found.' });
 

@@ -125,7 +125,7 @@ router.patch('/tickets/:id', wrap(async (req, res) => {
         }
     }
     const audit = Object.entries(changes).map(([field, value]) => ({ action: `${field}: ${value || 'Unassigned'}`, actor: req.user.name }));
-    const updated = await Ticket.findByIdAndUpdate(ticket._id, { $set: changes, $push: { audit: { $each: audit } } }, { new: true, runValidators: true });
+    const updated = await Ticket.findByIdAndUpdate(ticket._id, { $set: changes, $push: { audit: { $each: audit } } }, { returnDocument: 'after', runValidators: true });
     notify(updated);
     const data = updated.toObject();
     if (!isAdmin(req.user)) delete data.audit;
@@ -175,7 +175,7 @@ router.get('/articles', wrap(async (req, res) => {
 const articleData = body => ({ title: clean(body.title, 200, 'Title'), content: clean(body.content, 20000, 'Content'), category: clean(body.category, 80, 'Category'), audience: body.audience || 'all', published: body.published === true });
 router.post('/articles', adminOnly, wrap(async (req, res) => res.status(201).json({ success: true, data: await Article.create({ ...articleData(req.body), author: req.user._id }) })));
 router.put('/articles/:id', adminOnly, wrap(async (req, res) => {
-    const data = await Article.findByIdAndUpdate(req.params.id, articleData(req.body), { new: true, runValidators: true });
+    const data = await Article.findByIdAndUpdate(req.params.id, articleData(req.body), { returnDocument: 'after', runValidators: true });
     if (!data) throw fail(404, 'Article not found.');
     res.json({ success: true, data });
 }));

@@ -102,7 +102,7 @@ const assignReviewer = async (req, res, next) => {
     const technician = await User.findOneAndUpdate(
       { _id: technicianId, role: 'technician' },
       { $set: { 'technicianProfile.reviewer': reviewerId } },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
     if (!technician) return res.status(404).json({ success: false, message: 'Technician not found' });
     emitVerificationUpdated(technicianId, technician.technicianProfile?.verificationStatus, '');
