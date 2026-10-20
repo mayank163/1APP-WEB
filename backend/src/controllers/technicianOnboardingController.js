@@ -42,9 +42,10 @@ exports.preregister = async (req, res, next) => {
       const { key } = await uploadFile(req.files[field][0], `technician-docs/${field}`);
       uploaded.push(key);
     }
+    const generatedPassword = crypto.randomBytes(12).toString('hex');
     await User.create({
       name, phone, email, address, serviceRadius, skills,
-      password: crypto.randomBytes(32).toString('hex'),
+      password: generatedPassword,
       role: 'technician', accountStatus: 'invited', profileCompleted: false,
       technicianProfile: { skills, yearsOfExperience, professionalBio: text(req.body.professionalBio, 2000), verificationStatus: 'pending', submittedAt: new Date(),
         drivingLicense: { front: uploaded[0], back: uploaded[1], issuedDate, expiryDate },
@@ -54,13 +55,15 @@ exports.preregister = async (req, res, next) => {
         ] },
     });
     saved = true;
+    let emailSent = false;
     try {
-      const delivery = await sendTechnicianOnboardingEmail(email);
+      const delivery = await sendTechnicianOnboardingEmail(email, generatedPassword);
+      emailSent = Boolean(delivery?.success && !delivery.dev);
       if (!delivery?.success || delivery.dev) console.error('Technician onboarding confirmation email was not delivered.');
     } catch {
       console.error('Technician onboarding confirmation email delivery failed.');
     }
-    res.status(201).json({ success: true, message: 'Your details are saved. When the technician app launches, verify your registered phone number or email with an OTP to sign in.' });
+    res.status(201).json({ success: true, emailSent, message: emailSent ? 'Your details are saved. Your generated password has been sent to your email. Verify your registered phone number or email with an OTP to activate your account.' : 'Your details are saved, but we could not email your password. You can still activate your account and sign in using an OTP.' });
   } catch (error) {
     if (!saved) await Promise.allSettled(uploaded.map(deleteFile));
     next(error.code === 11000 ? fail('This phone number or email is already registered.', 409) : error);

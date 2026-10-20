@@ -18,6 +18,7 @@ export default function TechnicianOnboarding() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
+  const [confirmation, setConfirmation] = useState('');
   const update = event => {
     const { name, value, type, checked } = event.target;
     setForm(previous => ({ ...previous, [name]: name === 'phone' ? value.replace(/\D/g, '').slice(0, country.maxDigits) : type === 'checkbox' ? checked : value }));
@@ -45,7 +46,8 @@ export default function TechnicianOnboarding() {
         if (file?.size > 5 * 1024 * 1024) { setError('Each file must be 5 MB or smaller.'); return; }
         if (file) data.append(key, file);
       }
-      await API.post('/technician-auth/preregister', data, { headers: { 'Content-Type': 'multipart/form-data' } });
+      const response = await API.post('/technician-auth/preregister', data, { headers: { 'Content-Type': 'multipart/form-data' } });
+      setConfirmation(response.data.message);
       setDone(true);
     } catch (err) {
       setError(err.response?.data?.message || 'We could not save your details. Please try again.');
@@ -54,7 +56,7 @@ export default function TechnicianOnboarding() {
   if (done) {
     return <section className="tech-onboarding-thankyou" role="status">
       <h1>Thank you!</h1>
-      <p>Your technician registration has been submitted successfully.</p>
+      <p>{confirmation}</p>
     </section>;
   }
   return <section className="tech-onboarding">

@@ -2,12 +2,12 @@ const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const Module = require('node:module');
 const originalLoad = Module._load;
-let found, created, tokenUser, validOTP, confirmationEmail;
+let found, created, tokenUser, validOTP, confirmationEmail, emailFails;
 const User = { findOne: async () => found, create: async data => { created = data; } };
 Module._load = function (name, parent, ...rest) {
   if (parent?.filename.endsWith('/technicianOnboardingController.js')) {
     if (name === '../utils/s3Upload') return { uploadFile: async file => ({ key: `test/${file.originalname}` }), deleteFile: async () => {} };
-    if (name === '../utils/emailService') return { sendTechnicianOnboardingEmail: async email => { confirmationEmail = email; return { success: true }; } };
+    if (name === '../utils/emailService') return { sendTechnicianOnboardingEmail: async (email, password) => { confirmationEmail = { email, password }; if (emailFails) throw new Error('SMTP unavailable'); return { success: true }; } };
     if (name === '../models/User') return User;
     if (name === './technicianAuthController') return { sendTechnicianTokenResponse: async user => { tokenUser = user; } };
     if (name === '../utils/otpService') return { sendOTP: async () => {}, sendEmailOTP: async () => {}, verifyOTP: () => validOTP, verifyEmailOTP: () => validOTP };
@@ -26,7 +26,9 @@ test('preregistration saves an invited unapproved account without exposing crede
   found = undefined;
   const result = await invoke(controller.preregister, body);
   assert.equal(result.status, 201);
-  assert.equal(confirmationEmail, 'tech@example.com');
+  assert.equal(confirmationEmail.email, 'tech@example.com');
+  assert.equal(confirmationEmail.password, created.password);
+  assert.equal(result.payload.emailSent, true);
   assert.equal(created.phone, '+919876543210');
   assert.equal(created.email, 'tech@example.com');
   assert.equal(created.accountStatus, 'invited');
@@ -38,7 +40,7 @@ test('preregistration saves an invited unapproved account without exposing crede
   assert.equal(created.technicianProfile.drivingLicense.back, 'test/back.jpg');
   assert.equal(created.technicianProfile.drivingLicense.issuedDate.toISOString().slice(0, 10), '2020-01-01');
   assert.equal(created.technicianProfile.documents.length, 2);
-  assert.equal(created.password.length, 64);
+  assert.equal(created.password.length, 24);
   assert.equal(result.payload.password, undefined);
 });
 test('duplicate accounts are rejected', async () => {
@@ -71,5 +73,22 @@ test('invalid codes and unavailable accounts never receive tokens', async () => 
     found = { role: 'technician', accountStatus: status };
     assert.equal((await invoke(controller.verifyLoginOTP, { ...body, otp: 'bad' })).error.statusCode, 401);
     assert.equal(tokenUser, undefined);
+  }
+});
+
+test('email failure preserves registration and reports OTP fallback without exposing the password', async () => {
+  found = undefined;
+  emailFails = true;
+  const previousError = console.error;
+  console.error = () => {};
+  try {
+    const result = await invoke(controller.preregister, body);
+    assert.equal(result.status, 201);
+    assert.equal(result.payload.emailSent, false);
+    assert.match(result.payload.message, /sign in using an OTP/);
+    assert.equal(JSON.stringify(result.payload).includes(created.password), false);
+  } finally {
+    emailFails = false;
+    console.error = previousError;
   }
 });

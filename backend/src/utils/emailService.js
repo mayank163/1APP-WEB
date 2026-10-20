@@ -318,11 +318,21 @@ const sendEmail = async (options) => {
 // Named email senders — called from controllers
 // ─────────────────────────────────────────────────────────────────────────────
 
-const sendTechnicianOnboardingEmail = async (email) => sendEmail({
+const sendTechnicianOnboardingEmail = async (email, password) => sendEmail({
     to: email,
     from: { name: 'Technician Onboarding', address: process.env.FROM_EMAIL || 'noreply@1app.com' },
     subject: 'Thank you for registering',
-    text: 'Thank you! You have been successfully onboarded.',
+    text: `Thank you! Your technician registration has been submitted successfully.\n\nEmail: ${email}\nPassword: ${password}\n\nKeep this password private. When the technician app is available, verify your registered phone number or email with an OTP to activate your account. You can then sign in using your registered email or phone number and this password. Change your password after signing in.`,
+    html: `<div style="font-family:Arial,sans-serif;font-size:16px;line-height:1.6;color:#222;">
+      <p>Thank you! Your technician registration has been submitted successfully.</p>
+      <table style="border-collapse:collapse;width:100%;max-width:560px;margin:24px 0;text-align:left;">
+        <tbody>
+          <tr><th scope="row" style="border:1px solid #ddd;padding:12px 16px;background:#f5f5f5;">Email</th><td style="border:1px solid #ddd;padding:12px 16px;overflow-wrap:anywhere;">${escapeHtml(email)}</td></tr>
+          <tr><th scope="row" style="border:1px solid #ddd;padding:12px 16px;background:#f5f5f5;">Password</th><td style="border:1px solid #ddd;padding:12px 16px;font-family:monospace;overflow-wrap:anywhere;">${escapeHtml(password)}</td></tr>
+        </tbody>
+      </table>
+      <p>Keep this password private. When the technician app is available, verify your registered phone number or email with an OTP to activate your account. You can then sign in using your registered email or phone number and this password. Change your password after signing in.</p>
+    </div>`,
 });
 
 const sendWelcomeEmail = async (user) => {

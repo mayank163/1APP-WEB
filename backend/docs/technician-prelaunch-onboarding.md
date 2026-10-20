@@ -7,7 +7,7 @@ required drivingLicenseFront and drivingLicenseBack images, and required driving
 Each upload is limited to 5 MB. The licence images accept JPG, PNG or WebP;
 No profile photo is collected. Files use existing S3 storage.
 It creates an invited technician User with documents pending admin review.
-No password or OTP is requested. Phone and email remain unverified.
+No password or OTP is requested in the form. A cryptographically random password is generated after validation, hashed by the User model, and emailed once after the account is saved. It is never returned in the API response. Phone and email remain unverified; OTP activation is still required before password login. The response includes emailSent; delivery failure preserves the registration and OTP login remains available.
 Existing accounts are never overwritten. Details appear in the admin technician list.
 
 ## Mobile app integration

@@ -9,16 +9,22 @@ Module._load = function (name, ...args) {
 };
 const { sendTechnicianOnboardingEmail } = require('../src/utils/emailService');
 Module._load = originalLoad;
-test('onboarding email is plain text with no branding, layout, or links', async () => {
+test('onboarding email shows credentials in an HTML table with a plain text fallback', async () => {
   const previous = process.env.SMTP_PASS;
   process.env.SMTP_PASS = 'test';
   try {
-    await sendTechnicianOnboardingEmail('tech@example.com');
+    await sendTechnicianOnboardingEmail('tech@example.com', 'generated-test-password');
     assert.equal(message.to, 'tech@example.com');
     assert.equal(message.from.name, 'Technician Onboarding');
-    assert.equal(message.text, 'Thank you! You have been successfully onboarded.');
-    assert.equal(message.html, '');
-    assert.doesNotMatch(message.subject + message.text, /1\s?app|https?:|header|footer|sign.in/i);
+    assert.match(message.text, /Password: generated-test-password/);
+    assert.match(message.text, /OTP to activate your account/);
+    assert.match(message.text, /Email: tech@example.com/);
+    assert.match(message.html, /<table/);
+    assert.match(message.html, />Email<\/th>/);
+    assert.match(message.html, />Password<\/th>/);
+    assert.match(message.html, /tech@example.com/);
+    assert.match(message.html, /generated-test-password/);
+    assert.doesNotMatch(message.subject + message.text, /1\s?app|https?:|header|footer/i);
   } finally {
     if (previous === undefined) delete process.env.SMTP_PASS;
     else process.env.SMTP_PASS = previous;
