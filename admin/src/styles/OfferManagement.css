@@ -5,7 +5,7 @@
     padding: 24px;
     min-height: calc(100vh - 120px);
     color: #151d30;
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .offers-page button,
@@ -44,7 +44,7 @@
     gap: 6px;
     color: #515c6e;
     margin-bottom: 5px;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .offers-breadcrumb svg {
@@ -58,7 +58,7 @@
 
 .offers-header h1 {
     color: #080808;
-    font-size: 30px;
+    font-size: 26px;
     font-weight: 750;
     margin: 0 0 8px;
     letter-spacing: -.6px;
@@ -67,7 +67,7 @@
 .offers-header p {
     color: #777;
     margin: 0;
-    font-size: 17px;
+    font-size: 15px;
 }
 
 .offers-primary {
@@ -103,18 +103,18 @@
 }
 
 .offers-stat strong {
-    font-size: 27px;
+    font-size: 23px;
     font-weight: 700;
 }
 
 .offers-stat h2 {
-    font-size: 19px;
+    font-size: 16px;
     font-weight: 700;
     margin: 8px 0;
 }
 
 .offers-stat p {
-    font-size: 13px;
+    font-size: 12px;
     color: #505b6f;
     margin: 0;
     font-weight: 550;
@@ -163,7 +163,7 @@
     border-radius: 50%;
     width: 40px;
     flex-shrink: 0;
-    font-size: 20px;
+    font-size: 18px;
     display: grid;
     place-items: center;
 }
@@ -249,7 +249,7 @@
     border: 1px dashed #d0a773;
     color: #9c631d;
     font-weight: 750;
-    font-size: 14px;
+    font-size: 12px;
     line-height: 16px;
     padding: 0 7px;
 }
@@ -261,7 +261,7 @@
     border-radius: 20px;
     padding: 3px 9px;
     line-height: 23px;
-    font-size: 16px;
+    font-size: 14px;
     white-space: nowrap;
 }
 
@@ -303,7 +303,7 @@
 }
 
 .coupon-title-row h2 {
-    font-size: 19px;
+    font-size: 16px;
     font-weight: 750;
     line-height: 1.4;
     margin: 0;
@@ -343,7 +343,7 @@
     width: 100%;
     background: white;
     text-align: left;
-    font-size: 14px;
+    font-size: 12px;
     border-radius: 7px;
     color: #475569;
 }
@@ -360,7 +360,7 @@
     color: #637796;
     font-weight: 550;
     margin: 12px 0 14px;
-    font-size: 16px;
+    font-size: 14px;
     line-height: 1.5;
     min-height: 24px;
 }
@@ -382,7 +382,7 @@
 .coupon-details {
     color: #637796;
     line-height: 1.4;
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .coupon-details>div {
@@ -430,7 +430,7 @@
 }
 
 .offers-pagination>span {
-    font-size: 19px;
+    font-size: 16px;
 }
 
 .offers-pagination nav {
@@ -448,7 +448,7 @@
     border-radius: 5px;
     background: white;
     color: #8e591c;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .offers-pagination nav .selected {
@@ -465,7 +465,7 @@
     border: 1px solid #ae792f;
     padding: 9px 12px;
     border-radius: 28px;
-    font-size: 19px;
+    font-size: 16px;
 }
 
 .offers-empty {
@@ -511,14 +511,14 @@
 }
 
 .offers-dialog h2 {
-    font-size: 22px;
+    font-size: 20px;
     color: #050505;
     font-weight: 750;
     margin: 0 0 14px;
 }
 
 .offers-dialog>p {
-    font-size: 15px;
+    font-size: 13px;
     color: #536075;
     line-height: 1.5;
     margin-bottom: 28px;
@@ -537,7 +537,7 @@
     color: #505c70;
     border-radius: 12px;
     padding: 11px 8px;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
 }
 
@@ -557,7 +557,7 @@
     flex-direction: column;
     gap: 7px;
     text-align: left;
-    font-size: 14px;
+    font-size: 12px;
     margin-top: 16px;
 }
 
@@ -574,7 +574,7 @@
     }
 
     .coupon-title-row h2 {
-        font-size: 20px;
+        font-size: 18px;
     }
 }
 
@@ -588,7 +588,7 @@
     }
 
     .offers-stat h2 {
-        font-size: 16px;
+        font-size: 14px;
     }
 
     .offers-stat p {
@@ -604,11 +604,11 @@
     }
 
     .offers-header p {
-        font-size: 15px;
+        font-size: 13px;
     }
 
     .offers-pagination>span {
-        font-size: 15px;
+        font-size: 13px;
     }
 }
 
@@ -623,7 +623,7 @@
     }
 
     .offers-header h1 {
-        font-size: 26px;
+        font-size: 23px;
     }
 
     .offers-stats {
@@ -656,7 +656,7 @@
     }
 
     .offers-page-size {
-        font-size: 15px;
+        font-size: 13px;
     }
 
     .offers-dialog {

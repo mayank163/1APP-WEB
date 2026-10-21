@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema({
         trim: true,
         match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Please provide a valid email address']
     },
+    appleId: { type: String, select: false },
     password: {
         type: String,
         required: [true, 'Please provide a password'],
@@ -218,6 +219,8 @@ userSchema.index(
     { phone: 1 },
     { unique: true, partialFilterExpression: { accountStatus: { $in: usableAccountStatuses } } }
 );
+
+userSchema.index({ appleId: 1 }, { unique: true, partialFilterExpression: { appleId: { $type: 'string' } } });
 
 // Hash password before saving
 userSchema.pre('save', async function () {

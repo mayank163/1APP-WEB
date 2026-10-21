@@ -22,7 +22,7 @@ const sendOTP = async (value, purpose = 'phone') => {
     const key = `${purpose}:${phone}`;
     return createOTP(key, async (otp) => {
         if (simulationEnabled()) console.log(`[Development OTP] ${phone}: ${otp}`);
-        else await sendSMS(phone, `Your 1APP verification OTP is: ${otp}. Valid for 5 minutes.`);
+        else await sendSMS(phone, `Your SOS verification OTP is: ${otp}. Valid for 5 minutes.`);
     });
 };
 

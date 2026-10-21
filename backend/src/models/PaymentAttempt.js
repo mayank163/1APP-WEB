@@ -43,7 +43,7 @@ const paymentAttemptSchema = new mongoose.Schema({
     serviceDate: { type: Date, required: true },
     specialInstructions: { type: String, default: '' },
     paymentDetails: {
-        provider: { type: String, required: true, enum: ['stripe', 'razorpay', 'paypal'] },
+        provider: { type: String, required: true, enum: ['stripe', 'paypal'] },
         orderId: { type: String, required: true },
         currency: String
     },

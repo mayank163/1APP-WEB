@@ -9,6 +9,9 @@ const {
     sendPasswordResetSuccess,
 } = require('../utils/emailService');
 
+const { verifyAppleIdentity, createAppleChallenge, exchangeAppleCode, revokeAppleGrant } = require('../utils/appleAuth');
+const AppleGrant = require('../models/AppleGrant');
+
 const pendingRegistrations = new Map();
 const PENDING_REGISTRATION_TTL = 5 * 60 * 1000;
 
@@ -78,6 +81,22 @@ const sendTokenResponse = async (user, statusCode, res) => {
 exports.startRegister = async (req, res, next) => {
     try {
         const { name, email, password, phone, address } = req.body;
+        let appleId;
+        if (req.body.appleRegistrationToken) {
+            let claims;
+            try {
+                claims = jwt.verify(req.body.appleRegistrationToken, process.env.JWT_SECRET, {
+                    algorithms: ['HS256'], audience: 'apple-registration', issuer: '1App'
+                });
+            } catch (_) {
+                return res.status(401).json({ success: false, message: 'Apple signup expired. Continue with Apple again.' });
+            }
+            if (claims.type !== 'apple-registration' || claims.email !== email.toLowerCase()) {
+                return res.status(400).json({ success: false, message: 'Use the email verified by Apple.' });
+            }
+            appleId = claims.sub;
+        }
+
 
         const emailExists = await User.findOne({ email, accountStatus: { $ne: 'inactive' } });
         if (emailExists) {
@@ -96,7 +115,7 @@ exports.startRegister = async (req, res, next) => {
         }
 
         pendingRegistrations.set(phone, {
-            userData: { name, email, password, phone, address },
+            userData: { name, email, password, phone, address, ...(appleId && { appleId, isEmailVerified: true }) },
             expires: Date.now() + PENDING_REGISTRATION_TTL
         });
 
@@ -321,22 +340,42 @@ exports.getMe = async (req, res, next) => {
 };
 
 /**
- * @desc    Deactivate the current account without deleting its data
+ * @desc    Delete the current account and revoke its Apple authorization
  * @route   DELETE /api/auth/me
  */
 exports.deleteMe = async (req, res, next) => {
     try {
-        const user = await User.findByIdAndUpdate(
-            req.user.id,
-            { $set: { accountStatus: 'inactive', isOnline: false }, $inc: { tokenVersion: 1 } },
-            { returnDocument: 'after' }
-        );
-
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
+        const user = await User.findById(req.user.id).select('+appleId');
+        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+        if (user.appleId) {
+            let grant = await AppleGrant.findOne({ subject: user.appleId }).select('+refreshToken');
+            if (req.body?.authorizationCode) {
+                const claims = await verifyAppleIdentity(req.body.identityToken, req.body.challengeToken);
+                if (claims.sub !== user.appleId) return res.status(403).json({ success: false, message: 'Authorize the Apple account linked to this account.' });
+                const replacement = await exchangeAppleCode(req.body.authorizationCode, claims, req.body.challengeToken);
+                grant = await AppleGrant.findOneAndUpdate({ subject: claims.sub }, replacement, { upsert: true, returnDocument: 'after' }).select('+refreshToken');
+            }
+            // Legacy accounts without a token must still be allowed to delete.
+            if (grant) await revokeAppleGrant(grant);
+            res.locals.appleRevocation = grant ? 'revoked' : 'unavailable';
         }
-
-        res.status(200).json({ success: true, message: 'Account deactivated successfully.' });
+        // Keep the account until cleanup succeeds so failed requests can be retried.
+        const tickets = await require('../models/SupportTicket').find({ requester: user._id }).select('_id');
+        await require('../models/SupportMessage').deleteMany({ $or: [{ ticket: { $in: tickets.map(t => t._id) } }, { senderId: user._id, senderRole: user.role }] });
+        await require('../models/SupportTicket').deleteMany({ requester: user._id });
+        await require('../models/ChatMessage').deleteMany({ $or: [{ participantId: user._id }, { technicianId: user._id }, { senderId: user._id }, { receiverId: user._id }] });
+        await require('../models/Notification').deleteMany({ recipient: user._id, recipientModel: 'User' });
+        const Review = require('../models/Review');
+        const services = await Review.distinct('service', { user: user._id });
+        await Review.deleteMany({ user: user._id });
+        for (const service of services) await Review.calcAverageRatings(service);
+        if (user.profileImage?.s3Key) await deleteFile(user.profileImage.s3Key);
+        if (user.appleId) await AppleGrant.deleteOne({ subject: user.appleId });
+        await User.deleteOne({ _id: user._id });
+        for (const [phone, pending] of pendingRegistrations) {
+            if (pending.userData.email === user.email || phone === user.phone) pendingRegistrations.delete(phone);
+        }
+        res.status(200).json({ success: true, message: 'Account deleted successfully.', ...(res.locals.appleRevocation && { appleRevocation: res.locals.appleRevocation }) });
     } catch (err) {
         next(err);
     }
@@ -872,6 +911,43 @@ exports.refreshToken = async (req, res, next) => {
         });
 
     } catch (err) {
+        next(err);
+    }
+};
+
+
+exports.appleChallenge = (req, res) => {
+    const challenge = createAppleChallenge();
+    res.json({ success: true, ...challenge });
+};
+
+exports.appleLogin = async (req, res, next) => {
+    try {
+        const claims = await verifyAppleIdentity(req.body?.identityToken, req.body?.challengeToken);
+        const grant = await exchangeAppleCode(req.body?.authorizationCode, claims, req.body?.challengeToken);
+        await AppleGrant.findOneAndUpdate({ subject: claims.sub }, grant, { upsert: true });
+        const user = await User.findOne({ appleId: claims.sub });
+        if (user) {
+            if (user.role !== 'user') return res.status(403).json({ success: false, message: 'Apple sign-in is available for customer accounts.' });
+            const fcmToken = req.body.fcmToken;
+            if (typeof fcmToken === 'string' && fcmToken.trim() && fcmToken.length <= 4096) {
+                await User.findByIdAndUpdate(user._id, { $addToSet: { fcmTokens: fcmToken.trim() } });
+            }
+            return await sendTokenResponse(user, 200, res);
+        }
+        if (!claims.email || ![true, 'true'].includes(claims.email_verified)) {
+            return res.status(400).json({ success: false, message: 'Apple did not provide a verified email. Please authorize email access.' });
+        }
+        const email = claims.email.toLowerCase();
+        if (await User.exists({ email, accountStatus: { $ne: 'inactive' } })) {
+            return res.status(409).json({ success: false, message: 'This email already has an account. Sign in using your existing method.' });
+        }
+        const appleRegistrationToken = jwt.sign({ type: 'apple-registration', email }, process.env.JWT_SECRET, {
+            subject: claims.sub, issuer: '1App', audience: 'apple-registration', expiresIn: '10m'
+        });
+        return res.json({ success: true, requiresRegistration: true, appleRegistrationToken, data: { email } });
+    } catch (err) {
+        if (err.statusCode) return res.status(err.statusCode).json({ success: false, message: err.message });
         next(err);
     }
 };

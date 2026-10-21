@@ -4,7 +4,6 @@ const Review = require('../models/Review');
 const Admin = require('../models/Admin');
 const PaymentAttempt = require('../models/PaymentAttempt');
 const Service = require('../models/Service');
-const razorpayInstance = require('../config/razorpay');
 const stripe = require('../config/stripe');
 const paypal = require('../config/paypal');
 const { generateTextInvoice } = require('../utils/invoiceService');
@@ -39,8 +38,8 @@ exports.createBookingOrder = async (req, res, next) => {
     let reservedAttempt;
     let providerCreated = false;
     try {
-        const { services, address, phone, specialInstructions, paymentProvider } = req.body;
-        if (paymentProvider && !['stripe', 'paypal'].includes(paymentProvider)) {
+        const { services, address, phone, specialInstructions, paymentProvider = 'stripe' } = req.body;
+        if (!['stripe', 'paypal'].includes(paymentProvider)) {
             return res.status(400).json({ success: false, message: 'Choose Stripe or PayPal.' });
         }
         if (paymentProvider === 'stripe' && !stripe) {
@@ -113,7 +112,7 @@ exports.createBookingOrder = async (req, res, next) => {
         let coupon;
         if (req.body.couponCode) {
             const lines = await offerService.priceLines(services);
-            coupon = await offerService.reserve(req.body.couponCode, req.user._id, lines, paymentAttemptId, paymentProvider === 'paypal' ? paypal.currency() : stripe ? (process.env.STRIPE_CURRENCY || 'usd').toUpperCase() : 'USD');
+            coupon = await offerService.reserve(req.body.couponCode, req.user._id, lines, paymentAttemptId, paymentProvider === 'paypal' ? paypal.currency() : (process.env.STRIPE_CURRENCY || 'usd').toUpperCase());
             reservedAttempt = paymentAttemptId;
             calculatedTotal = Math.round((coupon.subtotal - coupon.discount) * 100) / 100;
             if (calculatedTotal <= 0) { await offerService.settle(paymentAttemptId); reservedAttempt = null; return res.status(400).json({ success: false, message: 'The discount must leave a positive payment amount.' }); }
@@ -142,9 +141,9 @@ exports.createBookingOrder = async (req, res, next) => {
             serviceDate,
             specialInstructions,
             paymentDetails: {
-                provider: paymentProvider === 'paypal' ? 'paypal' : stripe ? 'stripe' : 'razorpay',
+                provider: paymentProvider,
                 orderId: `initializing_${paymentAttemptId}`,
-                currency: paymentProvider === 'paypal' ? paypal.currency() : stripe ? (process.env.STRIPE_CURRENCY || 'usd').toUpperCase() : 'USD'
+                currency: paymentProvider === 'paypal' ? paypal.currency() : (process.env.STRIPE_CURRENCY || 'usd').toUpperCase()
             }
         });
         let paymentOrder;
@@ -160,7 +159,7 @@ exports.createBookingOrder = async (req, res, next) => {
             } catch (error) {
                 return res.status(502).json({ success: false, message: error.message });
             }
-        } else if (stripe) {
+        } else {
             const publishableKey = process.env.STRIPE_PUBLISHABLE_KEY || '';
             if (!publishableKey.startsWith('pk_')) {
                 return res.status(500).json({
@@ -195,27 +194,6 @@ exports.createBookingOrder = async (req, res, next) => {
                 return res.status(500).json({
                     success: false,
                     message: 'Failed to create Stripe payment. Try again.'
-                });
-            }
-        } else {
-            try {
-                const order = await razorpayInstance.orders.create({
-                    amount: amountInSmallestUnit,
-                    currency: 'USD',
-                    receipt: `receipt_${Date.now()}`,
-                    notes: { paymentAttemptId }
-                });
-
-                providerCreated = true;
-                paymentOrder = {
-                    provider: 'razorpay',
-                    ...order
-                };
-            } catch (paymentError) {
-                console.error('Razorpay Order Creation Failed:', paymentError.message);
-                return res.status(500).json({
-                    success: false,
-                    message: 'Failed to create payment order. Try again.'
                 });
             }
         }
@@ -259,7 +237,7 @@ exports.createBookingOrder = async (req, res, next) => {
 exports.verifyPayment = async (req, res, next) => {
     let lease;
     try {
-        const { paymentAttemptId, razorpayOrderId, razorpayPaymentId, stripePaymentIntentId, paypalOrderId } = req.body;
+        const { paymentAttemptId, stripePaymentIntentId, paypalOrderId } = req.body;
         if (!paymentAttemptId) {
             return res.status(400).json({ success: false, message: 'Payment attempt ID is required' });
         }
@@ -382,23 +360,7 @@ exports.verifyPayment = async (req, res, next) => {
                 });
             }
         } else {
-            if (paymentAttempt.paymentDetails.provider !== 'razorpay' || razorpayOrderId !== orderId || !razorpayPaymentId) {
-                return res.status(400).json({ success: false, message: 'Payment does not match this payment attempt' });
-            }
-
-            const payment = await razorpayInstance.payments.fetch(razorpayPaymentId);
-            const expectedAmount = Math.round(paymentAttempt.totalAmount * 100);
-            if (
-                payment.order_id !== orderId ||
-                payment.status !== 'captured' ||
-                payment.amount !== expectedAmount
-            ) {
-                return res.status(409).json({
-                    success: false,
-                    message: 'Payment is not completed. No booking has been created.'
-                });
-            }
-            paymentId = payment.id;
+            return res.status(400).json({ success: false, message: 'A Stripe payment intent ID or PayPal order ID is required.' });
         }
 
         let booking;

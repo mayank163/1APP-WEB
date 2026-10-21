@@ -6,6 +6,8 @@ const { validateRegister, validateVerifyRegister, validateLogin } = require('../
 const upload = require('../middleware/upload');
 
 // Public routes
+router.post('/apple/challenge', authController.appleChallenge);
+router.post('/apple', authController.appleLogin);
 router.post('/start-register', validateRegister, authController.startRegister);
 router.post('/verify-register', validateVerifyRegister, authController.verifyRegister);
 router.post('/register', validateRegister, authController.startRegister);
