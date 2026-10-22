@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import adminApi from '../services/adminApi';
 import { enableBrowserNotifications } from '../services/firebaseNotifications';
 
 const AdminAuthContext = createContext(null);
@@ -6,11 +7,41 @@ const AdminAuthContext = createContext(null);
 export const AdminAuthProvider = ({ children }) => {
     const [admin, setAdmin] = useState(null);
 
+    const [loading, setLoading] = useState(true);
+
     useEffect(() => {
-        const stored = localStorage.getItem('1app_admin_info');
-        if (stored) {
-            try { setAdmin(JSON.parse(stored)); } catch { /* ignore */ }
+        let active = true;
+        const endSession = () => {
+            adminApi.logout();
+            setAdmin(null);
+            setLoading(false);
+        };
+        const onStorage = (event) => {
+            if (event.key === null || event.key === '1app_admin_token') endSession();
+        };
+        window.addEventListener('admin-session-ended', endSession);
+        window.addEventListener('storage', onStorage);
+        const sessionToken = localStorage.getItem('1app_admin_token');
+        if (!sessionToken) {
+            endSession();
+        } else {
+            adminApi.getSession().then((response) => {
+                if (!active || localStorage.getItem('1app_admin_token') !== sessionToken) return;
+                const currentAdmin = response.data?.admin;
+                if (!currentAdmin) return endSession();
+                setAdmin(currentAdmin);
+                localStorage.setItem('1app_admin_info', JSON.stringify(currentAdmin));
+            }).catch(() => {
+                if (active) endSession();
+            }).finally(() => {
+                if (active) setLoading(false);
+            });
         }
+        return () => {
+            active = false;
+            window.removeEventListener('admin-session-ended', endSession);
+            window.removeEventListener('storage', onStorage);
+        };
     }, []);
 
     useEffect(() => {
@@ -26,7 +57,7 @@ export const AdminAuthProvider = ({ children }) => {
 
     const clearAdmin = () => {
         setAdmin(null);
-        localStorage.removeItem('1app_admin_info');
+        adminApi.logout();
     };
 
     // Returns true if admin can perform the given access on a resource
@@ -39,7 +70,7 @@ export const AdminAuthProvider = ({ children }) => {
     };
 
     return (
-        <AdminAuthContext.Provider value={{ admin, saveAdmin, clearAdmin, can }}>
+        <AdminAuthContext.Provider value={{ admin, loading, saveAdmin, clearAdmin, can }}>
             {children}
         </AdminAuthContext.Provider>
     );

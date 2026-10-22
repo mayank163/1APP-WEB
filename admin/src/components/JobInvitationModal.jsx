@@ -123,7 +123,7 @@ export default function JobInvitationModal({ job, onClose, onSent }) {
           const selected = selectedIds.includes(t._id);
           return <article className={`route-tech-card${selected ? ' is-selected' : ''}`} key={t._id} aria-label={t.name}>
             <div className="route-tech-person"><input type="checkbox" checked={selected} disabled={unavailable || saving} onChange={() => toggle(t._id)} aria-label={`Select ${t.name}`} /><TechnicianAvatar name={t.name} photoUrl={t.photoUrl} /><div className="route-tech-identity"><div className="route-tech-heading"><h3>{t.name}</h3><span className="route-tech-id">ID-{t.technicianId || String(t._id).slice(-6).toUpperCase()}</span></div><div className="route-tech-presence"><span className={`route-presence-badge ${presenceOnline(t, now) ? 'is-online' : 'is-offline'}`}><span aria-hidden="true">●</span> {presenceOnline(t, now) ? 'Online' : 'Offline'}</span><small title={t.lastActiveAt ? new Date(t.lastActiveAt).toLocaleString() : undefined}>{lastActiveText(t, now)}</small></div></div></div>
-            <div className="route-tech-details"><div className="route-tech-metrics">
+            <div className="route-tech-details"><p>{t.technicianType || 'Type not provided'} · {t.workAreas?.join(', ') || 'Work areas not provided'}</p><div className="route-tech-metrics">
               <span className="route-rating"><FiStar /> {t.ratingCount > 0 && t.rating != null ? <>{Number(t.rating).toFixed(1)} <small>({t.ratingCount})</small></> : 'Not rated'}</span>
               <span><FiMapPin /> {t.distanceKm != null ? formatMiles(t.distanceKm) : 'Distance unavailable'}</span>
               <span className="route-metric-chip"><FiBriefcase /> Completed {t.completedJobCount} jobs</span>

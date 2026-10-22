@@ -31,8 +31,9 @@ import PlanManagement from './pages/PlanManagement';
 import { getAdminNavItems } from './navigation/adminNavigation';
 
 const AdminPrivateRoute = ({ children }) => {
-  const token = localStorage.getItem('1app_admin_token');
-  if (!token) return <Navigate to="/login" replace />;
+  const { admin, loading } = useAdminAuth();
+  if (loading) return <div role="status">Checking session...</div>;
+  if (!admin || !localStorage.getItem('1app_admin_token')) return <Navigate to="/login" replace />;
   return children;
 };
 

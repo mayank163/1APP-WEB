@@ -10,6 +10,15 @@ router.post('/login', adminController.login);
 // All routes below require a valid admin token
 router.use(protect);
 
+// Validate the saved session without requiring a section permission.
+router.get('/me', (req, res) => {
+    if (req.user.constructor.modelName !== 'Admin' || !req.user.isActive) {
+        return res.status(401).json({ success: false, message: 'Please log in as an active admin.' });
+    }
+    const { id, name, email, role, isSuperAdmin, isActive, permissions } = req.user;
+    return res.json({ success: true, data: { admin: { id, name, email, role, isSuperAdmin, isActive, permissions } } });
+});
+
 // Dashboard & bookings
 router.get('/stats', checkPermission('dashboard', 'read'), adminController.getDashboardStats);
 router.get('/bookings', checkPermission('bookings', 'read'), adminController.getAllBookings);

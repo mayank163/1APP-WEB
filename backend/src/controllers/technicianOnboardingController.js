@@ -1,3 +1,4 @@
+const { parseTechnicianDetails } = require('../utils/technicianDetails');
 const crypto = require('crypto');
 const User = require('../models/User');
 const { sendTechnicianOnboardingEmail } = require('../utils/emailService');
@@ -26,6 +27,7 @@ exports.preregister = async (req, res, next) => {
     const generatedPassword = crypto.randomBytes(12).toString('hex');
     await User.create({
       name, phone, email, address, serviceRadius, skills,
+      ...parseTechnicianDetails(req.body, true),
       password: generatedPassword,
       role: 'technician', accountStatus: 'invited', profileCompleted: false,
       technicianProfile: { skills, yearsOfExperience, professionalBio: text(req.body.professionalBio, 2000), verificationStatus: 'pending', submittedAt: new Date(),

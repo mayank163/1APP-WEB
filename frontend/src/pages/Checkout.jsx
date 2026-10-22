@@ -525,14 +525,24 @@ const Checkout = () => {
 
                                     <fieldset className="ui-checkout-74" >
                                         <legend className="ui-checkout-75" >Payment method</legend>
+                                        {/* <div className="ui-checkout-76" >
+                                            {[['stripe', 'Credit / Debit Card'], ['paypal', 'PayPal']].map(([value, label]) => (
+                                                <label className="ui-checkout-77" key={value} >
+                                                    <input type="radio" name="paymentProvider" value={value} checked={paymentProvider === value} onChange={() => setPaymentProvider(value)} />
+                                                    {label}
+                                                </label>
+                                            ))}
+                                        </div> */}
+
                                         <div className="ui-checkout-76" >
-                                            {[['stripe', 'Credit / Debit Card (Stripe)'], ['paypal', 'PayPal']].map(([value, label]) => (
+                                            {[['stripe', 'Credit / Debit Card']].map(([value, label]) => (
                                                 <label className="ui-checkout-77" key={value} >
                                                     <input type="radio" name="paymentProvider" value={value} checked={paymentProvider === value} onChange={() => setPaymentProvider(value)} />
                                                     {label}
                                                 </label>
                                             ))}
                                         </div>
+                                        
                                     </fieldset>
 
                                     <button className="ui-checkout-78"

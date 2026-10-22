@@ -102,7 +102,7 @@ const ChangePassword = () => {
                     </button>
                 </form>
                 <div className="change-password-divider"><span /><strong>OR</strong><span /></div>
-                <p className="change-password-help">Forgot your current password? <Link to="/forgot-password">Reset Password</Link></p>
+                <p className="change-password-help">Forgot your current password? <Link to="/forgot-password">Forgot Password</Link></p>
                 </div>
             </section>
         </main>

@@ -1,3 +1,4 @@
+const { parseTechnicianDetails } = require('../utils/technicianDetails');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const otpService = require('../utils/otpService');
@@ -289,6 +290,7 @@ exports.completeTechnicianProfile = async (req, res, next) => {
     if (!technician || technician.role !== 'technician') {
       return res.status(403).json({ success: false, message: 'Only technician accounts can complete this profile' });
     }
+    Object.assign(technician, parseTechnicianDetails(req.body));
     const prev = technician.technicianProfile || {};
 
     // Upload new certificate images to S3 and merge with existing

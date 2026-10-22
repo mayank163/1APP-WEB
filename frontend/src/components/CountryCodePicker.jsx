@@ -4,8 +4,8 @@ import React, { useState, useRef, useEffect } from 'react';
 
 // Country list: { name, flag emoji, dial code, max digits for local number }
 export const COUNTRIES = [
-    { name: 'India',                flag: '🇮🇳', code: '+91',  maxDigits: 10 },
     { name: 'United States',        flag: '🇺🇸', code: '+1',   maxDigits: 10 },
+    { name: 'India',                flag: '🇮🇳', code: '+91',  maxDigits: 10 },
     { name: 'United Kingdom',       flag: '🇬🇧', code: '+44',  maxDigits: 10 },
     { name: 'Canada',               flag: '🇨🇦', code: '+1',   maxDigits: 10 },
     { name: 'Australia',            flag: '🇦🇺', code: '+61',  maxDigits: 9  },
@@ -56,7 +56,7 @@ export const COUNTRIES = [
     { name: 'Ghana',                flag: '🇬🇭', code: '+233', maxDigits: 9  },
 ];
 
-export const DEFAULT_COUNTRY = COUNTRIES[0]; // India
+export const DEFAULT_COUNTRY = COUNTRIES[0]; // United States
 
 /**
  * CountryCodePicker

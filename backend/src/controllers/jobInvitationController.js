@@ -37,7 +37,7 @@ const { COMPLETED_STATUSES } = require('../services/technicianWorkSummary');
 const routingCandidates = async (job, session = null) => {
   const queries = [
     Job.find({ status: { $in: [...COMPLETED_STATUSES, 'cancelled'] }, 'assignedTechnician._id': { $ne: null } }).select('status workType additionalWorkType category assignedTechnician._id').session(session).lean(),
-    User.find({ role: 'technician', accountStatus: { $in: ROUTABLE_ACCOUNT_STATUSES } }).select('name phone email primaryService accountStatus technicianId profileImage technicianProfile.photoUrl serviceArea serviceAreaCoordinates isOnline lastActiveAt rating ratingCount').session(session).lean(),
+    User.find({ role: 'technician', accountStatus: { $in: ROUTABLE_ACCOUNT_STATUSES } }).select('technicianType workAreas name phone email primaryService accountStatus technicianId profileImage technicianProfile.photoUrl serviceArea serviceAreaCoordinates isOnline lastActiveAt rating ratingCount').session(session).lean(),
     Request.find({ job: job._id, initiatedBy: 'admin' }).select('technician status').session(session).lean(),
   ];
   // MongoDB transactions require sequential operations on their session.

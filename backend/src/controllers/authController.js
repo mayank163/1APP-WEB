@@ -1,3 +1,4 @@
+const { parseTechnicianDetails } = require('../utils/technicianDetails');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const otpService = require('../utils/otpService');
@@ -406,6 +407,8 @@ exports.updateMe = async (req, res, next) => {
         if (!user) {
             return res.status(404).json({ success: false, message: 'User not found' });
         }
+
+        if (user.role === 'technician') Object.assign(user, parseTechnicianDetails(req.body));
 
         // Explicit profile fields keep credentials and server-managed state protected.
         const editableFields = [

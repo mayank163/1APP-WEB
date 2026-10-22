@@ -370,6 +370,7 @@ const Profile = () => {
                         </form>
                     </div>
 
+                    {user?.role === 'technician' && <div className="card p-3 mb-3"><h5>Technician details</h5><p>Type: {user.technicianType === 'business' ? 'Business' : user.technicianType === 'freelancer' ? 'Freelancer' : 'Not provided'}</p><p>Work areas: {user.workAreas?.join(', ') || 'Not provided'}</p></div>}
                     {user?.role === 'technician' && <WorkSummary technicianId={user._id} />}
                     {/* Saved addresses */}
                     <div className="profile-panel profile-addresses card border-0 shadow-sm rounded-4 bg-white p-4">

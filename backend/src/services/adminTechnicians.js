@@ -1,3 +1,4 @@
+const { parseTechnicianDetails } = require('../utils/technicianDetails');
 const crypto = require('crypto');
 const User = require('../models/User');
 const { isPresenceOnline } = require('../socket/technicianPresence');
@@ -31,6 +32,8 @@ const serializeTechnician = user => ({
   adminNote: user.technicianAdminNote || '',
   address: user.address || '',
   customerBookingRatings: user.customerBookingRatings || [],
+  technicianType: user.technicianType || '',
+  workAreas: user.workAreas || [],
   primaryService: user.primaryService || user.skills?.[0] || '',
   skills: user.skills || [],
   serviceArea: user.serviceArea || user.address || '',
@@ -73,6 +76,7 @@ const parseDetails = body => {
     phone,
     email: email || undefined,
     primaryService,
+    ...parseTechnicianDetails(body),
     dateOfBirth,
     serviceRadius,
     serviceArea: String(body.serviceArea || '').trim().slice(0, 200),
@@ -160,7 +164,7 @@ exports.getTechnicians = async (req, res, next) => {
   try {
     const technicians = await User.find({
       role: 'technician'
-    }).select('+technicianAdminNote gender address customerBookingRatings name email phone dateOfBirth primaryService skills serviceArea serviceRadius technicianProfile.yearsOfExperience technicianProfile.previousCompanyName technicianProfile.certificateImages technicianProfile.professionalBio technicianProfile.verificationStatus technicianProfile.documents technicianProfile.photoUrl profileImage.url isOnline lastActiveAt totalJobsDone rating ratingCount workOrderRatings accountStatus isPhoneVerified createdAt technicianId').populate('customerBookingRatings.customer', 'name').sort('-createdAt');
+    }).select('+technicianAdminNote technicianType workAreas gender address customerBookingRatings name email phone dateOfBirth primaryService skills serviceArea serviceRadius technicianProfile.yearsOfExperience technicianProfile.previousCompanyName technicianProfile.certificateImages technicianProfile.professionalBio technicianProfile.verificationStatus technicianProfile.documents technicianProfile.photoUrl profileImage.url isOnline lastActiveAt totalJobsDone rating ratingCount workOrderRatings accountStatus isPhoneVerified createdAt technicianId').populate('customerBookingRatings.customer', 'name').sort('-createdAt');
     res.json({
       success: true,
       data: {

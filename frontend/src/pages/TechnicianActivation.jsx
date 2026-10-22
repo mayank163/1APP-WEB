@@ -53,7 +53,7 @@ export default function TechnicianActivation() {
   };
   return <main className="tech-activation"><section><span className="tech-activation-brand">1APP</span><h1>{done ? 'You’re ready to get started' : 'Activate your technician account'}</h1>{done ? <><p>Your mobile number is verified and your password has been saved. Sign in with your registered email or mobile number in the technician app.</p><Link to="/login">Go to sign in</Link></> : <><p>Verify your mobile number to join the team.</p><form onSubmit={submit}>
     {error && <div className="tech-activation-error" role="alert">{error}</div>}
-    <label>Mobile number<input type="tel" required value={form.phone} readOnly={sent} placeholder="+91 98765 43210" onChange={e => update('phone', e.target.value)} autoComplete="tel" /></label>
+    <label>Mobile number<input type="tel" required value={form.phone} readOnly={sent} placeholder="+1 234 567 8901" onChange={e => update('phone', e.target.value)} autoComplete="tel" /></label>
     {sent && <><p role="status">OTP sent to {form.phone}. It expires in 5 minutes.</p><div className="tech-activation-links"><button type="button" disabled={busy} onClick={() => {
                 setSent(false);
                 update('otp', '');

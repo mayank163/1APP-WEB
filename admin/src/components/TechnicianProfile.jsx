@@ -1592,6 +1592,8 @@ export default function TechnicianProfile({
                 <InfoRows
                   rows={[
                     [FiBriefcase, "Primary Service", technician.primaryService],
+                    [FiBriefcase, "Technician Type", technician.technicianType || "Not provided"],
+                    [FiMapPin, "Work Areas", technician.workAreas?.join(", ") || "Not provided"],
                     [
                       FiClock,
                       "Experience",

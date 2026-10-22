@@ -688,7 +688,7 @@ function DocumentReview({ request, requests, onReload }) {
               `TECH-${String(request._id).slice(-6)}`}{' '}
             <span>•</span> {request.skills?.[0] || 'Technician'}
           </p>
-          <small>{request.serviceArea || 'not available'}</small>
+          <small>{request.serviceArea || 'not available'}</small><p>{request.technicianType || 'Type not provided'} · {request.workAreas?.join(', ') || 'Work areas not provided'}</p>
         </div>
         <div className="tv-banner-divider" />
         <div>

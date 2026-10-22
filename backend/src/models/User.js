@@ -71,6 +71,8 @@ const userSchema = new mongoose.Schema({
         trim: true,
         default: ''
     },
+    technicianType: { type: String, enum: ['', 'freelancer', 'business'], default: '' },
+    workAreas: [{ type: String, enum: require('../utils/technicianAreas.json') }],
     primaryService: { type: String, default: '' },
     serviceArea: { type: String, default: '' },
     serviceAreaCoordinates: {

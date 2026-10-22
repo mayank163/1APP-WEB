@@ -17,7 +17,11 @@ API.interceptors.request.use(
 API.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) localStorage.removeItem('1app_admin_token');
+        if (error.response?.status === 401 && error.config?.url !== '/admin/login') {
+            localStorage.removeItem('1app_admin_token');
+            localStorage.removeItem('1app_admin_info');
+            window.dispatchEvent(new Event('admin-session-ended'));
+        }
         return Promise.reject(error);
     }
 );
@@ -36,6 +40,8 @@ const adminApi = {
     deactivateOffer: async id => (await API.patch(`/offers/admin/${id}/status`, { publicationStatus: 'inactive' })).data,
     uploadOfferImage: async payload => (await API.post('/offers/admin/image', payload, multipart)).data,
     getOfferRedemptions: async (id, page = 1) => (await API.get(`/offers/admin/${id}/redemptions`, { params: { page } })).data,
+
+    getSession: async () => (await API.get('/admin/me')).data,
 
     // ─── Auth ──────────────────────────────────────────────────────────────────
     login: async (email, password) => {

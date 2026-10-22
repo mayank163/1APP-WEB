@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import { FiChevronRight } from 'react-icons/fi';
 
-const COUNTRY_CODES = ['+91', '+1', '+44', '+971', '+65', '+61'];
+const COUNTRY_CODES = ['+1', '+91', '+44', '+971', '+65', '+61'];
 
 const InfoCard = ({ title, children }) => (
     <div className="ui-contactus-1" >
@@ -14,7 +14,7 @@ const InfoCard = ({ title, children }) => (
 );
 
 export default function ContactUs() {
-    const [form, setForm] = useState({ name: '', email: '', countryCode: '+91', phone: '', message: '' });
+    const [form, setForm] = useState({ name: '', email: '', countryCode: '+1', phone: '', message: '' });
     const [submitting, setSubmitting] = useState(false);
 
     const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
@@ -24,7 +24,7 @@ export default function ContactUs() {
         setSubmitting(true);
         await new Promise(r => setTimeout(r, 800));
         toast.success('Message sent! We\'ll get back to you within 24-48 hours.');
-        setForm({ name: '', email: '', countryCode: '+91', phone: '', message: '' });
+        setForm({ name: '', email: '', countryCode: '+1', phone: '', message: '' });
         setSubmitting(false);
     };
 

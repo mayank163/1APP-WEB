@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
+import workAreas from '../utils/technicianAreas.json';
 import API from '../services/api';
 import { COUNTRIES } from '../components/CountryCodePicker';
 import '../styles/TechnicianOnboarding.css';
 
-const initialForm = { name: '', phone: '', email: '', address: '', serviceRadius: '15', yearsOfExperience: '' };
+const initialForm = { technicianType: '', workAreas: [], name: '', phone: '', email: '', address: '', serviceRadius: '15', yearsOfExperience: '' };
 
 export default function TechnicianOnboarding() {
   const [form, setForm] = useState(initialForm);
@@ -21,6 +22,7 @@ export default function TechnicianOnboarding() {
   const submit = async event => {
     event.preventDefault();
     if (busy) return;
+    if (!form.technicianType || !form.workAreas.length) { setError('Select your technician type and at least one work area.'); return; }
     if (![form.name, form.email, form.phone, form.address, form.serviceRadius, form.yearsOfExperience].every(value => String(value).trim())) {
       setError('Please complete all fields.');
       return;
@@ -32,7 +34,7 @@ export default function TechnicianOnboarding() {
         setError(`Enter exactly ${country.maxDigits} digits for ${country.code}.`); return;
       }
       const data = new FormData();
-      Object.entries(form).forEach(([key, value]) => data.append(key, key === 'phone' ? fullPhone : value));
+      Object.entries(form).forEach(([key, value]) => data.append(key, key === 'phone' ? fullPhone : key === 'workAreas' ? JSON.stringify(value) : value));
       const response = await API.post('/technician-auth/preregister', data, { headers: { 'Content-Type': 'multipart/form-data' } });
       setConfirmation(response.data.message);
       setDone(true);
@@ -75,6 +77,8 @@ export default function TechnicianOnboarding() {
               <label>Address<input name="address" autoComplete="street-address" required maxLength={500} placeholder="Street, city, state and postal code" value={form.address} onChange={update} /></label>
               <label>Service radius (miles)<input name="serviceRadius" type="number" required min="1" max="500" step="1" value={form.serviceRadius} onChange={update} /></label>
               <label>Years of experience<input name="yearsOfExperience" type="number" required min="0" max="80" step="0.5" value={form.yearsOfExperience} onChange={update} /></label>
+              <div className="tech-type-options"><span>Technician type (choose one)</span><div className="tech-type-options-row">{['freelancer', 'business'].map(type => <label key={type}><input type="checkbox" checked={form.technicianType === type} onChange={() => { setForm(previous => ({ ...previous, technicianType: type })); setError(''); }} />{type === 'freelancer' ? 'Freelancer' : 'Business'}</label>)}</div></div>
+              <div className="tech-work-areas"><span>Work areas</span><details><summary>{form.workAreas.length ? `${form.workAreas.length} work areas selected` : 'Select states or territories'}</summary><div className="tech-work-area-options">{workAreas.map(area => <label key={area}><input type="checkbox" checked={form.workAreas.includes(area)} onChange={event => { const checked = event.target.checked; setForm(previous => ({ ...previous, workAreas: checked ? [...previous.workAreas, area] : previous.workAreas.filter(value => value !== area) })); setError(''); }} />{area}</label>)}</div></details><small>Select all states or territories where you can work.</small></div>
             </div>
             <button type="submit">{busy ? 'Saving your details…' : 'Register your interest'}</button>
           </fieldset>

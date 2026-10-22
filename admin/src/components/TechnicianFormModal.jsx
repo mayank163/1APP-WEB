@@ -1,3 +1,4 @@
+import workAreas from '../utils/technicianAreas.json';
 import { kilometersToMiles, milesToKilometers } from '../utils/distance';
 import React, { useState } from 'react';
 import { Modal } from 'react-bootstrap';
@@ -6,6 +7,8 @@ import adminApi from '../services/adminApi';
 export const DEFAULT_TRADES = ['Electrical', 'Plumbing', 'Home Services', 'Carpentry', 'Painting', 'Appliance Repair', 'AC Repairs'];
 const documents = [['profilePhoto', 'Profile Photo'], ['drivingLicenseFront', 'ID Proof'], ['residentialProof', 'Address Proof'], ['cvResume', 'Other Document']];
 const initial = {
+  technicianType: '',
+  workAreas: [],
   name: '',
   phone: '',
   email: '',
@@ -66,13 +69,15 @@ export default function TechnicianFormModal({
     setError('');
     try {
       const apiForm = { ...form, serviceRadius: milesToKilometers(form.serviceRadius) };
+      if (!apiForm.technicianType) delete apiForm.technicianType;
+      if (!apiForm.workAreas?.length) delete apiForm.workAreas;
       if (editing) {
         await adminApi.updateTechnician(technician._id, apiForm);
         onSaved();
         onClose();
       } else {
         const payload = new FormData();
-        Object.entries(apiForm).forEach(([key, value]) => payload.append(key, value));
+        Object.entries(apiForm).forEach(([key, value]) => payload.append(key, key === 'workAreas' ? JSON.stringify(value) : value));
         Object.entries(files).forEach(([key, value]) => {
           if (value) payload.append(key, value);
         });
@@ -105,7 +110,7 @@ export default function TechnicianFormModal({
   };
   const field = (key, label, type = 'text', props = {}) => <label className="to-field" key={key}><span>{label}{props.required && <b> *</b>}</span><input type={type} value={form[key]} onChange={e => update(key, e.target.value)} {...props} /></label>;
   const basic = [['Full Name', form.name], ['Mobile Number', form.phone], ['Email Address', form.email], ['Date of Birth', displayDate(form.dateOfBirth)]];
-  const professional = [['Service / Trade', form.primaryService], ['Experience', `${form.yearsOfExperience || 0} years`], ['Service Area', form.serviceArea ? `${form.serviceArea} (${Number(form.serviceRadius).toFixed(1)} miles radius)` : 'Not provided'], ['Skills / Services', form.skills]];
+  const professional = [['Technician Type', form.technicianType], ['Work Areas', form.workAreas?.join(', ')], ['Service / Trade', form.primaryService], ['Experience', `${form.yearsOfExperience || 0} years`], ['Service Area', form.serviceArea ? `${form.serviceArea} (${Number(form.serviceRadius).toFixed(1)} miles radius)` : 'Not provided'], ['Skills / Services', form.skills]];
   return <Modal show onHide={close} centered backdrop={busy ? 'static' : true} keyboard={!busy} dialogClassName={`to-modal ${result ? 'to-success-modal' : ''}`} aria-labelledby="to-form-title">
     {result ? <div className="to-success-content">
       <div className="to-confetti" aria-hidden="true"><i /><i /><i /><i /><i /></div>
@@ -136,7 +141,7 @@ export default function TechnicianFormModal({
               })}
             {field('phone', 'Mobile Number', 'tel', {
                 required: true,
-                placeholder: '+91 98765 43210',
+                placeholder: '+1 234 567 8901',
                 autoComplete: 'tel'
               })}
             {field('email', 'Email Address', 'email', {
@@ -145,6 +150,8 @@ export default function TechnicianFormModal({
             {field('dateOfBirth', 'Date of Birth', 'date', {
                 max: new Date().toISOString().slice(0, 10)
               })}
+            <label className="to-field"><span>Technician type</span><select value={form.technicianType} onChange={e => update('technicianType', e.target.value)}><option value="">Select type</option><option value="freelancer">Freelancer</option><option value="business">Business</option></select></label>
+            <label className="to-field"><span>Work areas</span><select multiple size={5} value={form.workAreas} onChange={e => update('workAreas', Array.from(e.target.selectedOptions, option => option.value))}>{workAreas.map(area => <option key={area}>{area}</option>)}</select></label>
             <label className="to-field to-span-2"><span>Primary Service / Trade <b>*</b></span><select required value={form.primaryService} onChange={e => update('primaryService', e.target.value)}><option value="">Select service or trade</option>{[...new Set([...trades, form.primaryService].filter(Boolean))].map(t => <option key={t}>{t}</option>)}</select></label>
           </div></>}
           {step === 2 && <><h3>Professional Details</h3><p className="to-muted">Add experience, service area and skills.</p><div className="to-form-grid">

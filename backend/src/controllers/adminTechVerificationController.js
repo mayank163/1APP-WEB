@@ -19,6 +19,8 @@ const getTechnicianVerificationRequests = async (req, res, next) => {
         reviewer: reviewerNames.get(String(user.technicianProfile?.reviewer)) || '',
         email: user.email,
         phone: user.phone,
+        technicianType: user.technicianType || '',
+        workAreas: user.workAreas || [],
         skills: user.skills || user.technicianProfile?.skills || [],
         experienceLevel: user.experienceLevel || user.technicianProfile?.experienceLevel || 'Beginner',
         yearsOfExperience: user.technicianProfile?.yearsOfExperience || 0,
