@@ -109,18 +109,32 @@ const activationURL = (phone = '') => {
   return url.toString();
 };
 const deliverInvitation = async ({
+  name,
   phone,
   email,
   sms,
   mail
 }) => {
-  const url = activationURL(phone);
+  // const url = activationURL(phone);
+  const url = 'https://1oneapp.com/join-as-technician';
   const safeUrl = url.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
   const deliveries = [];
   if (sms) deliveries.push({
     channel: 'sms',
     target: phone,
-    send: () => sendSMS(phone, `You are invited to join 1APP as a technician. Verify your mobile number and set your password: ${url}`)
+    send: () => sendSMS(phone, `Hello ${String(name || '').trim()},
+
+Harris Grey from SOS Geek invites you to join SOS Geek as a Technician!
+
+Complete the registration form at the link below to unlock a variety of work opportunities across different locations throughout the United States.
+
+Register here: ${url}
+
+Join SOS Geek today and take the next step toward expanding your professional opportunities!
+
+Best regards,
+Harris Grey
+SOS Geek`)
   });
   if (mail) deliveries.push({
     channel: 'email',
@@ -128,10 +142,11 @@ const deliverInvitation = async ({
     send: () => sendEmail({
       to: email,
       subject: 'Your SOS technician invitation',
-      text: `You are invited to join SOS. Verify your mobile number and set your password: ${url}`,
+      text: `SOS invites you to join SOS as a technician. Verify your mobile number and set your password: ${url}`,
         html: renderEmailLayout(`
           <div class="hero action"><div class="hero-copy"><div class="hero-eyebrow">TECHNICIAN INVITATION</div><h1>Join the SOS team</h1><p>Your technician account is ready to activate.</p></div><div class="hero-icon" aria-hidden="true">&#9733;</div></div>
           <p class="greeting">Welcome to SOS</p>
+          <p class="text">Harris Grey from SOS invites you to join SOS as a technician.</p>
           <p class="text">Verify your mobile number and set your password to start receiving eligible job requests.</p>
           <p style="margin:24px 0 8px;text-align:center;"><a class="button" href="${safeUrl}">Activate your account &nbsp; &rarr;</a></p>
           <p class="text">If the button does not work, use this link:<br /><a href="${safeUrl}">${safeUrl}</a></p>
@@ -306,6 +321,7 @@ exports.inviteTechnician = async (req, res, next) => {
     const email = sms ? '' : String(req.body.email || '').trim().toLowerCase();
     if (!sms && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw fail('Enter a valid email address.');
     const delivery = await deliverInvitation({
+      name: String(req.body.name).trim(),
       phone,
       email,
       sms,
